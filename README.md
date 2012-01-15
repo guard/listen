@@ -1,3 +1,3 @@
-# Listener [![Build Status](https://secure.travis-ci.org/guard/listener.png?branch=master)](http://travis-ci.org/guard/stener)
+# Listen [![Build Status](https://secure.travis-ci.org/guard/listen.png?branch=master)](http://travis-ci.org/guard/listen)
 
 Work in progress...

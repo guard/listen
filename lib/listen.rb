@@ -1,4 +1,6 @@
-module Listener
+require 'listen/listener'
+
+module Listen
 
   # Listen to file system modifications.
   #
@@ -11,7 +13,8 @@ module Listener
   # @yieldparam [Array<String>] removed the list of removed files
   # @return [Watcher] the file watcher
   #
-  def self.listen(dir, options, &block)
+  def self.to(*args)
+    Listener.new(*args)
   end
 
 end

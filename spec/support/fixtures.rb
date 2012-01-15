@@ -9,7 +9,7 @@ include FileUtils
 # @yieldparam [String] path the path to the fixture directory
 #
 def fixtures
-  path = File.expand_path(File.join(Dir.tmpdir, 'listener'))
+  path = File.expand_path(File.join(Dir.tmpdir, 'listen'))
   FileUtils.mkdir_p(path)
 
   pwd = FileUtils.pwd
