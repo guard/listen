@@ -54,7 +54,7 @@ module Listen
 
         if stat.directory?
           detect_modifications_and_removals(path)
-          @paths[directory].delete(basename) unless File.exist?(path)
+          @paths[directory].delete(basename) unless File.directory?(path)
         else
           if File.exist?(path)
             new_stat = File.stat(path)
