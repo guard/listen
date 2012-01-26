@@ -11,10 +11,11 @@ module Listen
   # @yieldparam [Array<String>] modified the list of modified files
   # @yieldparam [Array<String>] added the list of added files
   # @yieldparam [Array<String>] removed the list of removed files
-  # @return [Watcher] the file watcher
+  # @return [Listener] the file listener
   #
-  def self.to(*args)
-    Listener.new(*args)
+  def self.to(*args, &block)
+    listener = Listener.new(*args, &block)
+    listener.start
   end
 
 end

@@ -34,7 +34,7 @@ def listen(path, options={})
   added    = []
   removed  = []
 
-  watcher = Listener.listen(path, options) do |m, a, r|
+  Listen.to(path, options) do |m, a, r|
     modified += m
     added    += a
     removed  += r

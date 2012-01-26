@@ -1,17 +1,16 @@
 require 'spec_helper'
-require 'support/fixtures'
 
-describe Listener do
-  describe '.listen' do
+describe Listen::Listener do
+  describe '.diff' do
     context 'single file operations' do
       context 'when a file is created' do
         it 'detects the added file' do
           fixtures do |path|
-            modified, added, removed = listen(path) do
+            modified, added, removed = diff(path) do
               touch 'new_file.rb'
             end
 
-            added.should =~ %w(newfile.rb)
+            added.should =~ %w(new_file.rb)
             modified.should be_empty
             removed.should be_empty
           end
@@ -20,12 +19,12 @@ describe Listener do
         context 'given a new created directory' do
           it 'detects the added file' do
             fixtures do |path|
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 mkdir 'a_directory'
                 touch 'a_directory/new_file.rb'
               end
 
-              added.should =~ %w(a_directory/newfile.rb)
+              added.should =~ %w(a_directory/new_file.rb)
               modified.should be_empty
               removed.should be_empty
             end
@@ -37,11 +36,11 @@ describe Listener do
             fixtures do |path|
               mkdir 'a_directory'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 touch 'a_directory/new_file.rb'
               end
 
-              added.should =~ %w(a_directory/newfile.rb)
+              added.should =~ %w(a_directory/new_file.rb)
               modified.should be_empty
               removed.should be_empty
             end
@@ -52,10 +51,11 @@ describe Listener do
       context 'when a file is modified' do
         it 'detects the modified file' do
           fixtures do |path|
-            touch 'exisiting_file.txt'
+            touch 'existing_file.txt'
 
-            modified, added, removed = listen(path) do
-              touch 'exisiting_file.txt'
+            modified, added, removed = diff(path) do
+              sleep 1
+              touch 'existing_file.txt'
             end
 
             added.should be_empty
@@ -69,7 +69,8 @@ describe Listener do
             fixtures do |path|
               touch '.hidden'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
+                sleep 1
                 touch '.hidden'
               end
 
@@ -85,7 +86,8 @@ describe Listener do
             fixtures do |path|
               touch 'run.rb'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
+                sleep 1
                 chmod 0777, 'run.rb'
               end
 
@@ -97,19 +99,22 @@ describe Listener do
         end
 
         context 'given an existing directory' do
-          fixtures do |path|
-            mkdir 'a_directory'
-            touch 'a_directory/exisiting_file.txt'
+          it 'detects the modified file' do
+            fixtures do |path|
+              mkdir 'a_directory'
+              touch 'a_directory/existing_file.txt'
 
-            modified, added, removed = listen(path) do
-              touch 'a_directory/exisiting_file.txt'
+              modified, added, removed = diff(path) do
+                sleep 1
+                touch 'a_directory/existing_file.txt'
+              end
+
+              puts added
+              added.should be_empty
+              modified.should =~ %w(a_directory/existing_file.txt)
+              removed.should be_empty
             end
-
-            added.should be_empty
-            modified.should =~ %w(a_directory/existing_file.txt)
-            removed.should be_empty
           end
-
         end
       end
 
@@ -118,7 +123,7 @@ describe Listener do
           fixtures do |path|
             touch 'move_me.txt'
 
-            modified, added, removed = listen(path) do
+            modified, added, removed = diff(path) do
               mv 'move_me.txt', 'new_name.txt'
             end
 
@@ -134,7 +139,7 @@ describe Listener do
               mkdir 'the_directory'
               touch 'move_me.txt'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 mv 'move_me.txt', 'the_directory/move_me.txt'
               end
 
@@ -149,7 +154,7 @@ describe Listener do
               mkdir 'the_directory'
               touch 'the_directory/move_me.txt'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 mv 'the_directory/move_me.txt', 'i_am_here.txt'
               end
 
@@ -165,7 +170,7 @@ describe Listener do
               touch 'from_directory/move_me.txt'
               mkdir 'to_directory'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 mv 'from_directory/move_me.txt', 'to_directory/move_me.txt'
               end
 
@@ -182,7 +187,7 @@ describe Listener do
           fixtures do |path|
             touch 'unnecessary.txt'
 
-            modified, added, removed = listen(path) do
+            modified, added, removed = diff(path) do
               rm 'unnecessary.txt'
             end
 
@@ -198,7 +203,7 @@ describe Listener do
               mkdir 'a_directory'
               touch 'a_directory/do_not_use.rb'
 
-              modified, added, removed = listen(path) do
+              modified, added, removed = diff(path) do
                 rm 'a_directory/do_not_use.rb'
               end
 
@@ -214,7 +219,7 @@ describe Listener do
     context 'multiple file operations' do
       it 'detects the added files' do
         fixtures do |path|
-          modified, added, removed = listen(path) do
+          modified, added, removed = diff(path) do
             touch 'a_file.rb'
             touch 'b_file.rb'
             mkdir 'the_directory'
@@ -236,7 +241,8 @@ describe Listener do
           touch 'the_directory/a_file.rb'
           touch 'the_directory/b_file.rb'
 
-          modified, added, removed = listen(path) do
+          modified, added, removed = diff(path) do
+            sleep 1
             touch 'b_file.rb'
             touch 'the_directory/a_file.rb'
           end
@@ -255,7 +261,7 @@ describe Listener do
           touch 'the_directory/a_file.rb'
           touch 'the_directory/b_file.rb'
 
-          modified, added, removed = listen(path) do
+          modified, added, removed = diff(path) do
             rm 'b_file.rb'
             rm 'the_directory/a_file.rb'
           end
@@ -274,7 +280,7 @@ describe Listener do
           touch 'the_directory/a_file.rb'
           touch 'the_directory/b_file.rb'
 
-          modified, added, removed = listen(path) do
+          modified, added, removed = diff(path) do
             mv 'the_directory', 'renamed'
           end
 
@@ -290,7 +296,7 @@ describe Listener do
           touch 'the_directory/a_file.rb'
           touch 'the_directory/b_file.rb'
 
-          modified, added, removed = listen(path) do
+          modified, added, removed = diff(path) do
             rm_rf 'the_directory'
           end
 

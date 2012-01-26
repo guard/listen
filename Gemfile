@@ -2,6 +2,8 @@ source :rubygems
 
 gemspec
 
+gem 'rake'
+
 platform :ruby do
   gem 'rb-readline'
 end
@@ -16,3 +18,4 @@ elsif RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
   gem 'win32console', :require => false
   gem 'rb-notifu', '>= 0.0.4', :require => false
 end
+
