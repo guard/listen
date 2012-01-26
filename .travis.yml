@@ -8,6 +8,7 @@ rvm:
 branches:
   only:
     - master
+    - listener_diff
 notifications:
   recipients:
     - ttilley@gmail.com
