@@ -3,7 +3,7 @@ module Listen
 
     def initialize(*args, &block)
       @directory = args.first
-      @paths     = Hash.new {|h,k| h[k] = {} }
+      @paths     = Hash.new { |h,k| h[k] = {} }
       @block     = block
       init_paths
     end
@@ -17,7 +17,7 @@ module Listen
     # Detect changes diff in a directory.
     #
     # @param [String] directory the path to diff
-    # @return {Hash<Array>} the file changes
+    # @return [Hash<Array>] the file changes
     #
     def diff(directory = @directory)
       @changes = { :modified => [], :added => [], :removed => [] }
@@ -36,7 +36,7 @@ module Listen
       end
     end
 
-    # Insert a path with its File.stats in @paths.
+    # Insert a path with its File.stat in @paths.
     #
     # @param [String] path the path to insert in @paths.
     #
@@ -91,7 +91,7 @@ module Listen
     # @return [String] the relative converted path
     #
     def relative_path(path, directory = @directory)
-      base_dir = @directory.sub(/\/$/, '')
+      base_dir = directory.sub(/\/$/, '')
       path.sub(%r(^#{base_dir}/), '')
     end
 
