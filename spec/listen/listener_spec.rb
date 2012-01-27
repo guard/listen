@@ -1,7 +1,97 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  describe '.diff' do
+
+  describe '#ignore' do
+    context 'with ignored path set on initialization' do
+      it "ignores one path" do
+        fixtures do |path|
+          mkdir 'a_ignored_directory'
+          touch 'a_ignored_directory/file.txt'
+
+          listener = new(path, :ignore => 'a_ignored_directory')
+          listener.init_paths
+
+          listener.paths["#{path}/a_ignored_directory"]['file.txt'].should be_nil
+        end
+      end
+    end
+
+    context 'with ignored path set via method' do
+      it "ignores one sub path" do
+        fixtures do |path|
+          mkdir 'a_directory'
+          mkdir 'a_directory/a_ignored_directory'
+          touch 'a_directory/a_ignored_directory/file.txt'
+
+          listener = new(path)
+          listener.ignore('a_directory/a_ignored_directory')
+          listener.init_paths
+
+          listener.paths["#{path}/a_directory/a_ignored_directory"]['file.txt'].should be_nil
+        end
+      end
+    end
+  end
+
+  describe '#filter' do
+    context "with no file filters set" do
+      it "detects all files" do
+        fixtures do |path|
+          touch 'file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/file.txt'
+
+          listener = new(path)
+          listener.init_paths
+
+          listener.paths[path]['file.rb'].should_not be_nil
+          listener.paths["#{path}/a_directory"]['file.txt'].should_not be_nil
+        end
+      end
+    end
+
+    context 'with file filter set on initialization' do
+      it "filters rb files" do
+        fixtures do |path|
+          touch 'file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/file.txt'
+          touch 'a_directory/file.rb'
+
+          listener = new(path, :filter => /.*\.rb/)
+          listener.init_paths
+
+          listener.paths[path]['file.rb'].should_not be_nil
+          listener.paths["#{path}/a_directory"]['file.txt'].should be_nil
+          listener.paths["#{path}/a_directory"]['file.rb'].should_not be_nil
+        end
+      end
+    end
+
+    context 'with a list file filter set via method' do
+      it "filters txt and zip path" do
+        fixtures do |path|
+          touch 'file.rb'
+          touch 'file.zip'
+          mkdir 'a_directory'
+          touch 'a_directory/file.txt'
+          touch 'a_directory/file.rb'
+
+          listener = new(path)
+          listener.filter(/\.txt$/, /.*\.zip/)
+          listener.init_paths
+
+          listener.paths[path]['file.rb'].should be_nil
+          listener.paths[path]['file.zip'].should_not be_nil
+          listener.paths["#{path}/a_directory"]['file.txt'].should_not be_nil
+          listener.paths["#{path}/a_directory"]['file.rb'].should be_nil
+        end
+      end
+    end
+  end
+
+  describe '#diff' do
     context 'single file operations' do
       context 'when a file is created' do
         it 'detects the added file' do

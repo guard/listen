@@ -9,7 +9,8 @@ def diff(path)
   removed  = []
 
   listener = Listen::Listener.new(path)
-
+  listener.init_paths
+  
   yield
 
   changes = listener.diff
@@ -18,4 +19,8 @@ def diff(path)
   removed  += changes[:removed]
 
   [modified, added, removed]
+end
+
+def new(path, *args)
+  Listen::Listener.new(path, *args)
 end
