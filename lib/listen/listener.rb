@@ -1,8 +1,13 @@
 require 'find'
+require 'listen/adapter'
+require 'listen/adapters/polling'
 
 module Listen
   class Listener
-    attr_accessor :ignored_paths, :file_filters, :paths
+    attr_accessor :directory, :ignored_paths, :file_filters, :paths
+
+    # Default paths that gets ignored by the listener
+    DEFAULT_IGNORED_PATHS = %w[.bundle .git log tmp vendor]
 
     # Initialize the file listener.
     #
@@ -20,24 +25,27 @@ module Listen
     #
     def initialize(*args, &block)
       @directory     = args.first
-      @ignored_paths = []
+      @ignored_paths = DEFAULT_IGNORED_PATHS
       @file_filters  = []
-      @paths         = Hash.new { |h,k| h[k] = {} }
       @block         = block
       if args[1]
-        @ignored_paths.push(args[1][:ignore]) if args[1][:ignore]
-        @file_filters.push(args[1][:filter]) if args[1][:filter]
+        @ignored_paths += Array(args[1][:ignore]) if args[1][:ignore]
+        @file_filters  += Array(args[1][:filter]) if args[1][:filter]
       end
+      @adapter = Adapter.select_and_initialize(self)
     end
 
-    # Start the listener.
+    # Initialize the @paths and start the adapter.
     #
     def start
+      init_paths
+      @adapter.start
     end
 
-    # Stop the listener.
+    # Stop the adapter.
     #
     def stop
+      @adapter.stop
     end
 
     # Add ignored path to the listener.
@@ -68,18 +76,36 @@ module Listen
       self
     end
 
-    def change(&block) # modified / added / removed
+    # Set change callback block to the listener.
+    #
+    # @example Filter some files
+    #   callback = lambda { |modified, added, removed| ... }
+    #   change &callback
+    #
+    # @param [Block] block a block callback called on changes
+    #
+    # @return [Listen::Listener] the listener itself
+    #
+    def change(&block) # modified, added, removed
+      @block = block
+      self
     end
-    def modification(&block)
-    end
-    def addition(&block)
-    end
-    def removal(&block)
+
+    # Call @block callback when there is a diff in the passed directory.
+    #
+    # @param [String] directory the directory to diff
+    #
+    def on_change(directory)
+      changes = diff(directory)
+      unless changes == { :modified => [], :added => [], :removed => [] }
+        @block.call(changes[:modified],changes[:added],changes[:removed])
+      end
     end
 
     # Initialize the @paths double levels Hash with all existing paths.
     #
     def init_paths
+      @paths = Hash.new { |h,k| h[k] = {} }
       all_existing_paths { |path| insert_path(path) }
     end
 
@@ -97,16 +123,16 @@ module Listen
 
   private
 
-    # Research all existing paths (directories & files) filtered and without ignored directories paths. 
+    # Research all existing paths (directories & files) filtered and without ignored directories paths.
     #
     # @yield [path] the existing path
     #
     def all_existing_paths
       Find.find(@directory) do |path|
         if File.directory?(path)
-          if @ignored_paths.any? { |ignored_path| path =~ /#{@ignored_paths}$/ }
+          if @ignored_paths.any? { |ignored_path| path =~ /#{ignored_path}$/ }
             Find.prune # Don't look any further into this directory.
-          else 
+          else
             yield(path)
           end
         elsif @file_filters.empty? || @file_filters.any? { |file_filter| path =~ file_filter }

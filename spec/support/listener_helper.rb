@@ -10,7 +10,7 @@ def diff(path)
 
   listener = Listen::Listener.new(path)
   listener.init_paths
-  
+
   yield
 
   changes = listener.diff

@@ -2,6 +2,78 @@ require 'spec_helper'
 
 describe Listen::Listener do
 
+  describe '#initialize' do
+    context 'with just one dir params' do
+      subject { new('path') }
+
+      it "set directory" do
+        subject.directory.should eq 'path'
+      end
+
+      it "set default ignored paths" do
+        subject.ignored_paths.should eq %w[.bundle .git log tmp vendor]
+      end
+
+      it "set none file filters" do
+        subject.file_filters.should eq []
+      end
+    end
+
+    context 'with ignored paths and file filters params' do
+      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/]) }
+
+      it "set custom ignored paths" do
+        subject.ignored_paths.should eq %w[.bundle .git log tmp vendor .ssh]
+      end
+
+      it "set custom file filters" do
+        subject.file_filters.should eq [/.*\.rb/,/.*\.md/]
+      end
+    end
+
+    it "selects and initializes an adapter" do
+      Listen::Adapter.should_receive(:select_and_initialize)
+      new('path')
+    end
+  end
+
+  describe '#start' do
+    let(:adapter) { mock(Listen::Adapter, :start => true) }
+    before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
+    subject { new('path') }
+
+    it "inits path" do
+      subject.should_receive(:init_paths)
+      subject.start
+    end
+
+    it "starts adapter" do
+      subject.stub(:init_paths)
+      adapter.should_receive(:start)
+      subject.start
+    end
+  end
+
+  describe '#stop' do
+    let(:adapter) { mock(Listen::Adapter) }
+    before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
+    subject { new('path') }
+
+    it "stops adapter" do
+      adapter.should_receive(:stop)
+      subject.stop
+    end
+  end
+  
+  describe "#change" do
+    it "set new callback block" do
+      callback = lambda { |modified, added, removed| }
+      listener = new('path')
+      listener.change(&callback)
+      listener.instance_variable_get(:@block).should eq callback
+    end
+  end
+
   describe '#ignore' do
     context 'with ignored path set on initialization' do
       it "ignores one path" do
