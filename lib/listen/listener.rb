@@ -97,7 +97,7 @@ module Listen
     #
     def on_change(directory)
       changes = diff(directory)
-      unless changes == { :modified => [], :added => [], :removed => [] }
+      unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
     end
