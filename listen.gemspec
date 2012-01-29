@@ -16,12 +16,6 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'listen'
 
   s.add_development_dependency 'bundler'
-  s.add_development_dependency 'guard',       '~> 1.0.0'
-  s.add_development_dependency 'rspec',       '~> 2.8.0'
-  s.add_development_dependency 'guard-rspec', '~> 0.6.0'
-  s.add_development_dependency 'yard'
-  s.add_development_dependency 'redcarpet'
-  s.add_development_dependency 'pry'
 
   s.files        = Dir.glob('{lib}/**/*') + %w[CHANGELOG.md LICENSE README.md]
   s.require_path = 'lib'
