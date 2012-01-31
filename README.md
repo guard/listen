@@ -64,3 +64,15 @@ scripts  = listener.filter(/.*\.js/).change(&scripts_callback)
 Thread.new { styles.start } # enter the run loop
 Thread.new { scripts.start } # enter the run loop
 ```
+
+### Options
+
+These options can be set through `Listen.to` params or via methods (see the "Object" API)
+
+```ruby
+:filter => /.*\.rb/, /.*\.coffee/   # Filter files to listen to via a regexps list.
+                                    # default: none
+
+:ignore => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
+                                    # default: '.bundle', '.git', 'log', 'tmp', 'vendor'
+```
