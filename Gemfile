@@ -10,11 +10,12 @@ group :development do
   end
 
   require 'rbconfig'
-  if RbConfig::CONFIG['target_os'] =~ /darwin/i
+  case RbConfig::CONFIG['target_os']
+  when /darwin/i
     gem 'ruby_gntp',  '~> 0.3.4', :require => false
-  elsif RbConfig::CONFIG['target_os'] =~ /linux/i
+  when /linux/i
     gem 'libnotify',  '~> 0.7.1', :require => false
-  elsif RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+  when /mswin|mingw/i
     gem 'win32console', :require => false
     gem 'rb-notifu', '>= 0.0.4', :require => false
   end
