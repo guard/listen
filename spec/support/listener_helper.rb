@@ -3,17 +3,19 @@
 # @param [String] path the path to watch
 # @return [Array, Array, Array] the file changes
 #
-def diff(path)
+def diff(root_path, options = {})
   modified = []
   added    = []
   removed  = []
 
-  listener = Listen::Listener.new(path)
-  listener.init_paths
+  @listener = Listen::Listener.new(root_path)
+  @listener.init_paths
 
   yield
 
-  changes = listener.diff
+  paths = options.delete(:paths) || [root_path]
+  options[:recursive] = true if options[:recursive].nil?
+  changes = @listener.diff(paths, options)
   modified += changes[:modified]
   added    += changes[:added]
   removed  += changes[:removed]

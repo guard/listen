@@ -1,13 +1,14 @@
 require 'find'
 require 'listen/adapter'
 require 'listen/adapters/polling'
+require 'listen/adapters/darwin'
 
 module Listen
   class Listener
-    attr_accessor :directory, :ignored_paths, :file_filters, :paths
+    attr_accessor :directory, :ignored_paths, :file_filters, :paths, :adapter
 
     # Default paths that gets ignored by the listener
-    DEFAULT_IGNORED_PATHS = %w[.bundle .git log tmp vendor]
+    DEFAULT_IGNORED_PATHS = %w[.bundle .git .DS_Store log tmp vendor]
 
     # Initialize the file listener.
     #
@@ -93,10 +94,10 @@ module Listen
 
     # Call @block callback when there is a diff in the passed directory.
     #
-    # @param [String] directory the directory to diff
+    # @param [Array] directories the list of directories to diff
     #
-    def on_change(directory)
-      changes = diff(directory)
+    def on_change(directories)
+      changes = diff(directories)
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
@@ -111,13 +112,18 @@ module Listen
 
     # Detect changes diff in a directory.
     #
-    # @param [String] directory the path to diff
+    # @param [Array] directories the list of directories to diff
+    # @param [Hash] options
+    # @option options [Boolean] recursive scan all sub-direcoties recursively (true when polling)
     # @return [Hash<Array>] the file changes
     #
-    def diff(directory = @directory)
+    def diff(directories, options = {})
       @changes = { :modified => [], :added => [], :removed => [] }
-      detect_modifications_and_removals(directory)
-      detect_additions(directory)
+      options[:recursive] = @adapter.is_a?(Listen::Adapters::Polling) if options[:recursive].nil?
+      directories.each do |directory|
+        detect_modifications_and_removals(directory, options)
+        detect_additions(directory, options)
+      end
       @changes
     end
 
@@ -129,13 +135,15 @@ module Listen
     #
     def all_existing_paths
       Find.find(@directory) do |path|
+        next if @directory == path
+
         if File.directory?(path)
-          if @ignored_paths.any? { |ignored_path| path =~ /#{ignored_path}$/ }
+          if ignored_path?(path)
             Find.prune # Don't look any further into this directory.
           else
             yield(path)
           end
-        elsif @file_filters.empty? || @file_filters.any? { |file_filter| path =~ file_filter }
+        elsif !ignored_path?(path) && filtered_file?(path)
           yield(path)
         end
       end
@@ -149,18 +157,34 @@ module Listen
       @paths[File.dirname(path)][File.basename(path)] = File.stat(path)
     end
 
+    # Find is a path exists in @paths.
+    #
+    # @param [String] path the path to find in @paths.
+    # @return [Boolean]
+    #
+    def existing_path?(path)
+      @paths[File.dirname(path)][File.basename(path)] != nil
+    end
+
     # Detect modifications and removals recursivly in a directory.
     #
     # @param [String] directory the path to analyze
+    # @param [Hash] options
+    # @option options [Boolean] recursive scan all sub-direcoties recursively (when polling)
     #
-    def detect_modifications_and_removals(directory)
+    def detect_modifications_and_removals(directory, options = {})
       @paths[directory].each do |basename, stat|
         path = File.join(directory, basename)
 
         if stat.directory?
-          detect_modifications_and_removals(path)
-          @paths[directory].delete(basename) unless File.directory?(path)
-        else
+          if File.directory?(path)
+            detect_modifications_and_removals(path, options) if options[:recursive]
+          else
+            detect_modifications_and_removals(path, :recursive => true)
+            @paths[directory].delete(basename)
+            @paths.delete("#{directory}/#{basename}")
+          end
+        else # File
           if File.exist?(path)
             new_stat = File.stat(path)
             if stat.mtime != new_stat.mtime
@@ -178,13 +202,23 @@ module Listen
     # Detect additions in a directory.
     #
     # @param [String] directory the path to analyze
+    # @param [Hash] options
+    # @option options [Boolean] recursive scan all sub-direcoties recursively (when polling)
     #
-    def detect_additions(directory)
-      all_existing_paths do |path|
-        next if @paths[File.dirname(path)][File.basename(path)]
+    def detect_additions(directory, options = {})
+      Find.find(directory) do |path|
+        next if @directory == path
 
-        @changes[:added] << relative_path(path) if File.file?(path)
-        insert_path(path)
+        if File.directory?(path)
+          if directory != path && (ignored_path?(path) || (!options[:recursive] && existing_path?(path)))
+            Find.prune # Don't look any further into this directory.
+          else
+            insert_path(path)
+          end
+        elsif !existing_path?(path) && !ignored_path?(path) && filtered_file?(path)
+          @changes[:added] << relative_path(path) if File.file?(path)
+          insert_path(path)
+        end
       end
     end
 
@@ -197,6 +231,24 @@ module Listen
     def relative_path(path, directory = @directory)
       base_dir = directory.sub(/\/$/, '')
       path.sub(%r(^#{base_dir}/), '')
+    end
+
+    # Test if a path should be ignored or not.
+    #
+    # @param [String] path the path to test.
+    # @return [Boolean]
+    #
+    def ignored_path?(path)
+      @ignored_paths.any? { |ignored_path| path =~ /#{ignored_path}$/ }
+    end
+
+    # Test if a file path should be filtered or not.
+    #
+    # @param [String] path the file path to test.
+    # @return [Boolean]
+    #
+    def filtered_file?(path)
+      @file_filters.empty? || @file_filters.any? { |file_filter| path =~ file_filter }
     end
 
   end

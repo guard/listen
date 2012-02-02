@@ -9,10 +9,10 @@ include FileUtils
 # @yieldparam [String] path the path to the fixture directory
 #
 def fixtures
-  path = File.expand_path(File.join(Dir.tmpdir, 'listen'))
-  FileUtils.mkdir_p(path)
+  pwd  = FileUtils.pwd
+  path = File.expand_path(File.join(pwd, "spec/.fixtures"))
 
-  pwd = FileUtils.pwd
+  FileUtils.mkdir_p(path)
   FileUtils.cd(path)
 
   yield(path)
@@ -20,27 +20,4 @@ def fixtures
 ensure
   FileUtils.cd pwd
   FileUtils.rm_rf(path) if File.exists?(path)
-end
-
-# Start the listener
-#
-# @param [String] path the path to watch
-# @param [Hash] options the listener options
-# @yield The block to listen for file changes
-# @return [Array, Array, Array] the file changes
-#
-def listen(path, options={})
-  modified = []
-  added    = []
-  removed  = []
-
-  Listen.to(path, options) do |m, a, r|
-    modified += m
-    added    += a
-    removed  += r
-  end
-
-  yield
-
-  [modified, added, removed]
 end

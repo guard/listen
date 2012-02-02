@@ -6,7 +6,8 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## TODO
 
-- Add `rb-fsevent` support
+- **DONE** Add polling support
+- **DONE** Add `rb-fsevent` support
 - Add `rb-inotify` support
 - Add `rb-fchange` support
 - Add checksum comparaison support for file modification lower than 1 second. (like Guard)

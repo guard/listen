@@ -29,14 +29,14 @@ module Listen
         @stop = true
       end
 
-      private
+    private
 
       # Poll listener directory for file system changes.
       #
       def poll
         until @stop
           start = Time.now.to_f
-          @listener.on_change(@listener.directory)
+          @listener.on_change([@listener.directory])
           nap_time = @latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0
         end
