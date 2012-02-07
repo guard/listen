@@ -10,7 +10,7 @@ include FileUtils
 #
 def fixtures
   pwd  = FileUtils.pwd
-  path = File.expand_path(File.join(pwd, "spec/.fixtures"))
+  path = File.expand_path(File.join(pwd, "spec/.fixtures/#{rand(99999)}"))
 
   FileUtils.mkdir_p(path)
   FileUtils.cd(path)

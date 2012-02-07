@@ -1,5 +1,6 @@
 ## Master
 
+- Add rb-inotify support. ([@thibaudgg][] with [@Maher4Ever][] help)
 - Add rb-fsevent support. ([@thibaudgg][])
 - Add non-recursive diff with multiple directories support. ([@thibaudgg][])
 - Ignore .DS_Store by default. ([@thibaudgg][])
@@ -9,3 +10,4 @@
 - First version with only a polling adapter and basic features set (ignore & filter). ([@thibaudgg][])
 
 [@thibaudgg]: https://github.com/thibaudgg
+[@Maher4Ever]: https://github.com/Maher4Ever

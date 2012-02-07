@@ -13,12 +13,13 @@ module Listen
       #
       def initialize(*)
         super
-        @latency = 1.0
+        @latency ||= 1.0
       end
 
       # Start the adapter.
       #
       def start
+        super
         @stop = false
         poll
       end
@@ -26,6 +27,7 @@ module Listen
       # Stop the adapter.
       #
       def stop
+        super
         @stop = true
       end
 

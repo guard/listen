@@ -11,6 +11,8 @@ module Listen
     def self.select_and_initialize(listener)
       if Adapters::Darwin.usable?
         Adapters::Darwin.new(listener)
+      elsif Adapters::Linux.usable?
+        Adapters::Linux.new(listener)
       else
         Adapters::Polling.new(listener)
       end

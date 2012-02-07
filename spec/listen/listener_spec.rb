@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Listen::Listener do
   let(:adapter) { mock(Listen::Adapter, :start => true) }
+  before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
 
   describe '#initialize' do
     context 'with just one dir params' do
@@ -39,7 +40,6 @@ describe Listen::Listener do
   end
 
   describe '#start' do
-    before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
     subject { new('path') }
 
     it "inits path" do
@@ -55,7 +55,6 @@ describe Listen::Listener do
   end
 
   describe '#stop' do
-    before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
     subject { new('path') }
 
     it "stops adapter" do
@@ -174,8 +173,6 @@ describe Listen::Listener do
 
   describe '#diff' do
     context 'with Polling adapter' do
-      before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
-
       it "scans recursively by default" do
         listener = new('path')
         adapter.stub(:is_a?).with(Listen::Adapters::Polling) { true }
@@ -186,8 +183,6 @@ describe Listen::Listener do
     end
 
     context 'with non-Polling adapter' do
-      before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
-
       it "scans recursively by default" do
         listener = new('path')
         adapter.stub(:is_a?).with(Listen::Adapters::Polling) { false }
@@ -195,6 +190,15 @@ describe Listen::Listener do
         listener.should_receive(:detect_additions).with('path', :recursive => false)
         listener.diff(['path'])
       end
+    end
+
+    it "reorders directories by reversed length" do
+      listener = new('path')
+      listener.should_receive(:detect_modifications_and_removals).with('path/long', :recursive => false).ordered
+      listener.should_receive(:detect_additions).with('path/long', :recursive => false).ordered
+      listener.should_receive(:detect_modifications_and_removals).with('path', :recursive => false).ordered
+      listener.should_receive(:detect_additions).with('path', :recursive => false).ordered
+      listener.diff(['path', 'path/long'])
     end
 
     context 'single file operations' do
@@ -407,14 +411,14 @@ describe Listen::Listener do
           context 'with recursive option set to true' do
             it 'detects the file move into the directory' do
               fixtures do |path|
-                mkdir 'the_directory'
+                mkdir 'a_directory'
                 touch 'move_me.txt'
 
                 modified, added, removed = diff(path, :recursive => true) do
-                  mv 'move_me.txt', 'the_directory/move_me.txt'
+                  mv 'move_me.txt', 'a_directory/move_me.txt'
                 end
 
-                added.should =~ %w(the_directory/move_me.txt)
+                added.should =~ %w(a_directory/move_me.txt)
                 modified.should be_empty
                 removed.should =~ %w(move_me.txt)
               end
@@ -422,16 +426,16 @@ describe Listen::Listener do
 
             it 'detects a file move out of the directory' do
               fixtures do |path|
-                mkdir 'the_directory'
-                touch 'the_directory/move_me.txt'
+                mkdir 'a_directory'
+                touch 'a_directory/move_me.txt'
 
                 modified, added, removed = diff(path, :recursive => true) do
-                  mv 'the_directory/move_me.txt', 'i_am_here.txt'
+                  mv 'a_directory/move_me.txt', 'i_am_here.txt'
                 end
 
                 added.should =~ %w(i_am_here.txt)
                 modified.should be_empty
-                removed.should =~ %w(the_directory/move_me.txt)
+                removed.should =~ %w(a_directory/move_me.txt)
               end
             end
 
@@ -455,11 +459,11 @@ describe Listen::Listener do
           context 'with recursive option set to false' do
             it "doesn't detects the file move into the directory" do
               fixtures do |path|
-                mkdir 'the_directory'
+                mkdir 'a_directory'
                 touch 'move_me.txt'
 
                 modified, added, removed = diff(path, :recursive => false) do
-                  mv 'move_me.txt', 'the_directory/move_me.txt'
+                  mv 'move_me.txt', 'a_directory/move_me.txt'
                 end
 
                 added.should be_empty
@@ -470,11 +474,11 @@ describe Listen::Listener do
 
             it "doesn't detects a file move out of the directory" do
               fixtures do |path|
-                mkdir 'the_directory'
-                touch 'the_directory/move_me.txt'
+                mkdir 'a_directory'
+                touch 'a_directory/move_me.txt'
 
                 modified, added, removed = diff(path, :recursive => false) do
-                  mv 'the_directory/move_me.txt', 'i_am_here.txt'
+                  mv 'a_directory/move_me.txt', 'i_am_here.txt'
                 end
 
                 added.should =~ %w(i_am_here.txt)
@@ -502,14 +506,14 @@ describe Listen::Listener do
             context 'with all paths passed to diff' do
               it 'detects the file move into the directory' do
                 fixtures do |path|
-                  mkdir 'the_directory'
+                  mkdir 'a_directory'
                   touch 'move_me.txt'
 
-                  modified, added, removed = diff(path, :recursive => false, :paths => [path, "#{path}/the_directory"]) do
-                    mv 'move_me.txt', 'the_directory/move_me.txt'
+                  modified, added, removed = diff(path, :recursive => false, :paths => [path, "#{path}/a_directory"]) do
+                    mv 'move_me.txt', 'a_directory/move_me.txt'
                   end
 
-                  added.should =~ %w(the_directory/move_me.txt)
+                  added.should =~ %w(a_directory/move_me.txt)
                   modified.should be_empty
                   removed.should =~ %w(move_me.txt)
                 end
@@ -517,16 +521,16 @@ describe Listen::Listener do
 
               it 'detects a file move out of the directory' do
                 fixtures do |path|
-                  mkdir 'the_directory'
-                  touch 'the_directory/move_me.txt'
+                  mkdir 'a_directory'
+                  touch 'a_directory/move_me.txt'
 
-                  modified, added, removed = diff(path, :recursive => false, :paths => [path, "#{path}/the_directory"]) do
-                    mv 'the_directory/move_me.txt', 'i_am_here.txt'
+                  modified, added, removed = diff(path, :recursive => false, :paths => [path, "#{path}/a_directory"]) do
+                    mv 'a_directory/move_me.txt', 'i_am_here.txt'
                   end
 
                   added.should =~ %w(i_am_here.txt)
                   modified.should be_empty
-                  removed.should =~ %w(the_directory/move_me.txt)
+                  removed.should =~ %w(a_directory/move_me.txt)
                 end
               end
 
@@ -622,12 +626,12 @@ describe Listen::Listener do
           modified, added, removed = diff(path) do
             touch 'a_file.rb'
             touch 'b_file.rb'
-            mkdir 'the_directory'
-            touch 'the_directory/a_file.rb'
-            touch 'the_directory/b_file.rb'
+            mkdir 'a_directory'
+            touch 'a_directory/a_file.rb'
+            touch 'a_directory/b_file.rb'
           end
 
-          added.should =~ %w(a_file.rb b_file.rb the_directory/a_file.rb the_directory/b_file.rb)
+          added.should =~ %w(a_file.rb b_file.rb a_directory/a_file.rb a_directory/b_file.rb)
           modified.should be_empty
           removed.should be_empty
         end
@@ -637,18 +641,18 @@ describe Listen::Listener do
         fixtures do |path|
           touch 'a_file.rb'
           touch 'b_file.rb'
-          mkdir 'the_directory'
-          touch 'the_directory/a_file.rb'
-          touch 'the_directory/b_file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/a_file.rb'
+          touch 'a_directory/b_file.rb'
 
           modified, added, removed = diff(path) do
             sleep 1
             touch 'b_file.rb'
-            touch 'the_directory/a_file.rb'
+            touch 'a_directory/a_file.rb'
           end
 
           added.should be_empty
-          modified.should =~ %w(b_file.rb the_directory/a_file.rb)
+          modified.should =~ %w(b_file.rb a_directory/a_file.rb)
           removed.should be_empty
         end
       end
@@ -657,18 +661,18 @@ describe Listen::Listener do
         fixtures do |path|
           touch 'a_file.rb'
           touch 'b_file.rb'
-          mkdir 'the_directory'
-          touch 'the_directory/a_file.rb'
-          touch 'the_directory/b_file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/a_file.rb'
+          touch 'a_directory/b_file.rb'
 
           modified, added, removed = diff(path) do
             rm 'b_file.rb'
-            rm 'the_directory/a_file.rb'
+            rm 'a_directory/a_file.rb'
           end
 
           added.should be_empty
           modified.should be_empty
-          removed.should =~ %w(b_file.rb the_directory/a_file.rb)
+          removed.should =~ %w(b_file.rb a_directory/a_file.rb)
         end
       end
     end
@@ -676,56 +680,54 @@ describe Listen::Listener do
     context 'single directory operations' do
       it 'detects a moved directory' do
         fixtures do |path|
-          mkdir 'the_directory'
-          touch 'the_directory/a_file.rb'
-          touch 'the_directory/b_file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/a_file.rb'
+          touch 'a_directory/b_file.rb'
 
           modified, added, removed = diff(path) do
-            mv 'the_directory', 'renamed'
+            mv 'a_directory', 'renamed'
           end
 
           added.should =~ %w(renamed/a_file.rb renamed/b_file.rb)
           modified.should be_empty
-          removed.should =~ %w(the_directory/a_file.rb the_directory/b_file.rb)
+          removed.should =~ %w(a_directory/a_file.rb a_directory/b_file.rb)
         end
       end
 
       it 'detects a removed directory' do
         fixtures do |path|
-          mkdir 'the_directory'
-          touch 'the_directory/a_file.rb'
-          touch 'the_directory/b_file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/a_file.rb'
+          touch 'a_directory/b_file.rb'
 
           modified, added, removed = diff(path) do
-            rm_rf 'the_directory'
+            rm_rf 'a_directory'
           end
 
           added.should be_empty
           modified.should be_empty
-          removed.should =~ %w(the_directory/a_file.rb the_directory/b_file.rb)
+          removed.should =~ %w(a_directory/a_file.rb a_directory/b_file.rb)
         end
       end
 
       it "deletes the directory on @paths" do
         fixtures do |path|
-          mkdir 'the_directory'
-          touch 'the_directory/file.rb'
+          mkdir 'a_directory'
+          touch 'a_directory/file.rb'
 
           diff(path) do
             @listener.paths.should have(2).paths
-            @listener.paths[path]['the_directory'].should_not be_nil
-            @listener.paths["#{path}/the_directory"]['file.rb'].should_not be_nil
+            @listener.paths[path]['a_directory'].should_not be_nil
+            @listener.paths["#{path}/a_directory"]['file.rb'].should_not be_nil
 
-            rm_rf 'the_directory'
+            rm_rf 'a_directory'
           end
 
           @listener.paths.should have(1).paths
-          @listener.paths[path]['the_directory'].should be_nil
-          @listener.paths["#{path}/the_directory"]['file.rb'].should be_nil
+          @listener.paths[path]['a_directory'].should be_nil
+          @listener.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
-
-
     end
   end
 end

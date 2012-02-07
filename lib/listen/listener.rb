@@ -1,7 +1,8 @@
 require 'find'
 require 'listen/adapter'
-require 'listen/adapters/polling'
 require 'listen/adapters/darwin'
+require 'listen/adapters/linux'
+require 'listen/adapters/polling'
 
 module Listen
   class Listener
@@ -120,6 +121,7 @@ module Listen
     def diff(directories, options = {})
       @changes = { :modified => [], :added => [], :removed => [] }
       options[:recursive] = @adapter.is_a?(Listen::Adapters::Polling) if options[:recursive].nil?
+      directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
       directories.each do |directory|
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)

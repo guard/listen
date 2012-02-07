@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Listen::Adapters::Polling do
-
   describe "#poll" do
     let(:listener) { mock(Listen::Listener, :directory => 'path')}
 
@@ -21,7 +20,5 @@ describe Listen::Adapters::Polling do
       sleep 0.1
       adapter.stop
     end
-
   end
-
 end

@@ -1,6 +1,6 @@
 # Listen [![Build Status](https://secure.travis-ci.org/guard/listen.png?branch=master)](http://travis-ci.org/guard/listen)
 
-**Work in progress... only polling implemented yet**
+**Work in progress...**
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
@@ -8,7 +8,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 - **DONE** Add polling support
 - **DONE** Add `rb-fsevent` support
-- Add `rb-inotify` support
+- **DONE** Add `rb-inotify` support
 - Add `rb-fchange` support
 - Add checksum comparaison support for file modification lower than 1 second. (like Guard)
 - Improve API (if needed)

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Listen do
-
   describe "#to" do
     let(:listener) { mock(Listen::Listener) }
     before { Listen::Listener.stub(:new).with("/path", :filter => '**/*') { listener } }
@@ -18,7 +17,5 @@ describe Listen do
         Listen.to('/path', :filter => '**/*') { |modified, added, removed| }
       end
     end
-
   end
-
 end
