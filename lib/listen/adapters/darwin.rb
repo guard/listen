@@ -10,11 +10,8 @@ module Listen
       #
       def initialize(*)
         super
-        @worker = FSEvent.new
-        @worker.watch(@listener.directory, :latency => 0.1 ) do |changed_dirs|
-          changed_dirs.map! { |path| path.sub /\/$/, '' }
-          @listener.on_change(changed_dirs)
-        end
+        @latency ||= 0.1
+        init_worker
       end
 
       # Start the adapter.
@@ -42,6 +39,18 @@ module Listen
         true
       rescue LoadError
         false
+      end
+
+    private
+    
+      # Initialiaze FSEvent worker and set watch callback block
+      #
+      def init_worker
+        @worker = FSEvent.new
+        @worker.watch(@listener.directory, :latency => @latency) do |changed_dirs|
+          changed_dirs.map! { |path| path.sub /\/$/, '' }
+          @listener.on_change(changed_dirs)
+        end
       end
 
     end
