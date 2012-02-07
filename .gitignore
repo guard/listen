@@ -8,6 +8,7 @@ doc/*
 .yardoc
 .rbx
 .rvmrc
+.vagrant
 Gemfile.lock
 spec/.fixtures
 
