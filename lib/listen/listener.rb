@@ -3,6 +3,7 @@ require 'listen/adapter'
 require 'listen/adapters/darwin'
 require 'listen/adapters/linux'
 require 'listen/adapters/polling'
+require 'listen/adapters/windows'
 
 module Listen
   class Listener
@@ -97,8 +98,8 @@ module Listen
     #
     # @param [Array] directories the list of directories to diff
     #
-    def on_change(directories)
-      changes = diff(directories)
+    def on_change(directories, diff_options = {})
+      changes = diff(directories, diff_options)
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
@@ -120,7 +121,6 @@ module Listen
     #
     def diff(directories, options = {})
       @changes = { :modified => [], :added => [], :removed => [] }
-      options[:recursive] = @adapter.is_a?(Listen::Adapters::Polling) if options[:recursive].nil?
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
       directories.each do |directory|
         detect_modifications_and_removals(directory, options)

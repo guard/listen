@@ -2,6 +2,7 @@ require 'rbconfig'
 
 module Listen
   class Adapter
+    attr_accessor :latency
 
     # Select the appropriate adapter implementation for the
     # current OS and initializes it.
@@ -13,6 +14,8 @@ module Listen
         Adapters::Darwin.new(listener)
       elsif Adapters::Linux.usable?
         Adapters::Linux.new(listener)
+      elsif Adapters::Windows.usable?
+        Adapters::Windows.new(listener)
       else
         Adapters::Polling.new(listener)
       end

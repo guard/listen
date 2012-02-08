@@ -4,7 +4,6 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Adapter
-      attr_accessor :latency
 
       # Initialize the Adapter.
       #

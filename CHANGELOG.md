@@ -1,5 +1,6 @@
 ## Master
 
+- Add rb-fchange support. ([@thibaudgg][])
 - Add rb-inotify support. ([@thibaudgg][] with [@Maher4Ever][] help)
 - Add rb-fsevent support. ([@thibaudgg][])
 - Add non-recursive diff with multiple directories support. ([@thibaudgg][])

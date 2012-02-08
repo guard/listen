@@ -5,6 +5,7 @@ describe Listen::Adapter do
   before do
     Listen::Adapters::Darwin.stub(:usable?) { false }
     Listen::Adapters::Linux.stub(:usable?) { false }
+    Listen::Adapters::Windows.stub(:usable?) { false }
   end
 
   describe ".select_and_initialize" do
@@ -27,6 +28,14 @@ describe Listen::Adapter do
 
       it "uses Listen::Adapters::Linux" do
         Listen::Adapters::Linux.should_receive(:new).with(listener)
+        described_class.select_and_initialize(listener)
+      end
+    end
+    context "on Windows" do
+      before { Listen::Adapters::Windows.stub(:usable?) { true } }
+
+      it "uses Listen::Adapters::Windows" do
+        Listen::Adapters::Windows.should_receive(:new).with(listener)
         described_class.select_and_initialize(listener)
       end
     end

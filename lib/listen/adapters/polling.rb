@@ -7,8 +7,7 @@ module Listen
     # file IO that the other implementations.
     #
     class Polling < Adapter
-      attr_accessor :latency
-      
+
       # Initialize the Adapter.
       #
       def initialize(*)
@@ -38,7 +37,7 @@ module Listen
       def poll
         until @stop
           start = Time.now.to_f
-          @listener.on_change([@listener.directory])
+          @listener.on_change([@listener.directory], :recursive => true)
           nap_time = @latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0
         end

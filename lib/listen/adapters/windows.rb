@@ -3,22 +3,15 @@ require 'set'
 module Listen
   module Adapters
 
-    # Watched INotify EVENTS
+    # Adapter implementation for Windows `fchange`.
     #
-    # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
-    # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
-    #
-    EVENTS = %w[recursive attrib close modify move create delete delete_self move_self]
-    
-    # Listener implementation for Linux `inotify`.
-    #
-    class Linux < Adapter
+    class Windows < Adapter
 
       # Initialize the Adapter.
       #
       def initialize(*)
         super
-        @latency    ||= 0.1
+        @latency ||= 0.1
         @changed_dirs = Set.new
         init_worker
       end
@@ -36,7 +29,6 @@ module Listen
       #
       def stop
         super
-        @stop = true
         @worker.stop
       end
 
@@ -45,24 +37,22 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /linux/i
+        return false unless RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
 
-        require 'rb-inotify'
+        require 'rb-fchange'
         true
       rescue LoadError
         false
       end
 
     private
-      
-      # Initialiaze INotify worker and set watch callback block.
+
+      # Initialiaze FSEvent worker and set watch callback block
       #
       def init_worker
-        @worker = INotify::Notifier.new
-        @worker.watch(@listener.directory, *EVENTS.map(&:to_sym)) do |event|
-          unless event.name == "" # Event on root directory
-            @changed_dirs << File.dirname(event.absolute_name)
-          end
+        @worker = FChange::Notifier.new
+        @worker.watch(@listener.directory, :all_events, :recursive) do |event|
+          @changed_dirs << File.expand_path(event.watcher.path)
         end
       end
       
@@ -75,7 +65,7 @@ module Listen
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
           @changed_dirs.clear          
-          @listener.on_change(changed_dirs)
+          @listener.on_change(changed_dirs, :recursive => true)
         end
       end
 

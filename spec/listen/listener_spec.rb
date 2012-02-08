@@ -172,32 +172,12 @@ describe Listen::Listener do
   end
 
   describe '#diff' do
-    context 'with Polling adapter' do
-      it "scans recursively by default" do
-        listener = new('path')
-        adapter.stub(:is_a?).with(Listen::Adapters::Polling) { true }
-        listener.should_receive(:detect_modifications_and_removals).with('path', :recursive => true)
-        listener.should_receive(:detect_additions).with('path', :recursive => true)
-        listener.diff(['path'])
-      end
-    end
-
-    context 'with non-Polling adapter' do
-      it "scans recursively by default" do
-        listener = new('path')
-        adapter.stub(:is_a?).with(Listen::Adapters::Polling) { false }
-        listener.should_receive(:detect_modifications_and_removals).with('path', :recursive => false)
-        listener.should_receive(:detect_additions).with('path', :recursive => false)
-        listener.diff(['path'])
-      end
-    end
-
     it "reorders directories by reversed length" do
       listener = new('path')
-      listener.should_receive(:detect_modifications_and_removals).with('path/long', :recursive => false).ordered
-      listener.should_receive(:detect_additions).with('path/long', :recursive => false).ordered
-      listener.should_receive(:detect_modifications_and_removals).with('path', :recursive => false).ordered
-      listener.should_receive(:detect_additions).with('path', :recursive => false).ordered
+      listener.should_receive(:detect_modifications_and_removals).with('path/long', {}).ordered
+      listener.should_receive(:detect_additions).with('path/long', {}).ordered
+      listener.should_receive(:detect_modifications_and_removals).with('path', {}).ordered
+      listener.should_receive(:detect_additions).with('path', {}).ordered
       listener.diff(['path', 'path/long'])
     end
 
