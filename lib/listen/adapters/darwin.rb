@@ -32,7 +32,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /darwin1\d/i
+        return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.*+)?$/i
 
         require 'rb-fsevent'
         true
