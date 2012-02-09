@@ -32,7 +32,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.*+)?$/i
+        return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
 
         require 'rb-fsevent'
         true
@@ -41,7 +41,7 @@ module Listen
       end
 
     private
-    
+
       # Initialiaze FSEvent worker and set watch callback block
       #
       def init_worker
