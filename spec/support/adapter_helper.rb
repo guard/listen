@@ -9,7 +9,7 @@ def watch(listener, path)
 
   sleep 0.20 # manage adapter latency
   t = Thread.new { @adapter.start }
-  sleep 0.05 # wait for adapter to start
+  sleep 0.03 # wait for adapter to start
   yield
   sleep 0.20 # manage adapter latency
 ensure
