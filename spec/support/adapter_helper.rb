@@ -7,18 +7,18 @@ def watch(listener, path)
   listener.stub(:directory) { path }
   @adapter = Listen::Adapter.select_and_initialize(listener)
 
-  sleep 0.15 # manage adapter latency
+  sleep 0.20 # manage adapter latency
   t = Thread.new { @adapter.start }
-  sleep 0.01 # wait for adapter to start
+  sleep 0.05 # wait for adapter to start
   yield
-  sleep 0.15 # manage adapter latency
+  sleep 0.20 # manage adapter latency
 ensure
   @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
   Thread.kill(t)
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
-  options = args.first || {}
+  options = (args.first && args.first.is_a?(Hash)) ? args.first : {}
   let(:listener) { mock(Listen::Listener) }
 
   context 'single file operations' do

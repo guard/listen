@@ -9,7 +9,7 @@ describe Listen::Adapters::Linux do
 
       it_should_behave_like "an adapter that call properly listener#on_change"
     else
-      it "isn't usable on Linux with #{RbConfig::CONFIG['RUBY_SO_NAME']}" do
+      it "isn't usable on Linux with #{RbConfig::CONFIG['RUBY_INSTALL_NAME']}" do
         described_class.should_not be_usable
       end
     end
