@@ -1,5 +1,6 @@
 ## Master
 
+- Add checksum comparaison support for detecting consecutive file modifications made during the same second. ([@thibaudgg][])
 - Add rb-fchange support. ([@thibaudgg][])
 - Add rb-inotify support. ([@thibaudgg][] with [@Maher4Ever][] help)
 - Add rb-fsevent support. ([@thibaudgg][])

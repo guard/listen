@@ -7,7 +7,7 @@ require 'listen/adapters/windows'
 
 module Listen
   class Listener
-    attr_accessor :directory, :ignored_paths, :file_filters, :paths, :adapter
+    attr_accessor :directory, :ignored_paths, :file_filters, :sha1_checksums, :paths, :adapter
 
     # Default paths that gets ignored by the listener
     DEFAULT_IGNORED_PATHS = %w[.bundle .git .DS_Store log tmp vendor]
@@ -27,10 +27,11 @@ module Listen
     # @return [Listen::Listener] the file listener
     #
     def initialize(*args, &block)
-      @directory     = args.first
-      @ignored_paths = DEFAULT_IGNORED_PATHS
-      @file_filters  = []
-      @block         = block
+      @directory      = args.first
+      @ignored_paths  = DEFAULT_IGNORED_PATHS
+      @file_filters   = []
+      @sha1_checksums = {}
+      @block          = block
       if args[1]
         @ignored_paths += Array(args[1][:ignore]) if args[1][:ignore]
         @file_filters  += Array(args[1][:filter]) if args[1][:filter]
@@ -120,7 +121,7 @@ module Listen
     # @return [Hash<Array>] the file changes
     #
     def diff(directories, options = {})
-      @changes = { :modified => [], :added => [], :removed => [] }
+      @changes    = { :modified => [], :added => [], :removed => [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
       directories.each do |directory|
         detect_modifications_and_removals(directory, options)
@@ -189,15 +190,31 @@ module Listen
         else # File
           if File.exist?(path)
             new_stat = File.stat(path)
-            if stat.mtime != new_stat.mtime
+            if stat.mtime < new_stat.mtime || (stat.mtime.to_i == Time.now.to_i && content_modified?(path))
               @changes[:modified] << relative_path(path)
               @paths[directory][basename] = new_stat
             end
           else
             @paths[directory].delete(basename)
+            @sha1_checksums.delete(path)
             @changes[:removed] << relative_path(path)
           end
         end
+      end
+    end
+
+    # Tests if the file content has been modified by
+    # comparing the SHA1 checksum.
+    #
+    # @param [String] path the file path
+    #
+    def content_modified?(path)
+      sha1_checksum = Digest::SHA1.file(path).to_s
+      if @sha1_checksums[path] != sha1_checksum
+        @sha1_checksums[path] = sha1_checksum
+        true
+      else
+        false
       end
     end
 

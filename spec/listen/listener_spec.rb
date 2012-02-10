@@ -298,6 +298,61 @@ describe Listen::Listener do
             @listener.paths[path]['existing_file.txt'].mtime.should be > @mtime
           end
         end
+        context "during the same second" do
+          before { ensure_same_second }
+
+          it "always detects the modified file the first time" do
+            fixtures do |path|
+              touch 'existing_file.txt'
+
+              modified, added, removed = diff(path) do
+                touch 'existing_file.txt'
+              end
+
+              added.should be_empty
+              modified.should =~ %w(existing_file.txt)
+              removed.should be_empty
+            end
+          end
+          it "doesn't detects the modified file the second time if the content haven't changed" do
+            fixtures do |path|
+              touch 'existing_file.txt'
+
+              @listener = Listen::Listener.new(path)
+              @listener.init_paths
+
+              diff(path) do
+                touch 'existing_file.txt'
+              end
+              modified, added, removed = diff(path) do
+                touch 'existing_file.txt'
+              end
+
+              added.should be_empty
+              modified.should be_empty
+              removed.should be_empty
+            end
+          end
+          it "detects the modified file the second time if the content have changed" do
+            fixtures do |path|
+              touch 'existing_file.txt'
+
+              @listener = Listen::Listener.new(path)
+              @listener.init_paths
+
+              diff(path) do
+                touch 'existing_file.txt'
+              end
+              modified, added, removed = diff(path) do
+                open('existing_file.txt', 'w') { |f| f.write('foo') }
+              end
+
+              added.should be_empty
+              modified.should =~ %w(existing_file.txt)
+              removed.should be_empty
+            end
+          end
+        end
 
         context 'given a hidden file' do
           it 'detects the modified file' do
@@ -320,12 +375,12 @@ describe Listen::Listener do
           it 'does not detect the mode change' do
             fixtures do |path|
               touch 'run.rb'
-
+        
               modified, added, removed = diff(path) do
                 sleep 1
                 chmod 0777, 'run.rb'
               end
-
+        
               added.should be_empty
               modified.should be_empty
               removed.should be_empty
@@ -563,6 +618,20 @@ describe Listen::Listener do
           end
         end
 
+        it "deletes the path on @sha1_checksums" do
+          fixtures do |path|
+            touch 'unnecessary.txt'
+
+            diff(path) do
+              @listener.sha1_checksums["#{path}/unnecessary.txt"] = 'foo'
+
+              rm 'unnecessary.txt'
+            end
+
+            @listener.sha1_checksums["#{path}/unnecessary.txt"].should be_nil
+          end
+        end
+
         context 'given an existing directory' do
           context 'with recursive option set to true' do
             it 'detects the file removal' do
@@ -646,6 +715,7 @@ describe Listen::Listener do
           touch 'a_directory/b_file.rb'
 
           modified, added, removed = diff(path) do
+            sleep 1
             rm 'b_file.rb'
             rm 'a_directory/a_file.rb'
           end

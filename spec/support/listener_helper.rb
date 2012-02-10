@@ -8,8 +8,10 @@ def diff(root_path, options = {})
   added    = []
   removed  = []
 
-  @listener = Listen::Listener.new(root_path)
-  @listener.init_paths
+  unless @listener
+    @listener = Listen::Listener.new(root_path)
+    @listener.init_paths
+  end
 
   yield
 
@@ -25,4 +27,11 @@ end
 
 def new(path, *args)
   Listen::Listener.new(path, *args)
+end
+
+def ensure_same_second
+  t = Time.now
+  if t.to_f - t.to_i > 0.5
+    sleep 1 - (t.to_f - t.to_i)
+  end
 end
