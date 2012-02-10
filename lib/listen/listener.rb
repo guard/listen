@@ -1,4 +1,6 @@
 require 'find'
+require 'digest/sha1'
+
 require 'listen/adapter'
 require 'listen/adapters/darwin'
 require 'listen/adapters/linux'
