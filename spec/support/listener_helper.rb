@@ -31,7 +31,7 @@ end
 
 def ensure_same_second
   t = Time.now
-  if t.to_f - t.to_i > 0.5
+  if t.to_f - t.to_i > 0.1
     sleep 1.1 - (t.to_f - t.to_i)
   end
 end
