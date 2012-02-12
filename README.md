@@ -78,5 +78,22 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
                                     # default: none
 
 :ignore => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
-                                    # default: '.bundle', '.git', 'log', 'tmp', 'vendor'
+                                    # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
 ```
+
+## Acknowledgment
+
+- [Travis Tilley (ttilley)][] for this awesome work on [fssm][] & [rb-fsevent][].
+- [Nathan Weizenbaum (nex3)][] for [rb-inotify][], a thorough inotify wrapper.
+- [stereobooster][] for [rb-fchange][], windows support wouldn't exist without him.
+- [Yehuda Katz (wycats)][] for [vigilo][], that has been a great source of inspiration.
+
+[Travis Tilley (ttilley)]: https://github.com/ttilley
+[fssm]: https://github.com/ttilley/fssm
+[rb-fsevent]: https://github.com/thibaudgg/rb-fsevent
+[Nathan Weizenbaum (nex3)]: https://github.com/nex3
+[rb-inotify]: https://github.com/nex3/rb-inotify
+[stereobooster]: https://github.com/stereobooster
+[rb-fchange]: https://github.com/stereobooster/rb-fchange
+[Yehuda Katz (wycats)]: https://github.com/wycats
+[vigilo]: https://github.com/wycats/vigilo
