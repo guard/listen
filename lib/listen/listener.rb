@@ -108,11 +108,12 @@ module Listen
       end
     end
 
-    # Initialize the @paths double levels Hash with all existing paths.
+    # Initialize the @paths double levels Hash with all existing paths and set diffed_at.
     #
     def init_paths
       @paths = Hash.new { |h,k| h[k] = {} }
       all_existing_paths { |path| insert_path(path) }
+      @diffed_at = Time.now.to_i
     end
 
     # Detect changes diff in a directory.
@@ -129,6 +130,7 @@ module Listen
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)
       end
+      @diffed_at = Time.now.to_i
       @changes
     end
 
@@ -154,12 +156,12 @@ module Listen
       end
     end
 
-    # Insert a path with its File.stat in @paths.
+    # Insert a path with its type (Dir or File) in @paths.
     #
     # @param [String] path the path to insert in @paths.
     #
     def insert_path(path)
-      @paths[File.dirname(path)][File.basename(path)] = File.stat(path)
+      @paths[File.dirname(path)][File.basename(path)] = File.directory?(path) ? 'Dir' : 'File'
     end
 
     # Find is a path exists in @paths.
@@ -172,16 +174,18 @@ module Listen
     end
 
     # Detect modifications and removals recursivly in a directory.
+    # Modifications detection are based on mtime first and on checksum when mtime == last diffed_at
     #
     # @param [String] directory the path to analyze
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively (when polling)
     #
     def detect_modifications_and_removals(directory, options = {})
-      @paths[directory].each do |basename, stat|
+      @paths[directory].each do |basename, type|
         path = File.join(directory, basename)
-
-        if stat.directory?
+        
+        case type
+        when 'Dir'
           if File.directory?(path)
             detect_modifications_and_removals(path, options) if options[:recursive]
           else
@@ -189,12 +193,11 @@ module Listen
             @paths[directory].delete(basename)
             @paths.delete("#{directory}/#{basename}")
           end
-        else # File
+        when 'File'
           if File.exist?(path)
-            new_stat = File.stat(path)
-            if stat.mtime < new_stat.mtime || (stat.mtime.to_i == Time.now.to_i && content_modified?(path))
+            new_mtime = File.mtime(path).to_i
+            if @diffed_at < new_mtime || (@diffed_at == new_mtime && content_modified?(path))
               @changes[:modified] << relative_path(path)
-              @paths[directory][basename] = new_stat
             end
           else
             @paths[directory].delete(basename)
