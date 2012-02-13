@@ -2,10 +2,19 @@ require 'spec_helper'
 
 describe Listen::Adapter do
   let(:listener) { mock(Listen::Listener) }
+
+  subject { described_class.new(listener) }
+
   before do
     Listen::Adapters::Darwin.stub(:usable?) { false }
     Listen::Adapters::Linux.stub(:usable?) { false }
     Listen::Adapters::Windows.stub(:usable?) { false }
+  end
+
+  describe '#initialize' do
+    it 'sets the latency to the default one' do
+      subject.latency.should eq described_class::DEFAULT_LATENCY
+    end
   end
 
   describe ".select_and_initialize" do

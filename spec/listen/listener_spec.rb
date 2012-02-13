@@ -73,6 +73,11 @@ describe Listen::Listener do
       listener.change(&callback)
       listener.instance_variable_get(:@block).should eq callback
     end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.change(&Proc.new{}).should equal listener
+    end
   end
 
   describe '#ignore' do
@@ -114,6 +119,11 @@ describe Listen::Listener do
           listener.paths["#{path}/a_directory/a_ignored_directory"]['file.txt'].should be_nil
         end
       end
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.ignore('some_directory').should equal listener
     end
   end
 
@@ -172,12 +182,22 @@ describe Listen::Listener do
         end
       end
     end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.filter(/\.txt$/).should equal listener
+    end
   end
 
   describe '#latency' do
     it 'sets the latency for the adapter' do
       adapter.should_receive(:latency=).with(7)
       subject.latency(7)
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.latency(7).should equal listener
     end
   end
 
