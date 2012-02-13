@@ -11,7 +11,6 @@ module Listen
       #
       def initialize(*)
         super
-        @latency ||= 0.1
         @changed_dirs = Set.new
         init_worker
       end
@@ -55,16 +54,16 @@ module Listen
           @changed_dirs << File.expand_path(event.watcher.path)
         end
       end
-      
+
       # Polling around @changed_dirs presence.
       #
       def poll_changed_dirs
         until @stop
           sleep(@latency)
-          
+
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear          
+          @changed_dirs.clear
           @listener.on_change(changed_dirs, :recursive => true)
         end
       end

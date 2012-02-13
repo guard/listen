@@ -9,7 +9,6 @@ module Listen
       #
       def initialize(*)
         super
-        @latency ||= 0.1
         init_worker
       end
 

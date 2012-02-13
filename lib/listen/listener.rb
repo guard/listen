@@ -20,6 +20,7 @@ module Listen
     # @param [Hash] options the listen options
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
+    # @option options [Integer] latency the delay between checking for changes
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -28,17 +29,19 @@ module Listen
     #
     # @return [Listen::Listener] the file listener
     #
-    def initialize(*args, &block)
-      @directory      = args.first
+    def initialize(dir, options = {}, &block)
+      @directory      = dir
       @ignored_paths  = DEFAULT_IGNORED_PATHS
       @file_filters   = []
       @sha1_checksums = {}
       @block          = block
-      if args[1]
-        @ignored_paths += Array(args[1][:ignore]) if args[1][:ignore]
-        @file_filters  += Array(args[1][:filter]) if args[1][:filter]
+      @adapter        = Adapter.select_and_initialize(self)
+
+      unless options.empty?
+        @ignored_paths  += Array(options[:ignore]) if options[:ignore]
+        @file_filters   += Array(options[:filter]) if options[:filter]
+        @adapter.latency = options[:latency]       if options[:latency]
       end
-      @adapter = Adapter.select_and_initialize(self)
     end
 
     # Initialize the @paths and start the adapter.
@@ -82,9 +85,24 @@ module Listen
       self
     end
 
+    # Sets the latency for the adapter. This is a helper method
+    # to simplify changing the latency directly from the listener.
+    #
+    # @example Wait 5 seconds each time before checking changes
+    #   latency 5
+    #
+    # @param [Integer] seconds the amount of delay, in seconds
+    #
+    # @return [Listen::Listener] the listener itself
+    #
+    def latency(seconds)
+      @adapter.latency = seconds
+      self
+    end
+
     # Set change callback block to the listener.
     #
-    # @example Filter some files
+    # @example Assign a callback to be called on changes
     #   callback = lambda { |modified, added, removed| ... }
     #   change &callback
     #
@@ -183,7 +201,7 @@ module Listen
     def detect_modifications_and_removals(directory, options = {})
       @paths[directory].each do |basename, type|
         path = File.join(directory, basename)
-        
+
         case type
         when 'Dir'
           if File.directory?(path)

@@ -1,12 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  let(:adapter) { mock(Listen::Adapter, :start => true) }
+  let(:adapter) { mock(Listen::Adapter, :start => true).as_null_object }
+
+  subject { new('path') }
+
   before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
 
   describe '#initialize' do
     context 'with just one dir params' do
-      subject { new('path') }
 
       it "set directory" do
         subject.directory.should eq 'path'
@@ -21,8 +23,8 @@ describe Listen::Listener do
       end
     end
 
-    context 'with ignored paths and file filters params' do
-      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/]) }
+    context 'with custom options' do
+      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 5) }
 
       it "set custom ignored paths" do
         subject.ignored_paths.should eq %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -30,6 +32,11 @@ describe Listen::Listener do
 
       it "set custom file filters" do
         subject.file_filters.should eq [/.*\.rb/,/.*\.md/]
+      end
+
+      it "sets the latency for the adapter" do
+        adapter.should_receive(:latency=).with(5)
+        subject
       end
     end
 
@@ -40,8 +47,6 @@ describe Listen::Listener do
   end
 
   describe '#start' do
-    subject { new('path') }
-
     it "inits path" do
       subject.should_receive(:init_paths)
       subject.start
@@ -55,8 +60,6 @@ describe Listen::Listener do
   end
 
   describe '#stop' do
-    subject { new('path') }
-
     it "stops adapter" do
       adapter.should_receive(:stop)
       subject.stop
@@ -168,6 +171,13 @@ describe Listen::Listener do
           listener.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
+    end
+  end
+
+  describe '#latency' do
+    it 'sets the latency for the adapter' do
+      adapter.should_receive(:latency=).with(7)
+      subject.latency(7)
     end
   end
 

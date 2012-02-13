@@ -8,13 +8,6 @@ module Listen
     #
     class Polling < Adapter
 
-      # Initialize the Adapter.
-      #
-      def initialize(*)
-        super
-        @latency ||= 1.0
-      end
-
       # Start the adapter.
       #
       def start

@@ -4,6 +4,9 @@ module Listen
   class Adapter
     attr_accessor :latency
 
+    # The default delay between checking for changes.
+    DEFAULT_LATENCY = 0.1
+
     # Select the appropriate adapter implementation for the
     # current OS and initializes it.
     #
@@ -23,6 +26,7 @@ module Listen
 
     def initialize(listener)
       @listener = listener
+      @latency  = DEFAULT_LATENCY
     end
 
     # Start the adapter.
