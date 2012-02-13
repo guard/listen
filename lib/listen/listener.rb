@@ -21,6 +21,7 @@ module Listen
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
     # @option options [Integer] latency the delay between checking for changes
+    # @option options [Boolean] polling whether to force or disable the polling adapter
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -35,7 +36,7 @@ module Listen
       @file_filters   = []
       @sha1_checksums = {}
       @block          = block
-      @adapter        = Adapter.select_and_initialize(self)
+      @adapter        = Adapter.select_and_initialize(self, :use_polling => options[:polling])
 
       unless options.empty?
         @ignored_paths  += Array(options[:ignore]) if options[:ignore]
@@ -97,6 +98,21 @@ module Listen
     #
     def latency(seconds)
       @adapter.latency = seconds
+      self
+    end
+
+    # Defines wheather the use of the polling adapter
+    # should be forced or disabled.
+    #
+    # @example Forcing the use of the polling adapter
+    #   polling true
+    #
+    # @param [Boolean] force_or_disable wheather to force or disable the polling adapter
+    #
+    # @return [Listen::Listener] the listener itself
+    #
+    def polling(force_or_disable)
+      @adapter = Adapter.select_and_initialize(self, :use_polling => force_or_disable)
       self
     end
 

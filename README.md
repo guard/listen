@@ -12,7 +12,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 - **DONE** Add `rb-fchange` support
 - **DONE** Add checksum comparaison support for detecting consecutive file modifications made during the same second. (like Guard)
 - **DONE** Add latency option
-- Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))
+- **DONE** Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))
 - Dropbox detection with polling fallback (if needed)
 - Improve API (if needed)
 
@@ -36,7 +36,7 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 #### One dir
 
 ``` ruby
-Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 3) do |modified, added, removed|
+Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 3, polling: true) do |modified, added, removed|
   # ...
 end
 ```
@@ -48,6 +48,7 @@ listener = Listen.to('dir/path/to/listen')
 listener = listener.ignore('/ignored/path')
 listener = listener.filter(/.*\.rb/)
 listener = listener.latency(3)
+listener = listener.polling(false)
 listener = listener.change(&callback)
 listener.start # enter the run loop
 listener.stop
@@ -56,7 +57,14 @@ listener.stop
 #### Chainable
 
 ``` ruby
-Listen.to('dir/path/to/listen').ignore('/ignored/path').filter(/.*\.rb/).latency(3).change(&callback).start # enter the run loop
+Listen
+      .to('dir/path/to/listen')
+      .ignore('/ignored/path')
+      .filter(/.*\.rb/)
+      .latency(3)
+      .polling(false)
+      .change(&callback)
+      .start # enter the run loop
 ```
 
 #### Multiple listeners support available via Thread
@@ -83,6 +91,10 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
 
 :latency => 3                        # Set the delay between checking for changes
                                      # default: 0.1 sec
+
+:polling => false                    # Force the use of the polling adapter or
+                                     # disable its use completely
+                                     # default: none
 ```
 
 ## Acknowledgment
