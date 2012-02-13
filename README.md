@@ -78,6 +78,23 @@ Thread.new { styles.start } # enter the run loop
 Thread.new { scripts.start } # enter the run loop
 ```
 
+### Listen adapters
+
+The Listen gem has a set of adapters to notify it when there are changes.
+There are 3 OS-specific adapters to support Mac, Linux and Windows. These adapters are fast
+as they use some system-calls to implement the notifying function.
+
+There is also a polling adapter which is a cross-platform adapter and it will
+work on any system. This adapter is unfortunately slower than the rest of the adapters.
+
+The Listen gem will choose the best adapter for your machine automatically. If you
+want to force (or disable) the use of the polling gem, use the `:polling` option
+while initializing the listner of call the `polling` method on your listner
+before staring it.
+
+*Note*: Although logical it might seem, if you disable the use of the polling adapter
+and no OS-specific adapter can be used, an error will be generated.
+
 ### Options
 
 These options can be set through `Listen.to` params or via methods (see the "Object" API)
