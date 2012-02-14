@@ -62,7 +62,7 @@ Listen.to('dir/path/to/listen')
       .ignore('/ignored/path')
       .filter(/.*\.rb/)
       .latency(3)
-      .force_polling(false)
+      .force_polling(true)
       .change(&callback)
       .start # enter the run loop
 ```
@@ -106,8 +106,8 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
 :latency => 0.5                      # Set the delay (**in seconds**) between checking for changes
                                      # default: 0.1 sec
 
-:force_polling => false              # Force the use of the polling adapter
-                                     # default: false
+:force_polling => true               # Force the use of the polling adapter
+                                     # default: none
 ```
 
 ## Acknowledgment
