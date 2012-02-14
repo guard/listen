@@ -23,16 +23,6 @@ describe Listen::Adapter do
         Listen::Adapters::Polling.should_receive(:new).with(listener)
         described_class.select_and_initialize(listener)
       end
-
-      context 'when the use of the polling adapter is disabled' do
-        it 'raises an error' do
-          expect {
-            described_class.select_and_initialize(listener, :use_polling => false)
-          }.to raise_error(
-            RuntimeError, 'No OS-specific adapter could be used on your machine and the use of the polling apdapter is disabled.'
-          )
-        end
-      end
     end
 
     context "on Mac OX >= 10.6" do
@@ -46,7 +36,7 @@ describe Listen::Adapter do
       context 'when the use of the polling adapter is forced' do
         it 'uses Listen::Adapters::Polling' do
           Listen::Adapters::Polling.should_receive(:new).with(listener)
-          described_class.select_and_initialize(listener, :use_polling => true)
+          described_class.select_and_initialize(listener, :force_polling => true)
         end
       end
     end
@@ -62,7 +52,7 @@ describe Listen::Adapter do
       context 'when the use of the polling adapter is forced' do
         it 'uses Listen::Adapters::Polling' do
           Listen::Adapters::Polling.should_receive(:new).with(listener)
-          described_class.select_and_initialize(listener, :use_polling => true)
+          described_class.select_and_initialize(listener, :force_polling => true)
         end
       end
     end
@@ -77,7 +67,7 @@ describe Listen::Adapter do
       context 'when the use of the polling adapter is forced' do
         it 'uses Listen::Adapters::Polling' do
           Listen::Adapters::Polling.should_receive(:new).with(listener)
-          described_class.select_and_initialize(listener, :use_polling => true)
+          described_class.select_and_initialize(listener, :force_polling => true)
         end
       end
     end

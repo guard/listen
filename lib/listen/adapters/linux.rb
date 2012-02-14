@@ -54,7 +54,7 @@ module Listen
 
     private
 
-      # Initialiaze INotify worker and set watch callback block.
+      # Initialize INotify worker and set watch callback block.
       #
       def init_worker
         @worker = INotify::Notifier.new

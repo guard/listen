@@ -8,7 +8,7 @@ module Listen
   # @param [Hash] options the listen options
   # @option options [String] ignore a list of paths to ignore
   # @option options [Regexp] filter a list of regexps file filters
-  # @option options [Integer] latency the delay between checking for changes
+  # @option options [Float] latency the delay between checking for changes in seconds
   # @option options [Boolean] polling whether to force or disable the polling adapter
   #
   # @yield [modified, added, removed] the changed files

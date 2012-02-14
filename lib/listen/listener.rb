@@ -20,8 +20,8 @@ module Listen
     # @param [Hash] options the listen options
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
-    # @option options [Integer] latency the delay between checking for changes
-    # @option options [Boolean] polling whether to force or disable the polling adapter
+    # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] force_polling whether to force the polling adapter or not
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -36,7 +36,7 @@ module Listen
       @file_filters   = []
       @sha1_checksums = {}
       @block          = block
-      @adapter        = Adapter.select_and_initialize(self, :use_polling => options[:polling])
+      @adapter        = Adapter.select_and_initialize(self, :force_polling => options[:force_polling])
 
       unless options.empty?
         @ignored_paths  += Array(options[:ignore]) if options[:ignore]
@@ -92,7 +92,7 @@ module Listen
     # @example Wait 5 seconds each time before checking changes
     #   latency 5
     #
-    # @param [Integer] seconds the amount of delay, in seconds
+    # @param [Float] seconds the amount of delay, in seconds
     #
     # @return [Listen::Listener] the listener itself
     #
@@ -101,18 +101,18 @@ module Listen
       self
     end
 
-    # Defines wheather the use of the polling adapter
-    # should be forced or disabled.
+    # Defines whether the use of the polling adapter
+    # should be forced or not.
     #
     # @example Forcing the use of the polling adapter
-    #   polling true
+    #   force_polling true
     #
-    # @param [Boolean] force_or_disable wheather to force or disable the polling adapter
+    # @param [Boolean] value wheather to force the polling adapter or not
     #
     # @return [Listen::Listener] the listener itself
     #
-    def polling(force_or_disable)
-      @adapter = Adapter.select_and_initialize(self, :use_polling => force_or_disable)
+    def force_polling(value)
+      @adapter = Adapter.select_and_initialize(self, :force_polling => value)
       self
     end
 

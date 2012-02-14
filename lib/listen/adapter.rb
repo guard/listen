@@ -12,7 +12,7 @@ module Listen
     #
     # @param [Listen::Listener] listener a listener for the changes
     # @param [Hash] options options for selecting the adapter
-    # @option options [Boolean] use_polling whether to force or disable the polling adapter
+    # @option options [Boolean] force_polling whether to force the polling adapter or not
     #
     # @raise [RuntimeError] a runtime error will be raised when the use of the
     #   polling adapter is disabled and no OS-specific was suitable to be used.
@@ -20,7 +20,7 @@ module Listen
     # @return [Listen::Adapter] the chosen adapter
     #
     def self.select_and_initialize(listener, options = {})
-      return Adapters::Polling.new(listener) if options[:use_polling] == true
+      return Adapters::Polling.new(listener) if options[:force_polling]
 
       if Adapters::Darwin.usable?
         Adapters::Darwin.new(listener)
@@ -28,10 +28,8 @@ module Listen
         Adapters::Linux.new(listener)
       elsif Adapters::Windows.usable?
         Adapters::Windows.new(listener)
-      elsif options[:use_polling] != false
-        Adapters::Polling.new(listener)
       else
-        raise RuntimeError, 'No OS-specific adapter could be used on your machine and the use of the polling apdapter is disabled.'
+        Adapters::Polling.new(listener)
       end
     end
 

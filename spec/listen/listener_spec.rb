@@ -29,7 +29,7 @@ describe Listen::Listener do
     end
 
     context 'with custom options' do
-      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 5, :polling => false) }
+      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 5, :force_polling => true) }
 
       it "set custom ignored paths" do
         subject.ignored_paths.should eq %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -45,7 +45,7 @@ describe Listen::Listener do
       end
 
       it "selects and initializes an adapter passing the polling option" do
-        Listen::Adapter.should_receive(:select_and_initialize).with(subject, :use_polling => false)
+        Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => true)
         new('path')
       end
     end
@@ -206,15 +206,15 @@ describe Listen::Listener do
     end
   end
 
-  describe '#polling' do
+  describe '#force_polling' do
     it 'selects and initializes a new adapter based on the new polling option' do
-      Listen::Adapter.should_receive(:select_and_initialize).with(subject, :use_polling => false)
-      subject.polling(false)
+      Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => false)
+      subject.force_polling(false)
     end
 
     it 'returns the same listener to allow chaining' do
       listener = new('path')
-      listener.polling(true).should equal listener
+      listener.force_polling(true).should equal listener
     end
   end
 

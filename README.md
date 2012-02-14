@@ -12,7 +12,8 @@ The Listen gem listens to file modifications and notifies you about the changes.
 - **DONE** Add `rb-fchange` support
 - **DONE** Add checksum comparaison support for detecting consecutive file modifications made during the same second. (like Guard)
 - **DONE** Add latency option
-- **DONE** Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))
+- ~~**DONE** Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))~~
+- **DONE** Add force-polling option
 - Dropbox detection with polling fallback (if needed)
 - Improve API (if needed)
 
@@ -36,7 +37,7 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 #### One dir
 
 ``` ruby
-Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 3, polling: true) do |modified, added, removed|
+Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 3, force_polling: true) do |modified, added, removed|
   # ...
 end
 ```
@@ -48,7 +49,7 @@ listener = Listen.to('dir/path/to/listen')
 listener = listener.ignore('/ignored/path')
 listener = listener.filter(/.*\.rb/)
 listener = listener.latency(3)
-listener = listener.polling(false)
+listener = listener.force_polling(true)
 listener = listener.change(&callback)
 listener.start # enter the run loop
 listener.stop
@@ -57,12 +58,11 @@ listener.stop
 #### Chainable
 
 ``` ruby
-Listen
-      .to('dir/path/to/listen')
+Listen.to('dir/path/to/listen')
       .ignore('/ignored/path')
       .filter(/.*\.rb/)
       .latency(3)
-      .polling(false)
+      .force_polling(false)
       .change(&callback)
       .start # enter the run loop
 ```
@@ -88,12 +88,9 @@ There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is unfortunately slower than the rest of the adapters.
 
 The Listen gem will choose the best adapter for your machine automatically. If you
-want to force (or disable) the use of the polling gem, use the `:polling` option
-while initializing the listner of call the `polling` method on your listner
-before staring it.
-
-*Note*: Although logical it might seem, if you disable the use of the polling adapter
-and no OS-specific adapter can be used, an error will be generated.
+want to force the use of the polling adapter, either use the `:force_polling` option
+while initializing the listener or call the `force_polling` method on your listner
+before starting it.
 
 ### Options
 
@@ -106,12 +103,11 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
 :ignore  => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
                                      # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
 
-:latency => 3                        # Set the delay between checking for changes
+:latency => 0.5                      # Set the delay (**in seconds**) between checking for changes
                                      # default: 0.1 sec
 
-:polling => false                    # Force the use of the polling adapter or
-                                     # disable its use completely
-                                     # default: none
+:force_polling => false              # Force the use of the polling adapter
+                                     # default: false
 ```
 
 ## Acknowledgment
