@@ -1,12 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  let(:adapter) { mock(Listen::Adapter, :start => true) }
+  let(:adapter) { mock(Listen::Adapter, :start => true).as_null_object }
+
+  subject { new('path') }
+
   before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
 
   describe '#initialize' do
     context 'with just one dir params' do
-      subject { new('path') }
 
       it "set directory" do
         subject.directory.should eq 'path'
@@ -19,10 +21,15 @@ describe Listen::Listener do
       it "set default file filters" do
         subject.file_filters.should eq []
       end
+
+      it "selects and initializes an adapter" do
+        Listen::Adapter.should_receive(:select_and_initialize)
+        new('path')
+      end
     end
 
-    context 'with ignored paths and file filters params' do
-      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/]) }
+    context 'with custom options' do
+      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 5, :force_polling => true) }
 
       it "set custom ignored paths" do
         subject.ignored_paths.should eq %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -31,17 +38,20 @@ describe Listen::Listener do
       it "set custom file filters" do
         subject.file_filters.should eq [/.*\.rb/,/.*\.md/]
       end
-    end
 
-    it "selects and initializes an adapter" do
-      Listen::Adapter.should_receive(:select_and_initialize)
-      new('path')
+      it "sets the latency for the adapter" do
+        adapter.should_receive(:latency=).with(5)
+        subject
+      end
+
+      it "selects and initializes an adapter passing the polling option" do
+        Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => true)
+        new('path')
+      end
     end
   end
 
   describe '#start' do
-    subject { new('path') }
-
     it "inits path" do
       subject.should_receive(:init_paths)
       subject.start
@@ -55,8 +65,6 @@ describe Listen::Listener do
   end
 
   describe '#stop' do
-    subject { new('path') }
-
     it "stops adapter" do
       adapter.should_receive(:stop)
       subject.stop
@@ -69,6 +77,11 @@ describe Listen::Listener do
       listener = new('path')
       listener.change(&callback)
       listener.instance_variable_get(:@block).should eq callback
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.change(&Proc.new{}).should equal listener
     end
   end
 
@@ -111,6 +124,11 @@ describe Listen::Listener do
           listener.paths["#{path}/a_directory/a_ignored_directory"]['file.txt'].should be_nil
         end
       end
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.ignore('some_directory').should equal listener
     end
   end
 
@@ -168,6 +186,35 @@ describe Listen::Listener do
           listener.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.filter(/\.txt$/).should equal listener
+    end
+  end
+
+  describe '#latency' do
+    it 'sets the latency for the adapter' do
+      adapter.should_receive(:latency=).with(7)
+      subject.latency(7)
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.latency(7).should equal listener
+    end
+  end
+
+  describe '#force_polling' do
+    it 'selects and initializes a new adapter based on the new polling option' do
+      Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => false)
+      subject.force_polling(false)
+    end
+
+    it 'returns the same listener to allow chaining' do
+      listener = new('path')
+      listener.force_polling(true).should equal listener
     end
   end
 
