@@ -11,8 +11,9 @@ The Listen gem listens to file modifications and notifies you about the changes.
 - **DONE** Add `rb-inotify` support
 - **DONE** Add `rb-fchange` support
 - **DONE** Add checksum comparaison support for detecting consecutive file modifications made during the same second. (like Guard)
-- Add latency option
-- Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))
+- **DONE** Add latency option
+- ~~**DONE** Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))~~
+- **DONE** Add force-polling option
 - Dropbox detection with polling fallback (if needed)
 - Improve API (if needed)
 
@@ -36,7 +37,7 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 #### One dir
 
 ``` ruby
-Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path') do |modified, added, removed|
+Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 0.5, force_polling: true) do |modified, added, removed|
   # ...
 end
 ```
@@ -47,6 +48,8 @@ end
 listener = Listen.to('dir/path/to/listen')
 listener = listener.ignore('/ignored/path')
 listener = listener.filter(/.*\.rb/)
+listener = listener.latency(0.5)
+listener = listener.force_polling(true)
 listener = listener.change(&callback)
 listener.start # enter the run loop
 listener.stop
@@ -55,7 +58,13 @@ listener.stop
 #### Chainable
 
 ``` ruby
-Listen.to('dir/path/to/listen').ignore('/ignored/path').filter(/.*\.rb/).change(&callback).start # enter the run loop
+Listen.to('dir/path/to/listen')
+      .ignore('/ignored/path')
+      .filter(/.*\.rb/)
+      .latency(0.5)
+      .force_polling(true)
+      .change(&callback)
+      .start # enter the run loop
 ```
 
 #### Multiple listeners support available via Thread
@@ -69,16 +78,36 @@ Thread.new { styles.start } # enter the run loop
 Thread.new { scripts.start } # enter the run loop
 ```
 
+### Listen adapters
+
+The Listen gem has a set of adapters to notify it when there are changes.
+There are 3 OS-specific adapters to support Mac, Linux and Windows. These adapters are fast
+as they use some system-calls to implement the notifying function.
+
+There is also a polling adapter which is a cross-platform adapter and it will
+work on any system. This adapter is unfortunately slower than the rest of the adapters.
+
+The Listen gem will choose the best adapter for your machine automatically. If you
+want to force the use of the polling adapter, either use the `:force_polling` option
+while initializing the listener or call the `force_polling` method on your listener
+before starting it.
+
 ### Options
 
 These options can be set through `Listen.to` params or via methods (see the "Object" API)
 
 ```ruby
-:filter => /.*\.rb/, /.*\.coffee/   # Filter files to listen to via a regexps list.
-                                    # default: none
+:filter  => /.*\.rb/, /.*\.coffee/   # Filter files to listen to via a regexps list.
+                                     # default: none
 
-:ignore => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
-                                    # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
+:ignore  => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
+                                     # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
+
+:latency => 0.5                      # Set the delay (**in seconds**) between checking for changes
+                                     # default: 0.1 sec
+
+:force_polling => true               # Force the use of the polling adapter
+                                     # default: none
 ```
 
 ## Acknowledgment

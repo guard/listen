@@ -9,7 +9,7 @@ module Listen
     # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
     #
     EVENTS = %w[recursive attrib close modify move create delete delete_self move_self]
-    
+
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Adapter
@@ -18,7 +18,6 @@ module Listen
       #
       def initialize(*)
         super
-        @latency    ||= 0.1
         @changed_dirs = Set.new
         init_worker
       end
@@ -54,8 +53,8 @@ module Listen
       end
 
     private
-      
-      # Initialiaze INotify worker and set watch callback block.
+
+      # Initialize INotify worker and set watch callback block.
       #
       def init_worker
         @worker = INotify::Notifier.new
@@ -65,16 +64,16 @@ module Listen
           end
         end
       end
-      
+
       # Polling around @changed_dirs presence.
       #
       def poll_changed_dirs
         until @stop
           sleep(@latency)
-          
+
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear          
+          @changed_dirs.clear
           @listener.on_change(changed_dirs)
         end
       end
