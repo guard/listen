@@ -56,7 +56,7 @@ module Listen
       #
       def init_worker
         @worker = INotify::Notifier.new
-        @worker.watch(@listener.directory, *EVENTS.map(&:to_sym)) do |event|
+        @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
           unless event.name == "" # Event on root directory
             @changed_dirs << File.dirname(event.absolute_name)
           end
@@ -68,11 +68,10 @@ module Listen
       def poll_changed_dirs
         until @stop
           sleep(@latency)
-
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear          
-          @callback.call(changed_dirs)
+          @changed_dirs.clear
+          @callback.call(changed_dirs, {})
         end
       end
 

@@ -49,7 +49,7 @@ module Listen
       #
       def init_worker
         @worker = FChange::Notifier.new
-        @worker.watch(@listener.directory, :all_events, :recursive) do |event|
+        @worker.watch(@directory, :all_events, :recursive) do |event|
           @changed_dirs << File.expand_path(event.watcher.path)
         end
       end
@@ -63,7 +63,7 @@ module Listen
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
           @changed_dirs.clear          
-          @callback.call(changed_dirs,:recursive => true)
+          @callback.call(changed_dirs, :recursive => true)
         end
       end
 
