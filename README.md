@@ -12,9 +12,8 @@ The Listen gem listens to file modifications and notifies you about the changes.
 - **DONE** Add `rb-fchange` support
 - **DONE** Add checksum comparaison support for detecting consecutive file modifications made during the same second. (like Guard)
 - **DONE** Add latency option
-- ~~**DONE** Add polling option (true: polling forced, false: polling never used (to skip DropBox polling fallback))~~
 - **DONE** Add force-polling option
-- Dropbox detection with polling fallback (if needed)
+- **DONE** Add automatic fallback to polling if system adapter doesn't work (like a DropBox folder).
 - Improve API (if needed)
 
 ## Install
@@ -87,7 +86,7 @@ as they use some system-calls to implement the notifying function.
 There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is unfortunately slower than the rest of the adapters.
 
-The Listen gem will choose the best adapter for your machine automatically. If you
+The Listen gem will choose the best and working adapter for your machine automatically. If you
 want to force the use of the polling adapter, either use the `:force_polling` option
 while initializing the listener or call the `force_polling` method on your listener
 before starting it.

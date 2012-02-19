@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Listen::Listener do
   let(:adapter) { mock(Listen::Adapter, :start => true).as_null_object }
 
-  subject { new('path') }
+  subject { new('dir') }
 
   before { Listen::Adapter.stub(:select_and_initialize) { adapter } }
 
@@ -11,7 +11,7 @@ describe Listen::Listener do
     context 'with just one dir params' do
 
       it "set directory" do
-        subject.directory.should eq 'path'
+        subject.directory.should eq 'dir'
       end
 
       it "set default ignored paths" do
@@ -24,12 +24,12 @@ describe Listen::Listener do
 
       it "selects and initializes an adapter" do
         Listen::Adapter.should_receive(:select_and_initialize)
-        new('path')
+        new('dir')
       end
     end
 
     context 'with custom options' do
-      subject { new('path', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 5, :force_polling => true) }
+      subject { new('dir', :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 0.5, :force_polling => true) }
 
       it "set custom ignored paths" do
         subject.ignored_paths.should eq %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -39,14 +39,9 @@ describe Listen::Listener do
         subject.file_filters.should eq [/.*\.rb/,/.*\.md/]
       end
 
-      it "sets the latency for the adapter" do
-        adapter.should_receive(:latency=).with(5)
-        subject
-      end
-
       it "selects and initializes an adapter passing the polling option" do
-        Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => true)
-        new('path')
+        Listen::Adapter.should_receive(:select_and_initialize).with('dir', :latency => 0.5, :force_polling => true)
+        subject
       end
     end
   end
@@ -74,13 +69,13 @@ describe Listen::Listener do
   describe "#change" do
     it "set new callback block" do
       callback = lambda { |modified, added, removed| }
-      listener = new('path')
+      listener = new('dir')
       listener.change(&callback)
       listener.instance_variable_get(:@block).should eq callback
     end
 
     it 'returns the same listener to allow chaining' do
-      listener = new('path')
+      listener = new('dir')
       listener.change(&Proc.new{}).should equal listener
     end
   end
@@ -127,7 +122,7 @@ describe Listen::Listener do
     end
 
     it 'returns the same listener to allow chaining' do
-      listener = new('path')
+      listener = new('dir')
       listener.ignore('some_directory').should equal listener
     end
   end
@@ -189,7 +184,7 @@ describe Listen::Listener do
     end
 
     it 'returns the same listener to allow chaining' do
-      listener = new('path')
+      listener = new('dir')
       listener.filter(/\.txt$/).should equal listener
     end
   end
@@ -201,31 +196,40 @@ describe Listen::Listener do
     end
 
     it 'returns the same listener to allow chaining' do
-      listener = new('path')
+      listener = new('dir')
       listener.latency(7).should equal listener
     end
   end
 
   describe '#force_polling' do
     it 'selects and initializes a new adapter based on the new polling option' do
-      Listen::Adapter.should_receive(:select_and_initialize).with(subject, :force_polling => false)
+      Listen::Adapter.should_receive(:select_and_initialize).with('dir', :force_polling => false)
       subject.force_polling(false)
     end
 
     it 'returns the same listener to allow chaining' do
-      listener = new('path')
+      listener = new('dir')
       listener.force_polling(true).should equal listener
+    end
+
+    context "with other adapter option" do
+      subject { new('dir', :latency => 0.5) }
+
+      it 'keeps them' do
+        Listen::Adapter.should_receive(:select_and_initialize).with('dir', :latency => 0.5, :force_polling => false)
+        subject.force_polling(false)
+      end
     end
   end
 
   describe '#diff' do
     it "reorders directories by reversed length" do
-      listener = new('path')
-      listener.should_receive(:detect_modifications_and_removals).with('path/long', {}).ordered
-      listener.should_receive(:detect_additions).with('path/long', {}).ordered
-      listener.should_receive(:detect_modifications_and_removals).with('path', {}).ordered
-      listener.should_receive(:detect_additions).with('path', {}).ordered
-      listener.diff(['path', 'path/long'])
+      listener = new('dir')
+      listener.should_receive(:detect_modifications_and_removals).with('dir/long', {}).ordered
+      listener.should_receive(:detect_additions).with('dir/long', {}).ordered
+      listener.should_receive(:detect_modifications_and_removals).with('dir', {}).ordered
+      listener.should_receive(:detect_additions).with('dir', {}).ordered
+      listener.diff(['dir', 'dir/long'])
     end
 
     context 'single file operations' do

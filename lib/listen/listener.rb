@@ -16,7 +16,7 @@ module Listen
 
     # Initialize the file listener.
     #
-    # @param [String, Pathname] dir the directory to watch
+    # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the listen options
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
@@ -30,19 +30,17 @@ module Listen
     #
     # @return [Listen::Listener] the file listener
     #
-    def initialize(dir, options = {}, &block)
-      @directory      = dir
+    def initialize(directory, options = {}, &block)
+      @options        = options # used in #force_polling
+      @directory      = directory
       @ignored_paths  = DEFAULT_IGNORED_PATHS
       @file_filters   = []
       @sha1_checksums = {}
       @block          = block
-      @adapter        = Adapter.select_and_initialize(self, :force_polling => options[:force_polling])
+      @ignored_paths += Array(@options.delete(:ignore)) if @options[:ignore]
+      @file_filters  += Array(@options.delete(:filter)) if @options[:filter]
 
-      unless options.empty?
-        @ignored_paths  += Array(options[:ignore]) if options[:ignore]
-        @file_filters   += Array(options[:filter]) if options[:filter]
-        @adapter.latency = options[:latency]       if options[:latency]
-      end
+      set_adapter(@options)
     end
 
     # Initialize the @paths and start the adapter.
@@ -89,8 +87,8 @@ module Listen
     # Sets the latency for the adapter. This is a helper method
     # to simplify changing the latency directly from the listener.
     #
-    # @example Wait 5 seconds each time before checking changes
-    #   latency 5
+    # @example Wait 0.5 seconds each time before checking changes
+    #   latency 0.5
     #
     # @param [Float] seconds the amount of delay, in seconds
     #
@@ -112,7 +110,7 @@ module Listen
     # @return [Listen::Listener] the listener itself
     #
     def force_polling(value)
-      @adapter = Adapter.select_and_initialize(self, :force_polling => value)
+      set_adapter(@options.merge(:force_polling => value))
       self
     end
 
@@ -137,6 +135,7 @@ module Listen
     #
     def on_change(directories, diff_options = {})
       changes = diff(directories, diff_options)
+      changes.values.each { |value| value.delete('.listen_test') }
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
@@ -169,6 +168,17 @@ module Listen
     end
 
   private
+
+    # Define adapter callback and set adapter with options.
+    #
+    # @param [Hash] options the adapter options
+    # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] force_polling whether to force the polling adapter or not
+    #
+    def set_adapter(options = {})
+      callback = lambda { |changed_dirs, options| self.on_change(changed_dirs, options) }
+      @adapter = Adapter.select_and_initialize(@directory, options, &callback)
+    end
 
     # Research all existing paths (directories & files) filtered and without ignored directories paths.
     #
