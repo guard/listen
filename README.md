@@ -36,7 +36,7 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 #### One dir
 
 ``` ruby
-Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path', latency: 0.5, force_polling: true) do |modified, added, removed|
+Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path') do |modified, added, removed|
   # ...
 end
 ```
@@ -49,6 +49,7 @@ listener = listener.ignore('/ignored/path')
 listener = listener.filter(/.*\.rb/)
 listener = listener.latency(0.5)
 listener = listener.force_polling(true)
+listener = listener.polling_fallback_message(false)
 listener = listener.change(&callback)
 listener.start # enter the run loop
 listener.stop
@@ -62,6 +63,7 @@ Listen.to('dir/path/to/listen')
       .filter(/.*\.rb/)
       .latency(0.5)
       .force_polling(true)
+      .polling_fallback_message('custom message')
       .change(&callback)
       .start # enter the run loop
 ```
@@ -96,17 +98,20 @@ before starting it.
 These options can be set through `Listen.to` params or via methods (see the "Object" API)
 
 ```ruby
-:filter  => /.*\.rb/, /.*\.coffee/   # Filter files to listen to via a regexps list.
-                                     # default: none
-
-:ignore  => 'path1', 'path2'         # Ignore a list of paths (root directory or sub-dir)
-                                     # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
-
-:latency => 0.5                      # Set the delay (**in seconds**) between checking for changes
-                                     # default: 0.1 sec
-
-:force_polling => true               # Force the use of the polling adapter
-                                     # default: none
+:filter => /.*\.rb/, /.*\.coffee/              # Filter files to listen to via a regexps list.
+                                               # default: none
+                                               
+:ignore => 'path1', 'path2'                    # Ignore a list of paths (root directory or sub-dir)
+                                               # default: '.bundle', '.git', '.DS_Store', 'log', 'tmp', 'vendor'
+                                               
+:latency => 0.5                                # Set the delay (**in seconds**) between checking for changes
+                                               # default: 0.1 sec (1.0 sec for polling)
+                                               
+:force_polling => true                         # Force the use of the polling adapter
+                                               # default: none
+                                     
+:polling_fallback_message => 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
+                                               # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen."
 ```
 
 ## Acknowledgment

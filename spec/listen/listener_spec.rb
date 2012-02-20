@@ -21,11 +21,6 @@ describe Listen::Listener do
       it "set default file filters" do
         subject.file_filters.should eq []
       end
-
-      it "selects and initializes an adapter" do
-        Listen::Adapter.should_receive(:select_and_initialize)
-        new('dir')
-      end
     end
 
     context 'with custom options' do
@@ -39,9 +34,8 @@ describe Listen::Listener do
         subject.file_filters.should eq [/.*\.rb/,/.*\.md/]
       end
 
-      it "selects and initializes an adapter passing the polling option" do
-        Listen::Adapter.should_receive(:select_and_initialize).with('dir', :latency => 0.5, :force_polling => true)
-        subject
+      it "set adapter_options" do
+        subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.5, :force_polling => true)
       end
     end
   end
@@ -52,7 +46,15 @@ describe Listen::Listener do
       subject.start
     end
 
+    it "selects and initializes an adapter" do
+      Listen::Adapter.should_receive(:select_and_initialize).with('dir', {}) { adapter }
+      subject.stub(:init_paths)
+      adapter.should_receive(:start)
+      subject.start
+    end
+
     it "starts adapter" do
+      subject.stub(:initialize_adapter) { adapter }
       subject.stub(:init_paths)
       adapter.should_receive(:start)
       subject.start
@@ -61,6 +63,9 @@ describe Listen::Listener do
 
   describe '#stop' do
     it "stops adapter" do
+      subject.stub(:initialize_adapter) { adapter }
+      subject.stub(:init_paths)
+      subject.start
       adapter.should_receive(:stop)
       subject.stop
     end
@@ -190,35 +195,42 @@ describe Listen::Listener do
   end
 
   describe '#latency' do
-    it 'sets the latency for the adapter' do
-      adapter.should_receive(:latency=).with(7)
-      subject.latency(7)
+    it 'sets the latency to @adapter_options' do
+      subject.latency(0.7)
+      subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.7)
     end
 
     it 'returns the same listener to allow chaining' do
       listener = new('dir')
-      listener.latency(7).should equal listener
+      listener.latency(0.7).should equal listener
     end
   end
 
   describe '#force_polling' do
-    it 'selects and initializes a new adapter based on the new polling option' do
-      Listen::Adapter.should_receive(:select_and_initialize).with('dir', :force_polling => false)
+    it 'sets force_polling to @adapter_options' do
       subject.force_polling(false)
+      subject.instance_variable_get(:@adapter_options).should eq(:force_polling => false)
     end
 
     it 'returns the same listener to allow chaining' do
       listener = new('dir')
       listener.force_polling(true).should equal listener
     end
+  end
+  
+  describe '#polling_fallback_message' do
+    it 'sets custom polling fallback message to @adapter_options' do
+      subject.polling_fallback_message('custom message')
+      subject.instance_variable_get(:@adapter_options).should eq(:polling_fallback_message => 'custom message')
+    end
+    it 'sets polling fallback message to false in @adapter_options' do
+      subject.polling_fallback_message(false)
+      subject.instance_variable_get(:@adapter_options).should eq(:polling_fallback_message => false)
+    end
 
-    context "with other adapter option" do
-      subject { new('dir', :latency => 0.5) }
-
-      it 'keeps them' do
-        Listen::Adapter.should_receive(:select_and_initialize).with('dir', :latency => 0.5, :force_polling => false)
-        subject.force_polling(false)
-      end
+    it 'returns the same listener to allow chaining' do
+      listener = new('dir')
+      listener.polling_fallback_message('custom message').should equal listener
     end
   end
 
