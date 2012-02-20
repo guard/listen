@@ -10,7 +10,6 @@ describe Listen do
         Listen.to('/path', :filter => '**/*').should eq listener
       end
     end
-
     context "without a block" do
       it "starts the new listener created with good" do
         listener.should_receive(:start)
