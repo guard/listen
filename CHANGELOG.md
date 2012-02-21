@@ -1,6 +1,7 @@
 Master
 
 - Add automatic fallback to polling if system adapter doesn't work (like a DropBox folder). ([@thibaudgg][])
+- Add latency and force_polling options. ([@Maher4Ever][])
 
 ## 0.2.0 - February 13, 2012
 

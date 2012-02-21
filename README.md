@@ -4,12 +4,13 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## Features
 
-* Works everywhere.
-* OS-specific adapters (Mac, Linux and Windows) and polling.
+* Works everywhere!
+* OS-specific adapters for Mac OS X 10.6+, Linux and Windows.
+* Automatic fallback to polling if OS-specific adapter doesn't work.
 * Detects files modification, addidation and removal.
-* Checksum comparaison for quick modifications.
+* Checksum comparaison for modifications made under the same second.
+* Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
 * Threadable.
-* Well tested on all ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
 
 ## Install
 
@@ -107,7 +108,8 @@ want to force the use of the polling adapter, either use the `:force_polling` op
 while initializing the listener or call the `force_polling` method on your listener
 before starting it.
 
-### Polling fallback<a id="fallback"/>
+### Polling fallback
+<a id="fallback"/>
 
 When the OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
 Here some things to try to avoiding this fallback:
@@ -137,6 +139,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 
 ## Acknowledgment
 
+* [Michael Kessler (netzpirat)][] for having written the [initial specs](https://github.com/guard/listen/commit/1e457b13b1bb8a25d2240428ce5ed488bafbed1f).
 * [Travis Tilley (ttilley)][] for this awesome work on [fssm][] & [rb-fsevent][].
 * [Nathan Weizenbaum (nex3)][] for [rb-inotify][], a thorough inotify wrapper.
 * [stereobooster][] for [rb-fchange][], windows support wouldn't exist without him.
@@ -151,6 +154,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 [https://github.com/guard/listen/contributors](https://github.com/guard/listen/contributors)
 
 [Thibaud Guillaume-Gentil]: https://github.com/thibaudgg
+[Michael Kessler (netzpirat)]: https://github.com/netzpirat
 [Travis Tilley (ttilley)]: https://github.com/ttilley
 [fssm]: https://github.com/ttilley/fssm
 [rb-fsevent]: https://github.com/thibaudgg/rb-fsevent
