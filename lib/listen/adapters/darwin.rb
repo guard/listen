@@ -5,9 +5,9 @@ module Listen
     #
     class Darwin < Adapter
 
-      # Initialize the Adapter.
+      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(*)
+      def initialize(directory, options = {}, &callback)
         super
         init_worker
       end
@@ -45,9 +45,9 @@ module Listen
       #
       def init_worker
         @worker = FSEvent.new
-        @worker.watch(@listener.directory, :latency => @latency) do |changed_dirs|
+        @worker.watch(@directory, :latency => @latency) do |changed_dirs|
           changed_dirs.map! { |path| path.sub /\/$/, '' }
-          @listener.on_change(changed_dirs)
+          @callback.call(changed_dirs, {})
         end
       end
 

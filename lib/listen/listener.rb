@@ -9,19 +9,20 @@ require 'listen/adapters/windows'
 
 module Listen
   class Listener
-    attr_accessor :directory, :ignored_paths, :file_filters, :sha1_checksums, :paths, :adapter
+    attr_accessor :directory, :ignored_paths, :file_filters, :sha1_checksums, :paths
 
     # Default paths that gets ignored by the listener
     DEFAULT_IGNORED_PATHS = %w[.bundle .git .DS_Store log tmp vendor]
 
     # Initialize the file listener.
     #
-    # @param [String, Pathname] dir the directory to watch
+    # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the listen options
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
     # @option options [Float] latency the delay between checking for changes in seconds
     # @option options [Boolean] force_polling whether to force the polling adapter or not
+    # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -30,25 +31,24 @@ module Listen
     #
     # @return [Listen::Listener] the file listener
     #
-    def initialize(dir, options = {}, &block)
-      @directory      = dir
+    def initialize(directory, options = {}, &block)
+      @directory      = directory
       @ignored_paths  = DEFAULT_IGNORED_PATHS
       @file_filters   = []
       @sha1_checksums = {}
       @block          = block
-      @adapter        = Adapter.select_and_initialize(self, :force_polling => options[:force_polling])
-
-      unless options.empty?
-        @ignored_paths  += Array(options[:ignore]) if options[:ignore]
-        @file_filters   += Array(options[:filter]) if options[:filter]
-        @adapter.latency = options[:latency]       if options[:latency]
-      end
+      @ignored_paths += Array(options.delete(:ignore)) if options[:ignore]
+      @file_filters  += Array(options.delete(:filter)) if options[:filter]
+      
+      @adapter_options = options
     end
 
-    # Initialize the @paths and start the adapter.
+    # Initialize the adapter and the @paths concurrently and start the adapter.
     #
     def start
+      Thread.new { @adapter = initialize_adapter }
       init_paths
+      sleep 0.01 while @adapter.nil?
       @adapter.start
     end
 
@@ -89,15 +89,15 @@ module Listen
     # Sets the latency for the adapter. This is a helper method
     # to simplify changing the latency directly from the listener.
     #
-    # @example Wait 5 seconds each time before checking changes
-    #   latency 5
+    # @example Wait 0.5 seconds each time before checking changes
+    #   latency 0.5
     #
     # @param [Float] seconds the amount of delay, in seconds
     #
     # @return [Listen::Listener] the listener itself
     #
     def latency(seconds)
-      @adapter.latency = seconds
+      @adapter_options[:latency] = seconds
       self
     end
 
@@ -112,7 +112,21 @@ module Listen
     # @return [Listen::Listener] the listener itself
     #
     def force_polling(value)
-      @adapter = Adapter.select_and_initialize(self, :force_polling => value)
+      @adapter_options[:force_polling] = value
+      self
+    end
+    
+    # Defines a custom polling fallback message of disable it.
+    #
+    # @example Disabling the polling fallback message
+    #   polling_fallback_message false
+    #
+    # @param [String, Boolean] value to change polling fallback message or remove it
+    #
+    # @return [Listen::Listener] the listener itself
+    #
+    def polling_fallback_message(value)
+      @adapter_options[:polling_fallback_message] = value
       self
     end
 
@@ -169,6 +183,13 @@ module Listen
     end
 
   private
+
+    # Initialize adapter with the listener callback and the @adapter_options
+    #
+    def initialize_adapter
+      callback = lambda { |changed_dirs, options| self.on_change(changed_dirs, options) }
+      Adapter.select_and_initialize(@directory, @adapter_options, &callback)
+    end
 
     # Research all existing paths (directories & files) filtered and without ignored directories paths.
     #

@@ -14,9 +14,9 @@ module Listen
     #
     class Linux < Adapter
 
-      # Initialize the Adapter.
+      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(*)
+      def initialize(directory, options = {}, &callback)
         super
         @changed_dirs = Set.new
         init_worker
@@ -27,7 +27,6 @@ module Listen
       def start
         super
         Thread.new { @worker.run }
-        @stop = false
         poll_changed_dirs
       end
 
@@ -35,7 +34,6 @@ module Listen
       #
       def stop
         super
-        @stop = true
         @worker.stop
       end
 
@@ -58,7 +56,7 @@ module Listen
       #
       def init_worker
         @worker = INotify::Notifier.new
-        @worker.watch(@listener.directory, *EVENTS.map(&:to_sym)) do |event|
+        @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
           unless event.name == "" # Event on root directory
             @changed_dirs << File.dirname(event.absolute_name)
           end
@@ -70,11 +68,10 @@ module Listen
       def poll_changed_dirs
         until @stop
           sleep(@latency)
-
           next if @changed_dirs.empty?
           changed_dirs = @changed_dirs.to_a
           @changed_dirs.clear
-          @listener.on_change(changed_dirs)
+          @callback.call(changed_dirs, {})
         end
       end
 

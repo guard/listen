@@ -1,3 +1,7 @@
+Master
+
+- Add automatic fallback to polling if system adapter doesn't work (like a DropBox folder). ([@thibaudgg][])
+
 ## 0.2.0 - February 13, 2012
 
 - Add checksum comparaison support for detecting consecutive file modifications made during the same second. ([@thibaudgg][])

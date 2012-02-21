@@ -4,8 +4,8 @@
 # @param [String] path the path to watch
 #
 def watch(listener, path)
-  listener.stub(:directory) { path }
-  @adapter = Listen::Adapter.select_and_initialize(listener)
+  callback = lambda { |changed_dirs, options| listener.on_change(changed_dirs, options) }
+  @adapter = Listen::Adapter.select_and_initialize(path, {}, &callback)
 
   sleep 0.20 # manage adapter latency
   t = Thread.new { @adapter.start }
@@ -20,6 +20,7 @@ end
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
   options = (args.first && args.first.is_a?(Hash)) ? args.first : {}
   let(:listener) { mock(Listen::Listener) }
+  before { described_class.stub(:work?) { true } }
 
   context 'single file operations' do
     context 'when a file is created' do
@@ -28,7 +29,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           if options[:recursive]
             listener.should_receive(:on_change).once.with([path], :recursive => true)
           else
-            listener.should_receive(:on_change).once.with([path])
+            listener.should_receive(:on_change).once.with([path], {})
           end
 
           watch(listener, path) do
@@ -43,7 +44,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with do |array|
+              listener.should_receive(:on_change).once.with do |array, options|
                 array.should =~ [path, "#{path}/a_directory"]
               end
             end
@@ -64,7 +65,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with(["#{path}/a_directory"])
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory"], {})
             end
 
             mkdir 'a_directory'
@@ -83,7 +84,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           if options[:recursive]
             listener.should_receive(:on_change).once.with([path], :recursive => true)
           else
-            listener.should_receive(:on_change).once.with([path])
+            listener.should_receive(:on_change).once.with([path], {})
           end
 
           touch 'existing_file.txt'
@@ -100,7 +101,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with([path])
+              listener.should_receive(:on_change).once.with([path], {})
             end
 
             touch '.hidden'
@@ -119,7 +120,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
               if options[:recursive]
                 listener.should_receive(:on_change).once.with([path], :recursive => true)
               else
-                listener.should_receive(:on_change).once.with([path])
+                listener.should_receive(:on_change).once.with([path], {})
               end
 
               touch 'run.rb'
@@ -138,7 +139,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with(["#{path}/a_directory"])
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory"], {})
             end
 
             mkdir 'a_directory'
@@ -158,7 +159,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           if options[:recursive]
             listener.should_receive(:on_change).once.with([path], :recursive => true)
           else
-            listener.should_receive(:on_change).once.with([path])
+            listener.should_receive(:on_change).once.with([path], {})
           end
 
           touch 'move_me.txt'
@@ -175,7 +176,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with do |array|
+              listener.should_receive(:on_change).once.with do |array, options|
                 array.should =~ [path, "#{path}/a_directory"]
               end
             end
@@ -194,7 +195,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with do |array|
+              listener.should_receive(:on_change).once.with do |array, options|
                 array.should =~ [path, "#{path}/a_directory"]
               end
             end
@@ -213,7 +214,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with do |array|
+              listener.should_receive(:on_change).once.with do |array, options|
                 array.should =~ ["#{path}/from_directory", "#{path}/to_directory"]
               end
             end
@@ -236,7 +237,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           if options[:recursive]
             listener.should_receive(:on_change).once.with([path], :recursive => true)
           else
-            listener.should_receive(:on_change).once.with([path])
+            listener.should_receive(:on_change).once.with([path], {})
           end
 
           touch 'unnecessary.txt'
@@ -253,7 +254,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             if options[:recursive]
               listener.should_receive(:on_change).once.with([path], :recursive => true)
             else
-              listener.should_receive(:on_change).once.with(["#{path}/a_directory"])
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory"], {})
             end
 
             mkdir 'a_directory'
@@ -274,7 +275,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         if options[:recursive]
           listener.should_receive(:on_change).once.with([path], :recursive => true)
         else
-          listener.should_receive(:on_change).once.with do |array|
+          listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
           end
         end
@@ -296,7 +297,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         if options[:recursive]
           listener.should_receive(:on_change).once.with([path], :recursive => true)
         else
-          listener.should_receive(:on_change).once.with do |array|
+          listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
           end
         end
@@ -319,7 +320,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         if options[:recursive]
           listener.should_receive(:on_change).once.with([path], :recursive => true)
         else
-          listener.should_receive(:on_change).once.with do |array|
+          listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
           end
         end
@@ -344,7 +345,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         if options[:recursive]
           listener.should_receive(:on_change).once.with([path], :recursive => true)
         else
-          listener.should_receive(:on_change).once.with([path])
+          listener.should_receive(:on_change).once.with([path], {})
         end
 
         mkdir 'a_directory'
@@ -362,7 +363,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         if options[:recursive]
           listener.should_receive(:on_change).once.with([path], :recursive => true)
         else
-          listener.should_receive(:on_change).once.with do |array|
+          listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
           end
         end
