@@ -1,4 +1,4 @@
-Master
+## 0.3.0 - February 21, 2012
 
 - Add automatic fallback to polling if system adapter doesn't work (like a DropBox folder). ([@thibaudgg][])
 - Add latency and force_polling options. ([@Maher4Ever][])
