@@ -6,8 +6,8 @@ Gem::Specification.new do |s|
   s.name        = 'listen'
   s.version     = Listen::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ['Thibaud Guillaume-Gentil', 'Michael Kessler']
-  s.email       = ['thibaud@thibaud.me', 'michi@netzpiraten.ch']
+  s.authors     = ['Thibaud Guillaume-Gentil']
+  s.email       = ['thibaud@thibaud.me']
   s.homepage    = 'https://github.com/guard/listen'
   s.summary     = 'Listen to file modifications'
   s.description = 'The Listen gem listens to file modifications and notifies you about the changes. Works everywhere!'

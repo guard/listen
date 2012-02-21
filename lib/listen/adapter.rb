@@ -7,7 +7,7 @@ module Listen
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.1
     # The default warning message when falling back to polling adapter.
-    POLLING_FALLBACK_MESSAGE = "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen."
+    POLLING_FALLBACK_MESSAGE = "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 
     # Select the appropriate adapter implementation for the
     # current OS and initializes it.
