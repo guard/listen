@@ -91,7 +91,7 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
                                                # default: none
 
 :polling_fallback_message => 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
-                                               # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen."
+                                               # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 ```
 
 ## Listen adapters
