@@ -108,8 +108,7 @@ want to force the use of the polling adapter, either use the `:force_polling` op
 while initializing the listener or call the `force_polling` method on your listener
 before starting it.
 
-### Polling fallback
-<a id="fallback"/>
+### Polling fallback<a name="fallback"/>
 
 When the OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
 Here some things to try to avoiding this fallback:
