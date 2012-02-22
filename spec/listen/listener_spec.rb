@@ -217,7 +217,7 @@ describe Listen::Listener do
       listener.force_polling(true).should equal listener
     end
   end
-  
+
   describe '#polling_fallback_message' do
     it 'sets custom polling fallback message to @adapter_options' do
       subject.polling_fallback_message('custom message')
@@ -310,6 +310,34 @@ describe Listen::Listener do
                 added.should =~ %w(a_directory/new_file.rb)
                 modified.should be_empty
                 removed.should be_empty
+              end
+            end
+            context 'with this directory ignored' do
+              it "doesn't detects the added file" do
+                fixtures do |path|
+                  mkdir 'ignored_directory'
+
+                  modified, added, removed = diff(path, :ignore => 'ignored_directory', :recursive => true) do
+                    touch 'ignored_directory/new_file.rb'
+                  end
+
+                  added.should be_empty
+                  modified.should be_empty
+                  removed.should be_empty
+                end
+              end
+              it "doesn't detects the added file when diff the ignored directory" do
+                fixtures do |path|
+                  mkdir 'ignored_directory'
+
+                  modified, added, removed = diff(path, :paths => ["#{path}/ignored_directory"], :ignore => 'ignored_directory', :recursive => true) do
+                    touch 'ignored_directory/new_file.rb'
+                  end
+
+                  added.should be_empty
+                  modified.should be_empty
+                  removed.should be_empty
+                end
               end
             end
           end

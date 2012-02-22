@@ -39,7 +39,7 @@ module Listen
       @block          = block
       @ignored_paths += Array(options.delete(:ignore)) if options[:ignore]
       @file_filters  += Array(options.delete(:filter)) if options[:filter]
-      
+
       @adapter_options = options
     end
 
@@ -115,7 +115,7 @@ module Listen
       @adapter_options[:force_polling] = value
       self
     end
-    
+
     # Defines a custom polling fallback message of disable it.
     #
     # @example Disabling the polling fallback message
@@ -289,12 +289,12 @@ module Listen
         next if @directory == path
 
         if File.directory?(path)
-          if directory != path && (ignored_path?(path) || (!options[:recursive] && existing_path?(path)))
+          if ignored_path?(path) || (directory != path && (!options[:recursive] && existing_path?(path)))
             Find.prune # Don't look any further into this directory.
           else
             insert_path(path)
           end
-        elsif !existing_path?(path) && !ignored_path?(path) && filtered_file?(path)
+        elsif !ignored_path?(path) && filtered_file?(path) && !existing_path?(path)
           @changes[:added] << relative_path(path) if File.file?(path)
           insert_path(path)
         end
