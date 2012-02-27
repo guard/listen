@@ -82,12 +82,12 @@ describe Listen::Listener do
       end
     end
 
-    describe "#pause" do
+    describe "#pause", :focus do
       it "stops adapter and wait until unpaused" do
         adapter.should_receive(:stop)
         subject.should_receive(:sleep).any_number_of_times
         Thread.new { subject.pause }
-        sleep 0.0001
+        sleep 0.01
         subject.paused.should be_true
         subject.paused = false
       end
