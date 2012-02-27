@@ -94,6 +94,18 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
                                                # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 ```
 
+### Pause/Unpause
+
+Listener can also easily be paused/unpaused:
+
+``` ruby
+listener = Listen.to('dir/path/to/listen')
+listener.start   # enter the run loop
+listener.pause   # stop the run loop and enter the wait loop
+listener.unpause # re-enter the run loop
+listener.stop
+```
+
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.

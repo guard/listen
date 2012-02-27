@@ -1,3 +1,9 @@
+## Master
+
+### New features
+
+- Add pause/unpause listener's methods. ([@thibaudgg][])
+
 ## 0.3.1 - February 22, 2012
 
 ### Bug fix
