@@ -12,7 +12,8 @@ group :development do
   require 'rbconfig'
   case RbConfig::CONFIG['target_os']
   when /darwin/i
-    gem 'ruby_gntp',  '~> 0.3.4', :require => false
+    # gem 'ruby_gntp',  '~> 0.3.4', :require => false
+    gem 'growl', :require => false
   when /linux/i
     gem 'libnotify',  '~> 0.7.1', :require => false
   when /mswin|mingw/i
@@ -25,7 +26,7 @@ group :development do
   gem 'yard'
   gem 'redcarpet'
   gem 'pry'
-  
+
   gem 'vagrant'
 end
 
