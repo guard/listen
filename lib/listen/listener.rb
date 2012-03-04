@@ -77,6 +77,14 @@ module Listen
       init_paths
       @adapter.start
     end
+    
+    # Is this listener paused
+    #
+    # @return [Boolean] listener paused status
+    #
+    def paused?
+      @paused == true
+    end
 
     # Add ignored path to the listener.
     #

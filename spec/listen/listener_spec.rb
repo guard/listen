@@ -78,18 +78,17 @@ describe Listen::Listener do
         subject.paused = true
         adapter.should_not_receive(:stop)
         subject.stop
-        subject.paused.should be_false
+        subject.should_not be_paused
       end
     end
 
-    describe "#pause", :focus do
+    describe "#pause" do
       it "stops adapter and wait until unpaused" do
         adapter.should_receive(:stop)
         subject.should_receive(:sleep).any_number_of_times
         Thread.new { subject.pause }
         sleep 0.01
-        subject.paused.should be_true
-        subject.paused = false
+        subject.should be_paused
       end
     end
 
@@ -99,7 +98,7 @@ describe Listen::Listener do
         subject.should_receive(:init_paths)
         adapter.should_receive(:start)
         subject.unpause
-        subject.paused.should be_false
+        subject.should_not be_paused
       end
     end
   end
