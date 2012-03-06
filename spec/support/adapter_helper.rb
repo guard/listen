@@ -4,7 +4,7 @@
 # @param [String] path the path to watch
 #
 def watch(listener, path)
-  callback = lambda { |changed_dirs, options| listener.on_change(changed_dirs, options) }
+  callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
   @adapter = Listen::Adapter.select_and_initialize(path, {}, &callback)
 
   sleep 0.20 # manage adapter latency
@@ -16,6 +16,8 @@ ensure
   @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
   Thread.kill(t)
 end
+
+class ListenerMock; end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
   options = (args.first && args.first.is_a?(Hash)) ? args.first : {}
@@ -374,6 +376,20 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
         watch(listener, path) do
           rm_rf 'a_directory'
+        end
+      end
+    end
+  end
+  
+  context "paused adapter" do
+    context 'when a file is created' do
+      it "doesn't detects the added file" do
+        fixtures do |path|
+          watch(listener, path) do
+            @adapter.paused = true
+            touch 'new_file.rb'
+          end
+          @called.should be_nil
         end
       end
     end

@@ -73,31 +73,34 @@ describe Listen::Listener do
         adapter.should_receive(:stop)
         subject.stop
       end
-
-      it "unpause if paused" do
-        subject.paused = true
-        adapter.should_not_receive(:stop)
-        subject.stop
-        subject.should_not be_paused
-      end
     end
 
     describe "#pause" do
-      it "stops adapter and wait until unpaused" do
-        adapter.should_receive(:stop)
-        subject.should_receive(:sleep).any_number_of_times
-        Thread.new { subject.pause }
-        sleep 0.01
-        subject.should be_paused
+      it "sets true to adapter.paused" do
+        adapter.should_receive(:paused=).with(true)
+        subject.pause
       end
     end
 
     describe "#unpause" do
-      it "unpauses and starts adapter" do
-        Thread.new { subject.pause }
+      it "sets false to adapter.paused and re-init @paths" do
         subject.should_receive(:init_paths)
-        adapter.should_receive(:start)
+        adapter.should_receive(:paused=).with(false)
         subject.unpause
+      end
+    end
+
+    describe "#paused?" do
+      it "returns false if adapter is nil" do
+        subject.adapter = nil
+        subject.should_not be_paused
+      end
+      it "returns true if adapter is paused" do
+        adapter.should_receive(:paused) { true }
+        subject.should be_paused
+      end
+      it "returns false if adapter is not paused" do
+        adapter.should_receive(:paused) { false }
         subject.should_not be_paused
       end
     end

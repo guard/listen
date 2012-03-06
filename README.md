@@ -101,8 +101,9 @@ Listener can also easily be paused/unpaused:
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
 listener.start   # enter the run loop
-listener.pause   # stop the run loop and enter the wait loop
-listener.unpause # re-enter the run loop
+listener.pause   # stop listening changes
+listener.paused? => true
+listener.unpause
 listener.stop
 ```
 
@@ -127,6 +128,7 @@ When the OS-specific adapter doesn't work the Listen gem automatically falls bac
 Here some things to try to avoiding this fallback:
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
+* Increase latency. (Please [open an issue](https://github.com/guard/listen/issues/new) if you think that default is too low.)
 * Move or rename the listened folder.
 * Update/reboot your OS.
 

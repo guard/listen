@@ -46,6 +46,8 @@ module Listen
       def init_worker
         @worker = FSEvent.new
         @worker.watch(@directory, :latency => @latency) do |changed_dirs|
+          next if @paused
+
           changed_dirs.map! { |path| path.sub /\/$/, '' }
           @callback.call(changed_dirs, {})
         end

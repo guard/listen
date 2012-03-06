@@ -9,7 +9,7 @@ require 'listen/adapters/windows'
 
 module Listen
   class Listener
-    attr_accessor :directory, :ignored_paths, :file_filters, :sha1_checksums, :paths, :paused
+    attr_accessor :directory, :ignored_paths, :file_filters, :sha1_checksums, :paths, :adapter, :paused
 
     # Default paths that gets ignored by the listener
     DEFAULT_IGNORED_PATHS = %w[.bundle .git .DS_Store log tmp vendor]
@@ -55,35 +55,28 @@ module Listen
     # Stop the adapter.
     #
     def stop
-      if @paused
-        @paused = false
-      else
-        @adapter.stop
-      end
+      @adapter.stop
     end
 
-    # Stop the adapter and wait
+    # Pause the adapter
     #
     def pause
-      @paused = true
-      @adapter.stop
-      sleep 0.1 while @paused
+      @adapter.paused = true
     end
 
-    # UnPause and re-initialize @paths and start the adapter
+    # Re-initialize @paths and unpause the adapter
     #
     def unpause
-      @paused = false
       init_paths
-      @adapter.start
+      @adapter.paused = false
     end
-    
-    # Is this listener paused
+
+    # Is adapter paused
     #
-    # @return [Boolean] listener paused status
+    # @return [Boolean] adapter paused status
     #
     def paused?
-      @paused == true
+      !@adapter.nil? && @adapter.paused == true
     end
 
     # Add ignored path to the listener.

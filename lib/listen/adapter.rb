@@ -2,7 +2,7 @@ require 'rbconfig'
 
 module Listen
   class Adapter
-    attr_accessor :latency
+    attr_accessor :latency, :paused
 
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.1
@@ -58,6 +58,7 @@ module Listen
       @callback  = callback
       @latency ||= DEFAULT_LATENCY
       @latency   = options[:latency] if options[:latency]
+      @paused    = false
     end
 
     # Start the adapter.

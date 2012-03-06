@@ -50,6 +50,8 @@ module Listen
       def init_worker
         @worker = FChange::Notifier.new
         @worker.watch(@directory, :all_events, :recursive) do |event|
+          next if @paused
+          
           @changed_dirs << File.expand_path(event.watcher.path)
         end
       end

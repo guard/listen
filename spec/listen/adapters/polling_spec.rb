@@ -11,7 +11,7 @@ describe Listen::Adapters::Polling do
 
   describe "#poll" do
     let(:listener) { mock(Listen::Listener)}
-    let(:callback) { lambda { |changed_dirs, options| listener.on_change(changed_dirs, options) } }
+    let(:callback) { lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) } }
     subject { Listen::Adapters::Polling.new('dir', {}, &callback) }
 
     it "calls listener.on_change" do
@@ -25,6 +25,13 @@ describe Listen::Adapters::Polling do
       listener.should_receive(:on_change).at_least(10).times.with(['dir'], :recursive => true)
       Thread.new { subject.start }
       sleep 0.1
+    end
+
+    it "doesn't call listener.on_change if paused" do
+      subject.paused = true
+      Thread.new { subject.start }
+      sleep 0.2
+      @called.should be_nil
     end
   end
 end
