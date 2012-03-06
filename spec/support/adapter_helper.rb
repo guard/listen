@@ -7,11 +7,11 @@ def watch(listener, path)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
   @adapter = Listen::Adapter.select_and_initialize(path, {}, &callback)
 
-  sleep 0.3 # manage adapter latency
+  sleep 0.5 # manage adapter latency
   t = Thread.new { @adapter.start }
   sleep 0.1 # wait for adapter to start
   yield
-  sleep 0.3 # manage adapter latency
+  sleep 0.5 # manage adapter latency
 ensure
   @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
   Thread.kill(t)
