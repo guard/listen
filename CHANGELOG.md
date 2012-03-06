@@ -1,10 +1,10 @@
-## 0.3.3 - 6 Mars, 2012
+## 0.3.3 - March 6, 2012
 
 ### Improvements
 
 - Improve pause/unpause. ([@thibaudgg][])
 
-## 0.3.2 - 4 Mars, 2012
+## 0.3.2 - March 4, 2012
 
 ### New features
 
