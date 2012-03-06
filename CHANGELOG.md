@@ -1,4 +1,4 @@
-## 0.3.2 - 4 Mars, 2012
+## 0.3.2 - March 4, 2012
 
 ### New features
 
