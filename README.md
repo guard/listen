@@ -100,10 +100,12 @@ Listener can also easily be paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
-listener.start   # enter the run loop
+Thread.new { listener.start } # enter the run loop
+listener.wait_until_it_starts
 listener.pause   # stop listening changes
-listener.paused? => true
+listener.paused? # => true
 listener.unpause
+listener.wait_until_it_starts
 listener.stop
 ```
 

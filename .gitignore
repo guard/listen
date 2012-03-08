@@ -4,6 +4,7 @@ doc/*
 *.rbc
 .*.swp
 *.bak
+bundle
 .bundle
 .yardoc
 .rbx
