@@ -81,7 +81,7 @@ module Listen
 
     # Block until the adapter started or has been unpaused
     #
-    def wait_until_it_starts
+    def wait_until_listening
       sleep 0.1 while @adapter.nil? || (@adapter.stop != false && @adapter.paused != false)
     end
 

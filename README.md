@@ -101,11 +101,11 @@ Listener can also easily be paused/unpaused:
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
 Thread.new { listener.start } # enter the run loop
-listener.wait_until_it_starts
+listener.wait_until_listening
 listener.pause   # stop listening changes
 listener.paused? # => true
 listener.unpause
-listener.wait_until_it_starts
+listener.wait_until_listening
 listener.stop
 ```
 
