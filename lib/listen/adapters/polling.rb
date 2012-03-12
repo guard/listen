@@ -37,7 +37,7 @@ module Listen
       #
       def poll
         until @stop
-          sleep 0.1 && next if @paused
+          sleep(0.1) && next if @paused
 
           start = Time.now.to_f
           @callback.call([@directory], :recursive => true)
