@@ -134,7 +134,7 @@ Here are some things you could try to avoid the polling fallback:
 * Move or rename the listened folder.
 * Update/reboot your OS.
 
-If you application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to give all the details).
+If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to give all the details).
 
 ## Development [![Dependency Status](https://gemnasium.com/guard/listen.png?branch=master)](https://gemnasium.com/guard/listen)
 
