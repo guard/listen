@@ -20,10 +20,10 @@ gem install listen
 
 ## Usage
 
-There are two ways you can use Listen.
+There are **two ways** to use Listen:
 
-1. call `Listen.to` with a path params, and define callbacks in a block.
-2. create a `listener` object usable in an (ARel style) chainable way.
+1. Call `Listen.to` with a path and a few (optional) params, then define the `change` callback in a block.
+2. Create a `listener` object and use it in an (ARel style) chainable way.
 
 Feel free to give your feeback via [Listen issues](https://github.com/guard/listener/issues)
 
@@ -101,8 +101,8 @@ Listener can also easily be paused/unpaused:
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
 Thread.new { listener.start } # enter the run loop
-listener.wait_until_listening
-listener.pause   # stop listening changes
+listener.wait_until_listening # blocks exection until the listener starts
+listener.pause   # stop listening to changes
 listener.paused? # => true
 listener.unpause
 listener.wait_until_listening
@@ -126,15 +126,15 @@ before starting it.
 <a name="fallback"/>
 ### Polling fallback
 
-When the OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
-Here some things to try to avoiding this fallback:
+When a OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
+Here are some things you could try to avoid the polling fallback:
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
 * Increase latency. (Please [open an issue](https://github.com/guard/listen/issues/new) if you think that default is too low.)
 * Move or rename the listened folder.
 * Update/reboot your OS.
 
-If it still falling back, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to give all details).
+If you application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to give all the details).
 
 ## Development [![Dependency Status](https://gemnasium.com/guard/listen.png?branch=master)](https://gemnasium.com/guard/listen)
 
