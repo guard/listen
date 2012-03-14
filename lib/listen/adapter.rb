@@ -59,18 +59,34 @@ module Listen
       @latency ||= DEFAULT_LATENCY
       @latency   = options[:latency] if options[:latency]
       @paused    = false
+      @mutex     = Mutex.new
     end
 
     # Start the adapter.
     #
     def start
+      @mutex.lock
       @stop = false
+    ensure
+      @mutex.unlock
     end
 
     # Stop the adapter.
     #
     def stop
       @stop = true
+    end
+
+    # Blocks the current thread until the adapter is started.
+    #
+    # @note: When this method is called from the same thread
+    #   that {#start} is called from, it won't have any effect.
+    #
+    def wait_until_started
+      return unless @stop.nil?
+      @mutex.lock # will block until the mutex is unlocked
+    ensure
+      @mutex.unlock
     end
 
   private
@@ -97,23 +113,16 @@ module Listen
     # @return [Boolean] whether work or not
     #
     def self.work?(directory, options = {})
-      @work = nil
-      Thread.new do
-        begin
-          callback = lambda { |changed_dirs, options| @work = true }
-          adapter  = self.new(directory, options, &callback)
-          thread   = Thread.new { adapter.start }
-          sleep 0.1 # wait for the adapter starts
-          FileUtils.touch "#{directory}/.listen_test"
-          sleep adapter.latency + 0.1 # wait for callback
-          @work ||= false
-          Thread.kill(thread)
-        ensure
-          FileUtils.rm "#{directory}/.listen_test"
-        end
-      end
-      sleep 0.01 while @work.nil?
+      @work = false
+      callback = lambda { |changed_dirs, options| @work = true }
+      adapter  = self.new(directory, options, &callback)
+      thread   = Thread.new { adapter.start }
+      adapter.wait_until_started
+      FileUtils.touch "#{directory}/.listen_test"
+      sleep adapter.latency + 0.1 # wait for callback
       @work
+    ensure
+      FileUtils.rm "#{directory}/.listen_test"
     end
 
   end

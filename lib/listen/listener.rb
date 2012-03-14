@@ -46,9 +46,9 @@ module Listen
     # Initialize the adapter and the @paths concurrently and start the adapter.
     #
     def start
-      Thread.new { @adapter = initialize_adapter }
+      t = Thread.new { @adapter = initialize_adapter }
       init_paths
-      sleep 0.01 while @adapter.nil?
+      t.join
       @adapter.start
     end
 
@@ -82,7 +82,11 @@ module Listen
     # Block until the adapter started or has been unpaused
     #
     def wait_until_listening
-      sleep 0.1 while @adapter.nil? || (@adapter.stop != false && @adapter.paused != false)
+      if @adapter.stop.nil? # Adapter didn't start yet
+        @adapter.wait_until_started
+      elsif @adapter.paused
+        sleep 0.1 until !@adapter.paused
+      end
     end
 
     # Add ignored path to the listener.
