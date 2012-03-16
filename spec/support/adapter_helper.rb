@@ -6,15 +6,13 @@
 def watch(listener, path)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
   @adapter = Listen::Adapter.select_and_initialize(path, { :latency => ENV["TEST_LATENCY"].to_f }, &callback)
+  @adapter.start
 
-  sleep ENV["TEST_LATENCY"].to_f + 0.2 # manage adapter latency
-  t = Thread.new { @adapter.start }
-  sleep 0.1 # wait for adapter to start
   yield
-  sleep ENV["TEST_LATENCY"].to_f + 0.2 # manage adapter latency
+
+  sleep ENV["TEST_LATENCY"].to_f + 0.1 # wait for the adapter to poll changes
 ensure
-  @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
-  Thread.kill(t)
+  @adapter.stop
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|

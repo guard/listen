@@ -65,28 +65,13 @@ module Listen
     # Start the adapter.
     #
     def start
-      @mutex.lock
       @stop = false
-    ensure
-      @mutex.unlock
     end
 
     # Stop the adapter.
     #
     def stop
       @stop = true
-    end
-
-    # Blocks the current thread until the adapter is started.
-    #
-    # @note: When this method is called from the same thread
-    #   that {#start} is called from, it won't have any effect.
-    #
-    def wait_until_started
-      return unless @stop.nil?
-      @mutex.lock # will block until the mutex is unlocked
-    ensure
-      @mutex.unlock
     end
 
   private
@@ -116,8 +101,7 @@ module Listen
       @work = false
       callback = lambda { |changed_dirs, options| @work = true }
       adapter  = self.new(directory, options, &callback)
-      thread   = Thread.new { adapter.start }
-      adapter.wait_until_started
+      adapter.start
       FileUtils.touch "#{directory}/.listen_test"
       sleep adapter.latency + 0.1 # wait for callback
       @work
