@@ -271,7 +271,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
     it 'detects the added files' do
       fixtures do |path|
         if options[:recursive]
-          listener.should_receive(:on_change).once.with([path], :recursive => true)
+          listener.should_receive(:on_change).at_least(:once).with([path], :recursive => true)
         else
           listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
