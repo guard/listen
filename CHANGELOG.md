@@ -1,3 +1,16 @@
+## 0.4 - March 17, 2012
+
+### Improvements
+
+- Encapsulate thread spawning in the linux-adapter ([@Maher4Ever][])
+- Encapsulate thread spawning in the darwin-adapter ([@Maher4Ever][] with [@scottdavis][] help)
+- Encapsulate thread spawning in the windows-adapter ([@Maher4Ever][])
+- Fix linux-adapter bug where Listen would report file-modification events on the parent-directory ([@Maher4Ever][])
+
+### Removals
+
+- Remove `wait_until_listening` as adapters doesn't need to run inside threads anymore ([@Maher4Ever][])
+
 ## 0.3.3 - March 6, 2012
 
 ### Improvements
