@@ -79,16 +79,6 @@ module Listen
       !!@adapter && @adapter.paused == true
     end
 
-    # Block until the adapter started or has been unpaused
-    #
-    def wait_until_listening
-      if @adapter.stop.nil? # Adapter didn't start yet
-        @adapter.wait_until_started
-      elsif @adapter.paused
-        sleep 0.1 until !@adapter.paused
-      end
-    end
-
     # Add ignored path to the listener.
     #
     # @example Ignore some paths
