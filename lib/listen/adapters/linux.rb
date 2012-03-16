@@ -1,5 +1,3 @@
-require 'set'
-
 module Listen
   module Adapters
 
@@ -18,7 +16,6 @@ module Listen
       #
       def initialize(directory, options = {}, &callback)
         super
-        @changed_dirs = Set.new
         init_worker
       end
 
@@ -77,25 +74,6 @@ module Listen
           @mutex.synchronize do
             @changed_dirs << File.dirname(event.absolute_name)
           end
-        end
-      end
-
-      # Polling around @changed_dirs presence.
-      #
-      def poll_changed_dirs
-        until @stop
-          sleep(@latency)
-
-          next if @changed_dirs.empty?
-
-          changed_dirs = []
-
-          @mutex.synchronize do
-            changed_dirs = @changed_dirs.to_a
-            @changed_dirs.clear
-          end
-
-          @callback.call(changed_dirs, {})
         end
       end
 

@@ -1,4 +1,5 @@
 require 'rbconfig'
+require 'set'
 
 module Listen
   class Adapter
@@ -54,12 +55,13 @@ module Listen
     # @return [Listen::Adapter] the adapter
     #
     def initialize(directory, options = {}, &callback)
-      @directory = directory
-      @callback  = callback
-      @latency ||= DEFAULT_LATENCY
-      @latency   = options[:latency] if options[:latency]
-      @paused    = false
-      @mutex     = Mutex.new
+      @directory    = directory
+      @callback     = callback
+      @latency    ||= DEFAULT_LATENCY
+      @latency      = options[:latency] if options[:latency]
+      @paused       = false
+      @mutex        = Mutex.new
+      @changed_dirs = Set.new
     end
 
     # Start the adapter.
@@ -102,11 +104,34 @@ module Listen
       callback = lambda { |changed_dirs, options| @work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start
+
       FileUtils.touch "#{directory}/.listen_test"
       sleep adapter.latency + 0.1 # wait for callback
       @work
     ensure
       FileUtils.rm "#{directory}/.listen_test"
+    end
+
+    # Polls changed directories and report them back
+    # when there are changes.
+    #
+    # @option [Boolean] recursive whether or not to pass the recursive option to the callback
+    #
+    def poll_changed_dirs(recursive = false)
+      until @stop
+        sleep(@latency)
+
+        next if @changed_dirs.empty?
+
+        changed_dirs = []
+
+        @mutex.synchronize do
+          changed_dirs = @changed_dirs.to_a
+          @changed_dirs.clear
+        end
+
+        @callback.call(changed_dirs, recursive ? {:recursive => recursive} : {})
+      end
     end
 
   end

@@ -283,7 +283,8 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           touch 'b_file.rb'
           mkdir 'a_directory'
           # Needed for INotify, because of :recursive rb-inotify custom flag?
-          sleep 0.05 if @adapter.is_a?(Listen::Adapters::Linux)
+          # Also needed for the osx adapter
+          sleep 0.05
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
         end
