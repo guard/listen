@@ -11,31 +11,31 @@ ensure
 end
 
 describe Listen::Turnstile do
+  before { @called = false }
+
   describe '#wait' do
     context 'without a signal' do
       it 'blocks one thread indefinitely' do
-        called = false
         run_in_two_threads lambda {
           subject.wait
-          called = true
+          @called = true
         }, lambda {
           sleep test_latency
         }
-        called.should be_false
+        @called.should be_false
       end
     end
 
     context 'with a signal' do
       it 'blocks one thread until it recieves a signal from another thread' do
-        called = false
         run_in_two_threads lambda {
           subject.wait
-          called = true
+          @called = true
         }, lambda {
           subject.signal
           sleep test_latency
         }
-        called.should be_true
+        @called.should be_true
       end
     end
   end
@@ -43,14 +43,13 @@ describe Listen::Turnstile do
   describe '#signal' do
     context 'without a wait-call before' do
       it 'does nothing' do
-        called = false
         run_in_two_threads lambda {
           subject.signal
-          called = true
+          @called = true
         }, lambda {
           sleep test_latency
         }
-        called.should be_true
+        @called.should be_true
       end
     end
   end
