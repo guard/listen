@@ -1,11 +1,14 @@
 ## 0.4 - March 17, 2012
 
+### New features
+- Add `wait_for_callback` method to adapters. ([@Maher4Ever][])
+
 ### Improvements
 
-- Encapsulate thread spawning in the linux-adapter ([@Maher4Ever][])
-- Encapsulate thread spawning in the darwin-adapter ([@Maher4Ever][] with [@scottdavis][] help)
-- Encapsulate thread spawning in the windows-adapter ([@Maher4Ever][])
-- Fix linux-adapter bug where Listen would report file-modification events on the parent-directory ([@Maher4Ever][])
+- Encapsulate thread spawning in the linux-adapter. ([@Maher4Ever][])
+- Encapsulate thread spawning in the darwin-adapter. ([@Maher4Ever][] with [@scottdavis][] help)
+- Encapsulate thread spawning in the windows-adapter. ([@Maher4Ever][])
+- Fix linux-adapter bug where Listen would report file-modification events on the parent-directory. ([@Maher4Ever][])
 
 ### Removals
 
