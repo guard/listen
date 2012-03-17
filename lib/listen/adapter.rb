@@ -62,6 +62,7 @@ module Listen
       @paused       = false
       @mutex        = Mutex.new
       @changed_dirs = Set.new
+      @turnstile    = Turnstile.new
     end
 
     # Start the adapter.
@@ -74,6 +75,14 @@ module Listen
     #
     def stop
       @stop = true
+      @turnstile.signal # ensure no thread is blocked
+    end
+
+    # Blocks the main thread until the poll_thread
+    # calls the callback.
+    #
+    def wait_for_callback
+      @turnstile.wait unless @paused
     end
 
   private
@@ -104,9 +113,8 @@ module Listen
       callback = lambda { |changed_dirs, options| @work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start
-
       FileUtils.touch "#{directory}/.listen_test"
-      sleep adapter.latency + 0.1 # wait for callback
+      adapter.wait_for_callback
       @work
     ensure
       FileUtils.rm "#{directory}/.listen_test"
@@ -131,6 +139,7 @@ module Listen
         end
 
         @callback.call(changed_dirs, recursive ? {:recursive => recursive} : {})
+        @turnstile.signal
       end
     end
 

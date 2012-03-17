@@ -10,7 +10,7 @@ def watch(listener, path)
 
   yield
 
-  sleep ENV["TEST_LATENCY"].to_f + 0.1 # wait for the adapter to poll changes
+  @adapter.wait_for_callback
 ensure
   @adapter.stop
 end
