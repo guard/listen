@@ -57,10 +57,10 @@ module Listen
       def init_worker
         @worker = INotify::Notifier.new
         @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
-          if @paused or (
+          if @paused || (
             # Event on root directory
             event.name == ""
-          ) or (
+          ) || (
             # INotify reports changes to files inside directories as events
             # on the directories themselves too.
             #
