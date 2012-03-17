@@ -5,7 +5,7 @@
 #
 def watch(listener, path)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
-  @adapter = Listen::Adapter.select_and_initialize(path, { :latency => ENV["TEST_LATENCY"].to_f }, &callback)
+  @adapter = Listen::Adapter.select_and_initialize(path, { :latency => test_latency }, &callback)
   @adapter.start
 
   yield
