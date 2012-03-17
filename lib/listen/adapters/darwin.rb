@@ -5,6 +5,8 @@ module Listen
     #
     class Darwin < Adapter
 
+      LAST_SEPARATOR_REGEX = /\/$/
+
       # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #
       def initialize(directory, options = {}, &callback)
@@ -16,7 +18,13 @@ module Listen
       #
       def start
         super
-        @worker.run
+        @worker_thread = Thread.new { @worker.run }
+        @poll_thread   = Thread.new { poll_changed_dirs }
+
+        # The FSEvent worker needs sometime to startup. Turnstiles can't
+        # be used to wait for it as it runs in a loop.
+        # TODO: Find a better way to block until the worker starts.
+        sleep @latency
       end
 
       # Stop the adapter.
@@ -24,6 +32,8 @@ module Listen
       def stop
         super
         @worker.stop
+        Thread.kill @worker_thread
+        @poll_thread.join
       end
 
       # Check if the adapter is usable on the current OS.
@@ -45,11 +55,11 @@ module Listen
       #
       def init_worker
         @worker = FSEvent.new
-        @worker.watch(@directory, :latency => @latency) do |changed_dirs|
+        @worker.watch(@directory, :latency => @latency) do |directories|
           next if @paused
-
-          changed_dirs.map! { |path| path.sub /\/$/, '' }
-          @callback.call(changed_dirs, {})
+          @mutex.synchronize do
+            directories.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
+          end
         end
       end
 
