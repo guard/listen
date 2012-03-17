@@ -6,7 +6,7 @@ describe Listen::Turnstile do
       it 'blocks one thread indefinitely' do
         called = false
         t1 = Thread.new { subject.wait; called = true }
-        t2 = Thread.new { sleep 0.1; Thread.kill t1 }
+        t2 = Thread.new { sleep ENV["TEST_LATENCY"]; Thread.kill t1 }
         t2.join
         called.should be_false
       end
@@ -16,7 +16,7 @@ describe Listen::Turnstile do
       it 'blocks one thread until it recieves a signal from another thread' do
         called = false
         t1 = Thread.new { subject.wait; called = true }
-        t2 = Thread.new { subject.signal; sleep 0.1; Thread.kill t1 }
+        t2 = Thread.new { subject.signal; sleep ENV["TEST_LATENCY"]; Thread.kill t1 }
         t2.join
         called.should be_true
       end
@@ -28,7 +28,7 @@ describe Listen::Turnstile do
       it 'does nothing' do
         called = false
         t1 = Thread.new { subject.signal; called = true }
-        t2 = Thread.new { sleep 0.1; Thread.kill t1 }
+        t2 = Thread.new { sleep ENV["TEST_LATENCY"]; Thread.kill t1 }
         t2.join
         called.should be_true
       end
