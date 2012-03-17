@@ -22,13 +22,14 @@ module Listen
       #
       def start
         super
-        poll
+        @poll_thread = Thread.new { poll }
       end
 
       # Stop the adapter.
       #
       def stop
         super
+        @poll_thread.join
       end
 
     private
@@ -41,6 +42,7 @@ module Listen
 
           start = Time.now.to_f
           @callback.call([@directory], :recursive => true)
+          @turnstile.signal
           nap_time = @latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0
         end
