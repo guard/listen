@@ -1,6 +1,7 @@
 require 'find'
 require 'digest/sha1'
 
+require 'listen/turnstile'
 require 'listen/adapter'
 require 'listen/adapters/darwin'
 require 'listen/adapters/linux'
@@ -46,9 +47,9 @@ module Listen
     # Initialize the adapter and the @paths concurrently and start the adapter.
     #
     def start
-      Thread.new { @adapter = initialize_adapter }
+      t = Thread.new { @adapter = initialize_adapter }
       init_paths
-      sleep 0.01 while @adapter.nil?
+      t.join
       @adapter.start
     end
 
@@ -77,12 +78,6 @@ module Listen
     #
     def paused?
       !!@adapter && @adapter.paused == true
-    end
-
-    # Block until the adapter started or has been unpaused
-    #
-    def wait_until_listening
-      sleep 0.1 while @adapter.nil? || (@adapter.stop != false && @adapter.paused != false)
     end
 
     # Add ignored path to the listener.

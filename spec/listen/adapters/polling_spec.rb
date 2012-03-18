@@ -14,23 +14,25 @@ describe Listen::Adapters::Polling do
     let(:callback) { lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) } }
     subject { Listen::Adapters::Polling.new('dir', {}, &callback) }
 
+    after { subject.stop }
+
     it "calls listener.on_change" do
       listener.should_receive(:on_change).at_least(1).times.with(['dir'], :recursive => true)
-      Thread.new { subject.start }
-      sleep 0.1
+      subject.start
+      subject.wait_for_callback
     end
 
     it "calls listener.on_change continuously" do
       subject.latency = 0.001
       listener.should_receive(:on_change).at_least(10).times.with(['dir'], :recursive => true)
-      Thread.new { subject.start }
-      sleep 0.1
+      subject.start
+      10.times { subject.wait_for_callback }
     end
 
     it "doesn't call listener.on_change if paused" do
       subject.paused = true
-      Thread.new { subject.start }
-      sleep 0.2
+      subject.start
+      subject.wait_for_callback
       @called.should be_nil
     end
   end

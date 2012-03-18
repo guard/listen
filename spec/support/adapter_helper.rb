@@ -5,16 +5,14 @@
 #
 def watch(listener, path)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
-  @adapter = Listen::Adapter.select_and_initialize(path, { :latency => ENV["TEST_LATENCY"].to_f }, &callback)
+  @adapter = Listen::Adapter.select_and_initialize(path, { :latency => test_latency }, &callback)
+  @adapter.start
 
-  sleep ENV["TEST_LATENCY"].to_f + 0.2 # manage adapter latency
-  t = Thread.new { @adapter.start }
-  sleep 0.1 # wait for adapter to start
   yield
-  sleep ENV["TEST_LATENCY"].to_f + 0.2 # manage adapter latency
+
+  @adapter.wait_for_callback
 ensure
-  @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
-  Thread.kill(t)
+  @adapter.stop
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
@@ -273,7 +271,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
     it 'detects the added files' do
       fixtures do |path|
         if options[:recursive]
-          listener.should_receive(:on_change).once.with([path], :recursive => true)
+          listener.should_receive(:on_change).at_least(:once).with([path], :recursive => true)
         else
           listener.should_receive(:on_change).once.with do |array, options|
             array.should =~ [path, "#{path}/a_directory"]
@@ -285,7 +283,8 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           touch 'b_file.rb'
           mkdir 'a_directory'
           # Needed for INotify, because of :recursive rb-inotify custom flag?
-          sleep 0.05 if @adapter.is_a?(Listen::Adapters::Linux)
+          # Also needed for the osx adapter
+          sleep 0.05
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
         end

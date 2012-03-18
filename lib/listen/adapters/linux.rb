@@ -1,5 +1,3 @@
-require 'set'
-
 module Listen
   module Adapters
 
@@ -18,7 +16,6 @@ module Listen
       #
       def initialize(directory, options = {}, &callback)
         super
-        @changed_dirs = Set.new
         init_worker
       end
 
@@ -26,8 +23,8 @@ module Listen
       #
       def start
         super
-        Thread.new { @worker.run }
-        poll_changed_dirs
+        @worker_thread = Thread.new { @worker.run }
+        @poll_thread   = Thread.new { poll_changed_dirs }
       end
 
       # Stop the adapter.
@@ -35,6 +32,9 @@ module Listen
       def stop
         super
         @worker.stop
+        # Although the worker is stopped, the thread needs to be killed!
+        Thread.kill @worker_thread
+        @poll_thread.join
       end
 
       # Check if the adapter is usable on the current OS.
@@ -57,24 +57,23 @@ module Listen
       def init_worker
         @worker = INotify::Notifier.new
         @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
-          next if @paused
-          
-          unless event.name == "" # Event on root directory
+          if @paused or (
+            # Event on root directory
+            event.name == ""
+          ) or (
+            # INotify reports changes to files inside directories as events
+            # on the directories themselves too.
+            #
+            # @see http://linux.die.net/man/7/inotify
+            event.flags.include?(:isdir) and event.flags & [:close, :modify] != []
+          )
+            # Skip all of these!
+            next
+          end
+
+          @mutex.synchronize do
             @changed_dirs << File.dirname(event.absolute_name)
           end
-        end
-      end
-
-      # Polling around @changed_dirs presence.
-      #
-      def poll_changed_dirs
-        until @stop
-          sleep(@latency)
-
-          next if @changed_dirs.empty?
-          changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear
-          @callback.call(changed_dirs, {})
         end
       end
 

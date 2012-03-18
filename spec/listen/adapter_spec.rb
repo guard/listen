@@ -21,19 +21,19 @@ describe Listen::Adapter do
         Listen::Adapters::Polling.should_receive(:new).with('dir', {})
         described_class.select_and_initialize('dir')
       end
-      
+
       it "warns with the default polling fallback message" do
         Kernel.should_receive(:warn).with(Listen::Adapter::POLLING_FALLBACK_MESSAGE)
         described_class.select_and_initialize('dir')
       end
-      
+
       context "with custom polling_fallback_message option" do
         it "warns with the custom polling fallback message" do
           Kernel.should_receive(:warn).with('custom')
           described_class.select_and_initialize('dir', :polling_fallback_message => 'custom')
         end
       end
-      
+
       context "with polling_fallback_message to false" do
         it "doesn't warn with a polling fallback message" do
           Kernel.should_not_receive(:warn)
