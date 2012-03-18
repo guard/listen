@@ -12,7 +12,8 @@ def watch(listener, path)
 
   @adapter.wait_for_callback
 ensure
-  @adapter.stop
+  # Prevent spec suite to block on Darwin when stopping adapter
+  @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
