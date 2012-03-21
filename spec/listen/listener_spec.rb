@@ -23,7 +23,7 @@ describe Listen::Listener do
       subject { described_class.new(base_directory, :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 0.5, :force_polling => true) }
 
       it 'passes the custom ignored paths to the directory record' do
-        subject.directory_record.ignored_paths.should eq %w[.bundle .git .DS_Store log tmp vendor .ssh]
+        subject.directory_record.ignored_paths.should =~ %w[.bundle .git .DS_Store log tmp vendor .ssh]
       end
 
       it 'passes the custom filters to the directory record' do

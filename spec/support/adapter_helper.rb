@@ -10,7 +10,7 @@ def watch(listener, *paths)
 
   yield
 
-  t = Thread.new { sleep(test_latency * 2); @adapter.stop }
+  t = Thread.new { sleep(test_latency * 5); @adapter.stop }
   @adapter.wait_for_callback
 ensure
   Thread.kill(t) if t
@@ -414,9 +414,13 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
       it 'detects added files' do
         fixtures(2) do |path1, path2|
           if options[:recursive]
-            listener.should_receive(:on_change).once.with([path1, path2], :recursive => true)
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
           else
-            listener.should_receive(:on_change).once.with([path1, path2], {})
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {}
+            end
           end
 
           watch(listener, path1, path2) do
@@ -431,10 +435,12 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
       it 'detects the added file' do
         fixtures(2) do |path1, path2|
           if options[:recursive]
-            listener.should_receive(:on_change).once.with([path1, path2], :recursive => true)
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
           else
             listener.should_receive(:on_change).once.with do |directories, options|
-              directories.should =~ [path2, "#{path1}/a_directory", "#{path2}/b_directory"] && options == {}
+              directories.should =~ [path2, "#{path2}/b_directory", "#{path1}/a_directory"] && options.should == {}
             end
           end
 
@@ -454,10 +460,12 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
       it 'detects the movements of the file' do
         fixtures(3) do |path1, path2, path3|
           if options[:recursive]
-            listener.should_receive(:on_change).once.with([path1, path2, path3], :recursive => true)
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2, path3] && options.should == {:recursive => true}
+            end
           else
             listener.should_receive(:on_change).once.with do |directories, options|
-              directories.should =~ ["#{path1}/from_directory", path2, "#{path3}/to_directory"] && options == {}
+              directories.should =~ ["#{path1}/from_directory", path2, "#{path3}/to_directory"] && options.should == {}
             end
           end
 
@@ -477,10 +485,12 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
       it 'detects the files removal' do
         fixtures(2) do |path1, path2|
           if options[:recursive]
-            listener.should_receive(:on_change).once.with([path], :recursive => true)
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
           else
             listener.should_receive(:on_change).once.with do |directories, options|
-              directories.should =~ [path1, path2]
+              directories.should =~ [path1, path2] && options.should == {}
             end
           end
 

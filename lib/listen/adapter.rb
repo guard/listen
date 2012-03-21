@@ -112,14 +112,16 @@ module Listen
     #
     def self.works?(directory, options = {})
       work = false
+      test_file = "#{directory}/.listen_test"
       callback = lambda { |changed_dirs, options| work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start
-      FileUtils.touch "#{directory}/.listen_test"
+      FileUtils.touch(test_file)
       adapter.wait_for_callback
       work
     ensure
-      FileUtils.rm "#{directory}/.listen_test"
+      FileUtils.rm(test_file) if File.exists?(test_file)
+      adapter.stop
     end
 
     private
@@ -132,7 +134,6 @@ module Listen
     def poll_changed_dirs(recursive = false)
       until @stop
         sleep(@latency)
-
         next if @changed_dirs.empty?
 
         changed_dirs = []
