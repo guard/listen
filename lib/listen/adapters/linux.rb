@@ -14,26 +14,25 @@ module Listen
 
       # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(directory, options = {}, &callback)
+      def initialize(directories, options = {}, &callback)
         super
-        init_worker
+        @workers = Array.new(@directories.size) { |i| init_worker_for(@directories[i]) }
       end
 
       # Start the adapter.
       #
       def start
         super
-        @worker_thread = Thread.new { @worker.run }
-        @poll_thread   = Thread.new { poll_changed_dirs }
+        @workers_pool = @workers.map { |w| Thread.new { w.run } }
+        @poll_thread = Thread.new { poll_changed_dirs }
       end
 
       # Stop the adapter.
       #
       def stop
         super
-        @worker.stop
-        # Although the worker is stopped, the thread needs to be killed!
-        Thread.kill @worker_thread
+        @workers.map(&:stop)
+        @workers_pool.map { |t| Thread.kill(t) if t }
         @poll_thread.join
       end
 
@@ -52,11 +51,16 @@ module Listen
 
     private
 
-      # Initialize INotify worker and set watch callback block.
+      # Initializes a INotify worker for a given directory
+      # and sets its callback.
       #
-      def init_worker
-        @worker = INotify::Notifier.new
-        @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
+      # @param [String] directory the directory to be watched
+      #
+      # @return [INotify::Notifier] initialized worker
+      #
+      def init_worker_for(directory)
+        worker = INotify::Notifier.new
+        worker.watch(directory, *EVENTS.map(&:to_sym)) do |event|
           if @paused || (
             # Event on root directory
             event.name == ""
@@ -75,6 +79,7 @@ module Listen
             @changed_dirs << File.dirname(event.absolute_name)
           end
         end
+        worker
       end
 
     end

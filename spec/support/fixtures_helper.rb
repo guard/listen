@@ -2,22 +2,28 @@ require 'tmpdir'
 
 include FileUtils
 
-# Prepares the temporary fixture directory and
-# cleans it afterwards.
+# Prepares temporary fixture-directories and
+# cleans them afterwards.
 #
-# @yield [path] an empty fixture directory
-# @yieldparam [String] path the path to the fixture directory
+# @param [Fixnum] number_of_directories the number of fixture-directories to make
 #
-def fixtures
-  pwd  = FileUtils.pwd
-  path = File.expand_path(File.join(pwd, "spec/.fixtures/#{rand(99999)}"))
+# @yield [path1, path2, ...] the empty fixture-directories
+# @yieldparam [String] path the path to a fixture directory
+#
+def fixtures(number_of_directories = 1)
+  current_pwd = pwd
+  paths = 1.upto(number_of_directories).map do
+    File.expand_path(File.join(pwd, "spec/.fixtures/#{Time.now.to_f.to_s.sub('.', '')}"))
+  end
 
-  FileUtils.mkdir_p(path)
-  FileUtils.cd(path)
+  # Create the dirs
+  paths.each { |p| mkdir_p(p) }
 
-  yield(path)
+  cd(paths.first) if number_of_directories == 1
+
+  yield(*paths)
 
 ensure
-  FileUtils.cd pwd
-  FileUtils.rm_rf(path) if File.exists?(path)
+  cd current_pwd
+  paths.map { |p| rm_rf(p) if File.exists?(p) }
 end
