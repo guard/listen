@@ -1,6 +1,16 @@
-require 'listen/listener'
-
 module Listen
+
+  autoload :Turnstile,       'listen/turnstile'
+  autoload :Listener,        'listen/listener'
+  autoload :DirectoryRecord, 'listen/directory_record'
+  autoload :Adapter,         'listen/adapter'
+
+  module Adapters
+    autoload :Darwin,  'listen/adapters/darwin'
+    autoload :Linux,   'listen/adapters/linux'
+    autoload :Windows, 'listen/adapters/windows'
+    autoload :Polling, 'listen/adapters/polling'
+  end
 
   # Listen to file system modifications.
   #
