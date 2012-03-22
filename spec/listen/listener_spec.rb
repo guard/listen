@@ -27,7 +27,7 @@ describe Listen::Listener do
       end
 
       it 'passes the custom filters to the directory record' do
-        subject.directory_record.filters.should eq  [/.*\.rb/,/.*\.md/]
+        subject.directory_record.filters.should =~  [/.*\.rb/,/.*\.md/]
       end
 
       it 'sets adapter_options' do
