@@ -7,19 +7,19 @@ module Listen
 
       LAST_SEPARATOR_REGEX = /\/$/
 
-      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(directory, options = {}, &callback)
+      def initialize(directories, options = {}, &callback)
         super
-        init_worker
+        @workers = Array.new(@directories.size) { |i| init_worker_for(@directories[i]) }
       end
 
-      # Start the adapter.
+      # Starts the adapter.
       #
       def start
         super
-        @worker_thread = Thread.new { @worker.run }
-        @poll_thread   = Thread.new { poll_changed_dirs }
+        @workers_pool = @workers.map { |w| Thread.new { w.run } }
+        @poll_thread  = Thread.new { poll_changed_dirs }
 
         # The FSEvent worker needs sometime to startup. Turnstiles can't
         # be used to wait for it as it runs in a loop.
@@ -27,16 +27,16 @@ module Listen
         sleep @latency
       end
 
-      # Stop the adapter.
+      # Stops the adapter.
       #
       def stop
         super
-        @worker.stop
-        Thread.kill @worker_thread
+        @workers.map(&:stop)
+        @workers_pool.map { |t| Thread.kill(t) if t }
         @poll_thread.join
       end
 
-      # Check if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on the current OS.
       #
       # @return [Boolean] whether usable or not
       #
@@ -49,16 +49,22 @@ module Listen
         false
       end
 
-    private
+      private
 
-      # Initialiaze FSEvent worker and set watch callback block
+      # Initializes a FSEvent worker for a given directory
+      # and sets its callback.
       #
-      def init_worker
-        @worker = FSEvent.new
-        @worker.watch(@directory, :latency => @latency) do |directories|
-          next if @paused
-          @mutex.synchronize do
-            directories.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
+      # @param [String] directory the directory to be watched
+      #
+      # @return [FSEvent] initialized worker
+      #
+      def init_worker_for(directory)
+        FSEvent.new.tap do |worker|
+          worker.watch(directory, :latency => @latency) do |directories|
+            next if @paused
+            @mutex.synchronize do
+              directories.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
+            end
           end
         end
       end
