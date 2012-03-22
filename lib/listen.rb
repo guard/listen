@@ -13,14 +13,9 @@ module Listen
     autoload :Polling, 'listen/adapters/polling'
   end
 
-  # Listen to file system modifications.
+  # Listens to filesystem modifications on a single directory.
   #
-  # @param [String, Pathname] dir the directory to watch
-  # @param [Hash] options the listen options
-  # @option options [String] ignore a list of paths to ignore
-  # @option options [Regexp] filter a list of regexps file filters
-  # @option options [Float] latency the delay between checking for changes in seconds
-  # @option options [Boolean] polling whether to force or disable the polling adapter
+  # @param (see Listen::Listener#new)
   #
   # @yield [modified, added, removed] the changed files
   # @yieldparam [Array<String>] modified the list of modified files
@@ -31,6 +26,22 @@ module Listen
   #
   def self.to(*args, &block)
     listener = Listener.new(*args, &block)
+    block ? listener.start : listener
+  end
+
+  # Listens to filesystem modifications on multiple directories.
+  #
+  # @param (see Listen::MultiListener#new)
+  #
+  # @yield [modified, added, removed] the changed files
+  # @yieldparam [Array<String>] modified the list of modified files
+  # @yieldparam [Array<String>] added the list of added files
+  # @yieldparam [Array<String>] removed the list of removed files
+  #
+  # @return [Listen::MultiListener] the file listener if no block given
+  #
+  def self.to_each(*args, &block)
+    listener = MultiListener.new(*args, &block)
     block ? listener.start : listener
   end
 
