@@ -21,10 +21,11 @@ module Listen
       @block            = block
       @directory        = directory
       @directory_record = DirectoryRecord.new(directory)
-      @adapter_options  = options
 
       @directory_record.ignore(*options.delete(:ignore)) if options[:ignore]
       @directory_record.filter(*options.delete(:filter)) if options[:filter]
+
+      @adapter_options = options
     end
 
     # Starts the listener by initializing the adapter and building

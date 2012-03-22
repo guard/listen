@@ -2,6 +2,7 @@ module Listen
 
   autoload :Turnstile,       'listen/turnstile'
   autoload :Listener,        'listen/listener'
+  autoload :MultiListener,   'listen/multi_listener'
   autoload :DirectoryRecord, 'listen/directory_record'
   autoload :Adapter,         'listen/adapter'
 

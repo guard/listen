@@ -1,6 +1,7 @@
 require 'rbconfig'
 require 'thread'
 require 'set'
+require 'fileutils'
 
 module Listen
   class Adapter

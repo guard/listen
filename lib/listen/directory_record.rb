@@ -1,3 +1,4 @@
+require 'set'
 require 'find'
 require 'pathname'
 require 'digest/sha1'
