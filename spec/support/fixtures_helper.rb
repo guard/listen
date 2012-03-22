@@ -13,7 +13,7 @@ include FileUtils
 def fixtures(number_of_directories = 1)
   current_pwd = pwd
   paths = 1.upto(number_of_directories).map do
-    File.expand_path(File.join(pwd, "spec/.fixtures/#{Time.now.to_f.to_s.sub('.', '')}"))
+    File.expand_path(File.join(pwd, "spec/.fixtures/#{Time.now.to_f.to_s.sub('.', '') + rand(9999).to_s}"))
   end
 
   # Create the dirs

@@ -11,7 +11,7 @@ describe Listen::DirectoryRecord do
     end
 
     it 'sets the default ignored paths' do
-      subject.ignored_paths.should eq described_class::DEFAULT_IGNORED_PATHS
+      subject.ignored_paths.should =~ described_class::DEFAULT_IGNORED_PATHS
     end
 
     it 'sets the default filters' do

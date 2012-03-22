@@ -7,14 +7,14 @@ module Listen
     #
     class Windows < Adapter
 
-      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(directory, options = {}, &callback)
+      def initialize(directories, options = {}, &callback)
         super
-        init_worker
+        @worker = init_worker
       end
 
-      # Start the adapter.
+      # Starts the adapter.
       #
       def start
         super
@@ -22,16 +22,16 @@ module Listen
         @poll_thread   = Thread.new { poll_changed_dirs(true) }
       end
 
-      # Stop the adapter.
+      # Stops the adapter.
       #
       def stop
         super
         @worker.stop
-        Thread.kill @worker_thread
+        Thread.kill(@worker_thread) if @worker_thread
         @poll_thread.join
       end
 
-      # Check if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on the current OS.
       #
       # @return [Boolean] whether usable or not
       #
@@ -46,16 +46,23 @@ module Listen
 
     private
 
-      # Initialiaze FSEvent worker and set watch callback block
+      # Initializes a FChange worker and adds a watcher for
+      # each directory passed to the adapter.
+      #
+      # @return [FChange::Notifier] initialized worker
       #
       def init_worker
-        @worker = FChange::Notifier.new
-        @worker.watch(@directory, :all_events, :recursive) do |event|
-          next if @paused
-          @mutex.synchronize do
-            @changed_dirs << File.expand_path(event.watcher.path)
+        worker = FChange::Notifier.new
+        @directories.each do |directory|
+          watcher = worker.watch(directory, :all_events, :recursive) do |event|
+            next if @paused
+            @mutex.synchronize do
+              @changed_dirs << File.expand_path(event.watcher.path)
+            end
           end
+          worker.add_watcher(watcher)
         end
+        worker
       end
 
     end
