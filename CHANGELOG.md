@@ -5,6 +5,7 @@
 - Add `wait_for_callback` method to adapters. ([@Maher4Ever][])
 - Add `Listen::MultiListener` class to listen to multiple directories at once. ([@Maher4Ever][])
 - Add `Listen::to_each` to easily use the `MultiListener`. ([@Maher4Ever][])
+- Add `blocking` option to `Listen#start` which can be used to disable blocking the cuttent thread upon starting. ([@Maher4Ever][])
 
 ### Improvements
 
