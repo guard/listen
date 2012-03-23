@@ -5,12 +5,13 @@ The Listen gem listens to file modifications and notifies you about the changes.
 ## Features
 
 * Works everywhere!
+* Supports watching multiple directories from a single listener.
 * OS-specific adapters for Mac OS X 10.6+, Linux and Windows.
 * Automatic fallback to polling if OS-specific adapter doesn't work.
 * Detects files modification, addidation and removal.
 * Checksum comparaison for modifications made under the same second.
+* Allows ignoring paths and suppling filters for better results.
 * Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
-* Threadable.
 
 ## Install
 
@@ -22,7 +23,7 @@ gem install listen
 
 There are **two ways** to use Listen:
 
-1. Call `Listen.to` with a path and a few (optional) params, then define the `change` callback in a block.
+1. Call `Listen.to` or `Listen.to_each` with a path and a few (optional) params, then define the `change` callback in a block.
 2. Create a `listener` object and use it in an (ARel style) chainable way.
 
 Feel free to give your feeback via [Listen issues](https://github.com/guard/listener/issues)
@@ -30,7 +31,13 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 ### Block API
 
 ``` ruby
+# Listen to a single directory.
 Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path') do |modified, added, removed|
+  # ...
+end
+
+# Listen to multiple directories.
+Listen.to_each('dir/to/awesome_app', 'dir/to/other_app', filter: /.*\.rb/, latency: 0.1) do |modified, added, removed|
   # ...
 end
 ```
@@ -45,8 +52,7 @@ listener = listener.latency(0.5)
 listener = listener.force_polling(true)
 listener = listener.polling_fallback_message(false)
 listener = listener.change(&callback)
-listener.start # enter the run loop
-listener.stop
+listener.start # blocks execution!
 ```
 
 #### Chainable
@@ -59,18 +65,21 @@ Listen.to('dir/path/to/listen')
       .force_polling(true)
       .polling_fallback_message('custom message')
       .change(&callback)
-      .start # enter the run loop
+      .start # blocks execution!
 ```
 
-#### Multiple listeners support available via Thread
+#### `MultiListener` to watch multiple directories
+
+The Listen gem provides `MultiListener` to watch multiple directories and
+handle their changes from a single listener. For an easier access, the
+`Listen.to_each` method can be used to create a multi-listener:
 
 ``` ruby
-listener = Listen.to(dir1).ignore('/ignored/path/')
-styles   = listener.filter(/.*\.css/).change(&style_callback)
-scripts  = listener.filter(/.*\.js/).change(&scripts_callback)
+listener = Listen.to_each('app/css', 'app/js')
+                 .ignore('vendor') # both js/vendor and css/vendor will be ignored
+                 .change(&assets_callback)
 
-Thread.new { styles.start } # enter the run loop
-Thread.new { scripts.start } # enter the run loop
+listener.start # blocks execution!
 ```
 
 ### Options
@@ -94,18 +103,38 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
                                                # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 ```
 
+### Non-blocking listening to changes
+
+Starting a listener blocks the current thread by default. That means any code after the
+`start` call won't be run until the listener is stopped (which needs to be done from another thread).
+
+For advanced usage there is an option to disable this behavior and have the listener start working
+in the background without blocking. To enable non-blocking listening the `start` method of
+the listener (be it `Listener` or `MultiListener`) needs to be called with `false` as a parameter.
+
+Here is an example of using a listener in the non-blocking mode:
+
+```ruby
+listener = Listen.to('dir/path/to/listen')
+listener.start(false) # doesn't block execution
+
+# Code here will run immediately after starting the listener
+
+```
+
+**note**: Using helper methods like `Listen.to` or `Listen.to_each` with a callback-block will always
+block execution.
+
 ### Pause/Unpause
 
 Listener can also easily be paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
-Thread.new { listener.start } # enter the run loop
-listener.wait_until_listening # blocks exection until the listener starts
+listener.start(false) # non-blocking mode
 listener.pause   # stop listening to changes
 listener.paused? # => true
 listener.unpause
-listener.wait_until_listening
 listener.stop
 ```
 
