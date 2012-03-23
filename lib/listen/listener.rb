@@ -32,11 +32,13 @@ module Listen
     # the directory record concurrently, then it starts the adapter to watch
     # for changes.
     #
-    def start
+    # @param [Boolean] blocking weather or not to block the current thread after starting
+    #
+    def start(blocking = true)
       t = Thread.new { @adapter = initialize_adapter }
       @directory_record.build
       t.join
-      @adapter.start
+      @adapter.start(blocking)
     end
 
     # Stops the listener.

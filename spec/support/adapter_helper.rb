@@ -6,7 +6,7 @@
 def watch(listener, *paths)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
   @adapter = Listen::Adapter.select_and_initialize(paths, { :latency => test_latency }, &callback)
-  @adapter.start
+  @adapter.start(false)
 
   yield
 
@@ -14,6 +14,33 @@ def watch(listener, *paths)
   @adapter.wait_for_callback
 ensure
   Thread.kill(t) if t
+end
+
+shared_examples_for 'a filesystem adapter' do
+  subject { described_class.new(File.dirname(__FILE__)) }
+
+  describe '#start' do
+    context 'with the blocking param set to true' do
+      it 'blocks the current thread after starting the workers' do
+        @called = false
+        t = Thread.new { subject.start(true); @called = true }
+        sleep test_latency
+        Thread.kill(t) if t
+        @called.should be_false
+      end
+    end
+
+    context 'with the blocking param set to false' do
+      it 'does not block the current thread after starting the workers' do
+        @called = false
+        subject.start(false)
+        t = Thread.new { subject.start(false); @called = true }
+        sleep test_latency
+        Thread.kill(t) if t
+        @called.should be_true
+      end
+    end
+  end
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|

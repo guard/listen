@@ -16,7 +16,9 @@ module Listen
 
       # Starts the adapter.
       #
-      def start
+      # @param [Boolean] blocking weather or not to block the current thread after starting
+      #
+      def start(blocking = true)
         super
         @workers_pool = @workers.map { |w| Thread.new { w.run } }
         @poll_thread  = Thread.new { poll_changed_dirs }
@@ -25,6 +27,7 @@ module Listen
         # be used to wait for it as it runs in a loop.
         # TODO: Find a better way to block until the worker starts.
         sleep @latency
+        @poll_thread.join if blocking
       end
 
       # Stops the adapter.

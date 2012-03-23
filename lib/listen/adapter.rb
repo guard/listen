@@ -70,7 +70,9 @@ module Listen
 
     # Starts the adapter.
     #
-    def start
+    # @param [Boolean] blocking weather or not to block the current thread after starting
+    #
+    def start(blocking = true)
       @stop = false
     end
 
@@ -116,7 +118,7 @@ module Listen
       test_file = "#{directory}/.listen_test"
       callback = lambda { |changed_dirs, options| work = true }
       adapter  = self.new(directory, options, &callback)
-      adapter.start
+      adapter.start(false)
       FileUtils.touch(test_file)
       adapter.wait_for_callback
       work

@@ -1,15 +1,24 @@
 shared_examples_for 'a listener to changes on a file-system' do
   describe '#start' do
-    it 'starts the adapter' do
+    before do
       subject.stub(:initialize_adapter) { adapter }
+    end
+
+    it 'starts the adapter' do
       adapter.should_receive(:start)
       subject.start
+    end
+
+    context 'with the blocking param set to false' do
+      it 'passes the blocking param to the adapter' do
+        adapter.should_receive(:start).with(false)
+        subject.start(false)
+      end
     end
   end
 
   context 'with a started listener' do
     before do
-      subject.stub(:initialize_adapter) { adapter }
       subject.start
     end
 

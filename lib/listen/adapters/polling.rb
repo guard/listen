@@ -20,9 +20,12 @@ module Listen
 
       # Start the adapter.
       #
-      def start
+      # @param [Boolean] blocking weather or not to block the current thread after starting
+      #
+      def start(blocking = true)
         super
         @poll_thread = Thread.new { poll }
+        @poll_thread.join if blocking
       end
 
       # Stop the adapter.

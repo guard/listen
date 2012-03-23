@@ -21,10 +21,13 @@ module Listen
 
       # Starts the adapter.
       #
-      def start
+      # @param [Boolean] blocking weather or not to block the current thread after starting
+      #
+      def start(blocking = true)
         super
         @worker_thread = Thread.new { @worker.run }
         @poll_thread   = Thread.new { poll_changed_dirs }
+        @poll_thread.join if blocking
       end
 
       # Stops the adapter.
