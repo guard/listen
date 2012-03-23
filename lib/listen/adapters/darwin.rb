@@ -16,7 +16,7 @@ module Listen
 
       # Starts the adapter.
       #
-      # @param [Boolean] blocking weather or not to block the current thread after starting
+      # @param [Boolean] blocking whether or not to block the current thread after starting
       #
       def start(blocking = true)
         super
