@@ -92,4 +92,42 @@ describe Listen::MultiListener do
       subject.filter /\.txt$/
     end
   end
+
+  describe '#on_change' do
+    let(:directories) { %w{dir1 dir2 dir3} }
+    let(:changes)     { {:modified => [], :added => [], :removed => []} }
+    let(:callback)    { Proc.new {} }
+
+    before { subject.stub(:fetch_records_changes => changes) }
+
+    it 'fetches the changes of all directories records' do
+      subject.unstub(:fetch_records_changes)
+
+      subject.directories_records.each do |record|
+        record.should_receive(:fetch_changes)
+              .with(directories, hash_including(:absolute_paths => described_class::DEFAULT_TO_ABSOLUTE_PATHS))
+              .and_return(changes)
+      end
+      subject.on_change(directories)
+    end
+
+    context 'with no changes to report' do
+      it 'does not run the callback' do
+        callback.should_not_receive(:call)
+        subject.change(&callback)
+        subject.on_change(directories)
+      end
+    end
+
+    context 'with changes to report' do
+      let(:changes)     { {:modified => %w{path1}, :added => [], :removed => %w{path2}} }
+
+      it 'runs the callback passing it the changes' do
+        callback.should_receive(:call).with(changes[:modified], changes[:added], changes[:removed])
+        subject.change(&callback)
+        subject.on_change(directories)
+      end
+    end
+  end
+
 end

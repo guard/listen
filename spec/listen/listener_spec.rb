@@ -19,10 +19,15 @@ describe Listen::Listener do
       it 'sets the directory' do
         subject.directory.should eq watched_directory
       end
+
+      it 'sets the option for using absolute paths in the callback to the default one' do
+        subject.instance_variable_get(:@use_absolute_paths).should eq described_class::DEFAULT_TO_ABSOLUTE_PATHS
+      end
     end
 
     context 'with custom options' do
-      subject { described_class.new(watched_directory, :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 0.5, :force_polling => true) }
+      subject { described_class.new(watched_directory, :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/],
+                                    :latency => 0.5, :force_polling => true, :absolute_paths => false) }
 
       it 'passes the custom ignored paths to the directory record' do
         subject.directory_record.ignored_paths.should =~ %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -30,6 +35,10 @@ describe Listen::Listener do
 
       it 'passes the custom filters to the directory record' do
         subject.directory_record.filters.should =~  [/.*\.rb/,/.*\.md/]
+      end
+
+      it 'sets the cutom option for using absolute paths in the callback' do
+        subject.instance_variable_get(:@use_absolute_paths).should be_false
       end
 
       it 'sets adapter_options' do
@@ -75,6 +84,49 @@ describe Listen::Listener do
     it 'delegates the work to the directory record' do
       subject.directory_record.should_receive(:filter).with /\.txt$/
       subject.filter /\.txt$/
+    end
+  end
+
+
+  describe '#on_change' do
+    let(:directories) { %w{dir1 dir2 dir3} }
+    let(:changes)     { {:modified => [], :added => [], :removed => []} }
+    let(:callback)    { Proc.new {} }
+
+    before { subject.directory_record.stub(:fetch_changes => changes) }
+
+    it 'fetches the changes of the directory record' do
+      subject.directory_record.should_receive(:fetch_changes)
+                              .with(directories, hash_including(:absolute_paths => described_class::DEFAULT_TO_ABSOLUTE_PATHS))
+      subject.on_change(directories)
+    end
+
+    context 'with absolute_paths option set to false' do
+      subject { described_class.new(watched_directory, :absolute_paths => false) }
+
+      it 'fetches the changes of the directory record' do
+        subject.directory_record.should_receive(:fetch_changes)
+                                .with(directories, hash_including(:absolute_paths => false))
+        subject.on_change(directories)
+      end
+    end
+
+    context 'with no changes to report' do
+      it 'does not run the callback' do
+        callback.should_not_receive(:call)
+        subject.change(&callback)
+        subject.on_change(directories)
+      end
+    end
+
+    context 'with changes to report' do
+      let(:changes)     { {:modified => %w{path1}, :added => [], :removed => %w{path2}} }
+
+      it 'runs the callback passing it the changes' do
+        callback.should_receive(:call).with(changes[:modified], changes[:added], changes[:removed])
+        subject.change(&callback)
+        subject.on_change(directories)
+      end
     end
   end
 end

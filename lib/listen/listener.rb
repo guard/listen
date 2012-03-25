@@ -2,6 +2,9 @@ module Listen
   class Listener
     attr_reader :directory, :directory_record, :adapter
 
+    # The default value for using absolute paths in the callback.
+    DEFAULT_TO_ABSOLUTE_PATHS = true
+
     # Initialize the directory listener.
     #
     # @param [String] directory the directory to listen to
@@ -9,6 +12,7 @@ module Listen
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
     # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] absolute_paths whether or not to use full-paths in the callback
     # @option options [Boolean] force_polling whether to force the polling adapter or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
     #
@@ -18,10 +22,12 @@ module Listen
     # @yieldparam [Array<String>] removed the list of removed files
     #
     def initialize(directory, options = {}, &block)
-      @block            = block
-      @directory        = directory
-      @directory_record = DirectoryRecord.new(directory)
+      @block              = block
+      @directory          = directory
+      @directory_record   = DirectoryRecord.new(directory)
+      @use_absolute_paths = DEFAULT_TO_ABSOLUTE_PATHS
 
+      @use_absolute_paths = options.delete(:absolute_paths) unless options[:absolute_paths].nil?
       @directory_record.ignore(*options.delete(:ignore)) if options[:ignore]
       @directory_record.filter(*options.delete(:filter)) if options[:filter]
 
@@ -160,7 +166,9 @@ module Listen
     # @param (see Listen::DirectoryRecord#fetch_changes)
     #
     def on_change(directories, options = {})
-      changes = @directory_record.fetch_changes(directories, options)
+      changes = @directory_record.fetch_changes(directories, options.merge(
+        :absolute_paths => @use_absolute_paths
+      ))
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
