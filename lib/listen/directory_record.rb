@@ -69,7 +69,7 @@ module Listen
       @filters.merge(regexps)
     end
 
-    # Returns wheather a path should be ignored or not.
+    # Returns whether a path should be ignored or not.
     #
     # @param [String] path the path to test.
     #
@@ -79,7 +79,7 @@ module Listen
       @ignored_paths.any? { |ignored_path| path =~ /#{ignored_path}$/ }
     end
 
-    # Returns wheather a path should be filtered or not.
+    # Returns whether a path should be filtered or not.
     #
     # @param [String] path the path to test.
     #
@@ -104,7 +104,7 @@ module Listen
     # @param [Array] directories the list of directories scan for changes
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
+    # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     # @return [Hash<Array>] the changes
     #
@@ -131,7 +131,7 @@ module Listen
     # @param [String] directory the path to analyze
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
+    # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
       @paths[directory].each do |basename, type|
@@ -166,7 +166,7 @@ module Listen
     # @param [String] directory the path to analyze
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
+    # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_additions(directory, options = {})
       Find.find(directory) do |path|
@@ -187,7 +187,7 @@ module Listen
       end
     end
 
-    # Returns wheather or not a file's content has been modified by
+    # Returns whether or not a file's content has been modified by
     # comparing the SHA1-checksum to a stored one.
     #
     # @param [String] path the file path
@@ -231,7 +231,7 @@ module Listen
       @paths[File.dirname(path)][File.basename(path)] = File.directory?(path) ? 'Dir' : 'File'
     end
 
-    # Returns wheather or not is a path exists in the paths hash.
+    # Returns whether or not is a path exists in the paths hash.
     #
     # @param [String] path the path to check
     #

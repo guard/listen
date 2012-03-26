@@ -72,7 +72,7 @@ module Listen
       self
     end
 
-    # Returns wheather the listener is paused or not.
+    # Returns whether the listener is paused or not.
     #
     # @return [Boolean] adapter paused status
     #
@@ -123,7 +123,7 @@ module Listen
     # @example Forcing the use of the polling adapter
     #   force_polling true
     #
-    # @param [Boolean] value wheather to force the polling adapter or not
+    # @param [Boolean] value whether to force the polling adapter or not
     #
     # @return [Listen::Listener] the listener
     #

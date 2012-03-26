@@ -80,8 +80,8 @@ module Listen
     #
     # @param (see Listen::DirectoryRecord#fetch_changes)
     #
-    def on_change(direcoties_to_search, options = {})
-      changes = fetch_records_changes(direcoties_to_search, options)
+    def on_change(directories_to_search, options = {})
+      changes = fetch_records_changes(directories_to_search, options)
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])
       end
@@ -102,11 +102,11 @@ module Listen
     #
     # @return [Hash] the changes
     #
-    def fetch_records_changes(direcoties_to_search, options)
+    def fetch_records_changes(directories_to_search, options)
       @directories_records.inject({}) do |h, r|
         # directory records skips paths outside their range, so passing the
         # whole `directories` array is not a problem.
-        record_changes = r.fetch_changes(direcoties_to_search, options.merge(:relative_paths => DEFAULT_TO_RELATIVE_PATHS))
+        record_changes = r.fetch_changes(directories_to_search, options.merge(:relative_paths => DEFAULT_TO_RELATIVE_PATHS))
 
         if h.empty?
           h.merge!(record_changes)
