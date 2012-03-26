@@ -142,7 +142,7 @@ module Listen
           if File.directory?(path)
             detect_modifications_and_removals(path, options) if options[:recursive]
           else
-            detect_modifications_and_removals(path, {:recursive => true}.merge(options))
+            detect_modifications_and_removals(path, { :recursive => true }.merge(options))
             @paths[directory].delete(basename)
             @paths.delete("#{directory}/#{basename}")
           end
