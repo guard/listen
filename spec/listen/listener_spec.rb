@@ -20,14 +20,14 @@ describe Listen::Listener do
         subject.directory.should eq watched_directory
       end
 
-      it 'sets the option for using absolute paths in the callback to the default one' do
-        subject.instance_variable_get(:@use_absolute_paths).should eq described_class::DEFAULT_TO_ABSOLUTE_PATHS
+      it 'sets the option for using relative paths in the callback to the default one' do
+        subject.instance_variable_get(:@use_relative_paths).should eq described_class::DEFAULT_TO_RELATIVE_PATHS
       end
     end
 
     context 'with custom options' do
       subject { described_class.new(watched_directory, :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/],
-                                    :latency => 0.5, :force_polling => true, :absolute_paths => false) }
+                                    :latency => 0.5, :force_polling => true, :relative_paths => true) }
 
       it 'passes the custom ignored paths to the directory record' do
         subject.directory_record.ignored_paths.should =~ %w[.bundle .git .DS_Store log tmp vendor .ssh]
@@ -37,8 +37,8 @@ describe Listen::Listener do
         subject.directory_record.filters.should =~  [/.*\.rb/,/.*\.md/]
       end
 
-      it 'sets the cutom option for using absolute paths in the callback' do
-        subject.instance_variable_get(:@use_absolute_paths).should be_false
+      it 'sets the cutom option for using relative paths in the callback' do
+        subject.instance_variable_get(:@use_relative_paths).should be_true
       end
 
       it 'sets adapter_options' do
@@ -97,16 +97,16 @@ describe Listen::Listener do
 
     it 'fetches the changes of the directory record' do
       subject.directory_record.should_receive(:fetch_changes)
-                              .with(directories, hash_including(:absolute_paths => described_class::DEFAULT_TO_ABSOLUTE_PATHS))
+                              .with(directories, hash_including(:relative_paths => described_class::DEFAULT_TO_RELATIVE_PATHS))
       subject.on_change(directories)
     end
 
-    context 'with absolute_paths option set to false' do
-      subject { described_class.new(watched_directory, :absolute_paths => false) }
+    context 'with relative paths option set to true' do
+      subject { described_class.new(watched_directory, :relative_paths => true) }
 
       it 'fetches the changes of the directory record' do
         subject.directory_record.should_receive(:fetch_changes)
-                                .with(directories, hash_including(:absolute_paths => false))
+                                .with(directories, hash_including(:relative_paths => true))
         subject.on_change(directories)
       end
     end

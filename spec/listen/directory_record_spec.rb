@@ -766,13 +766,13 @@ describe Listen::DirectoryRecord do
       end
     end
 
-    context 'with the absolute_paths option set to true' do
+    context 'with the relative_paths option set to false' do
       it 'returns full paths in the changes hash' do
         fixtures do |path|
           touch 'a_file.rb'
           touch 'b_file.rb'
 
-          modified, added, removed = changes(path, :absolute_paths => true) do
+          modified, added, removed = changes(path, :relative_paths => false) do
             rm    'a_file.rb'
             touch 'b_file.rb'
             touch 'c_file.rb'
@@ -787,10 +787,4 @@ describe Listen::DirectoryRecord do
       end
     end
   end
-
-  # describe '#relative_to_base' do
-  #   it 'returns a relative path to the base directory' do
-  #     subject.relative_to_base(base_directory + '/file.txt').should eq 'file.txt'
-  #   end
-  # end
 end

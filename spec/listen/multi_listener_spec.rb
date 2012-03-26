@@ -105,7 +105,7 @@ describe Listen::MultiListener do
 
       subject.directories_records.each do |record|
         record.should_receive(:fetch_changes)
-              .with(directories, hash_including(:absolute_paths => described_class::DEFAULT_TO_ABSOLUTE_PATHS))
+              .with(directories, hash_including(:relative_paths => described_class::DEFAULT_TO_RELATIVE_PATHS))
               .and_return(changes)
       end
       subject.on_change(directories)

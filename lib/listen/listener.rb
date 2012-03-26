@@ -2,8 +2,8 @@ module Listen
   class Listener
     attr_reader :directory, :directory_record, :adapter
 
-    # The default value for using absolute paths in the callback.
-    DEFAULT_TO_ABSOLUTE_PATHS = true
+    # The default value for using relative paths in the callback.
+    DEFAULT_TO_RELATIVE_PATHS = false
 
     # Initialize the directory listener.
     #
@@ -12,7 +12,7 @@ module Listen
     # @option options [String] ignore a list of paths to ignore
     # @option options [Regexp] filter a list of regexps file filters
     # @option options [Float] latency the delay between checking for changes in seconds
-    # @option options [Boolean] absolute_paths whether or not to use full-paths in the callback
+    # @option options [Boolean] relative_paths whether or not to use relative-paths in the callback
     # @option options [Boolean] force_polling whether to force the polling adapter or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
     #
@@ -25,11 +25,11 @@ module Listen
       @block              = block
       @directory          = directory
       @directory_record   = DirectoryRecord.new(directory)
-      @use_absolute_paths = DEFAULT_TO_ABSOLUTE_PATHS
+      @use_relative_paths = DEFAULT_TO_RELATIVE_PATHS
 
-      @use_absolute_paths = options.delete(:absolute_paths) unless options[:absolute_paths].nil?
-      @directory_record.ignore(*options.delete(:ignore)) if options[:ignore]
-      @directory_record.filter(*options.delete(:filter)) if options[:filter]
+      @use_relative_paths = options.delete(:relative_paths) if options[:relative_paths]
+      @directory_record.ignore(*options.delete(:ignore))    if options[:ignore]
+      @directory_record.filter(*options.delete(:filter))    if options[:filter]
 
       @adapter_options = options
     end
@@ -167,7 +167,7 @@ module Listen
     #
     def on_change(directories, options = {})
       changes = @directory_record.fetch_changes(directories, options.merge(
-        :absolute_paths => @use_absolute_paths
+        :relative_paths => @use_relative_paths
       ))
       unless changes.values.all? { |paths| paths.empty? }
         @block.call(changes[:modified],changes[:added],changes[:removed])

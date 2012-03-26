@@ -104,7 +104,7 @@ module Listen
     # @param [Array] directories the list of directories scan for changes
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] absolute_paths wheather to use full paths for changes or not
+    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
     #
     # @return [Hash<Array>] the changes
     #
@@ -131,7 +131,7 @@ module Listen
     # @param [String] directory the path to analyze
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] absolute_paths wheather to use full paths for changes or not
+    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
       @paths[directory].each do |basename, type|
@@ -142,7 +142,7 @@ module Listen
           if File.directory?(path)
             detect_modifications_and_removals(path, options) if options[:recursive]
           else
-            detect_modifications_and_removals(path, :recursive => true)
+            detect_modifications_and_removals(path, {:recursive => true}.merge(options))
             @paths[directory].delete(basename)
             @paths.delete("#{directory}/#{basename}")
           end
@@ -150,12 +150,12 @@ module Listen
           if File.exist?(path)
             new_mtime = File.mtime(path).to_i
             if @updated_at < new_mtime || (@updated_at == new_mtime && content_modified?(path))
-              @changes[:modified] << (options[:absolute_paths] ? path : relative_to_base(path))
+              @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
             end
           else
             @paths[directory].delete(basename)
             @sha1_checksums.delete(path)
-            @changes[:removed] << (options[:absolute_paths] ? path : relative_to_base(path))
+            @changes[:removed] << (options[:relative_paths] ? relative_to_base(path) : path)
           end
         end
       end
@@ -166,7 +166,7 @@ module Listen
     # @param [String] directory the path to analyze
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-direcoties recursively
-    # @option options [Boolean] absolute_paths wheather to use full paths for changes or not
+    # @option options [Boolean] relative_paths wheather or not to use relative paths for changes
     #
     def detect_additions(directory, options = {})
       Find.find(directory) do |path|
@@ -180,7 +180,7 @@ module Listen
           end
         elsif !ignored?(path) && filtered?(path) && !existing_path?(path)
           if File.file?(path)
-            @changes[:added] << (options[:absolute_paths] ? path : relative_to_base(path))
+            @changes[:added] << (options[:relative_paths] ? relative_to_base(path) : path)
           end
           insert_path(path)
         end
