@@ -96,38 +96,56 @@ describe Listen::MultiListener do
   describe '#on_change' do
     let(:directories) { %w{dir1 dir2 dir3} }
     let(:changes)     { {:modified => [], :added => [], :removed => []} }
-    let(:callback)    { Proc.new {} }
+    let(:callback)    { Proc.new { @called = true } }
 
-    before { subject.stub(:fetch_records_changes => changes) }
+    before do
+      @called = false
+      subject.stub(:fetch_records_changes => changes)
+    end
 
     it 'fetches the changes of all directories records' do
       subject.unstub(:fetch_records_changes)
 
       subject.directories_records.each do |record|
-        record.should_receive(:fetch_changes)
-              .with(directories, hash_including(:relative_paths => described_class::DEFAULT_TO_RELATIVE_PATHS))
-              .and_return(changes)
+        record.should_receive(:fetch_changes).with(
+          directories, hash_including(:relative_paths => described_class::DEFAULT_TO_RELATIVE_PATHS)
+        ).and_return(changes)
       end
       subject.on_change(directories)
     end
 
     context 'with no changes to report' do
-      it 'does not run the callback' do
-        callback.should_not_receive(:call)
-        subject.change(&callback)
-        subject.on_change(directories)
+      if RUBY_VERSION[/^1.8/]
+        it 'does not run the callback' do
+            subject.change(&callback)
+            subject.on_change(directories)
+            @called.should be_false
+        end
+      else
+        it 'does not run the callback' do
+          callback.should_not_receive(:call)
+          subject.change(&callback)
+          subject.on_change(directories)
+        end
       end
     end
 
     context 'with changes to report' do
       let(:changes)     { {:modified => %w{path1}, :added => [], :removed => %w{path2}} }
 
-      it 'runs the callback passing it the changes' do
-        callback.should_receive(:call).with(changes[:modified], changes[:added], changes[:removed])
-        subject.change(&callback)
-        subject.on_change(directories)
+      if RUBY_VERSION[/^1.8/]
+        it 'runs the callback passing it the changes' do
+          subject.change(&callback)
+          subject.on_change(directories)
+          @called.should be_true
+        end
+      else
+        it 'runs the callback passing it the changes' do
+          callback.should_receive(:call).with(changes[:modified], changes[:added], changes[:removed])
+          subject.change(&callback)
+          subject.on_change(directories)
+        end
       end
     end
   end
-
 end

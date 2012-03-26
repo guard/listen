@@ -103,7 +103,7 @@ module Listen
     # @return [Hash] the changes
     #
     def fetch_records_changes(direcoties_to_search, options)
-      @directories_records.each_with_object({}) do |r, h|
+      @directories_records.inject({}) do |h, r|
         # directory records skips paths outside their range, so passing the
         # whole `directories` array is not a problem.
         record_changes = r.fetch_changes(direcoties_to_search, options.merge(:relative_paths => DEFAULT_TO_RELATIVE_PATHS))
@@ -113,6 +113,8 @@ module Listen
         else
           h.each { |k, v| h[k] += record_changes[k] }
         end
+
+        h
       end
     end
   end
