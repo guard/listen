@@ -119,7 +119,7 @@ Listen.to('path/to/app') do |modified, added, removed|
   # This block will be called when there are changes.
 end
 
-## or ...
+# or ...
 
 listener = Listen::Listener.new('path/to/app') do |modified, added, removed|
   # This block will be called when there are changes.
@@ -140,6 +140,7 @@ listener = Listen.to('dir')
 listener.change(&callback) # convert the callback to a block and register it
 
 listener.start # blocks execution
+```
 
 ### Paths in callbacs
 
