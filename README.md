@@ -23,7 +23,7 @@ gem install listen
 
 There are **two ways** to use Listen:
 
-1. Call `Listen.to` or `Listen.to_each` with a path and a few (optional) params, then define the `change` callback in a block.
+1. Call `Listen.to` with either a single directory or multiple directories, then define the `change` callback in a block.
 2. Create a `listener` object and use it in an (ARel style) chainable way.
 
 Feel free to give your feeback via [Listen issues](https://github.com/guard/listener/issues)
@@ -37,7 +37,7 @@ Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path') do |m
 end
 
 # Listen to multiple directories.
-Listen.to_each('dir/to/awesome_app', 'dir/to/other_app', filter: /.*\.rb/, latency: 0.1) do |modified, added, removed|
+Listen.to('dir/to/awesome_app', 'dir/to/other_app', filter: /.*\.rb/, latency: 0.1) do |modified, added, removed|
   # ...
 end
 ```
@@ -55,7 +55,7 @@ listener = listener.change(&callback)
 listener.start # blocks execution!
 ```
 
-#### Chainable
+### Chainable
 
 ``` ruby
 Listen.to('dir/path/to/listen')
@@ -68,21 +68,117 @@ Listen.to('dir/path/to/listen')
       .start # blocks execution!
 ```
 
-#### `MultiListener` to watch multiple directories
+### Pause/Unpause
 
-The Listen gem provides `MultiListener` to watch multiple directories and
-handle their changes from a single listener. For an easier access, the
-`Listen.to_each` method can be used to create a multi-listener:
+Listener can also easily be paused/unpaused:
 
 ``` ruby
-listener = Listen.to_each('app/css', 'app/js')
+listener = Listen.to('dir/path/to/listen')
+listener.start(false) # non-blocking mode
+listener.pause   # stop listening to changes
+listener.paused? # => true
+listener.unpause
+listener.stop
+```
+
+## Listening to changes on multiple directories
+
+The Listen gem provides the `MultiListener` class to watch multiple directories and
+handle their changes from a single listener:
+
+```ruby
+listener = Listen::MultiListener.new('app/css', 'app/js')
+listener.latency(0.5)
+
+# Configure the listener to your needs...
+
+listener.start # blocks execution!
+````
+
+For an easier access, the `Listen.to` method can also be used to create a multi-listener:
+
+``` ruby
+listener = Listen.to('app/css', 'app/js')
                  .ignore('vendor') # both js/vendor and css/vendor will be ignored
                  .change(&assets_callback)
 
 listener.start # blocks execution!
 ```
 
-### Options
+## Changes callback
+
+Changes to the listened-to directories gets reported back to the user in a callback.
+The registered callback gets invoked, when there are changes, with **three** parameters:
+`modified_paths`, `added_paths` and `removed_paths` in that particular order.
+
+You can register a callback in two ways. The first way is by passing a block when calling
+the `Listen.to` method or when initializing a listener object:
+
+```ruby
+Listen.to('path/to/app') do |modified, added, removed|
+  # This block will be called when there are changes.
+end
+
+## or ...
+
+listener = Listen::Listener.new('path/to/app') do |modified, added, removed|
+  # This block will be called when there are changes.
+end
+
+```
+
+The second way to register a callback is be calling the `change` method on any
+listener passing it an a block:
+
+```ruby
+# Create a callback
+callback = Proc.new do |modified, added, removed|
+  # This proc will be called when there are changes.
+end
+
+listener = Listen.to('dir')
+listener.change(&callback) # convert the callback to a block and register it
+
+listener.start # blocks execution
+
+### Paths in callbacs
+
+Listeners invoke callbacks passing them absolute paths by default:
+
+```ruby
+# Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
+# the listener.
+Listen.to('/home/user/app/css') do |modified, added, removed|
+  modified.inspect # => ['/home/user/app/css/style.css']
+end
+```
+
+#### Relative paths in callbacks
+
+When creating a listener for a **single** path (more specifically a `Listen::Listener` instance),
+you can pass `:relative_paths => true` as an option to get relative paths in
+your callback:
+
+```ruby
+# Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
+# the listener.
+Listen.to('/home/user/app/css', :relative_paths => true) do |modified, added, removed|
+  modified.inspect # => ['style.css']
+end
+```
+
+Passing the `:relative_paths => true` option won't work when listeneing to multiple
+directories:
+
+```ruby
+# Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
+# the listener.
+Listen.to('/home/user/app/css', '/home/user/app/js', :relative_paths => true) do |modified, added, removed|
+  modified.inspect # => ['/home/user/app/css/style.css']
+end
+```
+
+## Options
 
 These options can be set through `Listen.to` params or via methods (see the "Object" API)
 
@@ -122,21 +218,8 @@ listener.start(false) # doesn't block execution
 
 ```
 
-**note**: Using helper methods like `Listen.to` or `Listen.to_each` with a callback-block will always
-block execution.
-
-### Pause/Unpause
-
-Listener can also easily be paused/unpaused:
-
-``` ruby
-listener = Listen.to('dir/path/to/listen')
-listener.start(false) # non-blocking mode
-listener.pause   # stop listening to changes
-listener.paused? # => true
-listener.unpause
-listener.stop
-```
+**note**: Using the `Listen.to` helper-method with a callback-block will always
+block execution. See the "Block API" section for an example.
 
 ## Listen adapters
 
@@ -153,7 +236,7 @@ while initializing the listener or call the `force_polling` method on your liste
 before starting it.
 
 <a name="fallback"/>
-### Polling fallback
+## Polling fallback
 
 When a OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
 Here are some things you could try to avoid the polling fallback:
