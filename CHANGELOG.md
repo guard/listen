@@ -1,11 +1,13 @@
-## 0.4 - March 23, 2012
+## 0.4 - March 26, 2012
 
 ### New features
 
-- Add `wait_for_callback` method to adapters. ([@Maher4Ever][])
+- Add `wait_for_callback` method to all adapters. ([@Maher4Ever][])
 - Add `Listen::MultiListener` class to listen to multiple directories at once. ([@Maher4Ever][])
-- Add `Listen::to_each` to easily use the `MultiListener`. ([@Maher4Ever][])
+- Allow passing multiple directories to the `Listen.to` method. ([@Maher4Ever][])
 - Add `blocking` option to `Listen#start` which can be used to disable blocking the cuttent thread upon starting. ([@Maher4Ever][])
+- Use absolute-paths in callbacks by default instead of relative-paths. ([@Maher4Ever][])
+- Add `relative_paths` option to `Listen::Listener` to retain the old functionality. ([@Maher4Ever][])
 
 ### Improvements
 
