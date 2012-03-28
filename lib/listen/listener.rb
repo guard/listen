@@ -5,7 +5,7 @@ module Listen
     # The default value for using relative paths in the callback.
     DEFAULT_TO_RELATIVE_PATHS = false
 
-    # Initialize the directory listener.
+    # Initializes the directory listener.
     #
     # @param [String] directory the directory to listen to
     # @param [Hash] options the listen options
@@ -80,7 +80,7 @@ module Listen
       !!@adapter && @adapter.paused == true
     end
 
-    # Add ignored path to the listener.
+    # Adds ignored paths to the listener.
     #
     # @param (see Listen::DirectoryRecord#ignore)
     #
@@ -91,7 +91,7 @@ module Listen
       self
     end
 
-    # Add file filters to the listener.
+    # Adds file filters to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
     #

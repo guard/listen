@@ -7,7 +7,7 @@ module Listen
 
   # The directory record stores information about
   # a directory and keeps track of changes to
-  # the structur of its childs.
+  # the structure of its childs.
   #
   class DirectoryRecord
     attr_reader :directory, :paths, :sha1_checksums
@@ -45,7 +45,7 @@ module Listen
       @filters.to_a
     end
 
-    # Add ignored path to the record.
+    # Adds ignored path to the record.
     #
     # @example Ignore some paths
     #   ignore ".git", ".svn"
@@ -56,7 +56,7 @@ module Listen
       @ignored_paths.merge(paths)
     end
 
-    # Add file filters to the listener.
+    # Adds file filters to the listener.
     #
     # @example Filter some files
     #   ignore /\.txt$/, /.*\.zip/
@@ -99,11 +99,11 @@ module Listen
     end
 
     # Detects changes in the passed directories, updates
-    # the record with the new changs and returns the changes
+    # the record with the new changes and returns the changes
     #
     # @param [Array] directories the list of directories scan for changes
     # @param [Hash] options
-    # @option options [Boolean] recursive scan all sub-direcoties recursively
+    # @option options [Boolean] recursive scan all sub-directories recursively
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     # @return [Hash<Array>] the changes
@@ -122,7 +122,7 @@ module Listen
 
     private
 
-    # Detect modifications and removals recursivly in a directory.
+    # Detects modifications and removals recursively in a directory.
     #
     # @note Modifications detection begins by checking the modification time (mtime)
     #   of files and then by checking content changes (using SHA1-checksum)
@@ -130,7 +130,7 @@ module Listen
     #
     # @param [String] directory the path to analyze
     # @param [Hash] options
-    # @option options [Boolean] recursive scan all sub-direcoties recursively
+    # @option options [Boolean] recursive scan all sub-directories recursively
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
@@ -161,11 +161,11 @@ module Listen
       end
     end
 
-    # Detect additions in a directory.
+    # Detects additions in a directory.
     #
     # @param [String] directory the path to analyze
     # @param [Hash] options
-    # @option options [Boolean] recursive scan all sub-direcoties recursively
+    # @option options [Boolean] recursive scan all sub-directories recursively
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_additions(directory, options = {})
@@ -223,7 +223,7 @@ module Listen
       end
     end
 
-    # Insert a path with its type (Dir or File) in paths hash.
+    # Inserts a path with its type (Dir or File) in paths hash.
     #
     # @param [String] path the path to insert in @paths.
     #
@@ -231,7 +231,7 @@ module Listen
       @paths[File.dirname(path)][File.basename(path)] = File.directory?(path) ? 'Dir' : 'File'
     end
 
-    # Returns whether or not is a path exists in the paths hash.
+    # Returns whether or not a path exists in the paths hash.
     #
     # @param [String] path the path to check
     #

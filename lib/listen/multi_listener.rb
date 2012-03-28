@@ -54,7 +54,7 @@ module Listen
       self
     end
 
-    # Add ignored path to the listener.
+    # Adds ignored paths to the listener.
     #
     # @param (see Listen::DirectoryRecord#ignore)
     #
@@ -65,7 +65,7 @@ module Listen
       self
     end
 
-    # Add file filters to the listener.
+    # Adds file filters to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
     #

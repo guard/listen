@@ -10,7 +10,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Automatic fallback to polling if OS-specific adapter doesn't work.
 * Detects files modification, addidation and removal.
 * Checksum comparaison for modifications made under the same second.
-* Allows ignoring paths and suppling filters for better results.
+* Allows ignoring paths and supplying filters for better results.
 * Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
 
 ## Install
@@ -128,7 +128,7 @@ end
 ```
 
 The second way to register a callback is be calling the `change` method on any
-listener passing it an a block:
+listener passing it a block:
 
 ```ruby
 # Create a callback
@@ -142,7 +142,7 @@ listener.change(&callback) # convert the callback to a block and register it
 listener.start # blocks execution
 ```
 
-### Paths in callbacs
+### Paths in callbacks
 
 Listeners invoke callbacks passing them absolute paths by default:
 

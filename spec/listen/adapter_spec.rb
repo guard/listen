@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Listen::Adapter do
   subject { described_class.new('dir') }
 
-  describe '#initialize'  do
+  describe '#initialize' do
     it 'sets the latency to the default one' do
       subject.latency.should eq described_class::DEFAULT_LATENCY
     end

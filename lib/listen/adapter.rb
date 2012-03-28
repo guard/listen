@@ -102,10 +102,10 @@ module Listen
       usable? && Array(directories).all? { |d| works?(d, options) }
     end
 
-    # Runs a tests to detirmine if the adapter can actually pick up
+    # Runs a tests to determine if the adapter can actually pick up
     # changes in a given directory and returns the result.
     #
-    # @note This test take some time depending the adapter latency.
+    # @note This test takes some time depending the adapter latency.
     #
     # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the adapter options
