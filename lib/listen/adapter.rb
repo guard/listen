@@ -1,19 +1,22 @@
 require 'rbconfig'
+require 'thread'
 require 'set'
+require 'fileutils'
 
 module Listen
   class Adapter
-    attr_accessor :latency, :stop, :paused
+    attr_accessor :directories, :latency, :stop, :paused
 
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.1
-    # The default warning message when falling back to polling adapter.
-    POLLING_FALLBACK_MESSAGE = "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 
-    # Select the appropriate adapter implementation for the
+    # The default warning message when falling back to polling adapter.
+    POLLING_FALLBACK_MESSAGE = "WARNING: Listen has fallen back to polling, learn more at https://github.com/guard/listen#fallback."
+
+    # Selects the appropriate adapter implementation for the
     # current OS and initializes it.
     #
-    # @param [String, Pathname] directory the directory to watch
+    # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Boolean] force_polling to force polling or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
@@ -25,26 +28,26 @@ module Listen
     #
     # @return [Listen::Adapter] the chosen adapter
     #
-    def self.select_and_initialize(directory, options = {}, &callback)
-      return Adapters::Polling.new(directory, options, &callback) if options.delete(:force_polling)
+    def self.select_and_initialize(directories, options = {}, &callback)
+      return Adapters::Polling.new(directories, options, &callback) if options.delete(:force_polling)
 
-      if Adapters::Darwin.usable_and_work?(directory, options)
-        Adapters::Darwin.new(directory, options, &callback)
-      elsif Adapters::Linux.usable_and_work?(directory, options)
-        Adapters::Linux.new(directory, options, &callback)
-      elsif Adapters::Windows.usable_and_work?(directory, options)
-        Adapters::Windows.new(directory, options, &callback)
+      if Adapters::Darwin.usable_and_works?(directories, options)
+        Adapters::Darwin.new(directories, options, &callback)
+      elsif Adapters::Linux.usable_and_works?(directories, options)
+        Adapters::Linux.new(directories, options, &callback)
+      elsif Adapters::Windows.usable_and_works?(directories, options)
+        Adapters::Windows.new(directories, options, &callback)
       else
         unless options[:polling_fallback_message] == false
           Kernel.warn(options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE)
         end
-        Adapters::Polling.new(directory, options, &callback)
+        Adapters::Polling.new(directories, options, &callback)
       end
     end
 
-    # Initialize the adapter.
+    # Initializes the adapter.
     #
-    # @param [String, Pathname] directory the directory to watch
+    # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
     #
@@ -54,8 +57,8 @@ module Listen
     #
     # @return [Listen::Adapter] the adapter
     #
-    def initialize(directory, options = {}, &callback)
-      @directory    = directory
+    def initialize(directories, options = {}, &callback)
+      @directories  = Array(directories)
       @callback     = callback
       @latency    ||= DEFAULT_LATENCY
       @latency      = options[:latency] if options[:latency]
@@ -65,62 +68,68 @@ module Listen
       @turnstile    = Turnstile.new
     end
 
-    # Start the adapter.
+    # Starts the adapter.
     #
-    def start
+    # @param [Boolean] blocking whether or not to block the current thread after starting
+    #
+    def start(blocking = true)
       @stop = false
     end
 
-    # Stop the adapter.
+    # Stops the adapter.
     #
     def stop
       @stop = true
       @turnstile.signal # ensure no thread is blocked
     end
 
-    # Blocks the main thread until the poll_thread
+    # Blocks the main thread until the poll thread
     # calls the callback.
     #
     def wait_for_callback
       @turnstile.wait unless @paused
     end
 
-  private
-
-    # Check if the adapter is usable and works on the current OS.
+    # Checks if the adapter is usable and works on the current OS.
     #
-    # @param [String, Pathname] directory the directory to watch
+    # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
     #
     # @return [Boolean] whether usable and work or not
     #
-    def self.usable_and_work?(directory, options = {})
-      usable? && work?(directory, options)
+    def self.usable_and_works?(directories, options = {})
+      usable? && Array(directories).all? { |d| works?(d, options) }
     end
 
-    # Check if the adapter is really working on the current OS by actually testing it.
-    # This test take some time depending the adapter latency (max latency + 0.2 seconds).
+    # Runs a tests to determine if the adapter can actually pick up
+    # changes in a given directory and returns the result.
+    #
+    # @note This test takes some time depending the adapter latency.
     #
     # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
     #
-    # @return [Boolean] whether work or not
+    # @return [Boolean] whether the adapter works or not
     #
-    def self.work?(directory, options = {})
-      @work = false
-      callback = lambda { |changed_dirs, options| @work = true }
+    def self.works?(directory, options = {})
+      work = false
+      test_file = "#{directory}/.listen_test"
+      callback = lambda { |changed_dirs, options| work = true }
       adapter  = self.new(directory, options, &callback)
-      adapter.start
-      FileUtils.touch "#{directory}/.listen_test"
+      adapter.start(false)
+      FileUtils.touch(test_file)
       adapter.wait_for_callback
-      @work
+      work
     ensure
-      FileUtils.rm "#{directory}/.listen_test"
+      FileUtils.rm(test_file) if File.exists?(test_file)
+      adapter.stop
     end
 
-    # Polls changed directories and report them back
+    private
+
+    # Polls changed directories and reports them back
     # when there are changes.
     #
     # @option [Boolean] recursive whether or not to pass the recursive option to the callback
@@ -128,7 +137,6 @@ module Listen
     def poll_changed_dirs(recursive = false)
       until @stop
         sleep(@latency)
-
         next if @changed_dirs.empty?
 
         changed_dirs = []
@@ -142,6 +150,5 @@ module Listen
         @turnstile.signal
       end
     end
-
   end
 end

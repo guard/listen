@@ -3,17 +3,44 @@
 # @param [Listen::Listener] listener the adapter listener
 # @param [String] path the path to watch
 #
-def watch(listener, path)
+def watch(listener, *paths)
   callback = lambda { |changed_dirs, options| @called = true; listener.on_change(changed_dirs, options) }
-  @adapter = Listen::Adapter.select_and_initialize(path, { :latency => test_latency }, &callback)
-  @adapter.start
+  @adapter = Listen::Adapter.select_and_initialize(paths, { :latency => test_latency }, &callback)
+  @adapter.start(false)
 
   yield
 
+  t = Thread.new { sleep(test_latency * 5); @adapter.stop }
   @adapter.wait_for_callback
 ensure
-  # Prevent spec suite to block on Darwin when stopping adapter
-  @adapter.stop unless @adapter.is_a?(Listen::Adapters::Darwin)
+  Thread.kill(t) if t
+end
+
+shared_examples_for 'a filesystem adapter' do
+  subject { described_class.new(File.dirname(__FILE__)) }
+
+  describe '#start' do
+    context 'with the blocking param set to true' do
+      it 'blocks the current thread after starting the workers' do
+        @called = false
+        t = Thread.new { subject.start(true); @called = true }
+        sleep test_latency
+        Thread.kill(t) if t
+        @called.should be_false
+      end
+    end
+
+    context 'with the blocking param set to false' do
+      it 'does not block the current thread after starting the workers' do
+        @called = false
+        subject.start(false)
+        t = Thread.new { subject.start(false); @called = true }
+        sleep test_latency
+        Thread.kill(t) if t
+        @called.should be_true
+      end
+    end
+  end
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
@@ -392,4 +419,118 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
       end
     end
   end
+
+  context "when multiple directories are listened to" do
+    context 'when files are added to one of multiple directories' do
+      it 'detects added files' do
+        fixtures(2) do |path1, path2|
+          if options[:recursive]
+            listener.should_receive(:on_change).once.with([path2], :recursive => true)
+          else
+            listener.should_receive(:on_change).once.with([path2], {})
+          end
+
+          watch(listener, path1, path2) do
+            touch "#{path2}/new_file.rb"
+          end
+        end
+      end
+    end
+
+    context 'when files are added to multiple directories' do
+      it 'detects added files' do
+        fixtures(2) do |path1, path2|
+          if options[:recursive]
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
+          else
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {}
+            end
+          end
+
+          watch(listener, path1, path2) do
+            touch "#{path1}/new_file.rb"
+            touch "#{path2}/new_file.rb"
+          end
+        end
+      end
+    end
+
+    context 'given a new and an existing directory on multiple directories' do
+      it 'detects the added file' do
+        fixtures(2) do |path1, path2|
+          if options[:recursive]
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
+          else
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path2, "#{path2}/b_directory", "#{path1}/a_directory"] && options.should == {}
+            end
+          end
+
+          mkdir "#{path1}/a_directory"
+
+          watch(listener, path1, path2) do
+            mkdir "#{path2}/b_directory"
+            sleep 0.05
+            touch "#{path1}/a_directory/new_file.rb"
+            touch "#{path2}/b_directory/new_file.rb"
+          end
+        end
+      end
+    end
+
+    context 'when a file is moved between the multiple watched directories' do
+      it 'detects the movements of the file' do
+        fixtures(3) do |path1, path2, path3|
+          if options[:recursive]
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2, path3] && options.should == {:recursive => true}
+            end
+          else
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ ["#{path1}/from_directory", path2, "#{path3}/to_directory"] && options.should == {}
+            end
+          end
+
+          mkdir "#{path1}/from_directory"
+          touch "#{path1}/from_directory/move_me.txt"
+          mkdir "#{path3}/to_directory"
+
+          watch(listener, path1, path2, path3) do
+            mv "#{path1}/from_directory/move_me.txt", "#{path2}/move_me.txt"
+            mv "#{path2}/move_me.txt", "#{path3}/to_directory/move_me.txt"
+          end
+        end
+      end
+    end
+
+    context 'when files are deleted from the multiple watched directories' do
+      it 'detects the files removal' do
+        fixtures(2) do |path1, path2|
+          if options[:recursive]
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {:recursive => true}
+            end
+          else
+            listener.should_receive(:on_change).once.with do |directories, options|
+              directories.should =~ [path1, path2] && options.should == {}
+            end
+          end
+
+          touch "#{path1}/unnecessary.txt"
+          touch "#{path2}/unnecessary.txt"
+
+          watch(listener, path1, path2) do
+            rm "#{path1}/unnecessary.txt"
+            rm "#{path2}/unnecessary.txt"
+          end
+        end
+      end
+    end
+  end
+
 end

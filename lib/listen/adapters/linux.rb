@@ -12,28 +12,30 @@ module Listen
     #
     class Linux < Adapter
 
-      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(directory, options = {}, &callback)
+      def initialize(directories, options = {}, &callback)
         super
-        init_worker
+        @worker = init_worker
       end
 
-      # Start the adapter.
+      # Starts the adapter.
       #
-      def start
+      # @param [Boolean] blocking whether or not to block the current thread after starting
+      #
+      def start(blocking = true)
         super
         @worker_thread = Thread.new { @worker.run }
         @poll_thread   = Thread.new { poll_changed_dirs }
+        @poll_thread.join if blocking
       end
 
-      # Stop the adapter.
+      # Stops the adapter.
       #
       def stop
         super
         @worker.stop
-        # Although the worker is stopped, the thread needs to be killed!
-        Thread.kill @worker_thread
+        Thread.kill(@worker_thread) if @worker_thread
         @poll_thread.join
       end
 
@@ -52,29 +54,35 @@ module Listen
 
     private
 
-      # Initialize INotify worker and set watch callback block.
+      # Initializes a INotify worker and adds a watcher for
+      # each directory passed to the adapter.
+      #
+      # @return [INotify::Notifier] initialized worker
       #
       def init_worker
-        @worker = INotify::Notifier.new
-        @worker.watch(@directory, *EVENTS.map(&:to_sym)) do |event|
-          if @paused or (
-            # Event on root directory
-            event.name == ""
-          ) or (
-            # INotify reports changes to files inside directories as events
-            # on the directories themselves too.
-            #
-            # @see http://linux.die.net/man/7/inotify
-            event.flags.include?(:isdir) and event.flags & [:close, :modify] != []
-          )
-            # Skip all of these!
-            next
-          end
+        worker = INotify::Notifier.new
+        @directories.each do |directory|
+          worker.watch(directory, *EVENTS.map(&:to_sym)) do |event|
+            if @paused || (
+              # Event on root directory
+              event.name == ""
+            ) || (
+              # INotify reports changes to files inside directories as events
+              # on the directories themselves too.
+              #
+              # @see http://linux.die.net/man/7/inotify
+              event.flags.include?(:isdir) and event.flags & [:close, :modify] != []
+            )
+              # Skip all of these!
+              next
+            end
 
-          @mutex.synchronize do
-            @changed_dirs << File.dirname(event.absolute_name)
+            @mutex.synchronize do
+              @changed_dirs << File.dirname(event.absolute_name)
+            end
           end
         end
+        worker
       end
 
     end

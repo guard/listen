@@ -6,7 +6,8 @@ describe Listen::Adapters::Windows do
       described_class.should be_usable
     end
 
-    it_should_behave_like "an adapter that call properly listener#on_change", :recursive => true, :adapter => :windows
+    it_should_behave_like 'a filesystem adapter'
+    it_should_behave_like 'an adapter that call properly listener#on_change', :recursive => true, :adapter => :windows
   end
 
   if mac?
