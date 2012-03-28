@@ -1,15 +1,22 @@
-require 'listen/listener'
-
 module Listen
 
-  # Listen to file system modifications.
+  autoload :Turnstile,       'listen/turnstile'
+  autoload :Listener,        'listen/listener'
+  autoload :MultiListener,   'listen/multi_listener'
+  autoload :DirectoryRecord, 'listen/directory_record'
+  autoload :Adapter,         'listen/adapter'
+
+  module Adapters
+    autoload :Darwin,  'listen/adapters/darwin'
+    autoload :Linux,   'listen/adapters/linux'
+    autoload :Windows, 'listen/adapters/windows'
+    autoload :Polling, 'listen/adapters/polling'
+  end
+
+  # Listens to filesystem modifications on a either single directory or multiple directories.
   #
-  # @param [String, Pathname] dir the directory to watch
-  # @param [Hash] options the listen options
-  # @option options [String] ignore a list of paths to ignore
-  # @option options [Regexp] filter a list of regexps file filters
-  # @option options [Float] latency the delay between checking for changes in seconds
-  # @option options [Boolean] polling whether to force or disable the polling adapter
+  # @param (see Listen::Listener#new)
+  # @param (see Listen::MultiListener#new)
   #
   # @yield [modified, added, removed] the changed files
   # @yieldparam [Array<String>] modified the list of modified files
@@ -19,7 +26,12 @@ module Listen
   # @return [Listen::Listener] the file listener if no block given
   #
   def self.to(*args, &block)
-    listener = Listener.new(*args, &block)
+    listener = if args.length == 1 || ! args[1].is_a?(String)
+      Listener.new(*args, &block)
+    else
+      MultiListener.new(*args, &block)
+    end
+
     block ? listener.start : listener
   end
 

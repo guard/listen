@@ -13,16 +13,19 @@ module Listen
 
       # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #
-      def initialize(directory, options = {}, &callback)
+      def initialize(directories, options = {}, &callback)
         @latency ||= DEFAULT_POLLING_LATENCY
         super
       end
 
       # Start the adapter.
       #
-      def start
+      # @param [Boolean] blocking whether or not to block the current thread after starting
+      #
+      def start(blocking = true)
         super
         @poll_thread = Thread.new { poll }
+        @poll_thread.join if blocking
       end
 
       # Stop the adapter.
@@ -41,7 +44,7 @@ module Listen
           sleep(0.1) && next if @paused
 
           start = Time.now.to_f
-          @callback.call([@directory], :recursive => true)
+          @callback.call(@directories.dup, :recursive => true)
           @turnstile.signal
           nap_time = @latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0
