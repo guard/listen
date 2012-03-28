@@ -274,15 +274,17 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 * [stereobooster][] for [rb-fchange][], windows support wouldn't exist without him.
 * [Yehuda Katz (wycats)][] for [vigilo][], that has been a great source of inspiration.
 
-## Author
+## Authors
 
-[Thibaud Guillaume-Gentil][] ([@thibaudgg](http://twitter.com/thibaudgg))
+* [Thibaud Guillaume-Gentil][] ([@thibaudgg](http://twitter.com/thibaudgg))
+* [Maher Sallam][] ([@mahersalam](http://twitter.com/mahersalam))
 
 ## Contributors
 
 [https://github.com/guard/listen/contributors](https://github.com/guard/listen/contributors)
 
 [Thibaud Guillaume-Gentil]: https://github.com/thibaudgg
+[Maher Sallam]: https://github.com/Maher4Ever
 [Michael Kessler (netzpirat)]: https://github.com/netzpirat
 [Travis Tilley (ttilley)]: https://github.com/ttilley
 [fssm]: https://github.com/ttilley/fssm
