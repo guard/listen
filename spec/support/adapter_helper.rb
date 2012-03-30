@@ -47,7 +47,7 @@ end
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
   options = (args.first && args.first.is_a?(Hash)) ? args.first : {}
   let(:listener) { mock(Listen::Listener) }
-  before { described_class.stub(:work?) { true } }
+  before { described_class.stub(:works?) { true } }
 
   context 'single file operations' do
     context 'when a file is created' do
