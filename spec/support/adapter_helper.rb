@@ -14,6 +14,7 @@ def watch(listener, *paths)
   @adapter.wait_for_callback
 ensure
   Thread.kill(t) if t
+  @adapter.stop
 end
 
 shared_examples_for 'a filesystem adapter' do
