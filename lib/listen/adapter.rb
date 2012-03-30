@@ -119,10 +119,15 @@ module Listen
       callback = lambda { |changed_dirs, options| work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start(false)
+
       FileUtils.touch(test_file)
+
+      t = Thread.new { sleep(adapter.latency * 2); adapter.stop }
+
       adapter.wait_for_callback
       work
     ensure
+      Thread.kill(t) if t
       FileUtils.rm(test_file) if File.exists?(test_file)
       adapter.stop
     end
