@@ -122,7 +122,7 @@ module Listen
 
       FileUtils.touch(test_file)
 
-      t = Thread.new { sleep(adapter.latency * 2); adapter.stop }
+      t = Thread.new { sleep(adapter.latency * 5); adapter.stop }
 
       adapter.wait_for_callback
       work
