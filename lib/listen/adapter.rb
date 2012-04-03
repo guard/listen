@@ -5,7 +5,7 @@ require 'fileutils'
 
 module Listen
   class Adapter
-    attr_accessor :directories, :latency, :stop, :paused
+    attr_accessor :directories, :latency, :paused
 
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.1
