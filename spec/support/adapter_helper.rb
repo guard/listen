@@ -27,7 +27,7 @@ shared_examples_for 'a filesystem adapter' do
       it 'blocks the current thread after starting the workers' do
         @called = false
         t = Thread.new { subject.start(true); @called = true }
-        sleep test_latency
+        sleep(test_latency * 3)
         Thread.kill(t) if t
         @called.should be_false
       end
@@ -37,7 +37,7 @@ shared_examples_for 'a filesystem adapter' do
       it 'does not block the current thread after starting the workers' do
         @called = false
         t = Thread.new { subject.start(false); @called = true }
-        sleep test_latency
+        sleep(test_latency * 3)
         Thread.kill(t) if t
         @called.should be_true
       end
