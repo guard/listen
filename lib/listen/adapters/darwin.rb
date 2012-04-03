@@ -19,7 +19,11 @@ module Listen
       # @param [Boolean] blocking whether or not to block the current thread after starting
       #
       def start(blocking = true)
-        super
+        @mutex.synchronize do
+          return if @stop == false
+          super
+        end
+
         @workers_pool = @workers.map { |w| Thread.new { w.run } }
         @poll_thread  = Thread.new { poll_changed_dirs }
 
@@ -33,7 +37,11 @@ module Listen
       # Stops the adapter.
       #
       def stop
-        super
+        @mutex.synchronize do
+          return if @stop == true
+          super
+        end
+
         @workers.map(&:stop)
         @workers_pool.map { |t| Thread.kill(t) if t }
         @poll_thread.join
