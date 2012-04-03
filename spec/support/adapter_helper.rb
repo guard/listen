@@ -18,9 +18,11 @@ ensure
 end
 
 shared_examples_for 'a filesystem adapter' do
-  subject { described_class.new(File.dirname(__FILE__)) }
+  subject { described_class.new(File.dirname(__FILE__), &Proc.new {}) }
 
   describe '#start' do
+     after { subject.stop }
+
     context 'with the blocking param set to true' do
       it 'blocks the current thread after starting the workers' do
         @called = false
@@ -34,7 +36,6 @@ shared_examples_for 'a filesystem adapter' do
     context 'with the blocking param set to false' do
       it 'does not block the current thread after starting the workers' do
         @called = false
-        subject.start(false)
         t = Thread.new { subject.start(false); @called = true }
         sleep test_latency
         Thread.kill(t) if t
