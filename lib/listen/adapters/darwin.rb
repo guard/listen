@@ -11,7 +11,7 @@ module Listen
       #
       def initialize(directories, options = {}, &callback)
         super
-        @workers = Array.new(@directories.size) { |i| init_worker_for(@directories[i]) }
+        @worker = init_worker
       end
 
       # Starts the adapter.
@@ -24,8 +24,8 @@ module Listen
           super
         end
 
-        @workers_pool = @workers.map { |w| Thread.new { w.run } }
-        @poll_thread  = Thread.new { poll_changed_dirs }
+        @worker_thread = Thread.new { @worker.run }
+        @poll_thread   = Thread.new { poll_changed_dirs }
 
         # The FSEvent worker needs sometime to startup. Turnstiles can't
         # be used to wait for it as it runs in a loop.
@@ -42,8 +42,8 @@ module Listen
           super
         end
 
-        @workers.map(&:stop)
-        @workers_pool.map { |t| Thread.kill(t) if t }
+        @worker.stop
+        Thread.kill(@worker_thread) if @worker_thread
         @poll_thread.join
       end
 
@@ -62,19 +62,17 @@ module Listen
 
       private
 
-      # Initializes a FSEvent worker for a given directory
-      # and sets its callback.
-      #
-      # @param [String] directory the directory to be watched
+      # Initializes a FSEvent worker and adds a watcher for
+      # each directory passed to the adapter.
       #
       # @return [FSEvent] initialized worker
       #
-      def init_worker_for(directory)
+      def init_worker
         FSEvent.new.tap do |worker|
-          worker.watch(directory, :latency => @latency) do |directories|
+          worker.watch(@directories.dup, :latency => @latency) do |changes|
             next if @paused
             @mutex.synchronize do
-              directories.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
+              changes.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
             end
           end
         end
