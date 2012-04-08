@@ -1,4 +1,4 @@
-## 0.4 - March 26, 2012
+## Master
 
 ### New features
 
