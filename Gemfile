@@ -23,7 +23,7 @@ group :development do
   end
 
   gem 'guard',       '~> 1.0.0'
-  gem 'guard-rspec', '~> 0.6.0'
+  gem 'guard-rspec', '~> 0.7.0'
   gem 'yard'
   gem 'redcarpet'
   gem 'pry'
