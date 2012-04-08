@@ -21,7 +21,7 @@ shared_examples_for 'a filesystem adapter' do
   subject { described_class.new(File.dirname(__FILE__), &Proc.new {}) }
 
   describe '#start' do
-     after { subject.stop }
+    after { subject.stop }
 
     context 'with the blocking param set to true' do
       it 'blocks the current thread after starting the workers' do
