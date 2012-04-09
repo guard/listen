@@ -1,4 +1,4 @@
-## Master
+## 0.4.0 - April 9, 2012
 
 ### New features
 
