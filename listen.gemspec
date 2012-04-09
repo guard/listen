@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = '>= 1.3.6'
   s.rubyforge_project = 'listen'
 
-  s.add_dependency 'rb-fsevent', '~> 0.9.0'
+  s.add_dependency 'rb-fsevent', '~> 0.9.1'
   s.add_dependency 'rb-inotify', '~> 0.8.8'
   s.add_dependency 'rb-fchange', '~> 0.0.5'
 

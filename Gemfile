@@ -3,7 +3,6 @@ source :rubygems
 gemspec
 
 gem 'rake'
-gem 'rb-fsevent', :git => 'git://github.com/thibaudgg/rb-fsevent.git'
 
 group :development do
   platform :ruby do
