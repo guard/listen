@@ -749,7 +749,7 @@ describe Listen::DirectoryRecord do
       end
 
       context 'with nested paths' do
-        it 'detects removals without crashing - #18', :focus do
+        it 'detects removals without crashing - #18' do
           fixtures do |path|
             mkdir_p 'a_directory/b_directory'
             touch 'a_directory/b_directory/do_not_use.rb'
