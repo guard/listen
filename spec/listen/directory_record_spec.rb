@@ -747,6 +747,23 @@ describe Listen::DirectoryRecord do
           @record.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
+
+      context 'with nested paths' do
+        it 'detects removals without crashing - #18', :focus do
+          fixtures do |path|
+            mkdir_p 'a_directory/b_directory'
+            touch 'a_directory/b_directory/do_not_use.rb'
+
+            modified, added, removed = changes(path, :paths => [path, "#{path}/a_directory", "#{path}/b_directory"]) do
+              rm_r 'a_directory'
+            end
+
+            added.should be_empty
+            modified.should be_empty
+            removed.should =~ %w(a_directory/b_directory/do_not_use.rb)
+          end
+        end
+      end
     end
 
     context 'with a path outside the directory for which a record is made' do

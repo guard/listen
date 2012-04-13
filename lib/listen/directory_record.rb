@@ -169,6 +169,9 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_additions(directory, options = {})
+      # Don't process removed directories
+      return unless File.exist?(directory)
+
       Find.find(directory) do |path|
         next if path == @directory
 
