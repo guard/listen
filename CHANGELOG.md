@@ -1,3 +1,9 @@
+## 0.4.1 - April 15, 2012
+
+### Bug fixes
+
+- [#18](https://github.com/guard/listen/issues/18): Listener crashes when removing directories with nested paths (reported by [@daemonza][], fixed by [@Maher4Ever][])
+
 ## 0.4.0 - April 9, 2012
 
 ### New features
@@ -63,3 +69,4 @@
 [@markiz]: https://github.com/markiz
 [@thibaudgg]: https://github.com/thibaudgg
 [@Maher4Ever]: https://github.com/Maher4Ever
+[@daemonza]: https://github.com/daemonza
