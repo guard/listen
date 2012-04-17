@@ -20,9 +20,9 @@ module Listen
     # @option [String] directory the directory to keep track of
     #
     def initialize(directory)
-      @directory = directory
-      raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(@directory)
+      raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(directory)
 
+      @directory      = Pathname.new(directory).realpath.to_s
       @ignored_paths  = Set.new(DEFAULT_IGNORED_PATHS)
       @filters        = Set.new
       @sha1_checksums = Hash.new

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::DirectoryRecord do
-  let(:base_directory) { Dir.tmpdir }
+  let(:base_directory) { File.dirname(__FILE__) }
 
   subject { described_class.new(base_directory) }
 
@@ -16,6 +16,10 @@ describe Listen::DirectoryRecord do
 
     it 'sets the default filters' do
       subject.filters.should eq []
+    end
+
+    it 'converts the passed path into an absolute path - #21' do
+      described_class.new(File.join(base_directory, '..')).directory.should eq File.expand_path('..', base_directory)
     end
 
     it 'raises an error when the passed path does not exist' do
