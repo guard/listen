@@ -22,8 +22,8 @@ module Listen
       directories = args
 
       @block               = block
-      @directories         = directories
-      @directories_records = directories.map { |d| DirectoryRecord.new(d) }
+      @directories         = directories.map  { |d| Pathname.new(d).realpath.to_s }
+      @directories_records = @directories.map { |d| DirectoryRecord.new(d) }
 
       ignore(*options.delete(:ignore)) if options[:ignore]
       filter(*options.delete(:filter)) if options[:filter]

@@ -18,10 +18,6 @@ describe Listen::DirectoryRecord do
       subject.filters.should eq []
     end
 
-    it 'converts the passed path into an absolute path - #21' do
-      described_class.new(File.join(base_directory, '..')).directory.should eq File.expand_path('..', base_directory)
-    end
-
     it 'raises an error when the passed path does not exist' do
       expect { described_class.new('no way I exist') }.to raise_error(ArgumentError)
     end

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Listener do
   let(:adapter)           { mock(Listen::Adapter, :start => true).as_null_object }
-  let(:watched_directory) { Dir.tmpdir }
+  let(:watched_directory) { File.dirname(__FILE__) }
 
   subject { described_class.new(watched_directory) }
 
@@ -18,6 +18,10 @@ describe Listen::Listener do
     context 'with no options' do
       it 'sets the directory' do
         subject.directory.should eq watched_directory
+      end
+
+      it 'converts the passed path into an absolute path - #21' do
+        described_class.new(File.join(watched_directory, '..')).directory.should eq File.expand_path('..', watched_directory)
       end
 
       it 'sets the option for using relative paths in the callback to the default one' do

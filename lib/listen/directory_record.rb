@@ -1,6 +1,5 @@
 require 'set'
 require 'find'
-require 'pathname'
 require 'digest/sha1'
 
 module Listen
@@ -22,7 +21,7 @@ module Listen
     def initialize(directory)
       raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(directory)
 
-      @directory      = Pathname.new(directory).realpath.to_s
+      @directory      = directory
       @ignored_paths  = Set.new(DEFAULT_IGNORED_PATHS)
       @filters        = Set.new
       @sha1_checksums = Hash.new

@@ -1,3 +1,5 @@
+require 'pathname'
+
 module Listen
   class Listener
     attr_reader :directory, :directory_record, :adapter
@@ -23,8 +25,8 @@ module Listen
     #
     def initialize(directory, options = {}, &block)
       @block              = block
-      @directory          = directory
-      @directory_record   = DirectoryRecord.new(directory)
+      @directory          = Pathname.new(directory).realpath.to_s
+      @directory_record   = DirectoryRecord.new(@directory)
       @use_relative_paths = DEFAULT_TO_RELATIVE_PATHS
 
       @use_relative_paths = options.delete(:relative_paths) if options[:relative_paths]

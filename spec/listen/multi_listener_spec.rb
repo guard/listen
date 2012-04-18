@@ -19,6 +19,11 @@ describe Listen::MultiListener do
       it 'sets the directories' do
         subject.directories.should =~ watched_directories
       end
+
+      it 'converts the passed paths into absolute paths - #21' do
+        paths = watched_directories.map { |d| File.join(d, '..') }
+        described_class.new(*paths).directories.should =~ watched_directories.map{ |d| File.expand_path('..', d) }
+      end
     end
 
     context 'with custom options' do
