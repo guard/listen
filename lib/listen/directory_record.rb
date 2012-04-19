@@ -148,6 +148,17 @@ module Listen
       @changes
     end
 
+    # Converts an absolute path to a path that's relative to the base directory.
+    #
+    # @param [String] path the path to convert
+    #
+    # @return [String] the relative path
+    #
+    def relative_to_base(path)
+      return nil unless path[@directory]
+      path.sub(%r{^#{@directory}#{File::SEPARATOR}?}, '')
+    end
+
     private
 
     # Detects modifications and removals recursively in a directory.
@@ -270,16 +281,6 @@ module Listen
     #
     def existing_path?(path)
       @paths[File.dirname(path)][File.basename(path)] != nil
-    end
-
-    # Converts an absolute path to a path that's relative to the base directory.
-    #
-    # @param [String] path the path to convert
-    #
-    # @return [String] the relative path
-    #
-    def relative_to_base(path)
-      path.sub(%r(^#{@directory}/?/), '')
     end
   end
 end

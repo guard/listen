@@ -55,6 +55,8 @@ describe Listen::DirectoryRecord do
   end
 
   describe '#ignored?' do
+    before { subject.stub(:relative_to_base) { |path| path } }
+
     it 'tests paths relative to the base directory' do
       subject.should_receive(:relative_to_base).with('file.txt')
       subject.ignored?('file.txt')
@@ -85,6 +87,8 @@ describe Listen::DirectoryRecord do
   end
 
   describe '#filterd?' do
+    before { subject.stub(:relative_to_base) { |path| path } }
+
     context 'when no filtering pattrens are set' do
       it 'returns true for any path' do
         subject.filtered?('file.txt').should be_true
@@ -177,6 +181,17 @@ describe Listen::DirectoryRecord do
           record.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
+    end
+  end
+
+  describe '#relative_to_base' do
+    it 'removes the path of the base-directory from the passed path' do
+      path = 'dir/to/app/file.rb'
+      subject.relative_to_base(File.join(base_directory, path)).should eq path
+    end
+
+    it 'returns nil when the passed path is not inside the base-directory' do
+      subject.relative_to_base('/tmp/some_random_path').should be_nil
     end
   end
 
