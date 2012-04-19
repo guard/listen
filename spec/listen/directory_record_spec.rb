@@ -5,16 +5,16 @@ describe Listen::DirectoryRecord do
 
   subject { described_class.new(base_directory) }
 
-  describe '.generate_default_ignoring_pattrens' do
-    it 'creates regexp pattrens from the default ignored directories and extensions' do
-      described_class.generate_default_ignoring_pattrens.should include(
+  describe '.generate_default_ignoring_patterns' do
+    it 'creates regexp patterns from the default ignored directories and extensions' do
+      described_class.generate_default_ignoring_patterns.should include(
         %r{^(?:\.bundle|\.git|\.svn|log|tmp|vendor)/},
         %r{(?:\.DS_Store)$}
       )
     end
 
     it 'memoizes the generated results' do
-      described_class.generate_default_ignoring_pattrens.should equal described_class.generate_default_ignoring_pattrens
+      described_class.generate_default_ignoring_patterns.should equal described_class.generate_default_ignoring_patterns
     end
   end
 
@@ -23,12 +23,12 @@ describe Listen::DirectoryRecord do
       subject.directory.should eq base_directory
     end
 
-    it 'sets the default ignoring pattrens' do
-      subject.ignoring_pattrens.should =~ described_class.generate_default_ignoring_pattrens
+    it 'sets the default ignoring patterns' do
+      subject.ignoring_patterns.should =~ described_class.generate_default_ignoring_patterns
     end
 
-    it 'sets the default filtering pattrens' do
-      subject.filtering_pattrens.should eq []
+    it 'sets the default filtering patterns' do
+      subject.filtering_patterns.should eq []
     end
 
     it 'raises an error when the passed path does not exist' do
@@ -43,14 +43,14 @@ describe Listen::DirectoryRecord do
   describe '#ignore' do
     it 'adds the passed paths to the list of ignoted paths in the record' do
       subject.ignore(%r{^\.old/}, %r{\.pid$})
-      subject.ignoring_pattrens.should include(%r{^\.old/}, %r{\.pid$})
+      subject.ignoring_patterns.should include(%r{^\.old/}, %r{\.pid$})
     end
   end
 
   describe '#filter' do
     it 'adds the passed regexps to the list of filters that determine the stored paths' do
       subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
-      subject.filtering_pattrens.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filtering_patterns.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
     end
   end
 
@@ -86,16 +86,16 @@ describe Listen::DirectoryRecord do
     end
   end
 
-  describe '#filterd?' do
+  describe '#filtered?' do
     before { subject.stub(:relative_to_base) { |path| path } }
 
-    context 'when no filtering pattrens are set' do
+    context 'when no filtering patterns are set' do
       it 'returns true for any path' do
         subject.filtered?('file.txt').should be_true
       end
     end
 
-    context 'when filtering pattrens are set' do
+    context 'when filtering patterns are set' do
       before { subject.filter(%r{\.(?:jpe?g|gif|png)}) }
 
       it 'tests paths relative to the base directory' do

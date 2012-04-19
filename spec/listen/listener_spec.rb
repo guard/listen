@@ -34,11 +34,11 @@ describe Listen::Listener do
                                     :latency => 0.5, :force_polling => true, :relative_paths => true) }
 
       it 'passes the custom ignored paths to the directory record' do
-        subject.directory_record.ignoring_pattrens.should include /\.ssh/
+        subject.directory_record.ignoring_patterns.should include /\.ssh/
       end
 
       it 'passes the custom filters to the directory record' do
-        subject.directory_record.filtering_pattrens.should =~  [/.*\.rb/,/.*\.md/]
+        subject.directory_record.filtering_patterns.should =~  [/.*\.rb/,/.*\.md/]
       end
 
       it 'sets the cutom option for using relative paths in the callback' do

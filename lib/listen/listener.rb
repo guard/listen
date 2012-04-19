@@ -82,7 +82,7 @@ module Listen
       !!@adapter && @adapter.paused == true
     end
 
-    # Adds ignoring pattrens to the listener.
+    # Adds ignoring patterns to the listener.
     #
     # @param (see Listen::DirectoryRecord#ignore)
     #
@@ -93,7 +93,7 @@ module Listen
       self
     end
 
-    # Adds filtering pattrens to the listener.
+    # Adds filtering patterns to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
     #

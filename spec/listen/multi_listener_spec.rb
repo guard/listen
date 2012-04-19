@@ -34,13 +34,13 @@ describe Listen::MultiListener do
 
       it 'passes the custom ignored paths to each directory record' do
         subject.directories_records.each do |r|
-          r.ignoring_pattrens.should include /\.ssh/
+          r.ignoring_patterns.should include /\.ssh/
         end
       end
 
       it 'passes the custom filters to each directory record' do
         subject.directories_records.each do |r|
-          r.filtering_pattrens.should =~  [/.*\.rb/,/.*\.md/]
+          r.filtering_patterns.should =~  [/.*\.rb/,/.*\.md/]
         end
       end
 
