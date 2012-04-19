@@ -28,19 +28,19 @@ describe Listen::MultiListener do
 
     context 'with custom options' do
       subject do
-        args = watched_directories << {:ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/], :latency => 0.5, :force_polling => true}
+        args = watched_directories << {:ignore => /\.ssh/, :filter => [/.*\.rb/,/.*\.md/], :latency => 0.5, :force_polling => true}
         described_class.new(*args)
       end
 
       it 'passes the custom ignored paths to each directory record' do
         subject.directories_records.each do |r|
-          r.ignored_paths.should =~ %w[.bundle .git .DS_Store log tmp vendor .ssh]
+          r.ignoring_pattrens.should include /\.ssh/
         end
       end
 
       it 'passes the custom filters to each directory record' do
         subject.directories_records.each do |r|
-          r.filters.should =~  [/.*\.rb/,/.*\.md/]
+          r.filtering_pattrens.should =~  [/.*\.rb/,/.*\.md/]
         end
       end
 

@@ -30,15 +30,15 @@ describe Listen::Listener do
     end
 
     context 'with custom options' do
-      subject { described_class.new(watched_directory, :ignore => '.ssh', :filter => [/.*\.rb/,/.*\.md/],
+      subject { described_class.new(watched_directory, :ignore => /\.ssh/, :filter => [/.*\.rb/,/.*\.md/],
                                     :latency => 0.5, :force_polling => true, :relative_paths => true) }
 
       it 'passes the custom ignored paths to the directory record' do
-        subject.directory_record.ignored_paths.should =~ %w[.bundle .git .DS_Store log tmp vendor .ssh]
+        subject.directory_record.ignoring_pattrens.should include /\.ssh/
       end
 
       it 'passes the custom filters to the directory record' do
-        subject.directory_record.filters.should =~  [/.*\.rb/,/.*\.md/]
+        subject.directory_record.filtering_pattrens.should =~  [/.*\.rb/,/.*\.md/]
       end
 
       it 'sets the cutom option for using relative paths in the callback' do
