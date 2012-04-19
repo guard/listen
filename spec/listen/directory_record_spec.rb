@@ -5,17 +5,30 @@ describe Listen::DirectoryRecord do
 
   subject { described_class.new(base_directory) }
 
+  describe '.generate_default_ignoring_pattrens' do
+    it 'creates regexp pattrens from the default ignored directories and extensions' do
+      described_class.generate_default_ignoring_pattrens.should include(
+        %r{^(?:\.bundle|\.git|\.svn|log|tmp|vendor)/},
+        %r{(?:\.DS_Store)$}
+      )
+    end
+
+    it 'memoizes the generated results' do
+      described_class.generate_default_ignoring_pattrens.should equal described_class.generate_default_ignoring_pattrens
+    end
+  end
+
   describe '#initialize' do
     it 'sets the base directory' do
       subject.directory.should eq base_directory
     end
 
-    it 'sets the default ignored paths' do
-      subject.ignored_paths.should =~ described_class::DEFAULT_IGNORED_PATHS
+    it 'sets the default ignoring pattrens' do
+      subject.ignoring_pattrens.should =~ described_class.generate_default_ignoring_pattrens
     end
 
-    it 'sets the default filters' do
-      subject.filters.should eq []
+    it 'sets the default filtering pattrens' do
+      subject.filtering_pattrens.should eq []
     end
 
     it 'raises an error when the passed path does not exist' do
@@ -29,39 +42,72 @@ describe Listen::DirectoryRecord do
 
   describe '#ignore' do
     it 'adds the passed paths to the list of ignoted paths in the record' do
-      subject.ignore('.old', '.pid')
-      subject.ignored_paths.should include('.old', '.pid')
+      subject.ignore(%r{^\.old/}, %r{\.pid$})
+      subject.ignoring_pattrens.should include(%r{^\.old/}, %r{\.pid$})
     end
   end
 
   describe '#filter' do
     it 'adds the passed regexps to the list of filters that determine the stored paths' do
       subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
-      subject.filters.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filtering_pattrens.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
     end
   end
 
   describe '#ignored?' do
+    it 'tests paths relative to the base directory' do
+      subject.should_receive(:relative_to_base).with('file.txt')
+      subject.ignored?('file.txt')
+    end
+
+    it 'returns true when the passed path is a default ignored path' do
+      subject.ignored?('tmp/some_process.pid').should be_true
+      subject.ignored?('dir/.DS_Store').should be_true
+      subject.ignored?('.git/config').should be_true
+    end
+
+    it 'returns false when the passed path is not a default ignored path' do
+      subject.ignored?('nested/tmp/some_process.pid').should be_false
+      subject.ignored?('nested/.git').should be_false
+      subject.ignored?('dir/.DS_Store/file').should be_false
+      subject.ignored?('file.git').should be_false
+    end
+
     it 'returns true when the passed path is ignored' do
-      subject.ignore('.pid')
-      subject.ignored?('/tmp/some_process.pid').should be_true
+      subject.ignore(%r{\.pid$})
+      subject.ignored?('dir/some_process.pid').should be_true
     end
 
     it 'returns false when the passed path is not ignored' do
-      subject.ignore('.pid')
-      subject.ignored?('/tmp/some_file.txt').should be_false
+      subject.ignore(%r{\.pid$})
+      subject.ignored?('dir/some_file.txt').should be_false
     end
   end
 
   describe '#filterd?' do
-    it 'returns true when the passed path is filtered' do
-      subject.filter(%r{\.(?:jpe?g|gif|png)})
-      subject.filtered?('/tmp/picture.jpeg').should be_true
+    context 'when no filtering pattrens are set' do
+      it 'returns true for any path' do
+        subject.filtered?('file.txt').should be_true
+      end
     end
 
-    it 'returns false when the passed path is not filtered' do
-      subject.filter(%r{\.(?:jpe?g|gif|png)})
-      subject.filtered?('/tmp/song.mp3').should be_false
+    context 'when filtering pattrens are set' do
+      before { subject.filter(%r{\.(?:jpe?g|gif|png)}) }
+
+      it 'tests paths relative to the base directory' do
+        subject.should_receive(:relative_to_base).with('file.txt')
+        subject.filtered?('file.txt')
+      end
+
+      it 'returns true when the passed path is filtered' do
+        subject.filter(%r{\.(?:jpe?g|gif|png)})
+        subject.filtered?('dir/picture.jpeg').should be_true
+      end
+
+      it 'returns false when the passed path is not filtered' do
+        subject.filter(%r{\.(?:jpe?g|gif|png)})
+        subject.filtered?('dir/song.mp3').should be_false
+      end
     end
   end
 
@@ -89,7 +135,7 @@ describe Listen::DirectoryRecord do
           touch 'ignored_directory/file.txt'
 
           record = described_class.new(path)
-          record.ignore 'ignored_directory'
+          record.ignore %r{^ignored_directory/}
           record.build
 
           record.paths[path]['/a_ignored_directory'].should be_nil
@@ -103,7 +149,7 @@ describe Listen::DirectoryRecord do
           touch 'ignored_file.rb'
 
           record = described_class.new(path)
-          record.ignore 'ignored_file.rb'
+          record.ignore %r{^ignored_file.rb$}
           record.build
 
           record.paths[path]['ignored_file.rb'].should be_nil
@@ -211,7 +257,7 @@ describe Listen::DirectoryRecord do
                 fixtures do |path|
                   mkdir 'ignored_directory'
 
-                  modified, added, removed = changes(path, :ignore => 'ignored_directory', :recursive => true) do
+                  modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
                     touch 'ignored_directory/new_file.rb'
                   end
 
@@ -225,7 +271,7 @@ describe Listen::DirectoryRecord do
                 fixtures do |path|
                   mkdir 'ignored_directory'
 
-                  modified, added, removed = changes(path, :paths => ["#{path}/ignored_directory"], :ignore => 'ignored_directory', :recursive => true) do
+                  modified, added, removed = changes(path, :paths => ["#{path}/ignored_directory"], :ignore => %r{^ignored_directory/}, :recursive => true) do
                     touch 'ignored_directory/new_file.rb'
                   end
 

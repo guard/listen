@@ -82,18 +82,18 @@ module Listen
       !!@adapter && @adapter.paused == true
     end
 
-    # Adds ignored paths to the listener.
+    # Adds ignoring pattrens to the listener.
     #
     # @param (see Listen::DirectoryRecord#ignore)
     #
     # @return [Listen::Listener] the listener
     #
-    def ignore(*paths)
-      @directory_record.ignore(*paths)
+    def ignore(*regexps)
+      @directory_record.ignore(*regexps)
       self
     end
 
-    # Adds file filters to the listener.
+    # Adds filtering pattrens to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
     #

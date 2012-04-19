@@ -11,8 +11,30 @@ module Listen
   class DirectoryRecord
     attr_reader :directory, :paths, :sha1_checksums
 
-    # Default paths' beginnings that doesn't get stored in the record
-    DEFAULT_IGNORED_PATHS = %w[.bundle .git .DS_Store log tmp vendor]
+    DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .svn log tmp vendor]
+
+    DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
+
+    # Class methods
+    #
+    class << self
+
+      # Creates the ignoring pattrens from the default ignored
+      # directories and extensions. It memoizes the generated pattrens
+      # to avoid unnecessary computation.
+      #
+      def generate_default_ignoring_pattrens
+        @@default_ignoring_pattrens ||= Array.new.tap do |default_pattrens|
+          # Add directories
+          ignored_directories = DEFAULT_IGNORED_DIRECTORIES.map { |d| Regexp.escape(d) }
+          default_pattrens << %r{^(?:#{ignored_directories.join('|')})/}
+
+          # Add extensions
+          ignored_extensions = DEFAULT_IGNORED_EXTENSIONS.map { |e| Regexp.escape(e) }
+          default_pattrens << %r{(?:#{ignored_extensions.join('|')})$}
+        end
+      end
+    end
 
     # Initializes a directory record.
     #
@@ -21,51 +43,53 @@ module Listen
     def initialize(directory)
       raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(directory)
 
-      @directory      = directory
-      @ignored_paths  = Set.new(DEFAULT_IGNORED_PATHS)
-      @filters        = Set.new
-      @sha1_checksums = Hash.new
+      @directory          = directory
+      @ignoring_pattrens  = Set.new
+      @filtering_pattrens = Set.new
+      @sha1_checksums     = Hash.new
+
+      @ignoring_pattrens.merge(DirectoryRecord.generate_default_ignoring_pattrens)
     end
 
-    # Returns the ignored paths in the record
+    # Returns the ignoring pattrens in the record
     #
-    # @return [Array<String>] the ignored paths
+    # @return [Array<Regexp>] the ignoring pattrens
     #
-    def ignored_paths
-      @ignored_paths.to_a
+    def ignoring_pattrens
+      @ignoring_pattrens.to_a
     end
 
-    # Returns the filters used in the record to know
+    # Returns the filtering pattrens used in the record to know
     # which paths should be stored.
     #
-    # @return [Array<String>] the used filters
+    # @return [Array<Regexp>] the filtering pattrens
     #
-    def filters
-      @filters.to_a
+    def filtering_pattrens
+      @filtering_pattrens.to_a
     end
 
-    # Adds ignored path to the record.
+    # Adds ignoring pattrens to the record.
     #
     # @example Ignore some paths
     #   ignore ".git", ".svn"
     #
-    # @param [String, Array<String>] paths a path or a list of paths to ignore
+    # @param [Regexp] regexp a pattren for ignoring paths
     #
-    def ignore(*paths)
-      @ignored_paths.merge(paths)
+    def ignore(*regexps)
+      @ignoring_pattrens.merge(regexps)
     end
 
-    # Adds file filters to the listener.
+    # Adds filtering pattrens to the listener.
     #
     # @example Filter some files
     #   ignore /\.txt$/, /.*\.zip/
     #
-    # @param [Array<Regexp>] regexps a list of regexps file filters
+    # @param [Regexp] regexp a pattren for filtering paths
     #
     # @return [Listen::Listener] the listener itself
     #
     def filter(*regexps)
-      @filters.merge(regexps)
+      @filtering_pattrens.merge(regexps)
     end
 
     # Returns whether a path should be ignored or not.
@@ -75,7 +99,8 @@ module Listen
     # @return [Boolean]
     #
     def ignored?(path)
-      @ignored_paths.any? { |ignored_path| path =~ /#{ignored_path}$/ }
+      path = relative_to_base(path)
+      @ignoring_pattrens.any? { |pattren| pattren =~ path }
     end
 
     # Returns whether a path should be filtered or not.
@@ -85,7 +110,11 @@ module Listen
     # @return [Boolean]
     #
     def filtered?(path)
-      @filters.empty? || @filters.any? { |filter| path =~ filter }
+      # When no filtering pattrens are set, ALL files are stored.
+      return true if @filtering_pattrens.empty?
+
+      path = relative_to_base(path)
+      @filtering_pattrens.any? { |pattren| pattren =~ path }
     end
 
     # Finds the paths that should be stored and adds them
