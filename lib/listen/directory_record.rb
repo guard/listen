@@ -73,7 +73,7 @@ module Listen
     # @example Ignore some paths
     #   ignore ".git", ".svn"
     #
-    # @param [Regexp] regexp a pattren for ignoring paths
+    # @param [Regexp] regexp a pattern for ignoring paths
     #
     def ignore(*regexps)
       @ignoring_patterns.merge(regexps)
@@ -84,7 +84,7 @@ module Listen
     # @example Filter some files
     #   ignore /\.txt$/, /.*\.zip/
     #
-    # @param [Regexp] regexp a pattren for filtering paths
+    # @param [Regexp] regexp a pattern for filtering paths
     #
     # @return [Listen::Listener] the listener itself
     #
@@ -100,7 +100,7 @@ module Listen
     #
     def ignored?(path)
       path = relative_to_base(path)
-      @ignoring_patterns.any? { |pattren| pattren =~ path }
+      @ignoring_patterns.any? { |pattern| pattern =~ path }
     end
 
     # Returns whether a path should be filtered or not.
@@ -114,7 +114,7 @@ module Listen
       return true if @filtering_patterns.empty?
 
       path = relative_to_base(path)
-      @filtering_patterns.any? { |pattren| pattren =~ path }
+      @filtering_patterns.any? { |pattern| pattern =~ path }
     end
 
     # Finds the paths that should be stored and adds them
