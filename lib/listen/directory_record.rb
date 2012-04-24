@@ -215,10 +215,9 @@ module Listen
         next if path == @directory
 
         if File.directory?(path)
-          # Add a trailing slash to directories as Find.find doesn't
-          path += File::SEPARATOR
-
-          if ignored?(path) || (directory != path && (!options[:recursive] && existing_path?(path)))
+          # Add a trailing slash to directories when checking if a directory is
+          # ignored to optimize finding them as Find.find doesn't.
+          if ignored?(path + File::SEPARATOR) || (directory != path && (!options[:recursive] && existing_path?(path)))
             Find.prune # Don't look any further into this directory.
           else
             insert_path(path)
@@ -257,10 +256,9 @@ module Listen
         next if path == @directory
 
         if File.directory?(path)
-          # Add a trailing slash to directories as Find.find doesn't
-          path += File::SEPARATOR
-
-          if ignored?(path)
+          # Add a trailing slash to directories when checking if a directory is
+          # ignored to optimize finding them as Find.find doesn't.
+          if ignored?(path + File::SEPARATOR)
             Find.prune # Don't look any further into this directory.
           else
             yield(path)
