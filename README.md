@@ -32,12 +32,12 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 
 ``` ruby
 # Listen to a single directory.
-Listen.to('dir/path/to/listen', filter: /.*\.rb/, ignore: '/ignored/path') do |modified, added, removed|
+Listen.to('dir/path/to/listen', filter: /\.rb$/, ignore: %r{ignored/path/}) do |modified, added, removed|
   # ...
 end
 
 # Listen to multiple directories.
-Listen.to('dir/to/awesome_app', 'dir/to/other_app', filter: /.*\.rb/, latency: 0.1) do |modified, added, removed|
+Listen.to('dir/to/awesome_app', 'dir/to/other_app', filter: /\.rb$/, latency: 0.1) do |modified, added, removed|
   # ...
 end
 ```
@@ -47,7 +47,7 @@ end
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
 listener = listener.ignore(%r{^ignored/path/})
-listener = listener.filter(/.*\.rb/)
+listener = listener.filter(/\.rb$/)
 listener = listener.latency(0.5)
 listener = listener.force_polling(true)
 listener = listener.polling_fallback_message(false)
@@ -60,7 +60,7 @@ listener.start # blocks execution!
 ``` ruby
 Listen.to('dir/path/to/listen')
       .ignore(%r{^ignored/path/})
-      .filter(/.*\.rb/)
+      .filter(/\.rb$/)
       .latency(0.5)
       .force_polling(true)
       .polling_fallback_message('custom message')
