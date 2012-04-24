@@ -11,7 +11,7 @@ module Listen
   class DirectoryRecord
     attr_reader :directory, :paths, :sha1_checksums
 
-    DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .svn log tmp vendor]
+    DEFAULT_IGNORED_DIRECTORIES = %w[.rbx .bundle .git .svn log tmp vendor]
 
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
