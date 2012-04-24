@@ -1,8 +1,20 @@
+## 0.5.0 - April 24, 2012
+
+### Bug fixes
+
+- #21: Issues when listening to changes in relative paths (reported by [@akerbos][], fixed by [@Maher4Ever][])
+
+### Improvements
+
+- #17: Use regexp-patterns with the `ignore` method instead of supplying paths. (reported by [@fny][], added by [@Maher4Ever][])
+- Speed improvement when listening to changes in directories with ignored paths ([@Maher4Ever][])
+- Added `.rbx` and `.svn` to ignored directories ([@Maher4Ever][])
+
 ## 0.4.1 - April 15, 2012
 
 ### Bug fixes
 
-- [#18](https://github.com/guard/listen/issues/18): Listener crashes when removing directories with nested paths (reported by [@daemonza][], fixed by [@Maher4Ever][])
+- #18: Listener crashes when removing directories with nested paths (reported by [@daemonza][], fixed by [@Maher4Ever][])
 
 ## 0.4.0 - April 9, 2012
 
@@ -70,3 +82,5 @@
 [@thibaudgg]: https://github.com/thibaudgg
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@daemonza]: https://github.com/daemonza
+[@akerbos]: https://github.com/akerbos
+[@fny]: https://github.com/fny
