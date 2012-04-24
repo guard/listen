@@ -6,8 +6,8 @@ module Listen
     #
     # @param [String] directories the directories to listen to
     # @param [Hash] options the listen options
-    # @option options [String] ignore a list of paths to ignore
-    # @option options [Regexp] filter a list of regexps file filters
+    # @option options [Regexp] ignore a pattern for ignoring paths
+    # @option options [Regexp] filter a pattern for filtering paths
     # @option options [Float] latency the delay between checking for changes in seconds
     # @option options [Boolean] force_polling whether to force the polling adapter or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
