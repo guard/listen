@@ -314,6 +314,39 @@ describe Listen::DirectoryRecord do
             end
           end
         end
+
+        context 'given a directory with subdirectories' do
+          it 'detects the added file' do
+            fixtures do |path|
+              mkdir_p 'a_directory/subdirectory'
+
+              modified, added, removed = changes(path, :recursive => true) do
+                touch 'a_directory/subdirectory/new_file.rb'
+              end
+
+              added.should =~ %w(a_directory/subdirectory/new_file.rb)
+              modified.should be_empty
+              removed.should be_empty
+            end
+          end
+
+          context 'with an ignored directory' do
+            it "doesn't detect added files in neither the directory nor the subdirectory" do
+              fixtures do |path|
+                mkdir_p 'ignored_directory/subdirectory'
+
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
+                  touch 'ignored_directory/new_file.rb'
+                  touch 'ignored_directory/subdirectory/new_file.rb'
+                end
+
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
+              end
+            end
+          end
+        end
       end
 
       context 'when a file is modified' do
@@ -454,6 +487,42 @@ describe Listen::DirectoryRecord do
             end
           end
         end
+
+        context 'given a directory with subdirectories' do
+          it 'detects the modified file' do
+            fixtures do |path|
+              mkdir_p 'a_directory/subdirectory'
+              touch   'a_directory/subdirectory/existing_file.txt'
+
+              modified, added, removed = changes(path, :recursive => true) do
+                touch 'a_directory/subdirectory/existing_file.txt'
+              end
+
+              added.should be_empty
+              modified.should =~ %w(a_directory/subdirectory/existing_file.txt)
+              removed.should be_empty
+            end
+          end
+
+          context 'with an ignored subdirectory' do
+            it "doesn't detect the modified files in neither the directory nor the subdirectory" do
+              fixtures do |path|
+                mkdir_p 'ignored_directory/subdirectory'
+                touch   'ignored_directory/existing_file.txt'
+                touch   'ignored_directory/subdirectory/existing_file.txt'
+
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
+                  touch 'ignored_directory/existing_file.txt'
+                  touch 'ignored_directory/subdirectory/existing_file.txt'
+                end
+
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
+              end
+            end
+          end
+        end
       end
 
       context 'when a file is moved' do
@@ -567,7 +636,43 @@ describe Listen::DirectoryRecord do
               end
             end
 
-            context 'with all paths are passed as params' do
+            context 'given a directory with subdirectories' do
+              it 'detects a file movement between two subdirectories' do
+                fixtures do |path|
+                  mkdir_p 'a_directory/subdirectory'
+                  mkdir_p 'b_directory/subdirectory'
+                  touch   'a_directory/subdirectory/move_me.txt'
+
+                  modified, added, removed = changes(path, :recursive => true) do
+                    mv 'a_directory/subdirectory/move_me.txt', 'b_directory/subdirectory'
+                  end
+
+                  added.should =~ %w(b_directory/subdirectory/move_me.txt)
+                  modified.should be_empty
+                  removed.should =~ %w(a_directory/subdirectory/move_me.txt)
+                end
+              end
+
+              context 'with an ignored subdirectory' do
+                it "doesn't detect the file movement between subdirectories" do
+                  fixtures do |path|
+                    mkdir_p 'a_ignored_directory/subdirectory'
+                    mkdir_p 'b_ignored_directory/subdirectory'
+                    touch   'a_ignored_directory/subdirectory/move_me.txt'
+
+                    modified, added, removed = changes(path, :ignore => %r{^(?:a|b)_ignored_directory/}, :recursive => true) do
+                      mv 'a_ignored_directory/subdirectory/move_me.txt', 'b_ignored_directory/subdirectory'
+                    end
+
+                    added.should be_empty
+                    modified.should be_empty
+                    removed.should be_empty
+                  end
+                end
+              end
+            end
+
+            context 'with all paths passed as params' do
               it 'detects the file movement into the directory' do
                 fixtures do |path|
                   mkdir 'a_directory'
@@ -696,6 +801,42 @@ describe Listen::DirectoryRecord do
             end
           end
         end
+
+        context 'given a directory with subdirectories' do
+          it 'detects the file removal in subdirectories' do
+            fixtures do |path|
+              mkdir_p 'a_directory/subdirectory'
+              touch   'a_directory/subdirectory/do_not_use.rb'
+
+              modified, added, removed = changes(path, :recursive => true) do
+                rm 'a_directory/subdirectory/do_not_use.rb'
+              end
+
+              added.should be_empty
+              modified.should be_empty
+              removed.should =~ %w(a_directory/subdirectory/do_not_use.rb)
+            end
+          end
+
+          context 'with an ignored subdirectory' do
+            it "doesn't detect files removals in neither the directory nor its subdirectories" do
+              fixtures do |path|
+                mkdir_p 'ignored_directory/subdirectory'
+                touch   'ignored_directory/do_not_use.rb'
+                touch   'ignored_directory/subdirectory/do_not_use.rb'
+
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
+                  rm 'ignored_directory/do_not_use.rb'
+                  rm 'ignored_directory/subdirectory/do_not_use.rb'
+                end
+
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
+              end
+            end
+          end
+        end
       end
     end
 
@@ -812,16 +953,16 @@ describe Listen::DirectoryRecord do
       context 'with nested paths' do
         it 'detects removals without crashing - #18' do
           fixtures do |path|
-            mkdir_p 'a_directory/b_directory'
-            touch 'a_directory/b_directory/do_not_use.rb'
+            mkdir_p 'a_directory/subdirectory'
+            touch   'a_directory/subdirectory/do_not_use.rb'
 
-            modified, added, removed = changes(path, :paths => [path, "#{path}/a_directory", "#{path}/b_directory"]) do
+            modified, added, removed = changes(path) do
               rm_r 'a_directory'
             end
 
             added.should be_empty
             modified.should be_empty
-            removed.should =~ %w(a_directory/b_directory/do_not_use.rb)
+            removed.should =~ %w(a_directory/subdirectory/do_not_use.rb)
           end
         end
       end

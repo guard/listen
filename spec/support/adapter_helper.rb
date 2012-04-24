@@ -104,6 +104,24 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           end
         end
       end
+
+      context 'given a directory with subdirectories' do
+        it 'detects the added file' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory/subdirectory"], {})
+            end
+
+            mkdir_p 'a_directory/subdirectory'
+
+            watch(listener, path) do
+              touch 'a_directory/subdirectory/new_file.rb'
+            end
+          end
+        end
+      end
     end
 
     context 'when a file is modified' do
@@ -175,6 +193,25 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
             watch(listener, path) do
               touch 'a_directory/existing_file.txt'
+            end
+          end
+        end
+      end
+
+      context 'given a directory with subdirectories' do
+        it 'detects the modified file' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory/subdirectory"], {})
+            end
+
+            mkdir_p 'a_directory/subdirectory'
+            touch   'a_directory/subdirectory/existing_file.txt'
+
+            watch(listener, path) do
+              touch 'a_directory/subdirectory/new_file.rb'
             end
           end
         end
@@ -257,6 +294,28 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
           end
         end
       end
+
+      context 'given a directory with subdirectories' do
+        it 'detects files movements between subdirectories' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with do |array, options|
+                array.should =~ ["#{path}/a_directory/subdirectory", "#{path}/b_directory/subdirectory"]
+              end
+            end
+
+            mkdir_p 'a_directory/subdirectory'
+            mkdir_p 'b_directory/subdirectory'
+            touch   'a_directory/subdirectory/move_me.txt'
+
+            watch(listener, path) do
+              mv 'a_directory/subdirectory/move_me.txt', 'b_directory/subdirectory'
+            end
+          end
+        end
+      end
     end
 
     context 'when a file is deleted' do
@@ -290,6 +349,25 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
             watch(listener, path) do
               rm 'a_directory/do_not_use.rb'
+            end
+          end
+        end
+      end
+
+      context 'given a directory with subdirectories' do
+        it 'detects the file removal' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with(["#{path}/a_directory/subdirectory"], {})
+            end
+
+            mkdir_p 'a_directory/subdirectory'
+            touch   'a_directory/subdirectory/do_not_use.rb'
+
+            watch(listener, path) do
+              rm 'a_directory/subdirectory/do_not_use.rb'
             end
           end
         end

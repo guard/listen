@@ -12,9 +12,11 @@
 def changes(root_path, options = {})
   unless @record || options[:use_last_record]
     @record = Listen::DirectoryRecord.new(root_path)
-    @record.build
     @record.filter(options.delete(:filter)) if options[:filter]
     @record.ignore(options.delete(:ignore)) if options[:ignore]
+
+    # Build the record after adding the filtering and ignoring patterns
+    @record.build
   end
 
   yield

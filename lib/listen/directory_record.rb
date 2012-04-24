@@ -215,6 +215,9 @@ module Listen
         next if path == @directory
 
         if File.directory?(path)
+          # Add a trailing slash to directories as Find.find doesn't
+          path += File::SEPARATOR
+
           if ignored?(path) || (directory != path && (!options[:recursive] && existing_path?(path)))
             Find.prune # Don't look any further into this directory.
           else
@@ -254,6 +257,9 @@ module Listen
         next if path == @directory
 
         if File.directory?(path)
+          # Add a trailing slash to directories as Find.find doesn't
+          path += File::SEPARATOR
+
           if ignored?(path)
             Find.prune # Don't look any further into this directory.
           else
