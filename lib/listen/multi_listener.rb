@@ -38,8 +38,8 @@ module Listen
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
     def start(blocking = true)
-      t = Thread.new { @adapter = initialize_adapter }
-      @directories_records.each { |r| r.build }
+      t = Thread.new { @directories_records.each { |r| r.build } }
+      @adapter = initialize_adapter
       t.join
       @adapter.start(blocking)
     end
