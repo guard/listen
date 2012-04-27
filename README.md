@@ -26,7 +26,7 @@ There are **two ways** to use Listen:
 1. Call `Listen.to` with either a single directory or multiple directories, then define the `change` callback in a block.
 2. Create a `listener` object and use it in an (ARel style) chainable way.
 
-Feel free to give your feeback via [Listen issues](https://github.com/guard/listener/issues)
+Feel free to give your feeback via [Listen issues](https://github.com/guard/listen/issues)
 
 ### Block API
 
