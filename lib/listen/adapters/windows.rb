@@ -63,17 +63,16 @@ module Listen
       # @return [FChange::Notifier] initialized worker
       #
       def init_worker
-        worker = FChange::Notifier.new
-        @directories.each do |directory|
-          watcher = worker.watch(directory, :all_events, :recursive) do |event|
-            next if @paused
-            @mutex.synchronize do
-              @changed_dirs << File.expand_path(event.watcher.path)
+        FChange::Notifier.new.tap do |worker|
+          @directories.each do |directory|
+            worker.watch(directory, :all_events, :recursive) do |event|
+              next if @paused
+              @mutex.synchronize do
+                @changed_dirs << File.expand_path(event.watcher.path)
+              end
             end
           end
-          worker.add_watcher(watcher)
         end
-        worker
       end
 
     end
