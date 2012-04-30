@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::MultiListener do
   let(:adapter)             { mock(Listen::Adapter, :start => true).as_null_object }
-  let(:watched_directories) { [File.dirname(__FILE__), Dir.tmpdir] }
+  let(:watched_directories) { [File.dirname(__FILE__), File.expand_path('../..', __FILE__)] }
 
   subject { described_class.new(*watched_directories) }
 
