@@ -29,12 +29,15 @@ def changes(root_path, options = {})
   [changes[:modified], changes[:added], changes[:removed]]
 end
 
-# Generates a small time difference (less than 1 second on Linux
-# and less than 1.5 seconds on Mac and Windows).
+# Generates a small time difference before performing a time sensitive
+# task (like comparing mtimes of files).
+#
+# @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2,
+#   that's why we generate a difference that's greater than 1 second.
+#
 def small_time_difference
   t = Time.now
   diff = t.to_f - t.to_i
-  # Modification time for files on Mac and Windows does NOT include the milliseconds.
-  # That's why we add an extra half second for tests on those systems.
-  sleep( (linux? ? 1 : 1.5) - (diff > 0.1 ? diff : 0.1) )
+
+  sleep( 1.5 - (diff < 0.5 ? diff : 0.4) )
 end
