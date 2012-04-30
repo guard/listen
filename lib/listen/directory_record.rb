@@ -123,7 +123,7 @@ module Listen
     def build
       @paths = Hash.new { |h, k| h[k] = Hash.new }
       important_paths { |path| insert_path(path) }
-      @updated_at = Time.now.to_i
+      @updated_at = Time.now.to_f
     end
 
     # Detects changes in the passed directories, updates
@@ -144,7 +144,7 @@ module Listen
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)
       end
-      @updated_at = Time.now.to_i
+      @updated_at = Time.now.to_f
       @changes
     end
 
@@ -187,7 +187,7 @@ module Listen
           end
         when 'File'
           if File.exist?(path)
-            new_mtime = File.mtime(path).to_i
+            new_mtime = File.mtime(path).to_f
             if @updated_at < new_mtime || (@updated_at == new_mtime && content_modified?(path))
               @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
             end

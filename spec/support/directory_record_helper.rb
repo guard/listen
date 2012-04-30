@@ -29,9 +29,12 @@ def changes(root_path, options = {})
   [changes[:modified], changes[:added], changes[:removed]]
 end
 
-def ensure_same_second
+# Generates a small time difference (less than 1 second on Linux
+# and less than 1.5 seconds on Mac and Windows).
+def small_time_difference
   t = Time.now
-  if t.to_f - t.to_i > 0.1
-    sleep 1.5 - (t.to_f - t.to_i)
-  end
+  diff = t.to_f - t.to_i
+  # Modification time for files on Mac and Windows does NOT include the milliseconds.
+  # That's why we add an extra half second for tests on those systems.
+  sleep( (linux? ? 1 : 1.5) - (diff > 0.1 ? diff : 0.1) )
 end

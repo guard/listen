@@ -355,7 +355,7 @@ describe Listen::DirectoryRecord do
             touch 'existing_file.txt'
 
             modified, added, removed = changes(path) do
-              sleep 1.5 # make a diffrence in the mtime of the file
+              sleep 1.5 # make a difference in the mtime of the file
               touch 'existing_file.txt'
             end
 
@@ -366,13 +366,12 @@ describe Listen::DirectoryRecord do
         end
 
         context 'during the same second' do
-          before { ensure_same_second }
-
           it 'always detects the modified file the first time' do
             fixtures do |path|
               touch 'existing_file.txt'
 
               modified, added, removed = changes(path) do
+                small_time_difference
                 touch 'existing_file.txt'
               end
 
@@ -400,7 +399,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "detects the modified file the second time if the content have changed" do
+          it 'detects the modified file the second time if the content have changed' do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -409,6 +408,7 @@ describe Listen::DirectoryRecord do
               end
 
               modified, added, removed = changes(path, :use_last_record => true) do
+                small_time_difference
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
               end
 
@@ -425,6 +425,7 @@ describe Listen::DirectoryRecord do
               touch '.hidden'
 
               modified, added, removed = changes(path) do
+                small_time_difference
                 touch '.hidden'
               end
 
@@ -439,7 +440,7 @@ describe Listen::DirectoryRecord do
           it 'does not detect the mode change' do
             fixtures do |path|
               touch 'run.rb'
-              sleep 1.5 # make a diffrence in the mtime of the file
+              sleep 1.5 # make a difference in the mtime of the file
 
               modified, added, removed = changes(path) do
                 chmod 0777, 'run.rb'
@@ -460,6 +461,7 @@ describe Listen::DirectoryRecord do
                 touch 'a_directory/existing_file.txt'
 
                 modified, added, removed = changes(path, :recursive => true) do
+                  small_time_difference
                   touch 'a_directory/existing_file.txt'
                 end
 
@@ -477,6 +479,7 @@ describe Listen::DirectoryRecord do
                 touch 'a_directory/existing_file.txt'
 
                 modified, added, removed = changes(path, :recursive => false) do
+                  small_time_difference
                   touch 'a_directory/existing_file.txt'
                 end
 
@@ -495,6 +498,7 @@ describe Listen::DirectoryRecord do
               touch   'a_directory/subdirectory/existing_file.txt'
 
               modified, added, removed = changes(path, :recursive => true) do
+                small_time_difference
                 touch 'a_directory/subdirectory/existing_file.txt'
               end
 
@@ -864,9 +868,9 @@ describe Listen::DirectoryRecord do
           mkdir 'a_directory'
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
-          sleep 1.5 # make files mtime old
 
           modified, added, removed = changes(path) do
+            small_time_difference
             touch 'b_file.rb'
             touch 'a_directory/a_file.rb'
           end
@@ -884,7 +888,6 @@ describe Listen::DirectoryRecord do
           mkdir 'a_directory'
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
-          sleep 1.5 # make files mtime old
 
           modified, added, removed = changes(path) do
             rm 'b_file.rb'
@@ -992,6 +995,7 @@ describe Listen::DirectoryRecord do
           touch 'b_file.rb'
 
           modified, added, removed = changes(path, :relative_paths => false) do
+            small_time_difference
             rm    'a_file.rb'
             touch 'b_file.rb'
             touch 'c_file.rb'
