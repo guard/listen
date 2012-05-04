@@ -123,7 +123,7 @@ module Listen
     def build
       @paths = Hash.new { |h, k| h[k] = Hash.new }
       important_paths { |path| insert_path(path) }
-      @updated_at = Time.now.to_f
+      @updated_at = Time.now.to_i
     end
 
     # Detects changes in the passed directories, updates
@@ -139,7 +139,7 @@ module Listen
     def fetch_changes(directories, options = {})
       @changes    = { :modified => [], :added => [], :removed => [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
-      update_time = Time.now.to_f
+      update_time = Time.now.to_i
       directories.each do |directory|
         next unless directory[@directory] # Path is or inside directory
         detect_modifications_and_removals(directory, options)
@@ -188,7 +188,7 @@ module Listen
           end
         when 'File'
           if File.exist?(path)
-            new_mtime = File.mtime(path).to_f
+            new_mtime = File.mtime(path).to_i
             if @updated_at < new_mtime || (@updated_at == new_mtime && content_modified?(path))
               @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
             end
