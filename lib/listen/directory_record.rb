@@ -139,12 +139,13 @@ module Listen
     def fetch_changes(directories, options = {})
       @changes    = { :modified => [], :added => [], :removed => [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
+      update_time = Time.now.to_f
       directories.each do |directory|
         next unless directory[@directory] # Path is or inside directory
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)
       end
-      @updated_at = Time.now.to_f
+      @updated_at = update_time
       @changes
     end
 
