@@ -83,6 +83,14 @@ module Listen
       @turnstile.signal # ensure no thread is blocked
     end
 
+    # Returns whether the adapter is statred or not
+    #
+    # @return [Boolean] whether the adapter is started or not
+    #
+    def started?
+      @stop.nil? ? false : !@stop
+    end
+
     # Blocks the main thread until the poll thread
     # calls the callback.
     #

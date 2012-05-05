@@ -43,6 +43,31 @@ shared_examples_for 'a filesystem adapter' do
       end
     end
   end
+
+  describe '#started?' do
+    context 'with a new adapter' do
+      it 'returns false' do
+        subject.should_not be_started
+      end
+    end
+
+    context 'with a stopped adapter' do
+      before { subject.start(false); subject.stop }
+
+      it 'returns false' do
+        subject.should_not be_started
+      end
+    end
+
+    context 'with a started adapter' do
+      before { subject.start(false) }
+      after { subject.start }
+
+      it 'returns true' do
+        subject.should be_started
+      end
+    end
+  end
 end
 
 shared_examples_for 'an adapter that call properly listener#on_change' do |*args|
