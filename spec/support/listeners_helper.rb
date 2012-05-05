@@ -115,6 +115,17 @@ shared_examples_for 'a listener to changes on a file-system' do
     end
   end
 
+  describe '#relative_paths' do
+    it 'sets the relative paths option for paths in the callback' do
+      subject.relative_paths(true)
+      subject.instance_variable_get(:@use_relative_paths).should be_true
+    end
+
+    it 'returns the same listener to allow chaining' do
+      subject.relative_paths(true).should equal subject
+    end
+  end
+
   describe '#polling_fallback_message' do
     it 'sets custom polling fallback message to @adapter_options' do
       subject.polling_fallback_message('custom message')

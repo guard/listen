@@ -119,7 +119,7 @@ module Listen
       self
     end
 
-    # Defines whether the use of the polling adapter
+    # Sets whether the use of the polling adapter
     # should be forced or not.
     #
     # @example Forcing the use of the polling adapter
@@ -131,6 +131,21 @@ module Listen
     #
     def force_polling(value)
       @adapter_options[:force_polling] = value
+      self
+    end
+
+    # Sets whether the paths in the callback should be
+    # relative or absolute.
+    #
+    # @example Enabling relative paths in the callback
+    #   relative_paths true
+    #
+    # @param [Boolean] value whether to enable relative paths in the callback or not
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def relative_paths(value)
+      @use_relative_paths = value
       self
     end
 

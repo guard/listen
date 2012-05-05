@@ -193,6 +193,9 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
 :latency => 0.5                                # Set the delay (**in seconds**) between checking for changes
                                                # default: 0.1 sec (1.0 sec for polling)
 
+:relative_paths => true                        # Enable the use of relative paths in the callback.
+                                               # default: false
+
 :force_polling => true                         # Force the use of the polling adapter
                                                # default: none
 
