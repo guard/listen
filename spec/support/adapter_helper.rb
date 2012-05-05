@@ -91,6 +91,24 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
+      context 'given a symlink' do
+        it 'detects the added file' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with([path], {})
+            end
+
+            touch 'new_file.rb'
+
+            watch(listener, path) do
+              ln_s 'new_file.rb', 'new_file_symlink.rb'
+            end
+          end
+        end
+      end
+
       context 'given a new created directory' do
         it 'detects the added file' do
           fixtures do |path|
@@ -162,6 +180,25 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
           watch(listener, path) do
             touch 'existing_file.txt'
+          end
+        end
+      end
+
+      context 'given a symlink' do
+        it 'detects the modified file' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with([path], {})
+            end
+
+            touch 'existing_file.rb'
+            ln_s  'existing_file.rb', 'existing_file_symlink.rb'
+
+            watch(listener, path) do
+              touch 'existing_file.rb'
+            end
           end
         end
       end
@@ -256,6 +293,25 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
           watch(listener, path) do
             mv 'move_me.txt', 'new_name.txt'
+          end
+        end
+      end
+
+      context 'given a symlink' do
+        it 'detects the file move' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with([path], {})
+            end
+
+            touch 'move_me.rb'
+            ln_s  'move_me.rb', 'move_me_symlink.rb'
+
+            watch(listener, path) do
+              mv 'move_me_symlink.rb', 'new_symlink.rb'
+            end
           end
         end
       end
@@ -356,6 +412,25 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
           watch(listener, path) do
             rm 'unnecessary.txt'
+          end
+        end
+      end
+
+      context 'given a symlink' do
+        it 'detects the file removal' do
+          fixtures do |path|
+            if options[:recursive]
+              listener.should_receive(:on_change).once.with([path], :recursive => true)
+            else
+              listener.should_receive(:on_change).once.with([path], {})
+            end
+
+            touch 'unnecessary.rb'
+            ln_s  'unnecessary.rb', 'unnecessary_symlink.rb'
+
+            watch(listener, path) do
+              rm 'unnecessary_symlink.rb'
+            end
           end
         end
       end
