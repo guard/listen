@@ -1,22 +1,33 @@
 module Listen
   module Adapters
 
-    # Watched INotify EVENTS
-    #
-    # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
-    # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
-    #
-    EVENTS = %w[recursive attrib close modify move create delete delete_self move_self]
-
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Adapter
+
+      # Watched inotify events
+      #
+      # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
+      # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
+      #
+      EVENTS = %w[recursive attrib close modify move create delete delete_self move_self]
+
+      # The message to show when the limit of inotify watchers is not enough
+      #
+      INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+        Listen error: unable to monitor directories for changes.
+
+        Please head to https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
+        for information on how to solve this issue.
+      EOS
 
       # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
       def initialize(directories, options = {}, &callback)
         super
         @worker = init_worker
+      rescue Errno::ENOSPC
+        abort(INOTIFY_LIMIT_MESSAGE)
       end
 
       # Starts the adapter.

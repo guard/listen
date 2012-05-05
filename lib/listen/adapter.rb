@@ -137,7 +137,7 @@ module Listen
     ensure
       Thread.kill(t) if t
       FileUtils.rm(test_file) if File.exists?(test_file)
-      adapter.stop
+      adapter.stop if adapter && adapter.started?
     end
 
     private
