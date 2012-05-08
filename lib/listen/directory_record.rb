@@ -84,8 +84,6 @@ module Listen
     #
     # @param [Regexp] regexp a pattern for ignoring paths
     #
-    # @return [Listen::Listener] the listener itself
-    #
     def ignore(*regexps)
       @ignoring_patterns.merge(regexps)
     end
@@ -96,8 +94,6 @@ module Listen
     #   ignore /\.txt$/, /.*\.zip/
     #
     # @param [Regexp] regexp a pattern for filtering paths
-    #
-    # @return [Listen::Listener] the listener itself
     #
     def filter(*regexps)
       @filtering_patterns.merge(regexps)
@@ -310,8 +306,12 @@ module Listen
 
     # Returns the modification time of a file based on the precision defined by the system
     #
+    # @param [String] file the file for which the mtime must be returned
+    #
+    # @return [Fixnum, Float] the mtime of the file
+    #
     def mtime_of(file)
-      File.mtime(file).send(USING_HIGH_PRECISION ? :to_f: :to_i)
+      File.mtime(file).send(USING_HIGH_PRECISION ? :to_f : :to_i)
     end
   end
 end
