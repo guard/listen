@@ -75,6 +75,8 @@ module Listen
     #
     # @param [Regexp] regexp a pattern for ignoring paths
     #
+    # @return [Listen::Listener] the listener itself
+    #
     def ignore(*regexps)
       @ignoring_patterns.merge(regexps)
     end
