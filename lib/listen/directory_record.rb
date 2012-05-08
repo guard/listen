@@ -18,7 +18,7 @@ module Listen
     # Defines the used precision based on the type of mtime returned by the
     # system (whether its in milliseconds or just seconds)
     #
-    USING_HIGH_PRECISION = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+    HIGH_PRECISION_SUPPORTED = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
 
     # Data structure used to save meta data about a path
     #
@@ -311,7 +311,7 @@ module Listen
     # @return [Fixnum, Float] the mtime of the file
     #
     def mtime_of(file)
-      File.mtime(file).send(USING_HIGH_PRECISION ? :to_f : :to_i)
+      File.mtime(file).send(HIGH_PRECISION_SUPPORTED ? :to_f : :to_i)
     end
   end
 end

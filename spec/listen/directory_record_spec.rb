@@ -370,7 +370,7 @@ describe Listen::DirectoryRecord do
 
           # The following test can only be run on systems that report
           # modification times in milliseconds.
-          it 'always detects the modified file the first time', :if => described_class::USING_HIGH_PRECISION do
+          it 'always detects the modified file the first time', :if => described_class::HIGH_PRECISION_SUPPORTED do
             fixtures do |path|
               touch 'existing_file.txt'
 
