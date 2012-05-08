@@ -80,9 +80,11 @@ module Listen
     # Adds ignoring patterns to the record.
     #
     # @example Ignore some paths
-    #   ignore ".git", ".svn"
+    #   ignore %r{^ignored/path/}, /man/
     #
     # @param [Regexp] regexp a pattern for ignoring paths
+    #
+    # @return [Listen::Listener] the listener itself
     #
     def ignore(*regexps)
       @ignoring_patterns.merge(regexps)
