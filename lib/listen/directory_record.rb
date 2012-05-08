@@ -15,6 +15,15 @@ module Listen
 
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
+    # Defines the used precision based on the type of mtime returned by the
+    # system (whether its in milliseconds or just seconds)
+    #
+    USING_HIGH_PRECISION = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+
+    # Data structure used to save meta data about a path
+    #
+    MetaData = Struct.new(:type, :mtime)
+
     # Class methods
     #
     class << self
@@ -123,7 +132,6 @@ module Listen
     def build
       @paths = Hash.new { |h, k| h[k] = Hash.new }
       important_paths { |path| insert_path(path) }
-      @updated_at = Time.now.to_f
     end
 
     # Detects changes in the passed directories, updates
@@ -139,13 +147,13 @@ module Listen
     def fetch_changes(directories, options = {})
       @changes    = { :modified => [], :added => [], :removed => [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
-      update_time = Time.now.to_f
+
       directories.each do |directory|
         next unless directory[@directory] # Path is or inside directory
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)
       end
-      @updated_at = update_time
+
       @changes
     end
 
@@ -174,10 +182,10 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
-      @paths[directory].each do |basename, type|
+      @paths[directory].each do |basename, meta_data|
         path = File.join(directory, basename)
 
-        case type
+        case meta_data.type
         when 'Dir'
           if File.directory?(path)
             detect_modifications_and_removals(path, options) if options[:recursive]
@@ -188,8 +196,15 @@ module Listen
           end
         when 'File'
           if File.exist?(path)
-            new_mtime = File.mtime(path).to_f
-            if @updated_at < new_mtime || (@updated_at == new_mtime && content_modified?(path))
+            new_mtime = mtime_of(path)
+
+            # First check if we are in the same second (to update checksums)
+            # before checking the time difference
+            if  (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
+              # Update the meta data of the files
+              meta_data.mtime = new_mtime
+              @paths[directory][basename] = meta_data
+
               @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
             end
           else
@@ -239,12 +254,12 @@ module Listen
     #
     def content_modified?(path)
       sha1_checksum = Digest::SHA1.file(path).to_s
-      if @sha1_checksums[path] != sha1_checksum
-        @sha1_checksums[path] = sha1_checksum
-        true
-      else
-        false
-      end
+      return false if @sha1_checksums[path] == sha1_checksum
+
+      had_no_checksum = @sha1_checksums[path].nil?
+      @sha1_checksums[path] = sha1_checksum
+
+      had_no_checksum ? false : true
     end
 
     # Traverses the base directory looking for paths that should
@@ -275,7 +290,10 @@ module Listen
     # @param [String] path the path to insert in @paths.
     #
     def insert_path(path)
-      @paths[File.dirname(path)][File.basename(path)] = File.directory?(path) ? 'Dir' : 'File'
+      meta_data = MetaData.new
+      meta_data.type = File.directory?(path) ? 'Dir' : 'File'
+      meta_data.mtime = mtime_of(path) unless meta_data.type == 'Dir' # mtimes of dirs are not used yet
+      @paths[File.dirname(path)][File.basename(path)] = meta_data
     end
 
     # Returns whether or not a path exists in the paths hash.
@@ -286,6 +304,12 @@ module Listen
     #
     def existing_path?(path)
       @paths[File.dirname(path)][File.basename(path)] != nil
+    end
+
+    # Returns the modification time of a file based on the precision defined by the system
+    #
+    def mtime_of(file)
+      File.mtime(file).send(USING_HIGH_PRECISION ? :to_f: :to_i)
     end
   end
 end

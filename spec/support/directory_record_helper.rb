@@ -19,7 +19,7 @@ def changes(root_path, options = {})
     @record.build
   end
 
-  yield
+  yield if block_given?
 
   paths = options.delete(:paths) || [root_path]
   options[:recursive] = true if options[:recursive].nil?
@@ -40,4 +40,16 @@ def small_time_difference
   diff = t.to_f - t.to_i
 
   sleep( 1.5 - (diff < 0.5 ? diff : 0.4) )
+end
+
+# Ensures that the test runs at almost the same second at which
+# changes are being checked.
+#
+def ensure_same_second
+  t = Time.now
+  diff = t.to_f - t.to_i
+
+  if diff > 0.1 # We are not at the beginning of a second
+    sleep 1.1 - diff # 1.1 is used instead of 1 to account for the processing time (estimated at 0.1 sec)
+  end
 end

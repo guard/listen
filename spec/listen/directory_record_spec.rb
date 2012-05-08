@@ -125,9 +125,9 @@ describe Listen::DirectoryRecord do
         record = described_class.new(path)
         record.build
 
-        record.paths[path]['file.rb'].should eq 'File'
-        record.paths[path]['a_directory'].should eq 'Dir'
-        record.paths["#{path}/a_directory"]['file.txt'].should eq 'File'
+        record.paths[path]['file.rb'].type.should eq 'File'
+        record.paths[path]['a_directory'].type.should eq 'Dir'
+        record.paths["#{path}/a_directory"]['file.txt'].type.should eq 'File'
       end
     end
 
@@ -175,9 +175,9 @@ describe Listen::DirectoryRecord do
           record.build
 
           record.paths[path]['file.rb'].should be_nil
-          record.paths[path]['file.zip'].should eq 'File'
-          record.paths[path]['a_directory'].should eq 'Dir'
-          record.paths["#{path}/a_directory"]['file.txt'].should eq 'File'
+          record.paths[path]['file.zip'].type.should eq 'File'
+          record.paths[path]['a_directory'].type.should eq 'Dir'
+          record.paths["#{path}/a_directory"]['file.txt'].type.should eq 'File'
           record.paths["#{path}/a_directory"]['file.rb'].should be_nil
         end
       end
@@ -365,19 +365,40 @@ describe Listen::DirectoryRecord do
           end
         end
 
-        context 'during the same second' do
-          it 'always detects the modified file the first time' do
+        context 'during the same second at which we are checking for changes' do
+          before { ensure_same_second }
+
+          # The following test can only be run on systems that report
+          # modification times in milliseconds.
+          it 'always detects the modified file the first time', :if => described_class::USING_HIGH_PRECISION do
             fixtures do |path|
               touch 'existing_file.txt'
 
               modified, added, removed = changes(path) do
-                small_time_difference
+                sleep 0.3 # make sure the mtime is changed a bit
                 touch 'existing_file.txt'
               end
 
               added.should be_empty
               modified.should =~ %w(existing_file.txt)
               removed.should be_empty
+            end
+          end
+
+          context '#27 - when a file is created and then checked for modifications at the same second' do
+            # This issue was the result of checking a file for content changes when
+            # the mtime and the checking time are the same. In this case there
+            # is no checksum saved, so the file was reported as being changed.
+            it ' does not report any changes' do
+              fixtures do |path|
+                touch 'a_file.rb'
+
+                modified, added, removed = changes(path)
+
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
+              end
             end
           end
 
@@ -408,7 +429,6 @@ describe Listen::DirectoryRecord do
               end
 
               modified, added, removed = changes(path, :use_last_record => true) do
-                small_time_difference
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
               end
 
@@ -869,8 +889,9 @@ describe Listen::DirectoryRecord do
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
 
+          small_time_difference
+
           modified, added, removed = changes(path) do
-            small_time_difference
             touch 'b_file.rb'
             touch 'a_directory/a_file.rb'
           end
