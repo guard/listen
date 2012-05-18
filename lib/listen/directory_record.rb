@@ -193,7 +193,7 @@ module Listen
             @paths.delete("#{directory}/#{basename}")
           end
         when 'File'
-          if File.exist?(path)
+          if File.exist?(path) && File.readable?(path)
             new_mtime = mtime_of(path)
 
             # First check if we are in the same second (to update checksums)
@@ -227,6 +227,7 @@ module Listen
 
       Find.find(directory) do |path|
         next if path == @directory
+        next unless File.readable?(path)
 
         if File.directory?(path)
           # Add a trailing slash to directories when checking if a directory is
@@ -268,6 +269,7 @@ module Listen
     def important_paths
       Find.find(@directory) do |path|
         next if path == @directory
+        next unless File.readable?(path)
 
         if File.directory?(path)
           # Add a trailing slash to directories when checking if a directory is
