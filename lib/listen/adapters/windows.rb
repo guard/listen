@@ -47,7 +47,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+        return false unless /mswin|mingw/i.match(RbConfig::CONFIG['target_os'])
 
         require 'rb-fchange'
         true

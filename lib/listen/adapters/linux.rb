@@ -63,7 +63,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /linux/i
+        return false unless /linux/i.match(RbConfig::CONFIG['target_os'])
 
         require 'rb-inotify'
         true
