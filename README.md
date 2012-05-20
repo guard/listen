@@ -32,12 +32,12 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 
 ``` ruby
 # Listen to a single directory.
-Listen.to('dir/path/to/listen', filter: /\.rb$/, ignore: %r{ignored/path/}) do |modified, added, removed|
+Listen.to('dir/path/to/listen', :filter => /\.rb$/, :ignore => %r{ignored/path/}) do |modified, added, removed|
   # ...
 end
 
 # Listen to multiple directories.
-Listen.to('dir/to/awesome_app', 'dir/to/other_app', filter: /\.rb$/, latency: 0.1) do |modified, added, removed|
+Listen.to('dir/to/awesome_app', 'dir/to/other_app', :filter => /\.rb$/, latency: 0.1) do |modified, added, removed|
   # ...
 end
 ```
