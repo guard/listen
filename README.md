@@ -37,7 +37,7 @@ Listen.to('dir/path/to/listen', :filter => /\.rb$/, :ignore => %r{ignored/path/}
 end
 
 # Listen to multiple directories.
-Listen.to('dir/to/awesome_app', 'dir/to/other_app', :filter => /\.rb$/, latency: 0.1) do |modified, added, removed|
+Listen.to('dir/to/awesome_app', 'dir/to/other_app', :filter => /\.rb$/, :latency => 0.1) do |modified, added, removed|
   # ...
 end
 ```
