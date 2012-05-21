@@ -385,7 +385,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          context '#27 - when a file is created and then checked for modifications at the same second' do
+          context 'when a file is created and then checked for modifications at the same second - #27' do
             # This issue was the result of checking a file for content changes when
             # the mtime and the checking time are the same. In this case there
             # is no checksum saved, so the file was reported as being changed.
@@ -1027,6 +1027,43 @@ describe Listen::DirectoryRecord do
           added.should =~ ["#{path}/c_file.rb", "#{path}/a_directory/a_file.rb"]
           modified.should =~ ["#{path}/b_file.rb"]
           removed.should =~ ["#{path}/a_file.rb"]
+        end
+      end
+    end
+
+    context 'within a directory containing unreadble paths - #32' do
+      it 'detects changes more than a second apart' do
+        fixtures do |path|
+          touch 'unreadable_file.txt'
+          chmod 000, 'unreadable_file.txt'
+
+          modified, added, removed = changes(path) do
+            sleep 1.1
+            touch 'unreadable_file.txt'
+          end
+
+          added.should be_empty
+          modified.should =~ %w(unreadable_file.txt)
+          removed.should be_empty
+        end
+      end
+
+      context 'with multiple changes within the same second' do
+        before { ensure_same_second }
+
+        it 'does not detect changes even if content changes', :unless => described_class::HIGH_PRECISION_SUPPORTED do
+          fixtures do |path|
+            touch 'unreadable_file.txt'
+
+            modified, added, removed = changes(path) do
+              open('unreadable_file.txt', 'w') { |f| f.write('foo') }
+              chmod 000, 'unreadable_file.txt'
+            end
+
+            added.should be_empty
+            modified.should be_empty
+            removed.should be_empty
+          end
         end
       end
     end

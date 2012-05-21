@@ -258,6 +258,8 @@ module Listen
       @sha1_checksums[path] = sha1_checksum
 
       had_no_checksum ? false : true
+    rescue Errno::EACCES # unreadble file
+      false
     end
 
     # Traverses the base directory looking for paths that should
