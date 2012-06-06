@@ -1,3 +1,16 @@
+## 0.4.3 - June 6, 2012
+
+### Bug fixes
+
+- [#24](https://github.com/guard/listen/issues/24): Fail gracefully when the inotify limit is not enough for Listen to function. (reported by [@daemonza][], fixed by [@Maher4Ever][])
+- [#32](https://github.com/guard/listen/issues/32): Fix a crash when trying to calculate the checksum of unreadable files. (reported by [@nex3][], fixed by [@Maher4Ever][])
+
+### Improvements
+
+- Add `#relative_paths` method to listeners. ([@Maher4Ever][])
+- Add `#started?` query-method to adapters. ([@Maher4Ever][])
+- Dynamically detect the mtime precision used on a system. ([@Maher4Ever][] with help from [@nex3][])
+
 ## 0.4.2 - May 1, 2012
 
 ### Bug fixes
@@ -88,3 +101,4 @@
 [@akerbos]: https://github.com/akerbos
 [@fny]: https://github.com/fny
 [@cobychapple]: https://github.com/cobychapple
+[@nex3]: https://github.com/nex3
