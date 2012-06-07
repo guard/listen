@@ -2,7 +2,7 @@
 
 ### Bug fixes
 
-- Fix relative path for directories containing special characters. (reported by [@daemonza][], fixed by [@netzpirat][])
+- Fix relative path for directories containing special characters. (reported by [@napcs][], fixed by [@netzpirat][])
 
 ## 0.4.3 - June 6, 2012
 
