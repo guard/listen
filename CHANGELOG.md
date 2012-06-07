@@ -1,3 +1,9 @@
+## Master
+
+### Bug fixes
+
+- Fix relative path for directories containing special characters. (reported by [@daemonza][], fixed by [@netzpirat][])
+
 ## 0.4.3 - June 6, 2012
 
 ### Bug fixes
@@ -101,4 +107,6 @@
 [@akerbos]: https://github.com/akerbos
 [@fny]: https://github.com/fny
 [@cobychapple]: https://github.com/cobychapple
+[@napcs]: https://github.com/napcs
+[@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3

@@ -193,6 +193,25 @@ describe Listen::DirectoryRecord do
     it 'returns nil when the passed path is not inside the base-directory' do
       subject.relative_to_base('/tmp/some_random_path').should be_nil
     end
+    
+    context 'when containing regexp characters in the base directory' do
+      before do
+        fixtures do |path|
+          mkdir 'a_directory$'
+          @dir = described_class.new(path + '/a_directory$')
+          @dir.build
+        end
+      end
+
+      it 'removes the path of the base-directory from the passed path' do
+        path = 'dir/to/app/file.rb'
+        @dir.relative_to_base(File.join(@dir.directory, path)).should eq path
+      end
+
+      it 'returns nil when the passed path is not inside the base-directory' do
+        @dir.relative_to_base('/tmp/some_random_path').should be_nil
+      end
+    end
   end
 
   describe '#fetch_changes' do
