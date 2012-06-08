@@ -239,8 +239,8 @@ module Listen
         elsif !ignored?(path) && filtered?(path) && !existing_path?(path)
           if File.file?(path)
             @changes[:added] << (options[:relative_paths] ? relative_to_base(path) : path)
+            insert_path(path)
           end
-          insert_path(path)
         end
       end
     end
