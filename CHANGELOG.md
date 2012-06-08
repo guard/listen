@@ -1,7 +1,8 @@
-## Master
+## 0.4.4 - June 8, 2012
 
 ### Bug fixes
 
+- [#39](https://github.com/guard/listen/issues/39). Unexisting path insertion bug. (reported by [@textgoeshere][], fixed by [@thibaudgg][])
 - Fix relative path for directories containing special characters. (reported by [@napcs][], fixed by [@netzpirat][])
 
 ## 0.4.3 - June 6, 2012
@@ -110,3 +111,4 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@textgoeshere]: https://github.com/textgoeshere
