@@ -1103,5 +1103,36 @@ describe Listen::DirectoryRecord do
         }.should_not raise_error(Errno::ENOENT)
       end
     end
+
+    context 'with symlinks' do
+      it 'looks at symlinks not their targets' do
+        fixtures do |path|
+          touch 'target'
+          symlink 'target', 'symlink'
+
+          record = described_class.new(path)
+          record.build
+
+          sleep 1
+          touch 'target'
+
+          record.fetch_changes([path], :relative_paths => true)[:modified].should == ['target']
+        end
+      end
+
+      it 'handles broken symlinks' do
+        fixtures do |path|
+          symlink 'target', 'symlink'
+
+          record = described_class.new(path)
+          record.build
+
+          sleep 1
+          rm 'symlink'
+          symlink 'new-target', 'symlink'
+          record.fetch_changes([path], :relative_paths => true)
+        end
+      end
+    end
   end
 end
