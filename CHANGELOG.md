@@ -1,3 +1,9 @@
+## 0.4.5 - June 13, 2012
+
+### Bug fixes
+
+- [#39](https://github.com/guard/listen/issues/39). Rescue Errno::ENOENT when path inserted doesn't exist. (reported by [@textgoeshere][], fixed by [@thibaudgg][])
+
 ## 0.4.4 - June 8, 2012
 
 ### Bug fixes
