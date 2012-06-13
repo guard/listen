@@ -294,6 +294,7 @@ module Listen
       meta_data.type = File.directory?(path) ? 'Dir' : 'File'
       meta_data.mtime = mtime_of(path) unless meta_data.type == 'Dir' # mtimes of dirs are not used yet
       @paths[File.dirname(path)][File.basename(path)] = meta_data
+    rescue Errno::ENOENT
     end
 
     # Returns whether or not a path exists in the paths hash.
