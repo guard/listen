@@ -253,13 +253,11 @@ module Listen
     def content_modified?(path)
       sha1_checksum = Digest::SHA1.file(path).to_s
       return false if @sha1_checksums[path] == sha1_checksum
-
-      had_no_checksum = @sha1_checksums[path].nil?
-      @sha1_checksums[path] = sha1_checksum
-
-      had_no_checksum ? false : true
-    rescue Errno::EACCES # unreadble file
+      @sha1_checksums.key?(path)
+    rescue Errno::EACCES, Errno::ENOENT
       false
+    ensure
+      @sha1_checksums[path] = sha1_checksum if sha1_checksum
     end
 
     # Traverses the base directory looking for paths that should
