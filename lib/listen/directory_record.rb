@@ -258,7 +258,7 @@ module Listen
       @sha1_checksums[path] = sha1_checksum
 
       had_no_checksum ? false : true
-    rescue Errno::EACCES # unreadble file
+    rescue Errno::EACCES, Errno::ENOENT
       false
     end
 
