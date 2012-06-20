@@ -1,3 +1,9 @@
+## 0.4.6 - June 20, 2012
+
+### Bug fix
+
+- [#39](https://github.com/guard/listen/issues/39) Fix digest race condition. (fixed by [@dkubb][])
+
 ## 0.4.5 - June 13, 2012
 
 ### Bug fix
@@ -117,6 +123,7 @@
 [#32]: https://github.com/guard/listen/issues/32
 [#39]: https://github.com/guard/listen/issues/39
 [@Maher4Ever]: https://github.com/Maher4Ever
+[@dkubb]: https://github.com/dkubb
 [@akerbos]: https://github.com/akerbos
 [@cobychapple]: https://github.com/cobychapple
 [@daemonza]: https://github.com/daemonza
