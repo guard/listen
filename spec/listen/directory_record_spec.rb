@@ -1086,5 +1086,22 @@ describe Listen::DirectoryRecord do
         end
       end
     end
+
+    context 'within a directory containing a removed file - #39' do
+      it 'does not raise an exception when hashing a removed file' do
+
+        # simulate a race condition where the file is removed after the
+        # change event is tracked, but before the hash is calculated
+        Digest::SHA1.should_receive(:file).and_raise(Errno::ENOENT)
+
+        lambda {
+          fixtures do |path|
+            file = 'removed_file.txt'
+            touch file
+            changes(path) { touch file }
+          end
+        }.should_not raise_error(Errno::ENOENT)
+      end
+    end
   end
 end
