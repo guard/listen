@@ -11,7 +11,7 @@ module Listen
       # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
       #
       # EVENTS = %w[recursive attrib close modify move create delete delete_self move_self]
-      EVENTS = %w[recursive attrib create move_self close_write]
+      EVENTS = %w[recursive attrib create delete move close_write]
 
       # The message to show when the limit of inotify watchers is not enough
       #
