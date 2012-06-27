@@ -1,3 +1,11 @@
+## 0.4.7 - June 27, 2012
+
+### Bug fixes
+
+- Increase latency to 0.25, to avoid useless polling fallback. (fixed by [@thibaudgg][])
+- Change watched inotify events, to avoid duplication callback. (fixed by [@thibaudgg][])
+- [#41](https://github.com/guard/listen/issues/41) Use lstat instead of stat when calculating mtime. (fixed by [@ebroder][])
+
 ## 0.4.6 - June 20, 2012
 
 ### Bug fix
@@ -124,6 +132,7 @@
 [#39]: https://github.com/guard/listen/issues/39
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@dkubb]: https://github.com/dkubb
+[@ebroder]: https://github.com/ebroder
 [@akerbos]: https://github.com/akerbos
 [@cobychapple]: https://github.com/cobychapple
 [@daemonza]: https://github.com/daemonza
