@@ -312,7 +312,7 @@ module Listen
     # @return [Fixnum, Float] the mtime of the file
     #
     def mtime_of(file)
-      File.mtime(file).send(HIGH_PRECISION_SUPPORTED ? :to_f : :to_i)
+      File.lstat(file).mtime.send(HIGH_PRECISION_SUPPORTED ? :to_f : :to_i)
     end
   end
 end
