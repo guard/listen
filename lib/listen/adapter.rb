@@ -8,7 +8,7 @@ module Listen
     attr_accessor :directories, :latency, :paused
 
     # The default delay between checking for changes.
-    DEFAULT_LATENCY = 0.2
+    DEFAULT_LATENCY = 0.25
 
     # The default warning message when falling back to polling adapter.
     POLLING_FALLBACK_MESSAGE = "WARNING: Listen has fallen back to polling, learn more at https://github.com/guard/listen#fallback."

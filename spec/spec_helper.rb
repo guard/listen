@@ -1,6 +1,6 @@
 require 'listen'
 
-ENV["TEST_LATENCY"] ||= "0.1"
+ENV["TEST_LATENCY"] ||= "0.25"
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 

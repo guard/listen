@@ -191,7 +191,7 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
                                                # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
 
 :latency => 0.5                                # Set the delay (**in seconds**) between checking for changes
-                                               # default: 0.2 sec (1.0 sec for polling)
+                                               # default: 0.25 sec (1.0 sec for polling)
 
 :relative_paths => true                        # Enable the use of relative paths in the callback.
                                                # default: false
