@@ -8,7 +8,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Supports watching multiple directories from a single listener.
 * OS-specific adapters for Mac OS X 10.6+, Linux and Windows.
 * Automatic fallback to polling if OS-specific adapter doesn't work.
-* Detects files modification, addidation and removal.
+* Detects file modification, addition and removal.
 * Checksum comparaison for modifications made under the same second.
 * Allows supplying regexp-patterns to ignore and filter paths for better results.
 * Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
