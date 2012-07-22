@@ -3,6 +3,7 @@ source :rubygems
 gemspec
 
 gem 'rake'
+gem 'wdm', :github => 'Maher4Ever/wdm'
 
 group :development do
   platform :ruby do

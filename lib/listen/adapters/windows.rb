@@ -3,7 +3,7 @@ require 'set'
 module Listen
   module Adapters
 
-    # Adapter implementation for Windows `fchange`.
+    # Adapter implementation for Windows `wdm`.
     #
     class Windows < Adapter
 
@@ -24,9 +24,15 @@ module Listen
           super
         end
 
-        @worker_thread = Thread.new { @worker.run }
-        @poll_thread   = Thread.new { poll_changed_dirs(true) }
-        @poll_thread.join if blocking
+        @worker_thread = Thread.new { @worker.run! }
+
+        # Wait for the worker to start. This is needed to avoid a deadlock
+        # when stopping immediately after starting.
+        sleep 0.1
+
+        @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
+
+        @worker_thread.join if blocking
       end
 
       # Stops the adapter.
@@ -38,8 +44,8 @@ module Listen
         end
 
         @worker.stop
-        Thread.kill(@worker_thread) if @worker_thread
-        @poll_thread.join
+        @worker_thread.join if @worker_thread
+        @poll_thread.join if @poll_thread
       end
 
       # Checks if the adapter is usable on the current OS.
@@ -49,7 +55,7 @@ module Listen
       def self.usable?
         return false unless RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
 
-        require 'rb-fchange'
+        require 'wdm'
         true
       rescue LoadError
         false
@@ -57,21 +63,21 @@ module Listen
 
     private
 
-      # Initializes a FChange worker and adds a watcher for
+      # Initializes a WDM monitor and adds a watcher for
       # each directory passed to the adapter.
       #
-      # @return [FChange::Notifier] initialized worker
+      # @return [WDM::Monitor] initialized worker
       #
       def init_worker
-        FChange::Notifier.new.tap do |worker|
-          @directories.each do |directory|
-            worker.watch(directory, :all_events, :recursive) do |event|
-              next if @paused
-              @mutex.synchronize do
-                @changed_dirs << File.expand_path(event.watcher.path)
-              end
-            end
+        callback = Proc.new do |change|
+          next if @paused
+          @mutex.synchronize do
+            @changed_dirs << File.dirname(change.path)
           end
+        end
+
+        WDM::Monitor.new.tap do |worker|
+          @directories.each { |d| worker.watch_recursively(d, &callback) }
         end
       end
 
