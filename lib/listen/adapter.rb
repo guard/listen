@@ -50,6 +50,7 @@ module Listen
     # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] report_changes whether or not to automatically report changes (run the callback)
     #
     # @yield [changed_dirs, options] callback Callback called when a change happens
     # @yieldparam [Array<String>] changed_dirs the changed directories
@@ -60,12 +61,13 @@ module Listen
     def initialize(directories, options = {}, &callback)
       @directories  = Array(directories)
       @callback     = callback
-      @latency    ||= DEFAULT_LATENCY
-      @latency      = options[:latency] if options[:latency]
       @paused       = false
       @mutex        = Mutex.new
       @changed_dirs = Set.new
       @turnstile    = Turnstile.new
+      @latency    ||= DEFAULT_LATENCY
+      @latency      = options[:latency] if options[:latency]
+      @report_changes = options[:report_changes].nil? ? true : options[:report_changes]
     end
 
     # Starts the adapter.
@@ -92,10 +94,26 @@ module Listen
     end
 
     # Blocks the main thread until the poll thread
-    # calls the callback.
+    # runs the callback.
     #
     def wait_for_callback
       @turnstile.wait unless @paused
+    end
+
+    # Blocks the main thread until N changes are
+    # detected.
+    #
+    def wait_for_changes(goal = 0)
+      changes = 0
+
+      loop do
+        @mutex.synchronize { changes = @changed_dirs.size }
+
+        return if @paused || @stop
+        return if changes >= goal
+
+        sleep(@latency)
+      end
     end
 
     # Checks if the adapter is usable and works on the current OS.
@@ -140,26 +158,29 @@ module Listen
       adapter.stop if adapter && adapter.started?
     end
 
+    # Runs the callback and passes it the changes if there are any.
+    #
+    def report_changes
+      changed_dirs = nil
+
+      @mutex.synchronize do
+        return if @changed_dirs.empty?
+        changed_dirs = @changed_dirs.to_a
+        @changed_dirs.clear
+      end
+
+      @callback.call(changed_dirs, {})
+    end
+
     private
 
     # Polls changed directories and reports them back
     # when there are changes.
     #
-    # @option [Boolean] recursive whether or not to pass the recursive option to the callback
-    #
-    def poll_changed_dirs(recursive = false)
+    def poll_changed_dirs
       until @stop
         sleep(@latency)
-        next if @changed_dirs.empty?
-
-        changed_dirs = []
-
-        @mutex.synchronize do
-          changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear
-        end
-
-        @callback.call(changed_dirs, recursive ? {:recursive => recursive} : {})
+        report_changes
         @turnstile.signal
       end
     end
