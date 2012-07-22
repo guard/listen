@@ -17,3 +17,6 @@ end
 def test_latency
   ENV["TEST_LATENCY"].to_f
 end
+
+# Crash loud in tests!
+Thread.abort_on_exception = true
