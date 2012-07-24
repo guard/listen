@@ -580,6 +580,8 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
 
           watch(listener, 3, path1, path2) do
             mkdir "#{path2}/b_directory"
+            # Needed for INotify
+            sleep 0.05
             touch "#{path1}/a_directory/new_file.rb"
             touch "#{path2}/b_directory/new_file.rb"
           end
