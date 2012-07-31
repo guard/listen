@@ -4,6 +4,10 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Adapter
+      extend DependencyManager
+
+      # Declare the adapter's dependencies
+      dependency 'rb-fsevent', '~> 0.9.1'
 
       LAST_SEPARATOR_REGEX = /\/$/
 
@@ -54,11 +58,7 @@ module Listen
       #
       def self.usable?
         return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
-
-        require 'rb-fsevent'
-        true
-      rescue LoadError
-        false
+        super
       end
 
       private

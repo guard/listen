@@ -10,8 +10,15 @@ module Listen
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.25
 
+    # The default warning message when there is a missing dependency.
+    MISSING_DEPENDENCY_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      For a better performance, it's recommended that you satisfy the missing dependency.
+    EOS
+
     # The default warning message when falling back to polling adapter.
-    POLLING_FALLBACK_MESSAGE = "WARNING: Listen has fallen back to polling, learn more at https://github.com/guard/listen#fallback."
+    POLLING_FALLBACK_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      Listen will be polling changes. Learn more at https://github.com/guard/listen#polling-fallback.
+    EOS
 
     # Selects the appropriate adapter implementation for the
     # current OS and initializes it.
@@ -31,18 +38,26 @@ module Listen
     def self.select_and_initialize(directories, options = {}, &callback)
       return Adapters::Polling.new(directories, options, &callback) if options.delete(:force_polling)
 
-      if Adapters::Darwin.usable_and_works?(directories, options)
-        Adapters::Darwin.new(directories, options, &callback)
-      elsif Adapters::Linux.usable_and_works?(directories, options)
-        Adapters::Linux.new(directories, options, &callback)
-      elsif Adapters::Windows.usable_and_works?(directories, options)
-        Adapters::Windows.new(directories, options, &callback)
-      else
-        unless options[:polling_fallback_message] == false
-          Kernel.warn(options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE)
+      warning = ''
+
+      begin
+        if Adapters::Darwin.usable_and_works?(directories, options)
+          return Adapters::Darwin.new(directories, options, &callback)
+        elsif Adapters::Linux.usable_and_works?(directories, options)
+          return Adapters::Linux.new(directories, options, &callback)
+        elsif Adapters::Windows.usable_and_works?(directories, options)
+          return Adapters::Windows.new(directories, options, &callback)
         end
-        Adapters::Polling.new(directories, options, &callback)
+      rescue DependencyManager::Error => e
+        warning += e.message + "\n" + MISSING_DEPENDENCY_MESSAGE
       end
+
+      unless options[:polling_fallback_message] == false
+        warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
+        Kernel.warn "[Listen warning]:\n" + warning.gsub(/^(.*)/, '  \1')
+      end
+
+      Adapters::Polling.new(directories, options, &callback)
     end
 
     # Initializes the adapter.
@@ -114,6 +129,15 @@ module Listen
 
         sleep(@latency)
       end
+    end
+
+    # Checks if the adapter is usable on the current OS.
+    #
+    # @return [Boolean] whether usable or not
+    #
+    def self.usable?
+      load_depenencies
+      dependencies_loaded?
     end
 
     # Checks if the adapter is usable and works on the current OS.

@@ -6,6 +6,10 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Adapter
+      extend DependencyManager
+
+      # Declare the adapter's dependencies
+      dependency 'wdm', '~> 0.0.2'
 
       # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
@@ -54,11 +58,7 @@ module Listen
       #
       def self.usable?
         return false unless RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
-
-        require 'wdm'
-        true
-      rescue LoadError
-        false
+        super
       end
 
     private

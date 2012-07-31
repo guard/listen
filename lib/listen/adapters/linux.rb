@@ -4,6 +4,10 @@ module Listen
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Adapter
+      extend DependencyManager
+
+      # Declare the adapter's dependencies
+      dependency 'rb-inotify', '~> 0.8.8'
 
       # Watched inotify events
       #
@@ -59,17 +63,13 @@ module Listen
         @poll_thread.join if @poll_thread
       end
 
-      # Check if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on the current OS.
       #
       # @return [Boolean] whether usable or not
       #
       def self.usable?
         return false unless RbConfig::CONFIG['target_os'] =~ /linux/i
-
-        require 'rb-inotify'
-        true
-      rescue LoadError
-        false
+        super
       end
 
     private

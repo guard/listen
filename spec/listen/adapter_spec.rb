@@ -31,14 +31,27 @@ describe Listen::Adapter do
         described_class.select_and_initialize('dir')
       end
 
-      it "warns with the default polling fallback message" do
-        Kernel.should_receive(:warn).with(Listen::Adapter::POLLING_FALLBACK_MESSAGE)
+      it 'warns with the default polling fallback message' do
+        Kernel.should_receive(:warn).with(/#{Listen::Adapter::POLLING_FALLBACK_MESSAGE}/)
         described_class.select_and_initialize('dir')
+      end
+
+      context 'when the dependencies of an adapter are not satisfied' do
+        before do
+          Listen::Adapters::Darwin.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+          Listen::Adapters::Linux.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+          Listen::Adapters::Windows.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+        end
+
+        it 'invites the user to satisfy the dependencies of the adapter in the warning' do
+          Kernel.should_receive(:warn).with(/#{Listen::Adapter::MISSING_DEPENDENCY_MESSAGE}/)
+          described_class.select_and_initialize('dir')
+        end
       end
 
       context "with custom polling_fallback_message option" do
         it "warns with the custom polling fallback message" do
-          Kernel.should_receive(:warn).with('custom')
+          Kernel.should_receive(:warn).with(/custom/)
           described_class.select_and_initialize('dir', :polling_fallback_message => 'custom')
         end
       end
@@ -102,6 +115,14 @@ describe Listen::Adapter do
 
   [Listen::Adapters::Darwin, Listen::Adapters::Linux, Listen::Adapters::Windows].each do |adapter_class|
     if adapter_class.usable?
+      describe '.usable?' do
+        it 'checks the dependencies' do
+          adapter_class.should_receive(:load_depenencies)
+          adapter_class.should_receive(:dependencies_loaded?)
+          adapter_class.usable?
+        end
+      end
+
       describe '.usable_and_works?' do
         it 'checks if the adapter is usable' do
           adapter_class.stub(:works?)
