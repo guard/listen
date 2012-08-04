@@ -307,7 +307,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
             mkdir 'a_directory'
             touch 'move_me.txt'
 
-            watch(listener, 1, path) do
+            watch(listener, 2, path) do
               mv 'move_me.txt', 'a_directory/move_me.txt'
             end
           end
