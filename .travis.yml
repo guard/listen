@@ -11,7 +11,6 @@ rvm:
   - rbx-18mode
   - rbx-19mode
 bundler_args: --without=development
-env: TEST_LATENCY=1.0
 notifications:
   recipients:
     - thibaud@thibaud.me

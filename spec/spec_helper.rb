@@ -1,7 +1,5 @@
 require 'listen'
 
-ENV["TEST_LATENCY"] ||= "0.1"
-
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
@@ -15,7 +13,7 @@ RSpec.configure do |config|
 end
 
 def test_latency
-  ENV["TEST_LATENCY"].to_f
+  0.1
 end
 
 # Crash loud in tests!
