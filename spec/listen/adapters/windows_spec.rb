@@ -7,7 +7,7 @@ describe Listen::Adapters::Windows do
     end
 
     it_should_behave_like 'a filesystem adapter'
-    it_should_behave_like 'an adapter that call properly listener#on_change', :recursive => true, :adapter => :windows
+    it_should_behave_like 'an adapter that call properly listener#on_change'
   end
 
   if mac?

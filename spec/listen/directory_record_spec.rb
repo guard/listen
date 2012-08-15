@@ -193,7 +193,7 @@ describe Listen::DirectoryRecord do
     it 'returns nil when the passed path is not inside the base-directory' do
       subject.relative_to_base('/tmp/some_random_path').should be_nil
     end
-    
+
     context 'when containing regexp characters in the base directory' do
       before do
         fixtures do |path|
@@ -1104,7 +1104,7 @@ describe Listen::DirectoryRecord do
       end
     end
 
-    context 'with symlinks' do
+    context 'with symlinks', :unless => windows? do
       it 'looks at symlinks not their targets' do
         fixtures do |path|
           touch 'target'
