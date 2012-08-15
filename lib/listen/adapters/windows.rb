@@ -9,7 +9,7 @@ module Listen
       extend DependencyManager
 
       # Declare the adapter's dependencies
-      dependency 'wdm', '~> 0.0.2'
+      dependency 'wdm', '~> 0.0.3'
 
       # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
       #
