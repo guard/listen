@@ -1,7 +1,5 @@
 require 'listen'
 
-ENV["TEST_LATENCY"] ||= "0.25"
-
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
@@ -11,8 +9,12 @@ RSpec.configure do |config|
   config.filter_run :focus => true
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
+  config.filter_run_excluding :broken => true
 end
 
 def test_latency
-  ENV["TEST_LATENCY"].to_f
+  0.1
 end
+
+# Crash loud in tests!
+Thread.abort_on_exception = true

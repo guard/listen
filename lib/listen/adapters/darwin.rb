@@ -4,6 +4,10 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Adapter
+      extend DependencyManager
+
+      # Declare the adapter's dependencies
+      dependency 'rb-fsevent', '~> 0.9.1'
 
       LAST_SEPARATOR_REGEX = /\/$/
 
@@ -25,13 +29,14 @@ module Listen
         end
 
         @worker_thread = Thread.new { @worker.run }
-        @poll_thread   = Thread.new { poll_changed_dirs }
 
         # The FSEvent worker needs sometime to startup. Turnstiles can't
         # be used to wait for it as it runs in a loop.
         # TODO: Find a better way to block until the worker starts.
-        sleep @latency
-        @poll_thread.join if blocking
+        sleep 0.1
+
+        @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
+        @worker_thread.join if blocking
       end
 
       # Stops the adapter.
@@ -43,8 +48,8 @@ module Listen
         end
 
         @worker.stop
-        Thread.kill(@worker_thread) if @worker_thread
-        @poll_thread.join
+        @worker_thread.join if @worker_thread
+        @poll_thread.join if @poll_thread
       end
 
       # Checks if the adapter is usable on the current OS.
@@ -53,11 +58,7 @@ module Listen
       #
       def self.usable?
         return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
-
-        require 'rb-fsevent'
-        true
-      rescue LoadError
-        false
+        super
       end
 
       private

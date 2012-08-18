@@ -10,6 +10,7 @@ module Listen
     # file IO that the other implementations.
     #
     class Polling < Adapter
+      extend DependencyManager
 
       # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
       #

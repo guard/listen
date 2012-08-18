@@ -10,8 +10,15 @@ module Listen
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.25
 
+    # The default warning message when there is a missing dependency.
+    MISSING_DEPENDENCY_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      For a better performance, it's recommended that you satisfy the missing dependency.
+    EOS
+
     # The default warning message when falling back to polling adapter.
-    POLLING_FALLBACK_MESSAGE = "WARNING: Listen has fallen back to polling, learn more at https://github.com/guard/listen#fallback."
+    POLLING_FALLBACK_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      Listen will be polling changes. Learn more at https://github.com/guard/listen#polling-fallback.
+    EOS
 
     # Selects the appropriate adapter implementation for the
     # current OS and initializes it.
@@ -31,18 +38,26 @@ module Listen
     def self.select_and_initialize(directories, options = {}, &callback)
       return Adapters::Polling.new(directories, options, &callback) if options.delete(:force_polling)
 
-      if Adapters::Darwin.usable_and_works?(directories, options)
-        Adapters::Darwin.new(directories, options, &callback)
-      elsif Adapters::Linux.usable_and_works?(directories, options)
-        Adapters::Linux.new(directories, options, &callback)
-      elsif Adapters::Windows.usable_and_works?(directories, options)
-        Adapters::Windows.new(directories, options, &callback)
-      else
-        unless options[:polling_fallback_message] == false
-          Kernel.warn(options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE)
+      warning = ''
+
+      begin
+        if Adapters::Darwin.usable_and_works?(directories, options)
+          return Adapters::Darwin.new(directories, options, &callback)
+        elsif Adapters::Linux.usable_and_works?(directories, options)
+          return Adapters::Linux.new(directories, options, &callback)
+        elsif Adapters::Windows.usable_and_works?(directories, options)
+          return Adapters::Windows.new(directories, options, &callback)
         end
-        Adapters::Polling.new(directories, options, &callback)
+      rescue DependencyManager::Error => e
+        warning += e.message + "\n" + MISSING_DEPENDENCY_MESSAGE
       end
+
+      unless options[:polling_fallback_message] == false
+        warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
+        Kernel.warn "[Listen warning]:\n" + warning.gsub(/^(.*)/, '  \1')
+      end
+
+      Adapters::Polling.new(directories, options, &callback)
     end
 
     # Initializes the adapter.
@@ -50,6 +65,7 @@ module Listen
     # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] report_changes whether or not to automatically report changes (run the callback)
     #
     # @yield [changed_dirs, options] callback Callback called when a change happens
     # @yieldparam [Array<String>] changed_dirs the changed directories
@@ -60,12 +76,13 @@ module Listen
     def initialize(directories, options = {}, &callback)
       @directories  = Array(directories)
       @callback     = callback
-      @latency    ||= DEFAULT_LATENCY
-      @latency      = options[:latency] if options[:latency]
       @paused       = false
       @mutex        = Mutex.new
       @changed_dirs = Set.new
       @turnstile    = Turnstile.new
+      @latency    ||= DEFAULT_LATENCY
+      @latency      = options[:latency] if options[:latency]
+      @report_changes = options[:report_changes].nil? ? true : options[:report_changes]
     end
 
     # Starts the adapter.
@@ -92,10 +109,35 @@ module Listen
     end
 
     # Blocks the main thread until the poll thread
-    # calls the callback.
+    # runs the callback.
     #
     def wait_for_callback
       @turnstile.wait unless @paused
+    end
+
+    # Blocks the main thread until N changes are
+    # detected.
+    #
+    def wait_for_changes(goal = 0)
+      changes = 0
+
+      loop do
+        @mutex.synchronize { changes = @changed_dirs.size }
+
+        return if @paused || @stop
+        return if changes >= goal
+
+        sleep(@latency)
+      end
+    end
+
+    # Checks if the adapter is usable on the current OS.
+    #
+    # @return [Boolean] whether usable or not
+    #
+    def self.usable?
+      load_depenencies
+      dependencies_loaded?
     end
 
     # Checks if the adapter is usable and works on the current OS.
@@ -140,26 +182,29 @@ module Listen
       adapter.stop if adapter && adapter.started?
     end
 
+    # Runs the callback and passes it the changes if there are any.
+    #
+    def report_changes
+      changed_dirs = nil
+
+      @mutex.synchronize do
+        return if @changed_dirs.empty?
+        changed_dirs = @changed_dirs.to_a
+        @changed_dirs.clear
+      end
+
+      @callback.call(changed_dirs, {})
+    end
+
     private
 
     # Polls changed directories and reports them back
     # when there are changes.
     #
-    # @option [Boolean] recursive whether or not to pass the recursive option to the callback
-    #
-    def poll_changed_dirs(recursive = false)
+    def poll_changed_dirs
       until @stop
         sleep(@latency)
-        next if @changed_dirs.empty?
-
-        changed_dirs = []
-
-        @mutex.synchronize do
-          changed_dirs = @changed_dirs.to_a
-          @changed_dirs.clear
-        end
-
-        @callback.call(changed_dirs, recursive ? {:recursive => recursive} : {})
+        report_changes
         @turnstile.signal
       end
     end
