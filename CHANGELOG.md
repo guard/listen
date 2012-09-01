@@ -1,3 +1,15 @@
+## 0.5.0 - Septemper 1, 2012
+
+### New features
+
+- Add a dependency manager to handle platform-specific gems. So there is no need anymore to install
+  extra gems which will never be used on the user system. ([@Maher4Ever][])
+- Add a manual reporting mode to the adapters. ([@Maher4Ever][])
+
+### Improvements
+
+- [#28] Enhance the speed of detecting changes on Windows by using the [WDM][] library. ([@Maher4Ever][])
+
 ## 0.4.7 - June 27, 2012
 
 ### Bug fixes
@@ -128,6 +140,7 @@
 [#21]: https://github.com/guard/listen/issues/21
 [#24]: https://github.com/guard/listen/issues/24
 [#27]: https://github.com/guard/listen/issues/27
+[#28]: https://github.com/guard/listen/issues/28
 [#32]: https://github.com/guard/listen/issues/32
 [#39]: https://github.com/guard/listen/issues/39
 [@Maher4Ever]: https://github.com/Maher4Ever
@@ -145,3 +158,4 @@
 [@scottdavis]: https://github.com/scottdavis
 [@textgoeshere]: https://github.com/textgoeshere
 [@thibaudgg]: https://github.com/thibaudgg
+[WDM]: https://github.com/Maher4Ever/wdm
