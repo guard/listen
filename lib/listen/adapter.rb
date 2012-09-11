@@ -194,6 +194,7 @@ module Listen
       end
 
       @callback.call(changed_dirs, {})
+      @turnstile.signal
     end
 
     private
@@ -205,7 +206,6 @@ module Listen
       until @stop
         sleep(@latency)
         report_changes
-        @turnstile.signal
       end
     end
   end
