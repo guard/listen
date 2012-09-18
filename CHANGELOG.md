@@ -1,3 +1,9 @@
+## 0.5.1 - Septemper 18, 2012
+
+### Bug fixes
+
+- [#61] Fix a synchronisation bug that caused constant fallback to polling. (fixed by [@Maher4Ever][])
+
 ## 0.5.0 - Septemper 1, 2012
 
 ### New features
