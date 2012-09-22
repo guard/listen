@@ -50,7 +50,7 @@ module Listen
       #
       def poll
         until @stop
-          sleep(0.1) && next if @paused
+          next if @paused
 
           start = Time.now.to_f
           @callback.call(@directories.dup, :recursive => true)
