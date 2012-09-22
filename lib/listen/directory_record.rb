@@ -198,8 +198,11 @@ module Listen
 
             # First check if we are in the same second (to update checksums)
             # before checking the time difference
-            if  (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
-              # Update the meta data of the files
+            if (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
+              # Update the sha1 checksum of the file
+              insert_sha1_checksum(path)
+
+              # Update the meta data of the file
               meta_data.mtime = new_mtime
               @paths[directory][basename] = meta_data
 
@@ -247,17 +250,40 @@ module Listen
 
     # Returns whether or not a file's content has been modified by
     # comparing the SHA1-checksum to a stored one.
+    # Ensure that the SHA1-checksum is inserted to the sha1_checksums
+    # array for later comparaison if false.
     #
     # @param [String] path the file path
     #
     def content_modified?(path)
-      sha1_checksum = Digest::SHA1.file(path).to_s
-      return false if @sha1_checksums[path] == sha1_checksum
-      @sha1_checksums.key?(path)
+      @sha1_checksum = sha1_checksum(path)
+      if @sha1_checksums[path] == @sha1_checksum || !@sha1_checksums.key?(path)
+        insert_sha1_checksum(path)
+        false
+      else
+        true
+      end
+    end
+
+    # Inserts a SHA1-checksum path in @SHA1-checksums hash.
+    #
+    # @param [String] path the SHA1-checksum path to insert in @sha1_checksums.
+    #
+    def insert_sha1_checksum(path)
+      if @sha1_checksum ||= sha1_checksum(path)
+        @sha1_checksums[path] = @sha1_checksum
+        @sha1_checksum = nil
+      end
+    end
+
+    # Returns the SHA1-checksum for the file path.
+    #
+    # @param [String] path the file path
+    #
+    def sha1_checksum(path)
+      Digest::SHA1.file(path).to_s
     rescue Errno::EACCES, Errno::ENOENT
-      false
-    ensure
-      @sha1_checksums[path] = sha1_checksum if sha1_checksum
+      nil
     end
 
     # Traverses the base directory looking for paths that should

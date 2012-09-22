@@ -442,6 +442,11 @@ describe Listen::DirectoryRecord do
           it 'detects the modified file the second time if the content have changed' do
             fixtures do |path|
               touch 'existing_file.txt'
+              # Set sha1 path checksum
+              changes(path) do
+                touch 'existing_file.txt'
+              end
+              small_time_difference
 
               changes(path) do
                 touch 'existing_file.txt'
@@ -456,6 +461,58 @@ describe Listen::DirectoryRecord do
               removed.should be_empty
             end
           end
+
+          it "doesn't detects the modified file the second time if just touched - #62" do
+            fixtures do |path|
+              touch 'existing_file.txt'
+              # Set sha1 path checksum
+              changes(path) do
+                touch 'existing_file.txt'
+              end
+              small_time_difference
+
+              changes(path, :use_last_record => true) do
+                open('existing_file.txt', 'w') { |f| f.write('foo') }
+              end
+
+              modified, added, removed = changes(path, :use_last_record => true) do
+                touch 'existing_file.txt'
+              end
+
+              added.should be_empty
+              modified.should be_empty
+              removed.should be_empty
+            end
+          end
+
+          it "adds the path in the paths checksums if just touched - #62" do
+            fixtures do |path|
+              touch 'existing_file.txt'
+              small_time_difference
+
+              changes(path) do
+                touch 'existing_file.txt'
+              end
+
+              @record.sha1_checksums["#{path}/existing_file.txt"].should_not be_nil
+            end
+          end
+
+        it "deletes the path from the paths checksums" do
+          fixtures do |path|
+            touch 'unnecessary.txt'
+
+            changes(path) do
+              @record.sha1_checksums["#{path}/unnecessary.txt"] = 'foo'
+
+              rm 'unnecessary.txt'
+            end
+
+            @record.sha1_checksums["#{path}/unnecessary.txt"].should be_nil
+          end
+        end
+
+
         end
 
         context 'given a hidden file' do
@@ -1092,7 +1149,7 @@ describe Listen::DirectoryRecord do
 
         # simulate a race condition where the file is removed after the
         # change event is tracked, but before the hash is calculated
-        Digest::SHA1.should_receive(:file).and_raise(Errno::ENOENT)
+        Digest::SHA1.should_receive(:file).twice.and_raise(Errno::ENOENT)
 
         lambda {
           fixtures do |path|
