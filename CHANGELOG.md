@@ -1,6 +1,12 @@
+## 0.5.2 - Septemper 23, 2012
+
+### Bug fix
+
+- [#62] Fix double change callback with polling adapter. (fixed by [@thibaudgg][])
+
 ## 0.5.1 - Septemper 18, 2012
 
-### Bug fixes
+### Bug fix
 
 - [#61] Fix a synchronisation bug that caused constant fallback to polling. (fixed by [@Maher4Ever][])
 
