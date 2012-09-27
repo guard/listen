@@ -1161,6 +1161,16 @@ describe Listen::DirectoryRecord do
       end
     end
 
+    context 'within a directory containing a unix domain socket file' do
+      it 'does not raise an exception when hashing a unix domain socket file' do
+        fixtures do |path|
+          require 'socket'
+          UNIXServer.new('unix_domain_socket.sock')
+          lambda { changes(path){} }.should_not raise_error(Errno::ENXIO)
+        end
+      end
+    end
+
     context 'with symlinks', :unless => windows? do
       it 'looks at symlinks not their targets' do
         fixtures do |path|
