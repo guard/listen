@@ -166,7 +166,7 @@ module Listen
     def self.works?(directory, options = {})
       work = false
       test_file = "#{directory}/.listen_test"
-      callback = lambda { |changed_dirs, options| work = true }
+      callback = lambda { |*| work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start(false)
 
