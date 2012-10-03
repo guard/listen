@@ -1,3 +1,10 @@
+## 0.5.3 - October 3, 2012
+
+### Bug fixes
+
+- [#65] Fix ruby warning in adapter.rb. (fixed by [@vongruenigen][])
+- [#64] ENXIO raised when hashing UNIX domain socket file. (fixed by [@sunaku][])
+
 ## 0.5.2 - Septemper 23, 2012
 
 ### Bug fix
@@ -154,7 +161,11 @@
 [#27]: https://github.com/guard/listen/issues/27
 [#28]: https://github.com/guard/listen/issues/28
 [#32]: https://github.com/guard/listen/issues/32
-[#39]: https://github.com/guard/listen/issues/39
+[#41]: https://github.com/guard/listen/issues/41
+[#61]: https://github.com/guard/listen/issues/61
+[#62]: https://github.com/guard/listen/issues/62
+[#64]: https://github.com/guard/listen/issues/64
+[#65]: https://github.com/guard/listen/issues/65
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@dkubb]: https://github.com/dkubb
 [@ebroder]: https://github.com/ebroder
@@ -168,6 +179,8 @@
 [@nex3]: https://github.com/nex3
 [@rymai]: https://github.com/rymai
 [@scottdavis]: https://github.com/scottdavis
+[@sunaku]: https://github.com/sunaku
 [@textgoeshere]: https://github.com/textgoeshere
 [@thibaudgg]: https://github.com/thibaudgg
+[@vongruenigen]: https://github.com/vongruenigen
 [WDM]: https://github.com/Maher4Ever/wdm
