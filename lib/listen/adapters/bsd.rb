@@ -83,6 +83,19 @@ module Listen
             # kqueue watches everything, but Listen only needs the
             # directory where stuffs happens.
             @changed_dirs << (File.directory?(path) ? path : File.dirname(path))
+
+            # If it is a directory, and it has a write flag, it means a
+            # file has been added so find out which and deal with it.
+            # No need to check for removed file, kqueue will forget them
+            # when the vfs does..
+            if File.directory?(path) && !(event.flags & [:write]).empty?
+              queue = event.watcher.queue
+              Find.find(path) do |file|
+                unless queue.watchers.detect {|k,v| v.path == file.to_s}
+                  queue.watch_file(file, *EVENTS, &callback)
+                end
+              end
+            end
           end
         end
 
