@@ -7,7 +7,7 @@ module Listen
       extend DependencyManager
 
       # Declare the adapter's dependencies
-      dependency 'rb-kqueue', '~> 0.1'
+      dependency 'rb-kqueue', '~> 0.2'
 
       # Watched kqueue events
       #
