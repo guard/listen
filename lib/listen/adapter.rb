@@ -45,6 +45,8 @@ module Listen
           return Adapters::Darwin.new(directories, options, &callback)
         elsif Adapters::Linux.usable_and_works?(directories, options)
           return Adapters::Linux.new(directories, options, &callback)
+        elsif Adapters::BSD.usable_and_works?(directories, options)
+          return Adapters::BSD.new(directories, options, &callback)
         elsif Adapters::Windows.usable_and_works?(directories, options)
           return Adapters::Windows.new(directories, options, &callback)
         end
