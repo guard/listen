@@ -47,10 +47,24 @@ describe Listen::DirectoryRecord do
     end
   end
 
+  describe '#ignore!' do
+    it 'replace the ignored paths in the record' do
+      subject.ignore!(%r{^\.old/}, %r{\.pid$})
+      subject.ignoring_patterns.should eql [%r{^\.old/}, %r{\.pid$}]
+    end
+  end
+
   describe '#filter' do
     it 'adds the passed regexps to the list of filters that determine the stored paths' do
       subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
       subject.filtering_patterns.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+    end
+  end
+
+  describe '#filter!' do
+    it 'replaces the passed regexps in the list of filters that determine the stored paths' do
+      subject.filter!(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filtering_patterns.should eql [%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)}]
     end
   end
 
