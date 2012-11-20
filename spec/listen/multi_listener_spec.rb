@@ -80,7 +80,7 @@ describe Listen::MultiListener do
     end
   end
 
-  describe '#ignore'do
+  describe '#ignore' do
     it 'delegates the work to each directory record' do
       subject.directories_records.each do |r|
         r.should_receive(:ignore).with 'some_directory'

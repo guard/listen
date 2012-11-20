@@ -41,7 +41,7 @@ describe Listen::DirectoryRecord do
   end
 
   describe '#ignore' do
-    it 'adds the passed paths to the list of ignoted paths in the record' do
+    it 'adds the passed paths to the list of ignored paths in the record' do
       subject.ignore(%r{^\.old/}, %r{\.pid$})
       subject.ignoring_patterns.should include(%r{^\.old/}, %r{\.pid$})
     end
