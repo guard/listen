@@ -88,6 +88,17 @@ module Listen
       @ignoring_patterns.merge(regexps)
     end
 
+    # Replaces ignoring patterns in the record.
+    #
+    # @example Ignore only these paths
+    #   ignore! %r{^ignored/path/}, /man/
+    #
+    # @param [Regexp] regexp a pattern for ignoring paths
+    #
+    def ignore!(*regexps)
+      @ignoring_patterns.replace(regexps)
+    end
+
     # Adds filtering patterns to the listener.
     #
     # @example Filter some files
@@ -97,6 +108,17 @@ module Listen
     #
     def filter(*regexps)
       @filtering_patterns.merge(regexps)
+    end
+
+    # Replaces filtering patterns in the listener.
+    #
+    # @example Filter only these files
+    #   ignore /\.txt$/, /.*\.zip/
+    #
+    # @param [Regexp] regexp a pattern for filtering paths
+    #
+    def filter!(*regexps)
+      @filtering_patterns.replace(regexps)
     end
 
     # Returns whether a path should be ignored or not.

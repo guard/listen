@@ -93,6 +93,17 @@ module Listen
       self
     end
 
+    # Replaces ignoring patterns in the listener.
+    #
+    # @param (see Listen::DirectoryRecord#ignore!)
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def ignore!(*regexps)
+      @directory_record.ignore!(*regexps)
+      self
+    end
+
     # Adds filtering patterns to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
@@ -101,6 +112,17 @@ module Listen
     #
     def filter(*regexps)
       @directory_record.filter(*regexps)
+      self
+    end
+
+    # Replacing filtering patterns in the listener.
+    #
+    # @param (see Listen::DirectoryRecord#filter!)
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def filter!(*regexps)
+      @directory_record.filter!(*regexps)
       self
     end
 
