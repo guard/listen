@@ -1,3 +1,9 @@
+## 0.6.0 - November 21, 2012
+
+### New feature
+
+- Add bang versions for filter and ignore listener methods. ([@tarsolya][])
+
 ## 0.5.3 - October 3, 2012
 
 ### Bug fixes
@@ -182,5 +188,6 @@
 [@sunaku]: https://github.com/sunaku
 [@textgoeshere]: https://github.com/textgoeshere
 [@thibaudgg]: https://github.com/thibaudgg
+[@tarsolya]: https://github.com/tarsolya
 [@vongruenigen]: https://github.com/vongruenigen
 [WDM]: https://github.com/Maher4Ever/wdm

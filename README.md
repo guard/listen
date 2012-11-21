@@ -215,6 +215,8 @@ with a directory-separator, otherwise they won't work as expected.
 As an example: to ignore the `build` directory in a C-project, use `%r{build/}`
 and not `%r{/build/}`.
 
+Use `#filter!` and `#ignore!` methods to overwrites default patterns.
+
 ### Non-blocking listening to changes
 
 Starting a listener blocks the current thread by default. That means any code after the
