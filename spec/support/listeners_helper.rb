@@ -81,15 +81,27 @@ shared_examples_for 'a listener to changes on a file-system' do
     end
   end
 
-  describe '#ignore'do
+  describe '#ignore' do
     it 'returns the same listener to allow chaining' do
       subject.ignore('some_directory').should equal subject
+    end
+  end
+
+  describe '#ignore!' do
+    it 'returns the same listener to allow chaining' do
+      subject.ignore!('some_directory').should equal subject
     end
   end
 
   describe '#filter' do
     it 'returns the same listener to allow chaining' do
       subject.filter(/\.txt$/).should equal subject
+    end
+  end
+
+  describe '#filter!' do
+    it 'returns the same listener to allow chaining' do
+      subject.filter!(/\.txt$/).should equal subject
     end
   end
 

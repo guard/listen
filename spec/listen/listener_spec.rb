@@ -84,10 +84,24 @@ describe Listen::Listener do
     end
   end
 
+  describe '#ignore!'do
+    it 'delegates the work to the directory record' do
+      subject.directory_record.should_receive(:ignore!).with 'some_directory'
+      subject.ignore! 'some_directory'
+    end
+  end
+
   describe '#filter' do
     it 'delegates the work to the directory record' do
       subject.directory_record.should_receive(:filter).with /\.txt$/
       subject.filter /\.txt$/
+    end
+  end
+
+  describe '#filter!' do
+    it 'delegates the work to the directory record' do
+      subject.directory_record.should_receive(:filter!).with /\.txt$/
+      subject.filter! /\.txt$/
     end
   end
 

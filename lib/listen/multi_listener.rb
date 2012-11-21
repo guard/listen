@@ -65,6 +65,17 @@ module Listen
       self
     end
 
+    # Replaces ignored paths in the listener.
+    #
+    # @param (see Listen::DirectoryRecord#ignore!)
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def ignore!(*paths)
+      @directories_records.each { |r| r.ignore!(*paths) }
+      self
+    end
+
     # Adds file filters to the listener.
     #
     # @param (see Listen::DirectoryRecord#filter)
@@ -73,6 +84,17 @@ module Listen
     #
     def filter(*regexps)
       @directories_records.each { |r| r.filter(*regexps) }
+      self
+    end
+
+    # Replaces file filters in the listener.
+    #
+    # @param (see Listen::DirectoryRecord#filter!)
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def filter!(*regexps)
+      @directories_records.each { |r| r.filter!(*regexps) }
       self
     end
 
