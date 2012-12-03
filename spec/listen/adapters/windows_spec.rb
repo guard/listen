@@ -16,6 +16,12 @@ describe Listen::Adapters::Windows do
     end
   end
 
+  if bsd?
+    it "isn't usable on BSD" do
+      described_class.should_not be_usable
+    end
+  end
+
   if linux?
     it "isn't usable on Linux" do
       described_class.should_not be_usable

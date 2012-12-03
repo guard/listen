@@ -10,6 +10,7 @@ module Listen
   module Adapters
     autoload :Darwin,  'listen/adapters/darwin'
     autoload :Linux,   'listen/adapters/linux'
+    autoload :BSD,     'listen/adapters/bsd'
     autoload :Windows, 'listen/adapters/windows'
     autoload :Polling, 'listen/adapters/polling'
   end
