@@ -1,3 +1,9 @@
+## Master
+
+### New feature
+
+- Add support for *BSD with rb-kqueue. ([@mat813][])
+
 ## 0.6.0 - November 21, 2012
 
 ### New feature
@@ -180,6 +186,7 @@
 [@daemonza]: https://github.com/daemonza
 [@fny]: https://github.com/fny
 [@markiz]: https://github.com/markiz
+[@mat813]: https://github.com/mat813
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
