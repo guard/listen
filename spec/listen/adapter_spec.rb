@@ -21,6 +21,7 @@ describe Listen::Adapter do
     before do
       Listen::Adapters::Darwin.stub(:usable_and_works?) { false }
       Listen::Adapters::Linux.stub(:usable_and_works?) { false }
+      Listen::Adapters::BSD.stub(:usable_and_works?) { false }
       Listen::Adapters::Windows.stub(:usable_and_works?) { false }
     end
 
@@ -40,6 +41,7 @@ describe Listen::Adapter do
         before do
           Listen::Adapters::Darwin.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
           Listen::Adapters::Linux.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+          Listen::Adapters::BSD.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
           Listen::Adapters::Windows.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
         end
 
@@ -96,6 +98,22 @@ describe Listen::Adapter do
       end
     end
 
+    context "on BSD" do
+      before { Listen::Adapters::BSD.stub(:usable_and_works?) { true } }
+
+      it "uses Listen::Adapters::BSD" do
+        Listen::Adapters::BSD.should_receive(:new).with('dir', {})
+        described_class.select_and_initialize('dir')
+      end
+
+      context 'when the use of the polling adapter is forced' do
+        it 'uses Listen::Adapters::Polling' do
+          Listen::Adapters::Polling.should_receive(:new).with('dir', {})
+          described_class.select_and_initialize('dir', :force_polling => true)
+        end
+      end
+    end
+
     context "on Windows" do
       before { Listen::Adapters::Windows.stub(:usable_and_works?) { true } }
 
@@ -113,7 +131,9 @@ describe Listen::Adapter do
     end
   end
 
-  [Listen::Adapters::Darwin, Listen::Adapters::Linux, Listen::Adapters::Windows].each do |adapter_class|
+  [Listen::Adapters::Darwin, Listen::Adapters::Linux,
+   Listen::Adapters::BSD, Listen::Adapters::Windows].each do
+    |adapter_class|
     if adapter_class.usable?
       describe '.usable?' do
         it 'checks the dependencies' do

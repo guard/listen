@@ -27,6 +27,12 @@ describe Listen::Adapters::Linux do
     end
   end
 
+  if bsd?
+    it "isn't usable on BSD" do
+      described_class.should_not be_usable
+    end
+  end
+
   if mac?
     it "isn't usable on Mac OS X" do
       described_class.should_not be_usable
