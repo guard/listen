@@ -1,4 +1,8 @@
-## Master
+## 0.7.0 - December 29, 2012
+
+### Bug fixes
+
+- [#73] Rescue Errno::EOPNOTSUPP on sha1_checksum generation. (fixed by [@thibaudgg][])
 
 ### New feature
 
