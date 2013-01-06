@@ -1,3 +1,9 @@
+## 0.7.1 - January 6, 2013
+
+### Bug fix
+
+- [#75] Default high precision off if the mtime call fails. (fixed by [@zanker][])
+
 ## 0.7.0 - December 29, 2012
 
 ### Bug fixes
@@ -182,6 +188,8 @@
 [#62]: https://github.com/guard/listen/issues/62
 [#64]: https://github.com/guard/listen/issues/64
 [#65]: https://github.com/guard/listen/issues/65
+[#73]: https://github.com/guard/listen/issues/73
+[#75]: https://github.com/guard/listen/issues/75
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@dkubb]: https://github.com/dkubb
 [@ebroder]: https://github.com/ebroder
@@ -201,4 +209,5 @@
 [@thibaudgg]: https://github.com/thibaudgg
 [@tarsolya]: https://github.com/tarsolya
 [@vongruenigen]: https://github.com/vongruenigen
+[@zanker]: https://github.com/zanker
 [WDM]: https://github.com/Maher4Ever/wdm
