@@ -18,7 +18,11 @@ module Listen
     # Defines the used precision based on the type of mtime returned by the
     # system (whether its in milliseconds or just seconds)
     #
-    HIGH_PRECISION_SUPPORTED = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+    begin
+      HIGH_PRECISION_SUPPORTED = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+    rescue
+      HIGH_PRECISION_SUPPORTED = false
+    end
 
     # Data structure used to save meta data about a path
     #
