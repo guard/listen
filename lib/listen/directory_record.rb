@@ -189,7 +189,7 @@ module Listen
     #
     def relative_to_base(path)
       return nil unless path[@directory]
-      path.sub(%r{^#{Regexp.quote(@directory)}#{File::SEPARATOR}?}, '')
+      path.force_encoding("BINARY").sub(%r{^#{Regexp.quote(@directory)}#{File::SEPARATOR}?}, '')
     end
 
     private
