@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'spec_helper'
 
 describe Listen::DirectoryRecord do
@@ -206,6 +207,11 @@ describe Listen::DirectoryRecord do
 
     it 'returns nil when the passed path is not inside the base-directory' do
       subject.relative_to_base('/tmp/some_random_path').should be_nil
+    end
+
+    it 'works with non UTF-8 paths' do
+      path = "tmp/\xE4\xE4"
+      subject.relative_to_base(File.join(base_directory, path))
     end
 
     context 'when containing regexp characters in the base directory' do
