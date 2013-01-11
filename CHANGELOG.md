@@ -1,3 +1,9 @@
+## 0.7.2 - January 11, 2013
+
+### Bug fix
+
+- [#76] Exception on filename which is not in UTF-8. (fixed by [@piotr-sokolowski][])
+
 ## 0.7.1 - January 6, 2013
 
 ### Bug fix
@@ -190,6 +196,7 @@
 [#65]: https://github.com/guard/listen/issues/65
 [#73]: https://github.com/guard/listen/issues/73
 [#75]: https://github.com/guard/listen/issues/75
+[#76]: https://github.com/guard/listen/issues/76
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@dkubb]: https://github.com/dkubb
 [@ebroder]: https://github.com/ebroder
@@ -202,6 +209,7 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@piotr-sokolowski]: https://github.com/piotr-sokolowski
 [@rymai]: https://github.com/rymai
 [@scottdavis]: https://github.com/scottdavis
 [@sunaku]: https://github.com/sunaku
