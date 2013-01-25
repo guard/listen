@@ -15,6 +15,11 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = '>= 1.3.6'
   s.rubyforge_project = 'listen'
 
+  s.add_dependency 'rb-kqueue',  '~> 0.2'   if RbConfig::CONFIG['target_os'] =~ /freebsd/i
+  s.add_dependency 'rb-fsevent', '~> 0.9.1' if RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
+  s.add_dependency 'rb-inotify', '~> 0.9.0' if RbConfig::CONFIG['target_os'] =~ /linux/i
+  s.add_dependency 'wdm',        '~> 0.0.3' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+
   s.add_development_dependency 'bundler'
 
   s.files        = Dir.glob('{lib}/**/*') + %w[CHANGELOG.md LICENSE README.md]
