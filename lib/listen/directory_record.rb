@@ -283,6 +283,7 @@ module Listen
     # @param [String] path the file path
     #
     def content_modified?(path)
+      return false unless File.ftype(path) == 'file'
       @sha1_checksum = sha1_checksum(path)
       if @sha1_checksums[path] == @sha1_checksum || !@sha1_checksums.key?(path)
         insert_sha1_checksum(path)
