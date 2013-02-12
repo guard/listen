@@ -7,7 +7,7 @@ module Listen
       extend DependencyManager
 
       # Declare the adapter's dependencies
-      dependency 'rb-fsevent', '~> 0.9.1'
+      dependency 'rb-fsevent', '~> 0.9'
 
       LAST_SEPARATOR_REGEX = /\/$/
 

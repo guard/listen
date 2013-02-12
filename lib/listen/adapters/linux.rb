@@ -7,7 +7,7 @@ module Listen
       extend DependencyManager
 
       # Declare the adapter's dependencies
-      dependency 'rb-inotify', '~> 0.9.0'
+      dependency 'rb-inotify', '~> 0.9'
 
       # Watched inotify events
       #
