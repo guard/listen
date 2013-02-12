@@ -53,6 +53,18 @@ shared_examples_for 'a filesystem adapter' do
         @called.should be_true
       end
     end
+
+    context 'with the blocking hash option set to false' do
+      subject { described_class.new(File.dirname(__FILE__), {:blocking => false}, &Proc.new {}) }
+
+      it 'does not block the current thread after starting the workers' do
+        @called = false
+        t = Thread.new { subject.start; @called = true }
+        sleep(test_latency * 3)
+        Thread.kill(t) if t
+        @called.should be_true
+      end
+    end
   end
 
   describe '#started?' do

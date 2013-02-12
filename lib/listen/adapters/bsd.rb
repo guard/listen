@@ -28,7 +28,7 @@ module Listen
       #
       # @param [Boolean] blocking whether or not to block the current thread after starting
       #
-      def start(blocking = true)
+      def start(blocking = nil)
         @mutex.synchronize do
           return if @stop == false
           super
@@ -42,6 +42,7 @@ module Listen
         end
         @poll_thread   = Thread.new { poll_changed_dirs } if @report_changes
 
+        blocking = @blocking if blocking.nil?
         @kqueue_thread.join if blocking
       end
 

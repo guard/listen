@@ -153,4 +153,15 @@ shared_examples_for 'a listener to changes on a file-system' do
       subject.polling_fallback_message('custom message').should equal subject
     end
   end
+
+  describe '#blocking' do
+    it 'sets blocking to @adapter_options' do
+      subject.blocking(false)
+      subject.instance_variable_get(:@adapter_options).should eq(:blocking => false)
+    end
+
+    it 'returns the same listener to allow chaining' do
+      subject.blocking(true).should equal subject
+    end
+  end
 end

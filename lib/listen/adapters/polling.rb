@@ -23,13 +23,15 @@ module Listen
       #
       # @param [Boolean] blocking whether or not to block the current thread after starting
       #
-      def start(blocking = true)
+      def start(blocking = nil)
         @mutex.synchronize do
           return if @stop == false
           super
         end
 
         @poll_thread = Thread.new { poll }
+        
+        blocking = @blocking if blocking.nil?
         @poll_thread.join if blocking
       end
 
