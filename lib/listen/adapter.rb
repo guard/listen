@@ -85,13 +85,14 @@ module Listen
       @latency    ||= DEFAULT_LATENCY
       @latency      = options[:latency] if options[:latency]
       @report_changes = options[:report_changes].nil? ? true : options[:report_changes]
+      @blocking     = options[:blocking] || true
     end
 
     # Starts the adapter.
     #
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
-    def start(blocking = true)
+    def start(blocking = nil)
       @stop = false
     end
 

@@ -52,7 +52,8 @@ listener = listener.latency(0.5)
 listener = listener.force_polling(true)
 listener = listener.polling_fallback_message(false)
 listener = listener.change(&callback)
-listener.start # blocks execution!
+listener = listener.blocking(true) # blocks execution!
+listener.start
 ```
 
 ### Chainable
@@ -65,7 +66,8 @@ Listen.to('dir/path/to/listen')
       .force_polling(true)
       .polling_fallback_message('custom message')
       .change(&callback)
-      .start # blocks execution!
+      .blocking(true) # blocks execution!
+      .start
 ```
 
 ### Pause/Unpause
@@ -201,6 +203,9 @@ These options can be set through `Listen.to` params or via methods (see the "Obj
 
 :polling_fallback_message => 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
                                                # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
+
+:blocking => false                             # Set whether the listener blocks the current thread.
+                                               # default: true
 ```
 
 ### The patterns for filtering and ignoring paths
@@ -222,22 +227,34 @@ Use `#filter!` and `#ignore!` methods to overwrites default patterns.
 Starting a listener blocks the current thread by default. That means any code after the
 `start` call won't be run until the listener is stopped (which needs to be done from another thread).
 
-For advanced usage there is an option to disable this behavior and have the listener start working
-in the background without blocking. To enable non-blocking listening the `start` method of
-the listener (be it `Listener` or `MultiListener`) needs to be called with `false` as a parameter.
+To have a listener (be it `Listener` or `MultiListener`) not block the current thread you can either
+use the `blocking` option on Listen.to, the `blocking` method on a listener (see the "Object" API) or 
+`start` the listener with `false` as a parameter.
 
-Here is an example of using a listener in the non-blocking mode:
+All of the following listeners will start in non-blocking mode:
+
+```ruby
+Listen.to('dir/path/to/listen', :blocking => false) do |modified, added, removed|
+  # ...
+end
+
+# Code here will run immediately after starting the listener
+```
+
+```ruby
+listener = Listen.to('dir/path/to/listen')
+listener.blocking(false)
+listener.start
+
+# ...
+```
 
 ```ruby
 listener = Listen.to('dir/path/to/listen')
 listener.start(false) # doesn't block execution
 
-# Code here will run immediately after starting the listener
-
+# ...
 ```
-
-**note**: Using the `Listen.to` helper-method with a callback-block will always
-block execution. See the "Block API" section for an example.
 
 ## Listen adapters
 

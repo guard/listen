@@ -17,6 +17,7 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative-paths in the callback
     # @option options [Boolean] force_polling whether to force the polling adapter or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
+    # @option options [Boolean] blocking whether or not to block the current thread when the listener is started
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -42,7 +43,7 @@ module Listen
     #
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
-    def start(blocking = true)
+    def start(blocking = nil)
       t = Thread.new { @directory_record.build }
       @adapter = initialize_adapter
       t.join
@@ -153,6 +154,20 @@ module Listen
     #
     def force_polling(value)
       @adapter_options[:force_polling] = value
+      self
+    end
+
+    # Sets whether the current thread is blocked when the listener is started.
+    #
+    # @example
+    #   blocking false
+    #
+    # @param [Boolean] value whether or not the current thread is blocked
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def blocking(value)
+      @adapter_options[:blocking] = value
       self
     end
 
