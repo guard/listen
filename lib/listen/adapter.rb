@@ -85,7 +85,7 @@ module Listen
       @latency    ||= DEFAULT_LATENCY
       @latency      = options[:latency] if options[:latency]
       @report_changes = options[:report_changes].nil? ? true : options[:report_changes]
-      @blocking     = options[:blocking] || true
+      @blocking     = options[:blocking].nil? ? true : options[:blocking]
     end
 
     # Starts the adapter.

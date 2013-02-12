@@ -36,7 +36,9 @@ module Listen
         sleep 0.1
 
         @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
-        @worker_thread.join if (blocking || @blocking)
+
+        blocking = @blocking if blocking.nil?
+        @worker_thread.join if blocking
       end
 
       # Stops the adapter.

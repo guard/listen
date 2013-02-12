@@ -30,7 +30,9 @@ module Listen
         end
 
         @poll_thread = Thread.new { poll }
-        @poll_thread.join if (blocking || @blocking)
+        
+        blocking = @blocking if blocking.nil?
+        @poll_thread.join if blocking
       end
 
       # Stop the adapter.
