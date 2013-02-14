@@ -487,16 +487,18 @@ describe Listen::DirectoryRecord do
               require 'socket'
               fixtures do |path|
                 Digest::SHA1.should_not_receive(:file)
-                socket_path = File.join(path, "socket")
-                Socket.unix_server_socket(socket_path) do |server|
-                  modified, added, removed = changes(path) do
-                    t = Thread.new { Socket.unix(socket_path) { |client| client.write("foo") } }
-                    t.join
+                socket_path = File.join(path, "unix_domain_socket")
+                server = UNIXServer.new(socket_path)
+                modified, added, removed = changes(path) do
+                  t = Thread.new do
+                    client = UNIXSocket.new(socket_path)
+                    client.write("foo")
                   end
-                  added.should be_empty
-                  modified.should be_empty
-                  removed.should be_empty
+                  t.join
                 end
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
               end
             end
           end
