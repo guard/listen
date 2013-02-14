@@ -482,6 +482,27 @@ describe Listen::DirectoryRecord do
             end
           end
 
+          unless windows?
+            it "doesn't checksum the contents of local sockets (#85)" do
+              require 'socket'
+              fixtures do |path|
+                Digest::SHA1.should_not_receive(:file)
+                socket_path = File.join(path, "unix_domain_socket")
+                server = UNIXServer.new(socket_path)
+                modified, added, removed = changes(path) do
+                  t = Thread.new do
+                    client = UNIXSocket.new(socket_path)
+                    client.write("foo")
+                  end
+                  t.join
+                end
+                added.should be_empty
+                modified.should be_empty
+                removed.should be_empty
+              end
+            end
+          end
+
           it "doesn't detects the modified file the second time if just touched - #62" do
             fixtures do |path|
               touch 'existing_file.txt'
