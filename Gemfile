@@ -21,6 +21,7 @@ group :development do
   gem 'yard'
   gem 'redcarpet'
   gem 'pry'
+  gem 'pimpmychangelog'
 
   gem 'vagrant'
 end
