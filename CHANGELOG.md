@@ -1,3 +1,10 @@
+## 0.7.3 - February 24, 2013
+
+### Bug fix
+
+- [#88] Update wdm dependency. (fixed by [@mrbinky3000][])
+- [#78] Depend on latest rb-inotify. (fixed by [@mbj][])
+
 ## 0.7.2 - January 11, 2013
 
 ### Bug fix
