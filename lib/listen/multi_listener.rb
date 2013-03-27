@@ -19,7 +19,7 @@ module Listen
     #
     def initialize(*args, &block)
       options     = args.last.is_a?(Hash) ? args.pop : {}
-      directories = args
+      directories = args.flatten
 
       @block               = block
       @directories         = directories.map  { |d| Pathname.new(d).realpath.to_s }
