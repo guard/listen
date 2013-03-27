@@ -2,55 +2,55 @@
 
 ### Bug fix
 
-- [#88] Update wdm dependency. (fixed by [@mrbinky3000][])
-- [#78] Depend on latest rb-inotify. (fixed by [@mbj][])
+- [#88][] Update wdm dependency. ([@mrbinky3000][])
+- [#78][] Depend on latest rb-inotify. ([@mbj][])
 
 ## 0.7.2 - January 11, 2013
 
 ### Bug fix
 
-- [#76] Exception on filename which is not in UTF-8. (fixed by [@piotr-sokolowski][])
+- [#76][] Exception on filename which is not in UTF-8. ([@piotr-sokolowski][])
 
 ## 0.7.1 - January 6, 2013
 
 ### Bug fix
 
-- [#75] Default high precision off if the mtime call fails. (fixed by [@zanker][])
+- [#75][] Default high precision off if the mtime call fails. ([@zanker][])
 
 ## 0.7.0 - December 29, 2012
 
-### Bug fixes
+### Bug fix
 
-- [#73] Rescue Errno::EOPNOTSUPP on sha1_checksum generation. (fixed by [@thibaudgg][])
+- [#73][] Rescue Errno::EOPNOTSUPP on sha1_checksum generation. ([@thibaudgg][])
 
 ### New feature
 
-- Add support for *BSD with rb-kqueue. ([@mat813][])
+- [#72][] Add support for *BSD with rb-kqueue. ([@mat813][])
 
 ## 0.6.0 - November 21, 2012
 
 ### New feature
 
-- Add bang versions for filter and ignore listener methods. ([@tarsolya][])
+- [#68][] Add bang versions for `Listener#filter` and `Listener#ignore` methods. ([@tarsolya][])
 
 ## 0.5.3 - October 3, 2012
 
 ### Bug fixes
 
-- [#65] Fix ruby warning in adapter.rb. (fixed by [@vongruenigen][])
-- [#64] ENXIO raised when hashing UNIX domain socket file. (fixed by [@sunaku][])
+- [#65][] Fix ruby warning in adapter.rb. ([@vongruenigen][])
+- [#64][] ENXIO raised when hashing UNIX domain socket file. ([@sunaku][])
 
 ## 0.5.2 - Septemper 23, 2012
 
 ### Bug fix
 
-- [#62] Fix double change callback with polling adapter. (fixed by [@thibaudgg][])
+- [#62][] Fix double change callback with polling adapter. ([@thibaudgg][])
 
 ## 0.5.1 - Septemper 18, 2012
 
 ### Bug fix
 
-- [#61] Fix a synchronisation bug that caused constant fallback to polling. (fixed by [@Maher4Ever][])
+- [#61][] Fix a synchronisation bug that caused constant fallback to polling. ([@Maher4Ever][])
 
 ## 0.5.0 - Septemper 1, 2012
 
@@ -62,60 +62,60 @@
 
 ### Improvements
 
-- [#28] Enhance the speed of detecting changes on Windows by using the [WDM][] library. ([@Maher4Ever][])
+- [#28][] Enhance the speed of detecting changes on Windows by using the [WDM][] library. ([@Maher4Ever][])
 
 ## 0.4.7 - June 27, 2012
 
 ### Bug fixes
 
-- Increase latency to 0.25, to avoid useless polling fallback. (fixed by [@thibaudgg][])
-- Change watched inotify events, to avoid duplication callback. (fixed by [@thibaudgg][])
-- [#41](https://github.com/guard/listen/issues/41) Use lstat instead of stat when calculating mtime. (fixed by [@ebroder][])
+- Increase latency to 0.25, to avoid useless polling fallback. ([@thibaudgg][])
+- Change watched inotify events, to avoid duplication callback. ([@thibaudgg][])
+- [#41][] Use lstat instead of stat when calculating mtime. ([@ebroder][])
 
 ## 0.4.6 - June 20, 2012
 
 ### Bug fix
 
-- [#39](https://github.com/guard/listen/issues/39) Fix digest race condition. (fixed by [@dkubb][])
+- [#39][] Fix digest race condition. ([@dkubb][])
 
 ## 0.4.5 - June 13, 2012
 
 ### Bug fix
 
-- [#39](https://github.com/guard/listen/issues/39) Rescue Errno::ENOENT when path inserted doesn't exist. (reported by [@textgoeshere][], fixed by [@thibaudgg][] and [@rymai][])
+- [#39][] Rescue Errno::ENOENT when path inserted doesn't exist. (reported by [@textgoeshere][], fixed by [@thibaudgg][] and [@rymai][])
 
 ## 0.4.4 - June 8, 2012
 
 ### Bug fixes
 
-- ~~[#39](https://github.com/guard/listen/issues/39) Non-existing path insertion bug. (reported by [@textgoeshere][], fixed by [@thibaudgg][])~~
+- ~~[#39][] Non-existing path insertion bug. (reported by [@textgoeshere][], fixed by [@thibaudgg][])~~
 - Fix relative path for directories containing special characters. (reported by [@napcs][], fixed by [@netzpirat][])
 
 ## 0.4.3 - June 6, 2012
 
 ### Bug fixes
 
-- [#24](https://github.com/guard/listen/issues/24) Fail gracefully when the inotify limit is not enough for Listen to function. (reported by [@daemonza][], fixed by [@Maher4Ever][])
-- [#32](https://github.com/guard/listen/issues/32) Fix a crash when trying to calculate the checksum of unreadable files. (reported by [@nex3][], fixed by [@Maher4Ever][])
+- [#24][] Fail gracefully when the inotify limit is not enough for Listen to function. (reported by [@daemonza][], fixed by [@Maher4Ever][])
+- [#32][] Fix a crash when trying to calculate the checksum of unreadable files. (reported by [@nex3][], fixed by [@Maher4Ever][])
 
 ### Improvements
 
-- Add `#relative_paths` method to listeners. ([@Maher4Ever][])
-- Add `#started?` query-method to adapters. ([@Maher4Ever][])
+- Add `Listener#relative_paths`. ([@Maher4Ever][])
+- Add `Adapter#started?`. ([@Maher4Ever][])
 - Dynamically detect the mtime precision used on a system. ([@Maher4Ever][] with help from [@nex3][])
 
 ## 0.4.2 - May 1, 2012
 
 ### Bug fixes
 
-- [#21](https://github.com/guard/listen/issues/21) Issues when listening to changes in relative paths. (reported by [@akerbos][], fixed by [@Maher4Ever][])
-- [#27](https://github.com/guard/listen/issues/27) Wrong reports for files modifications. (reported by [@cobychapple][], fixed by [@Maher4Ever][])
+- [#21][] Issues when listening to changes in relative paths. (reported by [@akerbos][], fixed by [@Maher4Ever][])
+- [#27][] Wrong reports for files modifications. (reported by [@cobychapple][], fixed by [@Maher4Ever][])
 - Fix segmentation fault when profiling on Windows. ([@Maher4Ever][])
 - Fix redundant watchers on Windows. ([@Maher4Ever][])
 
 ### Improvements
 
-- [#17](https://github.com/guard/listen/issues/17) Use regexp-patterns with the `ignore` method instead of supplying paths. (reported by [@fny][], added by [@Maher4Ever][])
+- [#17][] Use regexp-patterns with the `ignore` method instead of supplying paths. (reported by [@fny][], added by [@Maher4Ever][])
 - Speed improvement when listening to changes in directories with ignored paths. ([@Maher4Ever][])
 - Added `.rbx` and `.svn` to ignored directories. ([@Maher4Ever][])
 
@@ -123,13 +123,13 @@
 
 ### Bug fix
 
-- [#18](https://github.com/guard/listen/issues/18) Listener crashes when removing directories with nested paths. (reported by [@daemonza][], fixed by [@Maher4Ever][])
+- [#18][] Listener crashes when removing directories with nested paths. (reported by [@daemonza][], fixed by [@Maher4Ever][])
 
 ## 0.4.0 - April 9, 2012
 
 ### New features
 
-- Add `wait_for_callback` method to all adapters. ([@Maher4Ever][])
+- Add `Adapter#wait_for_callback`. ([@Maher4Ever][])
 - Add `Listen::MultiListener` class to listen to multiple directories at once. ([@Maher4Ever][])
 - Allow passing multiple directories to the `Listen.to` method. ([@Maher4Ever][])
 - Add `blocking` option to `Listen#start` which can be used to disable blocking the current thread upon starting. ([@Maher4Ever][])
@@ -163,7 +163,7 @@
 
 ### Bug fix
 
-- [#9](https://github.com/guard/listen/issues/9) Ignore doesn't seem to work. (reported by [@markiz][], fixed by [@thibaudgg][])
+- [#9][] Ignore doesn't seem to work. (reported by [@markiz][], fixed by [@thibaudgg][])
 
 ## 0.3.0 - February 21, 2012
 
@@ -181,7 +181,7 @@
 - Add rb-inotify support. ([@thibaudgg][] with [@Maher4Ever][] help)
 - Add rb-fsevent support. ([@thibaudgg][])
 - Add non-recursive diff with multiple directories support. ([@thibaudgg][])
-- Ignore .DS_Store by default. ([@thibaudgg][])
+- Ignore `.DS_Store` files by default. ([@thibaudgg][])
 
 ## 0.1.0 - January 28, 2012
 
@@ -202,6 +202,8 @@
 [#62]: https://github.com/guard/listen/issues/62
 [#64]: https://github.com/guard/listen/issues/64
 [#65]: https://github.com/guard/listen/issues/65
+[#68]: https://github.com/guard/listen/issues/68
+[#72]: https://github.com/guard/listen/issues/72
 [#73]: https://github.com/guard/listen/issues/73
 [#75]: https://github.com/guard/listen/issues/75
 [#76]: https://github.com/guard/listen/issues/76

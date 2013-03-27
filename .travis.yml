@@ -1,8 +1,10 @@
 language: ruby
+bundler_args: --without development
 rvm:
   - 1.8.7
   - 1.9.2
   - 1.9.3
+  - 2.0.0
   - ruby-head
   - ree
   - jruby-18mode
@@ -10,7 +12,6 @@ rvm:
   - jruby-head
   - rbx-18mode
   - rbx-19mode
-bundler_args: --without=development
 matrix:
   allow_failures:
     - rvm: rbx-18mode
@@ -20,6 +21,6 @@ matrix:
 notifications:
   recipients:
     - thibaud@thibaud.me
-    - rymai@rymai.me
+    - remy@rymai.me
     - michi@netzpiraten.ch
     - maher@sallam.me
