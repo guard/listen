@@ -83,7 +83,7 @@ module Listen
     #
     # @raise DependencyManager::Error if any dependency can't be loaded.
     #
-    def load_depenencies
+    def load_dependencies
       @_dependencies.each do |dependency|
         begin
           next if DependencyManager.already_loaded?(dependency)

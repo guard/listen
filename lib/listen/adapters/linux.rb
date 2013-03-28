@@ -14,7 +14,7 @@ module Listen
       # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
       # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
       #
-      EVENTS = %w[recursive attrib create delete move close_write]
+      EVENTS = [:recursive, :attrib, :create, :delete, :move, :close_write]
 
       # The message to show when the limit of inotify watchers is not enough
       #
@@ -70,7 +70,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /linux/i
+        return false if RbConfig::CONFIG['target_os'] !~ /linux/i
         super
       end
 
@@ -91,7 +91,7 @@ module Listen
             # on the directories themselves too.
             #
             # @see http://linux.die.net/man/7/inotify
-            event.flags.include?(:isdir) and event.flags & [:close, :modify] != []
+            event.flags.include?(:isdir) and (event.flags & [:close, :modify]).any?
           )
             # Skip all of these!
             next
@@ -104,7 +104,7 @@ module Listen
 
         INotify::Notifier.new.tap do |worker|
           @directories.each do |directory|
-            worker.watch(directory, *EVENTS.map(&:to_sym), &callback)
+            worker.watch(directory, *EVENTS, &callback)
           end
         end
       end

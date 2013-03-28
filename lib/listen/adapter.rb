@@ -7,6 +7,15 @@ module Listen
   class Adapter
     attr_accessor :directories, :latency, :paused
 
+    # The list of existing optimized adapters.
+    OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]
+
+    # The list of existing fallback adapters.
+    FALLBACK_ADAPTERS = %w[Polling]
+
+    # The list of all existing adapters.
+    ADAPTERS = OPTIMIZED_ADAPTERS + FALLBACK_ADAPTERS
+
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.25
 
@@ -17,7 +26,7 @@ module Listen
 
     # The default warning message when falling back to polling adapter.
     POLLING_FALLBACK_MESSAGE = <<-EOS.gsub(/^\s*/, '')
-      Listen will be polling changes. Learn more at https://github.com/guard/listen#polling-fallback.
+      Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback.
     EOS
 
     # Selects the appropriate adapter implementation for the
@@ -41,23 +50,17 @@ module Listen
       warning = ''
 
       begin
-        if Adapters::Darwin.usable_and_works?(directories, options)
-          return Adapters::Darwin.new(directories, options, &callback)
-        elsif Adapters::Linux.usable_and_works?(directories, options)
-          return Adapters::Linux.new(directories, options, &callback)
-        elsif Adapters::BSD.usable_and_works?(directories, options)
-          return Adapters::BSD.new(directories, options, &callback)
-        elsif Adapters::Windows.usable_and_works?(directories, options)
-          return Adapters::Windows.new(directories, options, &callback)
+        OPTIMIZED_ADAPTERS.each do |adapter|
+          namespaced_adapter = Adapters.const_get(adapter)
+          if namespaced_adapter.send(:usable_and_works?, directories, options)
+            return namespaced_adapter.new(directories, options, &callback)
+          end
         end
       rescue DependencyManager::Error => e
         warning += e.message + "\n" + MISSING_DEPENDENCY_MESSAGE
       end
 
-      unless options[:polling_fallback_message] == false
-        warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
-        Kernel.warn "[Listen warning]:\n" + warning.gsub(/^(.*)/, '  \1')
-      end
+      self.warn_polling_fallback(warning, options)
 
       Adapters::Polling.new(directories, options, &callback)
     end
@@ -76,14 +79,14 @@ module Listen
     # @return [Listen::Adapter] the adapter
     #
     def initialize(directories, options = {}, &callback)
-      @directories  = Array(directories)
-      @callback     = callback
-      @paused       = false
-      @mutex        = Mutex.new
-      @changed_dirs = Set.new
-      @turnstile    = Turnstile.new
-      @latency    ||= DEFAULT_LATENCY
-      @latency      = options[:latency] if options[:latency]
+      @directories    = Array(directories)
+      @callback       = callback
+      @stopped        = true
+      @paused         = false
+      @mutex          = Mutex.new
+      @changed_dirs   = Set.new
+      @turnstile      = Turnstile.new
+      @latency      ||= options[:latency] || DEFAULT_LATENCY
       @report_changes = options[:report_changes].nil? ? true : options[:report_changes]
     end
 
@@ -107,7 +110,8 @@ module Listen
     # @return [Boolean] whether the adapter is started or not
     #
     def started?
-      @stop.nil? ? false : !@stop
+      !@stopped
+    end
     end
 
     # Blocks the main thread until the poll thread
@@ -120,14 +124,14 @@ module Listen
     # Blocks the main thread until N changes are
     # detected.
     #
-    def wait_for_changes(goal = 0)
+    def wait_for_changes(threshold = 0)
       changes = 0
 
       loop do
         @mutex.synchronize { changes = @changed_dirs.size }
 
-        return if @paused || @stop
-        return if changes >= goal
+        return if @paused || @stopped
+        return if changes >= threshold
 
         sleep(@latency)
       end
@@ -138,7 +142,7 @@ module Listen
     # @return [Boolean] whether the adapter is usable or not
     #
     def self.usable?
-      load_depenencies
+      load_dependencies
       dependencies_loaded?
     end
 
@@ -166,8 +170,7 @@ module Listen
     # @return [Boolean] whether the adapter works or not
     #
     def self.works?(directory, options = {})
-      work = false
-      test_file = "#{directory}/.listen_test"
+      work, test_file = false, "#{directory}/.listen_test"
       callback = lambda { |*| work = true }
       adapter  = self.new(directory, options, &callback)
       adapter.start(false)
@@ -180,7 +183,7 @@ module Listen
       work
     ensure
       Thread.kill(t) if t
-      FileUtils.rm(test_file) if File.exists?(test_file)
+      FileUtils.rm(test_file, :force => true)
       adapter.stop if adapter && adapter.started?
     end
 
@@ -200,6 +203,20 @@ module Listen
     end
 
     private
+
+    # Warn of polling fallback unless the :polling_fallback_message
+    # has been set to false.
+    #
+    # @param [String] warning an existing warning message
+    # @param [Hash] options the adapter options
+    # @option options [Boolean] polling_fallback_message to change polling fallback message or remove it
+    #
+    def self.warn_polling_fallback(warning, options)
+      return if options[:polling_fallback_message] == false
+
+      warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
+      Kernel.warn "[Listen warning]:\n" + warning.gsub(/^(.*)/, '  \1')
+    end
 
     # Polls changed directories and reports them back
     # when there are changes.

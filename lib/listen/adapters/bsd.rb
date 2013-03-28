@@ -14,7 +14,7 @@ module Listen
       # @see http://www.freebsd.org/cgi/man.cgi?query=kqueue
       # @see https://github.com/nex3/rb-kqueue/blob/master/lib/rb-kqueue/queue.rb
       #
-      EVENTS = [ :delete, :write, :extend, :attrib, :link, :rename, :revoke ]
+      EVENTS = [:delete, :write, :extend, :attrib, :link, :rename, :revoke]
 
       # Initializes the Adapter.
       #
@@ -41,7 +41,7 @@ module Listen
             sleep(@latency)
           end
         end
-        @poll_thread   = Thread.new { poll_changed_dirs } if @report_changes
+        @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
 
         @kqueue_thread.join if blocking
       end
@@ -64,7 +64,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /freebsd/i
+        return false if RbConfig::CONFIG['target_os'] !~ /freebsd/i
         super
       end
 
@@ -92,7 +92,7 @@ module Listen
             if File.directory?(path) && event.flags.include?(:write)
               queue = event.watcher.queue
               Find.find(path) do |file|
-                unless queue.watchers.detect {|k,v| v.path == file.to_s}
+                unless queue.watchers.detect { |k,v| v.path == file.to_s }
                   queue.watch_file(file, *EVENTS, &callback)
                 end
               end

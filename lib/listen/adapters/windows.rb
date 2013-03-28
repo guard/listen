@@ -59,7 +59,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+        return false if RbConfig::CONFIG['target_os'] !~ /mswin|mingw/i
         super
       end
 

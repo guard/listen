@@ -8,11 +8,9 @@ module Listen
   autoload :Adapter,           'listen/adapter'
 
   module Adapters
-    autoload :Darwin,  'listen/adapters/darwin'
-    autoload :Linux,   'listen/adapters/linux'
-    autoload :BSD,     'listen/adapters/bsd'
-    autoload :Windows, 'listen/adapters/windows'
-    autoload :Polling, 'listen/adapters/polling'
+    Adapter::ADAPTERS.each do |adapter|
+      autoload adapter.to_sym, "listen/adapters/#{adapter.downcase}"
+    end
   end
 
   # Listens to file system modifications on a either single directory or multiple directories.

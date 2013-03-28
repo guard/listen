@@ -58,10 +58,8 @@ module Listen
     def initialize(directory)
       raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(directory)
 
-      @directory          = directory
-      @ignoring_patterns  = Set.new
-      @filtering_patterns = Set.new
-      @sha1_checksums     = Hash.new
+      @directory, @sha1_checksums = directory, Hash.new
+      @ignoring_patterns, @filtering_patterns = Set.new, Set.new
 
       @ignoring_patterns.merge(DirectoryRecord.generate_default_ignoring_patterns)
     end

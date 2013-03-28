@@ -60,7 +60,7 @@ module Listen
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false unless RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
+        return false if RbConfig::CONFIG['target_os'] !~ /darwin(1.+)?$/i
         super
       end
 
