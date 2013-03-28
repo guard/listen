@@ -60,7 +60,7 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def pause
-      @adapter.paused = true
+      @adapter.pause
       self
     end
 
@@ -70,7 +70,7 @@ module Listen
     #
     def unpause
       @directory_record.build
-      @adapter.paused = false
+      @adapter.unpause
       self
     end
 
@@ -79,7 +79,7 @@ module Listen
     # @return [Boolean] adapter paused status
     #
     def paused?
-      !!@adapter && @adapter.paused == true
+      !!@adapter && @adapter.paused?
     end
 
     # Adds ignoring patterns to the listener.

@@ -31,7 +31,7 @@ shared_examples_for 'a listener to changes on a file-system' do
 
     describe '#pause' do
       it 'sets adapter.paused to true' do
-        adapter.should_receive(:paused=).with(true)
+        adapter.should_receive(:pause)
         subject.pause
       end
 
@@ -42,7 +42,7 @@ shared_examples_for 'a listener to changes on a file-system' do
 
     describe '#unpause' do
       it 'sets adapter.paused to false' do
-        adapter.should_receive(:paused=).with(false)
+        adapter.should_receive(:unpause)
         subject.unpause
       end
 
@@ -58,12 +58,12 @@ shared_examples_for 'a listener to changes on a file-system' do
       end
 
       it 'returns true when adapter is paused' do
-        adapter.should_receive(:paused) { true }
+        adapter.should_receive(:paused?) { true }
         subject.should be_paused
       end
 
       it 'returns false when adapter is not paused' do
-        adapter.should_receive(:paused) { false }
+        adapter.should_receive(:paused?) { false }
         subject.should_not be_paused
       end
     end

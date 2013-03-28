@@ -105,6 +105,18 @@ module Listen
       @turnstile.signal # ensure no thread is blocked
     end
 
+    # Pauses the adapter.
+    #
+    def pause
+      @paused = true
+    end
+
+    # Unpauses the adapter.
+    #
+    def unpause
+      @paused = false
+    end
+
     # Returns whether the adapter is started or not.
     #
     # @return [Boolean] whether the adapter is started or not
@@ -112,6 +124,13 @@ module Listen
     def started?
       !@stopped
     end
+
+    # Returns whether the adapter is paused or not.
+    #
+    # @return [Boolean] whether the adapter is paused or not
+    #
+    def paused?
+      @paused
     end
 
     # Blocks the main thread until the poll thread
