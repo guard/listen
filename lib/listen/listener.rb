@@ -88,6 +88,8 @@ module Listen
     #
     # @return [Listen::Listener] the listener
     #
+    # @see Listen::DirectoryRecord#ignore
+    #
     def ignore(*regexps)
       @directory_record.ignore(*regexps)
       self
@@ -98,6 +100,8 @@ module Listen
     # @param (see Listen::DirectoryRecord#ignore!)
     #
     # @return [Listen::Listener] the listener
+    #
+    # @see Listen::DirectoryRecord#ignore!
     #
     def ignore!(*regexps)
       @directory_record.ignore!(*regexps)
@@ -110,16 +114,20 @@ module Listen
     #
     # @return [Listen::Listener] the listener
     #
+    # @see Listen::DirectoryRecord#filter
+    #
     def filter(*regexps)
       @directory_record.filter(*regexps)
       self
     end
 
-    # Replacing filtering patterns in the listener.
+    # Replaces filtering patterns in the listener.
     #
     # @param (see Listen::DirectoryRecord#filter!)
     #
     # @return [Listen::Listener] the listener
+    #
+    # @see Listen::DirectoryRecord#filter!
     #
     def filter!(*regexps)
       @directory_record.filter!(*regexps)
@@ -171,7 +179,7 @@ module Listen
       self
     end
 
-    # Defines a custom polling fallback message of disable it.
+    # Defines a custom polling fallback message or disable it.
     #
     # @example Disabling the polling fallback message
     #   polling_fallback_message false
@@ -204,6 +212,8 @@ module Listen
     #
     # @param (see Listen::DirectoryRecord#fetch_changes)
     #
+    # @see Listen::DirectoryRecord#fetch_changes
+    #
     def on_change(directories, options = {})
       changes = @directory_record.fetch_changes(directories, options.merge(
         :relative_paths => @use_relative_paths
@@ -221,5 +231,6 @@ module Listen
       callback = lambda { |changed_dirs, options| self.on_change(changed_dirs, options) }
       Adapter.select_and_initialize(@directory, @adapter_options, &callback)
     end
+
   end
 end

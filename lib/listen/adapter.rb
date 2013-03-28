@@ -29,7 +29,7 @@ module Listen
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
     # @option options [Float] latency the delay between checking for changes in seconds
     #
-    # @yield [changed_dirs, options] callback Callback called when a change happens
+    # @yield [changed_dirs, options] callback the callback called when a change happens
     # @yieldparam [Array<String>] changed_dirs the changed directories
     # @yieldparam [Hash] options callback options (like :recursive => true)
     #
@@ -102,7 +102,7 @@ module Listen
       @turnstile.signal # ensure no thread is blocked
     end
 
-    # Returns whether the adapter is statred or not
+    # Returns whether the adapter is started or not.
     #
     # @return [Boolean] whether the adapter is started or not
     #
@@ -135,7 +135,7 @@ module Listen
 
     # Checks if the adapter is usable on the current OS.
     #
-    # @return [Boolean] whether usable or not
+    # @return [Boolean] whether the adapter is usable or not
     #
     def self.usable?
       load_depenencies
@@ -148,7 +148,7 @@ module Listen
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
     #
-    # @return [Boolean] whether usable and work or not
+    # @return [Boolean] whether the adapter is usable and work or not
     #
     def self.usable_and_works?(directories, options = {})
       usable? && Array(directories).all? { |d| works?(d, options) }
@@ -157,7 +157,7 @@ module Listen
     # Runs a tests to determine if the adapter can actually pick up
     # changes in a given directory and returns the result.
     #
-    # @note This test takes some time depending the adapter latency.
+    # @note This test takes some time depending on the adapter latency.
     #
     # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the adapter options

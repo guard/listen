@@ -32,12 +32,12 @@ module Listen
     # A list of all loaded dependencies in the dependency manager.
     @_loaded_dependencies = Set.new
 
-    # class methods
+    # Class methods
     class << self
 
       # Initializes the extended class.
       #
-      # @param [Class] the class for which some dependencies must be managed
+      # @param [Class] base the class for which some dependencies must be managed
       #
       def extended(base)
         base.class_eval do
@@ -54,10 +54,10 @@ module Listen
         @_loaded_dependencies << dependency
       end
 
-      # Returns whether the dependency is alread loaded or not.
+      # Returns whether the dependency is already loaded or not.
       #
       # @param [Dependency] dependency
-      # @return [Boolean]
+      # @return [Boolean] whether the dependency is already loaded or not
       #
       def already_loaded?(dependency)
         @_loaded_dependencies.include?(dependency)
@@ -81,7 +81,7 @@ module Listen
 
     # Loads the registered dependencies.
     #
-    # @raise DependencyManager::Error if the dependency can't be loaded.
+    # @raise DependencyManager::Error if any dependency can't be loaded.
     #
     def load_depenencies
       @_dependencies.each do |dependency|
@@ -105,7 +105,7 @@ module Listen
       end
     end
 
-    # Returns whether all the dependencies has been loaded or not.
+    # Returns whether all the dependencies have been loaded or not.
     #
     # @return [Boolean]
     #

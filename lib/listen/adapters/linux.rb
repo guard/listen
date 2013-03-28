@@ -25,7 +25,9 @@ module Listen
         for information on how to solve this issue.
       EOS
 
-      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter.
+      #
+      # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
@@ -63,7 +65,7 @@ module Listen
         @poll_thread.join if @poll_thread
       end
 
-      # Checks if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on Linux.
       #
       # @return [Boolean] whether usable or not
       #

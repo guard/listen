@@ -11,8 +11,10 @@ module Listen
   class DirectoryRecord
     attr_reader :directory, :paths, :sha1_checksums
 
+    # The default list of directories that get ignored by the listener.
     DEFAULT_IGNORED_DIRECTORIES = %w[.rbx .bundle .git .svn log tmp vendor]
 
+    # The default list of files that get ignored by the listener.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
     # Defines the used precision based on the type of mtime returned by the
@@ -64,7 +66,8 @@ module Listen
       @ignoring_patterns.merge(DirectoryRecord.generate_default_ignoring_patterns)
     end
 
-    # Returns the ignoring patterns in the record
+    # Returns the ignoring patterns in the record to know
+    # which paths should be ignored.
     #
     # @return [Array<Regexp>] the ignoring patterns
     #
@@ -72,7 +75,7 @@ module Listen
       @ignoring_patterns.to_a
     end
 
-    # Returns the filtering patterns used in the record to know
+    # Returns the filtering patterns in the record to know
     # which paths should be stored.
     #
     # @return [Array<Regexp>] the filtering patterns
@@ -86,7 +89,7 @@ module Listen
     # @example Ignore some paths
     #   ignore %r{^ignored/path/}, /man/
     #
-    # @param [Regexp] regexp a pattern for ignoring paths
+    # @param [Regexp] regexps a list of patterns for ignoring paths
     #
     def ignore(*regexps)
       @ignoring_patterns.merge(regexps)
@@ -97,29 +100,29 @@ module Listen
     # @example Ignore only these paths
     #   ignore! %r{^ignored/path/}, /man/
     #
-    # @param [Regexp] regexp a pattern for ignoring paths
+    # @param [Regexp] regexps a list of patterns for ignoring paths
     #
     def ignore!(*regexps)
       @ignoring_patterns.replace(regexps)
     end
 
-    # Adds filtering patterns to the listener.
+    # Adds filtering patterns to the record.
     #
     # @example Filter some files
-    #   ignore /\.txt$/, /.*\.zip/
+    #   filter /\.txt$/, /.*\.zip/
     #
-    # @param [Regexp] regexp a pattern for filtering paths
+    # @param [Regexp] regexps a list of patterns for filtering files
     #
     def filter(*regexps)
       @filtering_patterns.merge(regexps)
     end
 
-    # Replaces filtering patterns in the listener.
+    # Replaces filtering patterns in the record.
     #
     # @example Filter only these files
-    #   ignore /\.txt$/, /.*\.zip/
+    #   filter! /\.txt$/, /.*\.zip/
     #
-    # @param [Regexp] regexp a pattern for filtering paths
+    # @param [Regexp] regexps a list of patterns for filtering files
     #
     def filter!(*regexps)
       @filtering_patterns.replace(regexps)
@@ -127,7 +130,7 @@ module Listen
 
     # Returns whether a path should be ignored or not.
     #
-    # @param [String] path the path to test.
+    # @param [String] path the path to test
     #
     # @return [Boolean]
     #
@@ -138,7 +141,7 @@ module Listen
 
     # Returns whether a path should be filtered or not.
     #
-    # @param [String] path the path to test.
+    # @param [String] path the path to test
     #
     # @return [Boolean]
     #
@@ -159,9 +162,9 @@ module Listen
     end
 
     # Detects changes in the passed directories, updates
-    # the record with the new changes and returns the changes
+    # the record with the new changes and returns the changes.
     #
-    # @param [Array] directories the list of directories scan for changes
+    # @param [Array] directories the list of directories to scan for changes
     # @param [Hash] options
     # @option options [Boolean] recursive scan all sub-directories recursively
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
@@ -174,6 +177,7 @@ module Listen
 
       directories.each do |directory|
         next unless directory[@directory] # Path is or inside directory
+
         detect_modifications_and_removals(directory, options)
         detect_additions(directory, options)
       end
@@ -189,6 +193,7 @@ module Listen
     #
     def relative_to_base(path)
       return nil unless path[@directory]
+
       path = path.force_encoding("BINARY") if path.respond_to?(:force_encoding)
       path.sub(%r{^#{Regexp.quote(@directory)}#{File::SEPARATOR}?}, '')
     end
@@ -209,7 +214,6 @@ module Listen
     def detect_modifications_and_removals(directory, options = {})
       @paths[directory].each do |basename, meta_data|
         path = File.join(directory, basename)
-
         case meta_data.type
         when 'Dir'
           if File.directory?(path)
@@ -314,7 +318,7 @@ module Listen
     end
 
     # Traverses the base directory looking for paths that should
-    # be stored; thus paths that are filters or not ignored.
+    # be stored; thus paths that are filtered or not ignored.
     #
     # @yield [path] an important path
     #

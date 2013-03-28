@@ -11,7 +11,9 @@ module Listen
 
       LAST_SEPARATOR_REGEX = /\/$/
 
-      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter.
+      #
+      # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
@@ -30,12 +32,13 @@ module Listen
 
         @worker_thread = Thread.new { @worker.run }
 
-        # The FSEvent worker needs sometime to startup. Turnstiles can't
+        # The FSEvent worker needs some time to start up. Turnstiles can't
         # be used to wait for it as it runs in a loop.
         # TODO: Find a better way to block until the worker starts.
         sleep 0.1
 
         @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
+
         @worker_thread.join if blocking
       end
 
@@ -52,7 +55,7 @@ module Listen
         @poll_thread.join if @poll_thread
       end
 
-      # Checks if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on Mac OSX.
       #
       # @return [Boolean] whether usable or not
       #
@@ -72,6 +75,7 @@ module Listen
         FSEvent.new.tap do |worker|
           worker.watch(@directories.dup, :latency => @latency) do |changes|
             next if @paused
+
             @mutex.synchronize do
               changes.each { |path| @changed_dirs << path.sub(LAST_SEPARATOR_REGEX, '') }
             end

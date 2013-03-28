@@ -15,10 +15,9 @@ module Listen
     autoload :Polling, 'listen/adapters/polling'
   end
 
-  # Listens to filesystem modifications on a either single directory or multiple directories.
+  # Listens to file system modifications on a either single directory or multiple directories.
   #
   # @param (see Listen::Listener#new)
-  # @param (see Listen::MultiListener#new)
   #
   # @yield [modified, added, removed] the changed files
   # @yieldparam [Array<String>] modified the list of modified files

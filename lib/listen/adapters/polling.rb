@@ -7,12 +7,14 @@ module Listen
     # Polling Adapter that works cross-platform and
     # has no dependencies. This is the adapter that
     # uses the most CPU processing power and has higher
-    # file IO that the other implementations.
+    # file IO than the other implementations.
     #
     class Polling < Adapter
       extend DependencyManager
 
-      # Initialize the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initialize the Adapter.
+      #
+      # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         @latency ||= DEFAULT_POLLING_LATENCY
@@ -30,6 +32,7 @@ module Listen
         end
 
         @poll_thread = Thread.new { poll }
+
         @poll_thread.join if blocking
       end
 

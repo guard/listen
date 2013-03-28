@@ -11,7 +11,9 @@ module Listen
       # Declare the adapter's dependencies
       dependency 'wdm', '~> 0.1'
 
-      # Initializes the Adapter. See {Listen::Adapter#initialize} for more info.
+      # Initializes the Adapter.
+      #
+      # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
@@ -52,7 +54,7 @@ module Listen
         @poll_thread.join if @poll_thread
       end
 
-      # Checks if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on Windows.
       #
       # @return [Boolean] whether usable or not
       #
@@ -71,6 +73,7 @@ module Listen
       def init_worker
         callback = Proc.new do |change|
           next if @paused
+
           @mutex.synchronize do
             @changed_dirs << File.dirname(change.path)
           end

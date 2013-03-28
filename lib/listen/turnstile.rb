@@ -1,4 +1,5 @@
 module Listen
+
   # Allows two threads to wait on eachother.
   #
   # @note Only two threads can be used with this Turnstile
@@ -8,7 +9,7 @@ module Listen
     # Initialize the turnstile.
     #
     def initialize
-      # Until ruby offers semahpores, only queues can be used
+      # Until Ruby offers semahpores, only queues can be used
       # to implement a turnstile.
       @q = Queue.new
     end
@@ -19,10 +20,12 @@ module Listen
       @q.pop if @q.num_waiting == 0
     end
 
-    # Unblocks the waiting thread if there is one.
+    # Unblocks the waiting thread if any.
     #
     def signal
       @q.push :dummy if @q.num_waiting == 1
     end
+
   end
+
 end

@@ -16,8 +16,9 @@ module Listen
       #
       EVENTS = [ :delete, :write, :extend, :attrib, :link, :rename, :revoke ]
 
-      # Initializes the Adapter. See {Listen::Adapter#initialize} for
-      # more info.
+      # Initializes the Adapter.
+      #
+      # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
@@ -58,7 +59,7 @@ module Listen
         @poll_thread.join if @poll_thread
       end
 
-      # Checks if the adapter is usable on the current OS.
+      # Checks if the adapter is usable on BSD.
       #
       # @return [Boolean] whether usable or not
       #
@@ -86,9 +87,9 @@ module Listen
 
             # If it is a directory, and it has a write flag, it means a
             # file has been added so find out which and deal with it.
-            # No need to check for removed file, kqueue will forget them
-            # when the vfs does..
-            if File.directory?(path) && !(event.flags & [:write]).empty?
+            # No need to check for removed files, kqueue will forget them
+            # when the vfs does.
+            if File.directory?(path) && event.flags.include?(:write)
               queue = event.watcher.queue
               Find.find(path) do |file|
                 unless queue.watchers.detect {|k,v| v.path == file.to_s}
@@ -107,6 +108,8 @@ module Listen
           end
         end
       end
+
     end
+
   end
 end
