@@ -16,7 +16,7 @@ module Listen
 
     GEM_INSTALL_COMMAND = <<-EOS.gsub(/^ {6}/, '')
       Please run the following to satisfy the dependency:
-        gem install --version '%s' %s
+        gem install %s --version '%s'
     EOS
 
     BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
@@ -85,24 +85,9 @@ module Listen
     #
     def load_dependencies
       @_dependencies.each do |dependency|
-        begin
-          next if DependencyManager.already_loaded?(dependency)
-          gem(dependency.name, dependency.version)
-          require(dependency.name)
-          DependencyManager.add_loaded(dependency)
-          @_dependencies.delete(dependency)
-        rescue Gem::LoadError
-          args = [dependency.name, dependency.version]
-          command = if running_under_bundler?
-            BUNDLER_DECLARE_GEM % args
-          else
-            GEM_INSTALL_COMMAND % args.reverse
-          end
-          message = GEM_LOAD_MESSAGE % args
-
-          raise Error.new(message + command)
-        end
+        load(dependency)
       end
+      true
     end
 
     # Returns whether all the dependencies have been loaded or not.
@@ -122,5 +107,42 @@ module Listen
     def running_under_bundler?
       !!(File.exists?('Gemfile') && ENV['BUNDLE_GEMFILE'])
     end
+
+    # Loads the given dependency.
+    #
+    # @raise DependencyManager::Error if the dependency can't be loaded.
+    #
+    def load(dependency)
+      begin
+        return if DependencyManager.already_loaded?(dependency)
+
+        gem dependency.name, dependency.version
+        require dependency.name
+
+        add_loaded(dependency)
+      rescue Gem::LoadError
+        raise_loading_error(dependency)
+      end
+    end
+
+    def add_loaded(dependency)
+      DependencyManager.add_loaded(@_dependencies.delete(dependency))
+    end
+
+    # Raises a DependencyManager::Error for the given dependency.
+    #
+    # @raise DependencyManager::Error
+    #
+    def raise_loading_error(dependency)
+      install_command = if running_under_bundler?
+        BUNDLER_DECLARE_GEM
+      else
+        GEM_INSTALL_COMMAND
+      end
+      args = [dependency.name, dependency.version]*2
+
+      raise Error.new("#{GEM_LOAD_MESSAGE}#{install_command}" % args)
+    end
+
   end
 end

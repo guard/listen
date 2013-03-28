@@ -9,7 +9,8 @@ describe Listen::DependencyManager do
 
   describe '.add_loaded' do
     it 'adds a dependency to the list of loaded dependencies' do
-      described_class.add_loaded dependency
+      subject.dependency(dependency.name, dependency.version)
+      described_class.add_loaded(dependency)
       described_class.already_loaded?(dependency).should be_true
     end
   end
@@ -36,19 +37,19 @@ describe Listen::DependencyManager do
 
   describe '#dependency' do
     it 'registers a new dependency for the managed class' do
-      subject.dependency 'listen', '~> 0.0.1'
+      subject.dependency(dependency.name, dependency.version)
       subject.dependencies_loaded?.should be_false
     end
   end
 
-  describe '#load_depenencies' do
-    before { subject.dependency 'listen', '~> 0.0.1' }
+  describe '#load_dependencies' do
+    before { subject.dependency(dependency.name, dependency.version) }
 
     context 'when dependencies can be loaded' do
       before { subject.stub(:gem, :require) }
 
       it 'loads all the registerd dependencies' do
-        subject.load_depenencies
+        subject.load_dependencies
         subject.dependencies_loaded?.should be_true
       end
     end
@@ -56,7 +57,7 @@ describe Listen::DependencyManager do
     context 'when dependencies can not be loaded' do
       it 'raises an error' do
         expect {
-          subject.load_depenencies
+          subject.load_dependencies
         }.to raise_error(described_class::Error)
       end
 
@@ -65,9 +66,9 @@ describe Listen::DependencyManager do
 
         it 'includes the Gemfile declaration to satisfy the dependency' do
           begin
-            subject.load_depenencies
+            subject.load_dependencies
           rescue described_class::Error => e
-            e.message.should include("gem 'listen', '~> 0.0.1'")
+            e.message.should include("gem '#{dependency.name}', '#{dependency.version}'")
           end
         end
       end
@@ -77,9 +78,9 @@ describe Listen::DependencyManager do
 
         it 'includes the command to install the dependency' do
           begin
-            subject.load_depenencies
+            subject.load_dependencies
           rescue described_class::Error => e
-            e.message.should include("gem install --version '~> 0.0.1' listen")
+            e.message.should include("gem install #{dependency.name} --version '#{dependency.version}'")
           end
         end
       end
@@ -88,15 +89,15 @@ describe Listen::DependencyManager do
 
   describe '#dependencies_loaded?' do
     it 'return false when dependencies are not loaded' do
-      subject.dependency 'listen', '~> 0.0.1'
+      subject.dependency(dependency.name, dependency.version)
       subject.dependencies_loaded?.should be_false
     end
 
     it 'return true when dependencies are loaded' do
       subject.stub(:gem, :require)
 
-      subject.dependency 'listen', '~> 0.0.1'
-      subject.load_depenencies
+      subject.dependency(dependency.name, dependency.version)
+      subject.load_dependencies
       subject.dependencies_loaded?.should be_true
     end
 
