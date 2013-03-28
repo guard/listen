@@ -31,12 +31,12 @@ module Listen
       #
       def start(blocking = true)
         @mutex.synchronize do
-          return if @stop == false
+          return if @stopped == false
           super
         end
 
         @kqueue_thread = Thread.new do
-          until @stop
+          until @stopped
             @kqueue.poll
             sleep(@latency)
           end
@@ -50,7 +50,7 @@ module Listen
       #
       def stop
         @mutex.synchronize do
-          return if @stop == true
+          return if @stopped == true
           super
         end
 

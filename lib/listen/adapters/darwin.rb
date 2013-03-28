@@ -26,7 +26,7 @@ module Listen
       #
       def start(blocking = true)
         @mutex.synchronize do
-          return if @stop == false
+          return if @stopped == false
           super
         end
 
@@ -46,7 +46,7 @@ module Listen
       #
       def stop
         @mutex.synchronize do
-          return if @stop == true
+          return if @stopped == true
           super
         end
 

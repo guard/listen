@@ -95,13 +95,13 @@ module Listen
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
     def start(blocking = true)
-      @stop = false
+      @stopped = false
     end
 
     # Stops the adapter.
     #
     def stop
-      @stop = true
+      @stopped = true
       @turnstile.signal # ensure no thread is blocked
     end
 
@@ -222,7 +222,7 @@ module Listen
     # when there are changes.
     #
     def poll_changed_dirs
-      until @stop
+      until @stopped
         sleep(@latency)
         report_changes
       end

@@ -27,7 +27,7 @@ module Listen
       #
       def start(blocking = true)
         @mutex.synchronize do
-          return if @stop == false
+          return if @stopped == false
           super
         end
 
@@ -40,7 +40,7 @@ module Listen
       #
       def stop
         @mutex.synchronize do
-          return if @stop == true
+          return if @stopped == true
           super
         end
 
@@ -52,7 +52,7 @@ module Listen
       # Poll listener directory for file system changes.
       #
       def poll
-        until @stop
+        until @stopped
           next if @paused
 
           start = Time.now.to_f
