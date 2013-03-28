@@ -90,7 +90,7 @@ module Listen
     # @param [Regexp] regexps a list of patterns for ignoring paths
     #
     def ignore(*regexps)
-      @ignoring_patterns.merge(regexps)
+      @ignoring_patterns.merge(regexps).reject! { |r| r.nil? }
     end
 
     # Replaces ignoring patterns in the record.
@@ -101,7 +101,7 @@ module Listen
     # @param [Regexp] regexps a list of patterns for ignoring paths
     #
     def ignore!(*regexps)
-      @ignoring_patterns.replace(regexps)
+      @ignoring_patterns.replace(regexps).reject! { |r| r.nil? }
     end
 
     # Adds filtering patterns to the record.
@@ -112,7 +112,7 @@ module Listen
     # @param [Regexp] regexps a list of patterns for filtering files
     #
     def filter(*regexps)
-      @filtering_patterns.merge(regexps)
+      @filtering_patterns.merge(regexps).reject! { |r| r.nil? }
     end
 
     # Replaces filtering patterns in the record.
@@ -123,7 +123,7 @@ module Listen
     # @param [Regexp] regexps a list of patterns for filtering files
     #
     def filter!(*regexps)
-      @filtering_patterns.replace(regexps)
+      @filtering_patterns.replace(regexps).reject! { |r| r.nil? }
     end
 
     # Returns whether a path should be ignored or not.
@@ -214,36 +214,63 @@ module Listen
         path = File.join(directory, basename)
         case meta_data.type
         when 'Dir'
-          if File.directory?(path)
-            detect_modifications_and_removals(path, options) if options[:recursive]
-          else
-            detect_modifications_and_removals(path, { :recursive => true }.merge(options))
-            @paths[directory].delete(basename)
-            @paths.delete("#{directory}/#{basename}")
-          end
+          detect_modification_or_removal_for_dir(path, options)
         when 'File'
-          if File.exist?(path)
-            new_mtime = mtime_of(path)
-
-            # First check if we are in the same second (to update checksums)
-            # before checking the time difference
-            if (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
-              # Update the sha1 checksum of the file
-              insert_sha1_checksum(path)
-
-              # Update the meta data of the file
-              meta_data.mtime = new_mtime
-              @paths[directory][basename] = meta_data
-
-              @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
-            end
-          else
-            @paths[directory].delete(basename)
-            @sha1_checksums.delete(path)
-            @changes[:removed] << (options[:relative_paths] ? relative_to_base(path) : path)
-          end
+          detect_modification_or_removal_for_file(path, meta_data, options)
         end
       end
+    end
+
+    def detect_modification_or_removal_for_dir(path, options)
+
+      # Directory still exists
+      if File.directory?(path)
+        detect_modifications_and_removals(path, options) if options[:recursive]
+
+      # Directory has been removed
+      else
+        detect_modifications_and_removals(path, options)
+        @paths[File.dirname(path)].delete(File.basename(path))
+        @paths.delete("#{File.dirname(path)}/#{File.basename(path)}")
+      end
+    end
+
+    def detect_modification_or_removal_for_file(path, meta_data, options)
+      # File still exists
+      if File.exist?(path)
+        detect_modification(path, meta_data, options)
+
+      # File has been removed
+      else
+        removal_detected(path, meta_data, options)
+      end
+    end
+
+    def detect_modification(path, meta_data, options)
+      new_mtime = mtime_of(path)
+
+      # First check if we are in the same second (to update checksums)
+      # before checking the time difference
+      if (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
+        modification_detected(path, meta_data, new_mtime, options)
+      end
+    end
+
+    def modification_detected(path, meta_data, new_mtime, options)
+      # Update the sha1 checksum of the file
+      update_sha1_checksum(path)
+
+      # Update the meta data of the file
+      meta_data.mtime = new_mtime
+      @paths[File.dirname(path)][File.basename(path)] = meta_data
+
+      @changes[:modified] << (options[:relative_paths] ? relative_to_base(path) : path)
+    end
+
+    def removal_detected(path, meta_data, options)
+      @paths[File.dirname(path)].delete(File.basename(path))
+      @sha1_checksums.delete(path)
+      @changes[:removed] << (options[:relative_paths] ? relative_to_base(path) : path)
     end
 
     # Detects additions in a directory.
@@ -287,7 +314,7 @@ module Listen
     def content_modified?(path)
       @sha1_checksum = sha1_checksum(path)
       if @sha1_checksums[path] == @sha1_checksum || !@sha1_checksums.key?(path)
-        insert_sha1_checksum(path)
+        update_sha1_checksum(path)
         false
       else
         true
@@ -298,7 +325,7 @@ module Listen
     #
     # @param [String] path the SHA1-checksum path to insert in @sha1_checksums.
     #
-    def insert_sha1_checksum(path)
+    def update_sha1_checksum(path)
       if @sha1_checksum ||= sha1_checksum(path)
         @sha1_checksums[path] = @sha1_checksum
         @sha1_checksum = nil

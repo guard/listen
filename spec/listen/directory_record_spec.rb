@@ -43,28 +43,31 @@ describe Listen::DirectoryRecord do
 
   describe '#ignore' do
     it 'adds the passed paths to the list of ignored paths in the record' do
-      subject.ignore(%r{^\.old/}, %r{\.pid$})
+      subject.ignore(%r{^\.old/}, %r{\.pid$}, nil)
       subject.ignoring_patterns.should include(%r{^\.old/}, %r{\.pid$})
+      subject.ignoring_patterns.should_not include(nil)
     end
   end
 
   describe '#ignore!' do
     it 'replace the ignored paths in the record' do
-      subject.ignore!(%r{^\.old/}, %r{\.pid$})
-      subject.ignoring_patterns.should =~ [%r{^\.old/}, %r{\.pid$}]
+      subject.ignore!(%r{^\.old/}, %r{\.pid$}, nil)
+      subject.ignoring_patterns.should eq [%r{^\.old/}, %r{\.pid$}]
     end
   end
 
   describe '#filter' do
     it 'adds the passed regexps to the list of filters that determine the stored paths' do
-      subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)}, nil)
       subject.filtering_patterns.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filtering_patterns.should_not include(nil)
     end
   end
 
   describe '#filter!' do
     it 'replaces the passed regexps in the list of filters that determine the stored paths' do
       subject.filter!(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
+      subject.filtering_patterns.should have(2).regexps
       subject.filtering_patterns.should =~ [%r{\.(?:mp3|ogg|a3c)}, %r{\.(?:jpe?g|gif|png)}]
     end
   end
@@ -1022,16 +1025,18 @@ describe Listen::DirectoryRecord do
       it 'detects a moved directory' do
         fixtures do |path|
           mkdir 'a_directory'
+          mkdir 'a_directory/nested'
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
+          touch 'a_directory/nested/c_file.rb'
 
           modified, added, removed = changes(path) do
             mv 'a_directory', 'renamed'
           end
 
-          added.should =~ %w(renamed/a_file.rb renamed/b_file.rb)
+          added.should =~ %w(renamed/a_file.rb renamed/b_file.rb renamed/nested/c_file.rb)
           modified.should be_empty
-          removed.should =~ %w(a_directory/a_file.rb a_directory/b_file.rb)
+          removed.should =~ %w(a_directory/a_file.rb a_directory/b_file.rb a_directory/nested/c_file.rb)
         end
       end
 
@@ -1171,13 +1176,12 @@ describe Listen::DirectoryRecord do
         # change event is tracked, but before the hash is calculated
         Digest::SHA1.should_receive(:file).twice.and_raise(Errno::ENOENT)
 
-        lambda {
-          fixtures do |path|
-            file = 'removed_file.txt'
-            touch file
-            changes(path) { touch file }
-          end
-        }.should_not raise_error(Errno::ENOENT)
+        fixtures do |path|
+          lambda {
+            touch 'removed_file.txt'
+            changes(path) { touch 'removed_file.txt' }
+          }.should_not raise_error(Errno::ENOENT)
+        end
       end
     end
 
