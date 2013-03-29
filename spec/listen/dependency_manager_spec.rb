@@ -64,6 +64,14 @@ describe Listen::DependencyManager do
       context 'when running under bundler' do
         before { subject.should_receive(:running_under_bundler?).and_return(true) }
 
+        it 'includes a "Missing gem" sentence' do
+          begin
+            subject.load_dependencies
+          rescue described_class::Error => e
+            e.message.should include("Missing dependency '#{dependency.name}' (version '#{dependency.version}')!")
+          end
+        end
+
         it 'includes the Gemfile declaration to satisfy the dependency' do
           begin
             subject.load_dependencies
@@ -76,11 +84,19 @@ describe Listen::DependencyManager do
       context 'when not running under bundler' do
         before { subject.should_receive(:running_under_bundler?).and_return(false) }
 
+        it 'includes a "Missing gem" sentence' do
+          begin
+            subject.load_dependencies
+          rescue described_class::Error => e
+            e.message.should include("Missing dependency '#{dependency.name}' (version '#{dependency.version}')!")
+          end
+        end
+
         it 'includes the command to install the dependency' do
           begin
             subject.load_dependencies
           rescue described_class::Error => e
-            e.message.should include("gem install #{dependency.name} --version '#{dependency.version}'")
+            e.message.should include("gem install #{dependency.name} --version 0.0.1")
           end
         end
       end

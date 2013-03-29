@@ -16,7 +16,7 @@ module Listen
 
     GEM_INSTALL_COMMAND = <<-EOS.gsub(/^ {6}/, '')
       Please run the following to satisfy the dependency:
-        gem install %s --version '%s'
+        gem install %s --version %s
     EOS
 
     BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
@@ -134,12 +134,13 @@ module Listen
     # @raise DependencyManager::Error
     #
     def raise_loading_error(dependency)
+      args = [dependency.name, dependency.version]*2
       install_command = if running_under_bundler?
-        BUNDLER_DECLARE_GEM
+         BUNDLER_DECLARE_GEM
       else
+        args.last.gsub!(/~?>=?\s+/, '')
         GEM_INSTALL_COMMAND
       end
-      args = [dependency.name, dependency.version]*2
 
       raise Error.new("#{GEM_LOAD_MESSAGE}#{install_command}" % args)
     end
