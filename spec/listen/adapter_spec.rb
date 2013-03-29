@@ -19,10 +19,9 @@ describe Listen::Adapter do
 
   describe ".select_and_initialize" do
     before do
-      Listen::Adapters::Darwin.stub(:usable_and_works?) { false }
-      Listen::Adapters::Linux.stub(:usable_and_works?) { false }
-      Listen::Adapters::BSD.stub(:usable_and_works?) { false }
-      Listen::Adapters::Windows.stub(:usable_and_works?) { false }
+      Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
+        Listen::Adapters.const_get(adapter).stub(:usable_and_works?) { false }
+      end
     end
 
     context "with no specific adapter usable" do
@@ -39,10 +38,9 @@ describe Listen::Adapter do
 
       context 'when the dependencies of an adapter are not satisfied' do
         before do
-          Listen::Adapters::Darwin.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
-          Listen::Adapters::Linux.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
-          Listen::Adapters::BSD.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
-          Listen::Adapters::Windows.stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+          Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
+            Listen::Adapters.const_get(adapter).stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
+          end
         end
 
         it 'invites the user to satisfy the dependencies of the adapter in the warning' do
@@ -66,78 +64,33 @@ describe Listen::Adapter do
       end
     end
 
-    context "on Mac OX >= 10.6" do
-      before { Listen::Adapters::Darwin.stub(:usable_and_works?) { true } }
+    Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
+      adapter_class = Listen::Adapters.const_get(adapter)
 
-      it "uses Listen::Adapters::Darwin" do
-        Listen::Adapters::Darwin.should_receive(:new).with('dir', {})
-        described_class.select_and_initialize('dir')
-      end
+      context "on #{adapter}" do
+        before { adapter_class.stub(:usable_and_works?) { true } }
 
-      context 'when the use of the polling adapter is forced' do
-        it 'uses Listen::Adapters::Polling' do
-          Listen::Adapters::Polling.should_receive(:new).with('dir', {})
-          described_class.select_and_initialize('dir', :force_polling => true)
+        it "uses Listen::Adapters::#{adapter}" do
+          adapter_class.should_receive(:new).with('dir', {})
+          described_class.select_and_initialize('dir')
         end
-      end
-    end
 
-    context "on Linux" do
-      before { Listen::Adapters::Linux.stub(:usable_and_works?) { true } }
-
-      it "uses Listen::Adapters::Linux" do
-        Listen::Adapters::Linux.should_receive(:new).with('dir', {})
-        described_class.select_and_initialize('dir')
-      end
-
-      context 'when the use of the polling adapter is forced' do
-        it 'uses Listen::Adapters::Polling' do
-          Listen::Adapters::Polling.should_receive(:new).with('dir', {})
-          described_class.select_and_initialize('dir', :force_polling => true)
-        end
-      end
-    end
-
-    context "on BSD" do
-      before { Listen::Adapters::BSD.stub(:usable_and_works?) { true } }
-
-      it "uses Listen::Adapters::BSD" do
-        Listen::Adapters::BSD.should_receive(:new).with('dir', {})
-        described_class.select_and_initialize('dir')
-      end
-
-      context 'when the use of the polling adapter is forced' do
-        it 'uses Listen::Adapters::Polling' do
-          Listen::Adapters::Polling.should_receive(:new).with('dir', {})
-          described_class.select_and_initialize('dir', :force_polling => true)
-        end
-      end
-    end
-
-    context "on Windows" do
-      before { Listen::Adapters::Windows.stub(:usable_and_works?) { true } }
-
-      it "uses Listen::Adapters::Windows" do
-        Listen::Adapters::Windows.should_receive(:new).with('dir', {})
-        described_class.select_and_initialize('dir')
-      end
-
-      context 'when the use of the polling adapter is forced' do
-        it 'uses Listen::Adapters::Polling' do
-          Listen::Adapters::Polling.should_receive(:new).with('dir', {})
-          described_class.select_and_initialize('dir', :force_polling => true)
+        context 'when the use of the polling adapter is forced' do
+          it 'uses Listen::Adapters::Polling' do
+            Listen::Adapters::Polling.should_receive(:new).with('dir', {})
+            described_class.select_and_initialize('dir', :force_polling => true)
+          end
         end
       end
     end
   end
 
-  [Listen::Adapters::Darwin, Listen::Adapters::Linux,
-   Listen::Adapters::BSD, Listen::Adapters::Windows].each do
-    |adapter_class|
+  Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
+    adapter_class = Listen::Adapters.const_get(adapter)
     if adapter_class.usable?
       describe '.usable?' do
         it 'checks the dependencies' do
-          adapter_class.should_receive(:load_depenencies)
+          adapter_class.should_receive(:load_dependencies)
           adapter_class.should_receive(:dependencies_loaded?)
           adapter_class.usable?
         end
