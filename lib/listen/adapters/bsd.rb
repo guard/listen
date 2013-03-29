@@ -30,10 +30,7 @@ module Listen
       # @param [Boolean] blocking whether or not to block the current thread after starting
       #
       def start(blocking = true)
-        @mutex.synchronize do
-          return if @stopped == false
-          super
-        end
+        super
 
         @kqueue_thread = Thread.new do
           until @stopped
@@ -50,7 +47,7 @@ module Listen
       #
       def stop
         @mutex.synchronize do
-          return if @stopped == true
+          return if @stopped
           super
         end
 

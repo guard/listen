@@ -95,7 +95,10 @@ module Listen
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
     def start(blocking = true)
-      @stopped = false
+      @mutex.synchronize do
+        return unless @stopped
+        @stopped = false
+      end
     end
 
     # Stops the adapter.

@@ -41,10 +41,7 @@ module Listen
       # @param [Boolean] blocking whether or not to block the current thread after starting
       #
       def start(blocking = true)
-        @mutex.synchronize do
-          return if @stopped == false
-          super
-        end
+        super
 
         @worker_thread = Thread.new { @worker.run }
         @poll_thread   = Thread.new { poll_changed_dirs } if @report_changes
@@ -56,7 +53,7 @@ module Listen
       #
       def stop
         @mutex.synchronize do
-          return if @stopped == true
+          return if @stopped
           super
         end
 
