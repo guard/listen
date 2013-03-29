@@ -431,7 +431,7 @@ describe Listen::DirectoryRecord do
             # This issue was the result of checking a file for content changes when
             # the mtime and the checking time are the same. In this case there
             # is no checksum saved, so the file was reported as being changed.
-            it ' does not report any changes' do
+            it 'does not report any changes' do
               fixtures do |path|
                 touch 'a_file.rb'
 
@@ -444,27 +444,10 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "doesn't detects the modified file the second time if the content haven't changed" do
-            fixtures do |path|
-              touch 'existing_file.txt'
-
-              changes(path) do
-                touch 'existing_file.txt'
-              end
-
-              modified, added, removed = changes(path, :use_last_record => true) do
-                touch 'existing_file.txt'
-              end
-
-              added.should be_empty
-              modified.should be_empty
-              removed.should be_empty
-            end
-          end
-
           it 'detects the modified file the second time if the content have changed' do
             fixtures do |path|
               touch 'existing_file.txt'
+
               # Set sha1 path checksum
               changes(path) do
                 touch 'existing_file.txt'
@@ -488,6 +471,7 @@ describe Listen::DirectoryRecord do
           it "doesn't detects the modified file the second time if just touched - #62" do
             fixtures do |path|
               touch 'existing_file.txt'
+
               # Set sha1 path checksum
               changes(path) do
                 touch 'existing_file.txt'
@@ -521,21 +505,19 @@ describe Listen::DirectoryRecord do
             end
           end
 
-        it "deletes the path from the paths checksums" do
-          fixtures do |path|
-            touch 'unnecessary.txt'
+          it "deletes the path from the paths checksums" do
+            fixtures do |path|
+              touch 'unnecessary.txt'
 
-            changes(path) do
-              @record.sha1_checksums["#{path}/unnecessary.txt"] = 'foo'
+              changes(path) do
+                @record.sha1_checksums["#{path}/unnecessary.txt"] = 'foo'
 
-              rm 'unnecessary.txt'
+                rm 'unnecessary.txt'
+              end
+
+              @record.sha1_checksums["#{path}/unnecessary.txt"].should be_nil
             end
-
-            @record.sha1_checksums["#{path}/unnecessary.txt"].should be_nil
           end
-        end
-
-
         end
 
         context 'given a hidden file' do
