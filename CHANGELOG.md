@@ -1,3 +1,15 @@
+## Master
+
+### Bug fix
+
+- [#93][] Remove dependency operator in the "gem install" message. (reported by [@scottdavis][], fixed by [@rymai][])
+
+### Improvements
+
+- Add `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
+- Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
+- Refactor `Listen::DependencyManager` internals. ([@rymai][])
+
 ## 0.7.3 - February 24, 2013
 
 ### Bug fix
@@ -209,6 +221,7 @@
 [#76]: https://github.com/guard/listen/issues/76
 [#78]: https://github.com/guard/listen/issues/78
 [#88]: https://github.com/guard/listen/issues/88
+[#93]: https://github.com/guard/listen/issues/93
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@akerbos]: https://github.com/akerbos
 [@cobychapple]: https://github.com/cobychapple
