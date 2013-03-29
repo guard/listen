@@ -50,7 +50,7 @@ module Listen
     #
     def unpause
       @directories_records.each { |r| r.build }
-      @adapter.paused = false
+      @adapter.unpause
       self
     end
 
