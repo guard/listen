@@ -12,6 +12,7 @@ bundle
 .vagrant
 Gemfile.lock
 spec/.fixtures
+coverage
 
 ## MAC OS
 .DS_Store
