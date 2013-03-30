@@ -417,7 +417,7 @@ describe Listen::DirectoryRecord do
               touch 'existing_file.txt'
 
               modified, added, removed = changes(path) do
-                sleep 0.3 # make sure the mtime is changed a bit
+                sleep 0.5 # make sure the mtime is changed a bit
                 touch 'existing_file.txt'
               end
 
@@ -1121,7 +1121,7 @@ describe Listen::DirectoryRecord do
           chmod 000, 'unreadable_file.txt'
 
           modified, added, removed = changes(path) do
-            sleep 1.1
+            sleep 1.5
             touch 'unreadable_file.txt'
           end
 
