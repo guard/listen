@@ -15,8 +15,6 @@ group :development do
   gem 'yard'
   gem 'redcarpet'
   gem 'pimpmychangelog'
-
-  gem 'vagrant'
 end
 
 group :test do
