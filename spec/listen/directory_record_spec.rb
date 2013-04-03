@@ -397,7 +397,7 @@ describe Listen::DirectoryRecord do
             touch 'existing_file.txt'
 
             modified, added, removed = changes(path) do
-              sleep 1.5 # make a difference in the mtime of the file
+              small_time_difference
               touch 'existing_file.txt'
             end
 
@@ -417,7 +417,7 @@ describe Listen::DirectoryRecord do
               touch 'existing_file.txt'
 
               modified, added, removed = changes(path) do
-                sleep 0.5 # make sure the mtime is changed a bit
+                small_time_difference
                 touch 'existing_file.txt'
               end
 
@@ -452,9 +452,9 @@ describe Listen::DirectoryRecord do
               changes(path) do
                 touch 'existing_file.txt'
               end
-              small_time_difference
 
               changes(path) do
+                small_time_difference
                 touch 'existing_file.txt'
               end
 
@@ -476,9 +476,9 @@ describe Listen::DirectoryRecord do
               changes(path) do
                 touch 'existing_file.txt'
               end
-              small_time_difference
 
               changes(path, :use_last_record => true) do
+                small_time_difference
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
               end
 
@@ -495,9 +495,9 @@ describe Listen::DirectoryRecord do
           it "adds the path in the paths checksums if just touched - #62" do
             fixtures do |path|
               touch 'existing_file.txt'
-              small_time_difference
 
               changes(path) do
+                small_time_difference
                 touch 'existing_file.txt'
               end
 
@@ -541,9 +541,9 @@ describe Listen::DirectoryRecord do
           it 'does not detect the mode change' do
             fixtures do |path|
               touch 'run.rb'
-              sleep 1.5 # make a difference in the mtime of the file
 
               modified, added, removed = changes(path) do
+                small_time_difference
                 chmod 0777, 'run.rb'
               end
 
@@ -970,9 +970,8 @@ describe Listen::DirectoryRecord do
           touch 'a_directory/a_file.rb'
           touch 'a_directory/b_file.rb'
 
-          small_time_difference
-
           modified, added, removed = changes(path) do
+            small_time_difference
             touch 'b_file.rb'
             touch 'a_directory/a_file.rb'
           end
@@ -1121,7 +1120,7 @@ describe Listen::DirectoryRecord do
           chmod 000, 'unreadable_file.txt'
 
           modified, added, removed = changes(path) do
-            sleep 1.5
+            small_time_difference
             touch 'unreadable_file.txt'
           end
 
