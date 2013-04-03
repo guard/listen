@@ -39,7 +39,7 @@ def small_time_difference
   t = Time.now
   diff = t.to_f - t.to_i
 
-  sleep(1.5 - (diff < 0.5 ? diff : 0.49))
+  sleep (1 - diff + 0.01)
 end
 
 # Ensures that the test runs at almost the same second at which
