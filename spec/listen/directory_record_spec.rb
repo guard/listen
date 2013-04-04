@@ -468,7 +468,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "doesn't detects the modified file the second time if just touched - #62" do
+          it "doesn't detects the modified file the second time if just touched - #62", :focus do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -477,13 +477,20 @@ describe Listen::DirectoryRecord do
                 touch 'existing_file.txt'
               end
 
+              p "Start touch: #{Time.now.to_f}"
+
               changes(path, :use_last_record => true) do
                 small_time_difference
+                p "After small_time_difference: #{Time.now.to_f}"
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
+                p "File mtime: #{File.mtime('existing_file.txt').to_f}"
               end
 
               modified, added, removed = changes(path, :use_last_record => true) do
+                p "Before touch: #{Time.now.to_f}"
                 touch 'existing_file.txt'
+                p "After touch: #{Time.now.to_f}"
+                p "File mtime: #{File.mtime('existing_file.txt').to_f}"
               end
 
               added.should be_empty
