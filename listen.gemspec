@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'listen'
 
   s.add_development_dependency 'bundler'
+  s.add_development_dependency 'rspec'
 
   s.files        = Dir.glob('{lib}/**/*') + %w[CHANGELOG.md LICENSE README.md]
   s.require_path = 'lib'
