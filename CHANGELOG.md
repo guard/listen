@@ -1,5 +1,9 @@
 ## Master
 
+### Improvement
+
+- [#85][] Compute the SHA1 sum only for regular files. (fixed by [@antifuchs][])
+
 ### Bug fix
 
 - [#93][] Remove dependency operator in the "gem install" message. (reported by [@scottdavis][], fixed by [@rymai][])
@@ -12,7 +16,7 @@
 
 ## 0.7.3 - February 24, 2013
 
-### Bug fix
+### Bug fixes
 
 - [#88][] Update wdm dependency. ([@mrbinky3000][])
 - [#78][] Depend on latest rb-inotify. ([@mbj][])
@@ -220,10 +224,12 @@
 [#75]: https://github.com/guard/listen/issues/75
 [#76]: https://github.com/guard/listen/issues/76
 [#78]: https://github.com/guard/listen/issues/78
+[#85]: https://github.com/guard/listen/issues/85
 [#88]: https://github.com/guard/listen/issues/88
 [#93]: https://github.com/guard/listen/issues/93
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@akerbos]: https://github.com/akerbos
+[@antifuchs]: https://github.com/antifuchs
 [@cobychapple]: https://github.com/cobychapple
 [@daemonza]: https://github.com/daemonza
 [@dkubb]: https://github.com/dkubb
