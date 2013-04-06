@@ -25,11 +25,7 @@ module Listen
   # @return [Listen::Listener] the file listener if no block given
   #
   def self.to(*args, &block)
-    listener = if args.length == 1 || ! args[1].is_a?(String)
-      Listener.new(*args, &block)
-    else
-      MultiListener.new(*args, &block)
-    end
+    listener = Listener.new(*args, &block)
 
     block ? listener.start : listener
   end
