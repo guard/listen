@@ -81,30 +81,6 @@ listener.unpause
 listener.stop
 ```
 
-## Listening to changes on multiple directories
-
-The Listen gem provides the `MultiListener` class to watch multiple directories and
-handle their changes from a single listener:
-
-```ruby
-listener = Listen::MultiListener.new('app/css', 'app/js')
-listener.latency(0.5)
-
-# Configure the listener to your needs...
-
-listener.start # blocks execution!
-````
-
-For an easier access, the `Listen.to` method can also be used to create a multi-listener:
-
-``` ruby
-listener = Listen.to('app/css', 'app/js')
-                 .ignore(%r{^vendor/}) # both js/vendor and css/vendor will be ignored
-                 .change(&assets_callback)
-
-listener.start # blocks execution!
-```
-
 ## Changes callback
 
 Changes to the listened-to directories gets reported back to the user in a callback.
@@ -168,7 +144,7 @@ Listen.to('/home/user/app/css', :relative_paths => true) do |modified, added, re
 end
 ```
 
-Passing the `:relative_paths => true` option won't work when listeneing to multiple
+Passing the `:relative_paths => true` option won't work when listening to multiple
 directories:
 
 ```ruby
@@ -224,7 +200,7 @@ Starting a listener blocks the current thread by default. That means any code af
 
 For advanced usage there is an option to disable this behavior and have the listener start working
 in the background without blocking. To enable non-blocking listening the `start` method of
-the listener (be it `Listener` or `MultiListener`) needs to be called with `false` as a parameter.
+the listener needs to be called with `false` as a parameter.
 
 Here is an example of using a listener in the non-blocking mode:
 
