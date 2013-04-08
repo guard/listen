@@ -249,10 +249,10 @@ If your application keeps using the polling-adapter and you can't figure out why
 Pull requests are very welcome! Please try to follow these simple rules if applicable:
 
 * Please create a topic branch for every separate change you make.
-* Make sure your patches are well tested. All specs run with `rake spec:portability` must pass.
+* Make sure your patches are well tested. All specs must pass on [Travis CI](https://travis-ci.org/guard/listen).
 * Update the [Yard](http://yardoc.org/) documentation.
-* Update the README.
-* Update the CHANGELOG for noteworthy changes.
+* Update the [README](https://github.com/guard/listen/blob/master/README.md).
+* Update the [CHANGELOG](https://github.com/guard/listen/blob/master/CHANGELOG.md) for noteworthy changes (don't forget to run `bundle exec pimpmychangelog` and watch the magic happen)!
 * Please **do not change** the version number.
 
 For questions please join us in our [Google group](http://groups.google.com/group/guard-dev) or on
