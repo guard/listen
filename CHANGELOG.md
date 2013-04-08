@@ -1,9 +1,4 @@
-## Master
-
-### Improvement
-
-- [#85][] Make Listen::Listener capable of listening to multiple directories. Remove Listen::MultiListener. ([@rymai][])
-- [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
+## git master
 
 ### Bug fix
 
@@ -11,8 +6,8 @@
 
 ### Improvements
 
-- [#95][] Make `Listen::Listener` capable of listening to multiple directories. ([@rymai][])
-- [#95][] Deprecate `Listen::MultiListener`. ([@rymai][])
+- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecate `Listen::MultiListener`. ([@rymai][])
+- [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 - Add `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
 - Refactor `Listen::DependencyManager` internals. ([@rymai][])
