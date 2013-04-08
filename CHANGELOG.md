@@ -2,7 +2,8 @@
 
 ### Improvement
 
-- [#85][] Compute the SHA1 sum only for regular files. (fixed by [@antifuchs][])
+- [#85][] Make Listen::Listener capable of listening to multiple directories. Remove Listen::MultiListener. ([@rymai][])
+- [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 
 ### Bug fix
 
