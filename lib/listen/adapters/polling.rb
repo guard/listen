@@ -12,6 +12,8 @@ module Listen
     class Polling < Adapter
       extend DependencyManager
 
+      attr_accessor :worker, :poll_thread
+
       # Initialize the Adapter.
       #
       # @see Listen::Adapter#initialize
@@ -27,21 +29,19 @@ module Listen
       #
       def start(blocking = true)
         super
-
         @poll_thread = Thread.new { poll }
-
-        @poll_thread.join if blocking
+        poll_thread.join if blocking
       end
 
       # Stop the adapter.
       #
       def stop
-        @mutex.synchronize do
-          return if @stopped
+        mutex.synchronize do
+          return if stopped
           super
         end
 
-        @poll_thread.join
+        poll_thread.join
       end
 
     private
@@ -49,13 +49,13 @@ module Listen
       # Poll listener directory for file system changes.
       #
       def poll
-        until @stopped
-          next if @paused
+        until stopped
+          next if paused
 
           start = Time.now.to_f
-          @callback.call(@directories.dup, recursive: true)
-          @turnstile.signal
-          nap_time = @latency - (Time.now.to_f - start)
+          callback.call(directories.dup, recursive: true)
+          turnstile.signal
+          nap_time = latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0
         end
       rescue Interrupt

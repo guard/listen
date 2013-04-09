@@ -2,7 +2,8 @@ require 'pathname'
 
 module Listen
   class Listener
-    attr_reader :directories, :directories_records, :adapter
+
+    attr_reader :directories, :directories_records, :block, :adapter, :adapter_options, :use_relative_paths
 
     # Initializes the directories listener.
     #
@@ -43,13 +44,13 @@ module Listen
       t = Thread.new { build_directories_records }
       @adapter = initialize_adapter
       t.join
-      @adapter.start(blocking)
+      adapter.start(blocking)
     end
 
     # Stops the listener.
     #
     def stop
-      @adapter.stop
+      adapter.stop
     end
 
     # Pauses the listener.
@@ -57,7 +58,7 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def pause
-      @adapter.pause
+      adapter.pause
       self
     end
 
@@ -67,7 +68,7 @@ module Listen
     #
     def unpause
       build_directories_records
-      @adapter.unpause
+      adapter.unpause
       self
     end
 
@@ -76,7 +77,7 @@ module Listen
     # @return [Boolean] adapter paused status
     #
     def paused?
-      !!@adapter && @adapter.paused?
+      !!adapter && adapter.paused?
     end
 
     # Adds ignoring patterns to the listener.
@@ -88,7 +89,7 @@ module Listen
     # @see Listen::DirectoryRecord#ignore
     #
     def ignore(*regexps)
-      @directories_records.each { |r| r.ignore(*regexps) }
+      directories_records.each { |r| r.ignore(*regexps) }
       self
     end
 
@@ -101,7 +102,7 @@ module Listen
     # @see Listen::DirectoryRecord#ignore!
     #
     def ignore!(*regexps)
-      @directories_records.each { |r| r.ignore!(*regexps) }
+      directories_records.each { |r| r.ignore!(*regexps) }
       self
     end
 
@@ -114,7 +115,7 @@ module Listen
     # @see Listen::DirectoryRecord#filter
     #
     def filter(*regexps)
-      @directories_records.each { |r| r.filter(*regexps) }
+      directories_records.each { |r| r.filter(*regexps) }
       self
     end
 
@@ -127,7 +128,7 @@ module Listen
     # @see Listen::DirectoryRecord#filter!
     #
     def filter!(*regexps)
-      @directories_records.each { |r| r.filter!(*regexps) }
+      directories_records.each { |r| r.filter!(*regexps) }
       self
     end
 
@@ -214,7 +215,7 @@ module Listen
     def on_change(directories, options = {})
       changes = fetch_records_changes(directories, options)
       unless changes.values.all? { |paths| paths.empty? }
-        @block.call(changes[:modified], changes[:added], changes[:removed])
+        block.call(changes[:modified], changes[:added], changes[:removed])
       end
     end
 
@@ -222,24 +223,24 @@ module Listen
 
     def initialize_directories_and_directories_records(directories)
       @directories = directories.map { |d| Pathname.new(d).realpath.to_s }
-      @directories_records = @directories.map { |d| DirectoryRecord.new(d) }
+      @directories_records = directories.map { |d| DirectoryRecord.new(d) }
     end
 
     def initialize_relative_paths_usage(options)
-      @use_relative_paths = @directories.one? && options.delete(:relative_paths) { true }
+      @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
     end
 
     # Initializes an adapter passing it the callback and adapters' options.
     #
     def initialize_adapter
-      callback = lambda { |changed_dirs, options| self.on_change(changed_dirs, options) }
-      Adapter.select_and_initialize(@directories, @adapter_options, &callback)
+      callback = lambda { |changed_directories, options| self.on_change(changed_directories, options) }
+      Adapter.select_and_initialize(directories, adapter_options, &callback)
     end
 
     # Build the watched directories' records.
     #
     def build_directories_records
-      @directories_records.each { |r| r.build }
+      directories_records.each { |r| r.build }
     end
 
     # Returns the sum of all the changes to the directories records
@@ -249,10 +250,10 @@ module Listen
     # @return [Hash] the changes
     #
     def fetch_records_changes(directories_to_search, options)
-      @directories_records.inject({}) do |h, r|
+      directories_records.inject({}) do |h, r|
         # directory records skips paths outside their range, so passing the
         # whole `directories` array is not a problem.
-        record_changes = r.fetch_changes(directories_to_search, options.merge(relative_paths: @use_relative_paths))
+        record_changes = r.fetch_changes(directories_to_search, options.merge(relative_paths: use_relative_paths))
 
         if h.empty?
           h.merge!(record_changes)
