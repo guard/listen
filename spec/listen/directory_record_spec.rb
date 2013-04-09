@@ -410,9 +410,7 @@ describe Listen::DirectoryRecord do
         context 'during the same second at which we are checking for changes' do
           before { ensure_same_second }
 
-          # The following test can only be run on systems that report
-          # modification times in milliseconds.
-          it 'always detects the modified file the first time', if: described_class::HIGH_PRECISION_SUPPORTED do
+          it 'always detects the modified file the first time' do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -487,7 +485,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "doesn't detects the modified file the second time if just touched - #62", unless: described_class::HIGH_PRECISION_SUPPORTED do
+          it "doesn't detects the modified file the second time if just touched - #62" do #, unless: described_class::HIGH_PRECISION_SUPPORTED do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -1146,25 +1144,6 @@ describe Listen::DirectoryRecord do
           added.should be_empty
           modified.should =~ %w(unreadable_file.txt)
           removed.should be_empty
-        end
-      end
-
-      context 'with multiple changes within the same second' do
-        before { ensure_same_second }
-
-        it 'does not detect changes even if content changes', unless: described_class::HIGH_PRECISION_SUPPORTED do
-          fixtures do |path|
-            touch 'unreadable_file.txt'
-
-            modified, added, removed = changes(path) do
-              open('unreadable_file.txt', 'w') { |f| f.write('foo') }
-              chmod 000, 'unreadable_file.txt'
-            end
-
-            added.should be_empty
-            modified.should be_empty
-            removed.should be_empty
-          end
         end
       end
     end
