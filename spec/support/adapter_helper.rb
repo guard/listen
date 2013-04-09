@@ -4,7 +4,7 @@
 # @param [String] path the path to watch
 #
 def watch(listener, expected_changes, *paths)
-  sleep 0.01 # allow file/creation to be done (!)
+  sleep 0.05 # allow file/creation to be done (!)
 
   callback = lambda { |changed_directories, options| @called = true; listener.on_change(changed_directories) }
   @adapter = Listen::Adapter.select_and_initialize(paths, { report_changes: false, latency: test_latency }, &callback)
