@@ -40,7 +40,7 @@ module Listen
     #
     # @yield [changed_dirs, options] callback the callback called when a change happens
     # @yieldparam [Array<String>] changed_dirs the changed directories
-    # @yieldparam [Hash] options callback options (like :recursive => true)
+    # @yieldparam [Hash] options callback options (like recursive: true)
     #
     # @return [Listen::Adapter] the chosen adapter
     #
@@ -74,7 +74,7 @@ module Listen
     #
     # @yield [changed_dirs, options] callback Callback called when a change happens
     # @yieldparam [Array<String>] changed_dirs the changed directories
-    # @yieldparam [Hash] options callback options (like :recursive => true)
+    # @yieldparam [Hash] options callback options (like recursive: true)
     #
     # @return [Listen::Adapter] the adapter
     #
@@ -205,7 +205,7 @@ module Listen
       work
     ensure
       Thread.kill(t) if t
-      FileUtils.rm(test_file, :force => true)
+      FileUtils.rm(test_file, force: true)
       adapter.stop if adapter && adapter.started?
     end
 

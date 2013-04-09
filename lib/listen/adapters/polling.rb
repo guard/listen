@@ -53,7 +53,7 @@ module Listen
           next if @paused
 
           start = Time.now.to_f
-          @callback.call(@directories.dup, :recursive => true)
+          @callback.call(@directories.dup, recursive: true)
           @turnstile.signal
           nap_time = @latency - (Time.now.to_f - start)
           sleep(nap_time) if nap_time > 0

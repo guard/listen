@@ -23,7 +23,7 @@ module Listen
     # Unblocks the waiting thread if any.
     #
     def signal
-      @q.push :dummy if @q.num_waiting == 1
+      @q.push(:dummy) if @q.num_waiting == 1
     end
 
   end
