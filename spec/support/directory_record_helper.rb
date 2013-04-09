@@ -24,7 +24,7 @@ def changes(root_path, options = {})
   paths = options.delete(:paths) || [root_path]
   options[:recursive] = true if options[:recursive].nil?
 
-  changes = @record.fetch_changes(paths, {:relative_paths => true}.merge(options))
+  changes = @record.fetch_changes(paths, { relative_paths: true }.merge(options))
 
   [changes[:modified], changes[:added], changes[:removed]]
 end
@@ -32,14 +32,15 @@ end
 # Generates a small time difference before performing a time sensitive
 # task (like comparing mtimes of files).
 #
-# @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2,
+# @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2
+#   and platform that support it (OS X 10.8 not included),
 #   that's why we generate a difference that's greater than 1 second.
 #
 def small_time_difference
   t = Time.now
   diff = t.to_f - t.to_i
 
-  sleep (1 - diff + 0.1)
+  sleep(1.05 - diff)
 end
 
 # Ensures that the test runs at almost the same second at which
@@ -49,7 +50,8 @@ def ensure_same_second
   t = Time.now
   diff = t.to_f - t.to_i
 
-  if diff > 0.1 # We are not at the beginning of a second
-    sleep 1.1 - diff # 1.1 is used instead of 1 to account for the processing time (estimated at 0.1 sec)
+  # We are not at the end of a second
+  if diff >= (1 - Listen::Adapter::DEFAULT_LATENCY)
+    sleep(1.05 - diff)
   end
 end

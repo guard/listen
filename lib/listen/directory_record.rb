@@ -17,15 +17,6 @@ module Listen
     # The default list of files that get ignored by the listener.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
-    # Defines the used precision based on the type of mtime returned by the
-    # system (whether its in milliseconds or just seconds)
-    #
-    begin
-      HIGH_PRECISION_SUPPORTED = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
-    rescue
-      HIGH_PRECISION_SUPPORTED = false
-    end
-
     # Data structure used to save meta data about a path
     #
     MetaData = Struct.new(:type, :mtime)
@@ -170,7 +161,7 @@ module Listen
     # @return [Hash<Array>] the changes
     #
     def fetch_changes(directories, options = {})
-      @changes    = { :modified => [], :added => [], :removed => [] }
+      @changes    = { modified: [], added: [], removed: [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
 
       directories.each do |directory|
@@ -190,10 +181,10 @@ module Listen
     # @return [String] the relative path
     #
     def relative_to_base(path)
-      return nil unless path[@directory]
+      return nil unless path[directory]
 
       path = path.force_encoding("BINARY") if path.respond_to?(:force_encoding)
-      path.sub(%r{^#{Regexp.quote(@directory)}#{File::SEPARATOR}?}, '')
+      path.sub(%r{^#{Regexp.quote(directory)}#{File::SEPARATOR}?}, '')
     end
 
     private
@@ -210,7 +201,7 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
-      @paths[directory].each do |basename, meta_data|
+      paths[directory].each do |basename, meta_data|
         path = File.join(directory, basename)
         case meta_data.type
         when 'Dir'
@@ -248,10 +239,9 @@ module Listen
 
     def detect_modification(path, meta_data, options)
       new_mtime = mtime_of(path)
+      diff = new_mtime - meta_data.mtime
 
-      # First check if we are in the same second (to update checksums)
-      # before checking the time difference
-      if (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
+      if (diff < Adapter::DEFAULT_LATENCY && content_modified?(path)) || diff >= Adapter::DEFAULT_LATENCY
         modification_detected(path, meta_data, new_mtime, options)
       end
     end
@@ -314,7 +304,7 @@ module Listen
     def content_modified?(path)
       return false unless File.ftype(path) == 'file'
       @sha1_checksum = sha1_checksum(path)
-      if @sha1_checksums[path] == @sha1_checksum || !@sha1_checksums.key?(path)
+      if sha1_checksums[path] == @sha1_checksum || !sha1_checksums.key?(path)
         update_sha1_checksum(path)
         false
       else
@@ -349,8 +339,8 @@ module Listen
     # @yield [path] an important path
     #
     def important_paths
-      Find.find(@directory) do |path|
-        next if path == @directory
+      Find.find(directory) do |path|
+        next if path == directory
 
         if File.directory?(path)
           # Add a trailing slash to directories when checking if a directory is
@@ -385,7 +375,7 @@ module Listen
     # @return [Boolean]
     #
     def existing_path?(path)
-      @paths[File.dirname(path)][File.basename(path)] != nil
+      paths[File.dirname(path)][File.basename(path)] != nil
     end
 
     # Returns the modification time of a file based on the precision defined by the system
@@ -395,7 +385,7 @@ module Listen
     # @return [Fixnum, Float] the mtime of the file
     #
     def mtime_of(file)
-      File.lstat(file).mtime.send(HIGH_PRECISION_SUPPORTED ? :to_f : :to_i)
+      File.lstat(file).mtime.to_f
     end
   end
 end
