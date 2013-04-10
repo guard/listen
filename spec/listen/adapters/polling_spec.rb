@@ -21,14 +21,14 @@ describe Listen::Adapters::Polling do
       subject { Listen::Adapters::Polling.new('dir', {}, &callback) }
 
       it 'calls listener.on_change' do
-        listener.should_receive(:on_change).at_least(1).times.with(['dir'], recursive: true)
+        listener.should_receive(:on_change).at_least(1).times.with(['dir'], :recursive => true)
         subject.start(false)
         subject.wait_for_callback
       end
 
       it 'calls listener.on_change continuously' do
         subject.latency = 0.001
-        listener.should_receive(:on_change).at_least(10).times.with(['dir'], recursive: true)
+        listener.should_receive(:on_change).at_least(10).times.with(['dir'], :recursive => true)
         subject.start(false)
         10.times { subject.wait_for_callback }
       end
@@ -45,14 +45,14 @@ describe Listen::Adapters::Polling do
       subject { Listen::Adapters::Polling.new(%w{dir1 dir2}, {}, &callback) }
 
       it 'calls listener.on_change' do
-        listener.should_receive(:on_change).at_least(1).times.with(%w{dir1 dir2}, recursive: true)
+        listener.should_receive(:on_change).at_least(1).times.with(%w{dir1 dir2}, :recursive => true)
         subject.start(false)
         subject.wait_for_callback
       end
 
       it 'calls listener.on_change continuously' do
         subject.latency = 0.001
-        listener.should_receive(:on_change).at_least(10).times.with(%w{dir1 dir2}, recursive: true)
+        listener.should_receive(:on_change).at_least(10).times.with(%w{dir1 dir2}, :recursive => true)
         subject.start(false)
         10.times { subject.wait_for_callback }
       end

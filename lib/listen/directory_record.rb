@@ -170,7 +170,7 @@ module Listen
     # @return [Hash<Array>] the changes
     #
     def fetch_changes(directories, options = {})
-      @changes    = { modified: [], added: [], removed: [] }
+      @changes    = { :modified => [], :added => [], :removed => [] }
       directories = directories.sort_by { |el| el.length }.reverse # diff sub-dir first
 
       directories.each do |directory|

@@ -299,7 +299,7 @@ describe Listen::DirectoryRecord do
               fixtures do |path|
                 mkdir 'a_directory'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   touch 'a_directory/new_file.rb'
                 end
 
@@ -314,7 +314,7 @@ describe Listen::DirectoryRecord do
                 fixtures do |path|
                   mkdir 'ignored_directory'
 
-                  modified, added, removed = changes(path, ignore: %r{^ignored_directory/}, recursive: true) do
+                  modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
                     touch 'ignored_directory/new_file.rb'
                   end
 
@@ -328,7 +328,7 @@ describe Listen::DirectoryRecord do
                 fixtures do |path|
                   mkdir 'ignored_directory'
 
-                  modified, added, removed = changes(path, paths: ["#{path}/ignored_directory"], ignore: %r{^ignored_directory/}, recursive: true) do
+                  modified, added, removed = changes(path, :paths => ["#{path}/ignored_directory"], :ignore => %r{^ignored_directory/}, :recursive => true) do
                     touch 'ignored_directory/new_file.rb'
                   end
 
@@ -345,7 +345,7 @@ describe Listen::DirectoryRecord do
               fixtures do |path|
                 mkdir 'a_directory'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   touch 'a_directory/new_file.rb'
                 end
 
@@ -362,7 +362,7 @@ describe Listen::DirectoryRecord do
             fixtures do |path|
               mkdir_p 'a_directory/subdirectory'
 
-              modified, added, removed = changes(path, recursive: true) do
+              modified, added, removed = changes(path, :recursive => true) do
                 touch 'a_directory/subdirectory/new_file.rb'
               end
 
@@ -377,7 +377,7 @@ describe Listen::DirectoryRecord do
               fixtures do |path|
                 mkdir_p 'ignored_directory/subdirectory'
 
-                modified, added, removed = changes(path, ignore: %r{^ignored_directory/}, recursive: true) do
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
                   touch 'ignored_directory/new_file.rb'
                   touch 'ignored_directory/subdirectory/new_file.rb'
                 end
@@ -412,7 +412,7 @@ describe Listen::DirectoryRecord do
 
           # The following test can only be run on systems that report
           # modification times in milliseconds.
-          it 'always detects the modified file the first time', if: described_class::HIGH_PRECISION_SUPPORTED do
+          it 'always detects the modified file the first time', :if => described_class::HIGH_PRECISION_SUPPORTED do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -458,7 +458,7 @@ describe Listen::DirectoryRecord do
                 touch 'existing_file.txt'
               end
 
-              modified, added, removed = changes(path, use_last_record: true) do
+              modified, added, removed = changes(path, :use_last_record => true) do
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
               end
 
@@ -468,7 +468,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "doesn't checksum the contents of local sockets (#85)", unless: windows? do
+          it "doesn't checksum the contents of local sockets (#85)", :unless => windows? do
             require 'socket'
             fixtures do |path|
               Digest::SHA1.should_not_receive(:file)
@@ -487,7 +487,7 @@ describe Listen::DirectoryRecord do
             end
           end
 
-          it "doesn't detects the modified file the second time if just touched - #62", unless: described_class::HIGH_PRECISION_SUPPORTED do
+          it "doesn't detects the modified file the second time if just touched - #62", :unless => described_class::HIGH_PRECISION_SUPPORTED do
             fixtures do |path|
               touch 'existing_file.txt'
 
@@ -496,12 +496,12 @@ describe Listen::DirectoryRecord do
                 touch 'existing_file.txt'
               end
 
-              changes(path, use_last_record: true) do
+              changes(path, :use_last_record => true) do
                 small_time_difference
                 open('existing_file.txt', 'w') { |f| f.write('foo') }
               end
 
-              modified, added, removed = changes(path, use_last_record: true) do
+              modified, added, removed = changes(path, :use_last_record => true) do
                 touch 'existing_file.txt'
               end
 
@@ -580,7 +580,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/existing_file.txt'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   small_time_difference
                   touch 'a_directory/existing_file.txt'
                 end
@@ -598,7 +598,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/existing_file.txt'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   small_time_difference
                   touch 'a_directory/existing_file.txt'
                 end
@@ -617,7 +617,7 @@ describe Listen::DirectoryRecord do
               mkdir_p 'a_directory/subdirectory'
               touch   'a_directory/subdirectory/existing_file.txt'
 
-              modified, added, removed = changes(path, recursive: true) do
+              modified, added, removed = changes(path, :recursive => true) do
                 small_time_difference
                 touch 'a_directory/subdirectory/existing_file.txt'
               end
@@ -635,7 +635,7 @@ describe Listen::DirectoryRecord do
                 touch   'ignored_directory/existing_file.txt'
                 touch   'ignored_directory/subdirectory/existing_file.txt'
 
-                modified, added, removed = changes(path, ignore: %r{^ignored_directory/}, recursive: true) do
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
                   touch 'ignored_directory/existing_file.txt'
                   touch 'ignored_directory/subdirectory/existing_file.txt'
                 end
@@ -671,7 +671,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'move_me.txt'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   mv 'move_me.txt', 'a_directory/move_me.txt'
                 end
 
@@ -686,7 +686,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/move_me.txt'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   mv 'a_directory/move_me.txt', 'i_am_here.txt'
                 end
 
@@ -702,7 +702,7 @@ describe Listen::DirectoryRecord do
                 touch 'from_directory/move_me.txt'
                 mkdir 'to_directory'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   mv 'from_directory/move_me.txt', 'to_directory/move_me.txt'
                 end
 
@@ -719,7 +719,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'move_me.txt'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   mv 'move_me.txt', 'a_directory/move_me.txt'
                 end
 
@@ -734,7 +734,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/move_me.txt'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   mv 'a_directory/move_me.txt', 'i_am_here.txt'
                 end
 
@@ -750,7 +750,7 @@ describe Listen::DirectoryRecord do
                 touch 'from_directory/move_me.txt'
                 mkdir 'to_directory'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   mv 'from_directory/move_me.txt', 'to_directory/move_me.txt'
                 end
 
@@ -767,7 +767,7 @@ describe Listen::DirectoryRecord do
                   mkdir_p 'b_directory/subdirectory'
                   touch   'a_directory/subdirectory/move_me.txt'
 
-                  modified, added, removed = changes(path, recursive: true) do
+                  modified, added, removed = changes(path, :recursive => true) do
                     mv 'a_directory/subdirectory/move_me.txt', 'b_directory/subdirectory'
                   end
 
@@ -784,7 +784,7 @@ describe Listen::DirectoryRecord do
                     mkdir_p 'b_ignored_directory/subdirectory'
                     touch   'a_ignored_directory/subdirectory/move_me.txt'
 
-                    modified, added, removed = changes(path, ignore: %r{^(?:a|b)_ignored_directory/}, recursive: true) do
+                    modified, added, removed = changes(path, :ignore => %r{^(?:a|b)_ignored_directory/}, :recursive => true) do
                       mv 'a_ignored_directory/subdirectory/move_me.txt', 'b_ignored_directory/subdirectory'
                     end
 
@@ -802,7 +802,7 @@ describe Listen::DirectoryRecord do
                   mkdir 'a_directory'
                   touch 'move_me.txt'
 
-                  modified, added, removed = changes(path, recursive: false, paths: [path, "#{path}/a_directory"]) do
+                  modified, added, removed = changes(path, :recursive => false, :paths => [path, "#{path}/a_directory"]) do
                     mv 'move_me.txt', 'a_directory/move_me.txt'
                   end
 
@@ -817,7 +817,7 @@ describe Listen::DirectoryRecord do
                   mkdir 'a_directory'
                   touch 'a_directory/move_me.txt'
 
-                  modified, added, removed = changes(path, recursive: false, paths: [path, "#{path}/a_directory"]) do
+                  modified, added, removed = changes(path, :recursive => false, :paths => [path, "#{path}/a_directory"]) do
                     mv 'a_directory/move_me.txt', 'i_am_here.txt'
                   end
 
@@ -833,7 +833,7 @@ describe Listen::DirectoryRecord do
                   touch 'from_directory/move_me.txt'
                   mkdir 'to_directory'
 
-                  modified, added, removed = changes(path, recursive: false, paths: [path, "#{path}/from_directory", "#{path}/to_directory"]) do
+                  modified, added, removed = changes(path, :recursive => false, :paths => [path, "#{path}/from_directory", "#{path}/to_directory"]) do
                     mv 'from_directory/move_me.txt', 'to_directory/move_me.txt'
                   end
 
@@ -897,7 +897,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/do_not_use.rb'
 
-                modified, added, removed = changes(path, recursive: true) do
+                modified, added, removed = changes(path, :recursive => true) do
                   rm 'a_directory/do_not_use.rb'
                 end
 
@@ -914,7 +914,7 @@ describe Listen::DirectoryRecord do
                 mkdir 'a_directory'
                 touch 'a_directory/do_not_use.rb'
 
-                modified, added, removed = changes(path, recursive: false) do
+                modified, added, removed = changes(path, :recursive => false) do
                   rm 'a_directory/do_not_use.rb'
                 end
 
@@ -932,7 +932,7 @@ describe Listen::DirectoryRecord do
               mkdir_p 'a_directory/subdirectory'
               touch   'a_directory/subdirectory/do_not_use.rb'
 
-              modified, added, removed = changes(path, recursive: true) do
+              modified, added, removed = changes(path, :recursive => true) do
                 rm 'a_directory/subdirectory/do_not_use.rb'
               end
 
@@ -949,7 +949,7 @@ describe Listen::DirectoryRecord do
                 touch   'ignored_directory/do_not_use.rb'
                 touch   'ignored_directory/subdirectory/do_not_use.rb'
 
-                modified, added, removed = changes(path, ignore: %r{^ignored_directory/}, recursive: true) do
+                modified, added, removed = changes(path, :ignore => %r{^ignored_directory/}, :recursive => true) do
                   rm 'ignored_directory/do_not_use.rb'
                   rm 'ignored_directory/subdirectory/do_not_use.rb'
                 end
@@ -1096,7 +1096,7 @@ describe Listen::DirectoryRecord do
     context 'with a path outside the directory for which a record is made' do
       it "skips that path and doesn't check for changes" do
           fixtures do |path|
-            modified, added, removed = changes(path, paths: ['some/where/outside']) do
+            modified, added, removed = changes(path, :paths => ['some/where/outside']) do
               @record.should_not_receive(:detect_additions)
               @record.should_not_receive(:detect_modifications_and_removals)
 
@@ -1116,7 +1116,7 @@ describe Listen::DirectoryRecord do
           touch 'a_file.rb'
           touch 'b_file.rb'
 
-          modified, added, removed = changes(path, relative_paths: false) do
+          modified, added, removed = changes(path, :relative_paths => false) do
             small_time_difference
             rm    'a_file.rb'
             touch 'b_file.rb'
@@ -1152,7 +1152,7 @@ describe Listen::DirectoryRecord do
       context 'with multiple changes within the same second' do
         before { ensure_same_second }
 
-        it 'does not detect changes even if content changes', unless: described_class::HIGH_PRECISION_SUPPORTED do
+        it 'does not detect changes even if content changes', :unless => described_class::HIGH_PRECISION_SUPPORTED do
           fixtures do |path|
             touch 'unreadable_file.txt'
 
@@ -1195,7 +1195,7 @@ describe Listen::DirectoryRecord do
       end
     end
 
-    context 'with symlinks', unless: windows? do
+    context 'with symlinks', :unless => windows? do
       it 'looks at symlinks not their targets' do
         fixtures do |path|
           touch 'target'
@@ -1207,7 +1207,7 @@ describe Listen::DirectoryRecord do
           sleep 1
           touch 'target'
 
-          record.fetch_changes([path], relative_paths: true)[:modified].should == ['target']
+          record.fetch_changes([path], :relative_paths => true)[:modified].should == ['target']
         end
       end
 
@@ -1221,7 +1221,7 @@ describe Listen::DirectoryRecord do
           sleep 1
           rm 'symlink'
           symlink 'new-target', 'symlink'
-          record.fetch_changes([path], relative_paths: true)
+          record.fetch_changes([path], :relative_paths => true)
         end
       end
     end

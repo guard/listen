@@ -208,7 +208,7 @@ module Listen
       work
     ensure
       Thread.kill(t) if t
-      FileUtils.rm(test_file, force: true)
+      FileUtils.rm(test_file, :force => true)
       adapter.stop if adapter && adapter.started?
     end
 

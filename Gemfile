@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+
 gemspec
 
 gem 'rake'
@@ -10,7 +11,6 @@ gem 'rb-inotify', '~> 0.9.0' if RbConfig::CONFIG['target_os'] =~ /linux/i
 gem 'wdm',        '~> 0.0.3' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
 
 group :development do
-  gem 'ruby_gntp'
   gem 'guard-rspec'
   gem 'yard'
   gem 'redcarpet'
@@ -19,5 +19,5 @@ end
 
 group :test do
   gem 'rspec'
-  gem 'coveralls', require: false
+  gem 'coveralls', :require => false
 end

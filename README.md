@@ -11,7 +11,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Detects file modification, addition and removal.
 * Checksum comparison for modifications made under the same second.
 * Allows supplying regexp-patterns to ignore and filter paths for better results.
-* Tested on MRI Ruby 1.9.3, 2.0.0 and the latest version of JRuby & Rubinius via [travis-ci](http://travis-ci.org/guard/listen).
+* Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
 
 ## Install
 
@@ -32,12 +32,12 @@ Feel free to give your feeback via [Listen issues](https://github.com/guard/list
 
 ``` ruby
 # Listen to a single directory.
-Listen.to('dir/path/to/listen', filter: /\.rb$/, ignore: %r{ignored/path/}) do |modified, added, removed|
+Listen.to('dir/path/to/listen', :filter => /\.rb$/, :ignore => %r{ignored/path/}) do |modified, added, removed|
   # ...
 end
 
 # Listen to multiple directories.
-Listen.to('dir/to/awesome_app', 'dir/to/other_app', filter: /\.rb$/, latency: 0.1) do |modified, added, removed|
+Listen.to('dir/to/awesome_app', 'dir/to/other_app', :filter => /\.rb$/, :latency => 0.1) do |modified, added, removed|
   # ...
 end
 ```
@@ -133,24 +133,24 @@ end
 #### Relative paths in callbacks
 
 When creating a listener for a **single** path (more specifically a `Listen::Listener` instance),
-you can pass `relative_paths: true` as an option to get relative paths in
+you can pass `:relative_paths => true` as an option to get relative paths in
 your callback:
 
 ```ruby
 # Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
 # the listener.
-Listen.to('/home/user/app/css', relative_paths: true) do |modified, added, removed|
+Listen.to('/home/user/app/css', :relative_paths => true) do |modified, added, removed|
   modified.inspect # => ['style.css']
 end
 ```
 
-Passing the `relative_paths: true` option won't work when listening to multiple
+Passing the `:relative_paths => true` option won't work when listening to multiple
 directories:
 
 ```ruby
 # Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
 # the listener.
-Listen.to('/home/user/app/css', '/home/user/app/js', relative_paths: true) do |modified, added, removed|
+Listen.to('/home/user/app/css', '/home/user/app/js', :relative_paths => true) do |modified, added, removed|
   modified.inspect # => ['/home/user/app/css/style.css']
 end
 ```
@@ -160,23 +160,23 @@ end
 These options can be set through `Listen.to` params or via methods (see the "Object" API)
 
 ```ruby
-filter: /\.rb$/, /\.coffee$/                # Filter files to listen to via a regexps list.
-                                            # default: none
+:filter => /\.rb$/, /\.coffee$/                # Filter files to listen to via a regexps list.
+                                               # default: none
 
-ignore: %r{app/CMake/}, /\.pid$/            # Ignore a list of paths (root directory or sub-dir)
-                                            # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
+:ignore => %r{app/CMake/}, /\.pid$/            # Ignore a list of paths (root directory or sub-dir)
+                                               # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
 
-latency: 0.5                                # Set the delay (**in seconds**) between checking for changes
-                                            # default: 0.25 sec (1.0 sec for polling)
+:latency => 0.5                                # Set the delay (**in seconds**) between checking for changes
+                                               # default: 0.25 sec (1.0 sec for polling)
 
-relative_paths: true                        # Enable the use of relative paths in the callback.
-                                            # default: false
+:relative_paths => true                        # Enable the use of relative paths in the callback.
+                                               # default: false
 
-force_polling: true                         # Force the use of the polling adapter
-                                            # default: none
+:force_polling => true                         # Force the use of the polling adapter
+                                               # default: none
 
-polling_fallback_message: 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
-                                            # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
+:polling_fallback_message => 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
+                                               # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 ```
 
 ### The patterns for filtering and ignoring paths

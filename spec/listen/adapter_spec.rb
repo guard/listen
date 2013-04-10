@@ -52,14 +52,14 @@ describe Listen::Adapter do
       context "with custom polling_fallback_message option" do
         it "warns with the custom polling fallback message" do
           Kernel.should_receive(:warn).with(/custom/)
-          described_class.select_and_initialize('dir', polling_fallback_message: 'custom')
+          described_class.select_and_initialize('dir', :polling_fallback_message => 'custom')
         end
       end
 
       context "with polling_fallback_message to false" do
         it "doesn't warn with a polling fallback message" do
           Kernel.should_not_receive(:warn)
-          described_class.select_and_initialize('dir', polling_fallback_message: false)
+          described_class.select_and_initialize('dir', :polling_fallback_message => false)
         end
       end
     end
@@ -78,7 +78,7 @@ describe Listen::Adapter do
         context 'when the use of the polling adapter is forced' do
           it 'uses Listen::Adapters::Polling' do
             Listen::Adapters::Polling.should_receive(:new).with('dir', {})
-            described_class.select_and_initialize('dir', force_polling: true)
+            described_class.select_and_initialize('dir', :force_polling => true)
           end
         end
       end
