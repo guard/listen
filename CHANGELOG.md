@@ -1,5 +1,9 @@
 ## git master
 
+### Breaking change
+
+- [#96][] Remove Ruby 1.8 support ([@thibaudgg][])
+
 ### Bug fix
 
 - [#93][] Remove dependency operator in the "gem install" message. (reported by [@scottdavis][], fixed by [@rymai][])
@@ -226,6 +230,7 @@
 [#88]: https://github.com/guard/listen/issues/88
 [#93]: https://github.com/guard/listen/issues/93
 [#95]: https://github.com/guard/listen/issues/95
+[#96]: https://github.com/guard/listen/issues/96
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@akerbos]: https://github.com/akerbos
 [@antifuchs]: https://github.com/antifuchs
