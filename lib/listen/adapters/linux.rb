@@ -25,6 +25,8 @@ module Listen
         for information on how to solve this issue.
       EOS
 
+      attr_accessor :worker, :worker_thread, :poll_thread
+
       # Initializes the Adapter.
       #
       # @see Listen::Adapter#initialize
@@ -43,23 +45,23 @@ module Listen
       def start(blocking = true)
         super
 
-        @worker_thread = Thread.new { @worker.run }
-        @poll_thread   = Thread.new { poll_changed_dirs } if @report_changes
+        @worker_thread = Thread.new { worker.run }
+        @poll_thread   = Thread.new { poll_changed_directories } if report_changes?
 
-        @worker_thread.join if blocking
+        worker_thread.join if blocking
       end
 
       # Stops the adapter.
       #
       def stop
-        @mutex.synchronize do
-          return if @stopped
+        mutex.synchronize do
+          return if stopped
           super
         end
 
-        @worker.stop
-        Thread.kill(@worker_thread) if @worker_thread
-        @poll_thread.join if @poll_thread
+        worker.stop
+        Thread.kill(worker_thread) if worker_thread
+        poll_thread.join if poll_thread
       end
 
       # Checks if the adapter is usable on Linux.
@@ -80,7 +82,7 @@ module Listen
       #
       def init_worker
         callback = lambda do |event|
-          if @paused || (
+          if paused || (
             # Event on root directory
             event.name == ""
           ) || (
@@ -94,15 +96,13 @@ module Listen
             next
           end
 
-          @mutex.synchronize do
-            @changed_dirs << File.dirname(event.absolute_name)
+          mutex.synchronize do
+            @changed_directories << File.dirname(event.absolute_name)
           end
         end
 
         INotify::Notifier.new.tap do |worker|
-          @directories.each do |directory|
-            worker.watch(directory, *EVENTS, &callback)
-          end
+          directories.each { |dir| worker.watch(dir, *EVENTS, &callback) }
         end
       end
 
