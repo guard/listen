@@ -287,5 +287,6 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 [rb-inotify]: https://github.com/nex3/rb-inotify
 [stereobooster]: https://github.com/stereobooster
 [rb-fchange]: https://github.com/stereobooster/rb-fchange
+[rb-kqueue]: https://github.com/mat813/rb-kqueue
 [Yehuda Katz (wycats)]: https://github.com/wycats
 [vigilo]: https://github.com/wycats/vigilo
