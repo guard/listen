@@ -17,6 +17,15 @@ module Listen
     # The default list of files that get ignored by the listener.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
+    # Defines the used precision based on the type of mtime returned by the
+    # system (whether its in milliseconds or just seconds)
+    #
+    begin
+      HIGH_PRECISION_SUPPORTED = File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+    rescue
+      HIGH_PRECISION_SUPPORTED = false
+    end
+
     # Data structure used to save meta data about a path
     #
     MetaData = Struct.new(:type, :mtime)
@@ -239,9 +248,10 @@ module Listen
 
     def detect_modification(path, meta_data, options)
       new_mtime = mtime_of(path)
-      diff = new_mtime - meta_data.mtime
 
-      if (diff < Adapter::DEFAULT_LATENCY && content_modified?(path)) || diff >= Adapter::DEFAULT_LATENCY
+      # First check if we are in the same second (to update checksums)
+      # before checking the time difference
+      if (meta_data.mtime.to_i == new_mtime.to_i && content_modified?(path)) || meta_data.mtime < new_mtime
         modification_detected(path, meta_data, new_mtime, options)
       end
     end
@@ -385,7 +395,7 @@ module Listen
     # @return [Fixnum, Float] the mtime of the file
     #
     def mtime_of(file)
-      File.lstat(file).mtime.to_f
+      File.lstat(file).mtime.send(HIGH_PRECISION_SUPPORTED ? :to_f : :to_i)
     end
   end
 end
