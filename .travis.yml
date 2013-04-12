@@ -11,12 +11,14 @@ rvm:
   - jruby-head
   - rbx-18mode
   - rbx-19mode
+  - rbx-head
 matrix:
   allow_failures:
-    - rvm: rbx-18mode
-    - rvm: rbx-19mode
     - rvm: ruby-head
     - rvm: jruby-head
+    - rvm: rbx-18mode
+    - rvm: rbx-19mode
+    - rvm: rbx-head
 notifications:
   recipients:
     - thibaud@thibaud.me

@@ -190,10 +190,10 @@ module Listen
     # @return [String] the relative path
     #
     def relative_to_base(path)
-      return nil unless path[@directory]
+      return nil unless path[directory]
 
       path = path.force_encoding("BINARY") if path.respond_to?(:force_encoding)
-      path.sub(%r{^#{Regexp.quote(@directory)}#{File::SEPARATOR}?}, '')
+      path.sub(%r{^#{Regexp.quote(directory)}#{File::SEPARATOR}?}, '')
     end
 
     private
@@ -210,7 +210,7 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative paths for changes
     #
     def detect_modifications_and_removals(directory, options = {})
-      @paths[directory].each do |basename, meta_data|
+      paths[directory].each do |basename, meta_data|
         path = File.join(directory, basename)
         case meta_data.type
         when 'Dir'
@@ -314,7 +314,7 @@ module Listen
     def content_modified?(path)
       return false unless File.ftype(path) == 'file'
       @sha1_checksum = sha1_checksum(path)
-      if @sha1_checksums[path] == @sha1_checksum || !@sha1_checksums.key?(path)
+      if sha1_checksums[path] == @sha1_checksum || !sha1_checksums.key?(path)
         update_sha1_checksum(path)
         false
       else
@@ -349,8 +349,8 @@ module Listen
     # @yield [path] an important path
     #
     def important_paths
-      Find.find(@directory) do |path|
-        next if path == @directory
+      Find.find(directory) do |path|
+        next if path == directory
 
         if File.directory?(path)
           # Add a trailing slash to directories when checking if a directory is
@@ -385,7 +385,7 @@ module Listen
     # @return [Boolean]
     #
     def existing_path?(path)
-      @paths[File.dirname(path)][File.basename(path)] != nil
+      paths[File.dirname(path)][File.basename(path)] != nil
     end
 
     # Returns the modification time of a file based on the precision defined by the system

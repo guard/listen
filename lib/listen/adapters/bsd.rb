@@ -16,13 +16,15 @@ module Listen
       #
       EVENTS = [:delete, :write, :extend, :attrib, :link, :rename, :revoke]
 
+      attr_accessor :worker, :worker_thread, :poll_thread
+
       # Initializes the Adapter.
       #
       # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
-        @kqueue = init_kqueue
+        @worker = init_worker
       end
 
       # Starts the adapter.
@@ -32,28 +34,27 @@ module Listen
       def start(blocking = true)
         super
 
-        @kqueue_thread = Thread.new do
-          until @stopped
-            @kqueue.poll
-            sleep(@latency)
+        @worker_thread = Thread.new do
+          until stopped
+            worker.poll
+            sleep(latency)
           end
         end
-        @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
-
-        @kqueue_thread.join if blocking
+        @poll_thread = Thread.new { poll_changed_directories } if report_changes?
+        worker_thread.join if blocking
       end
 
       # Stops the adapter.
       #
       def stop
-        @mutex.synchronize do
-          return if @stopped
+        mutex.synchronize do
+          return if stopped
           super
         end
 
-        @kqueue.stop
-        Thread.kill(@kqueue_thread) if @kqueue_thread
-        @poll_thread.join if @poll_thread
+        worker.stop
+        Thread.kill(worker_thread) if worker_thread
+        poll_thread.join if poll_thread
       end
 
       # Checks if the adapter is usable on BSD.
@@ -72,15 +73,15 @@ module Listen
       #
       # @return [INotify::Notifier] initialized kqueue
       #
-      def init_kqueue
+      def init_worker
         require 'find'
 
         callback = lambda do |event|
           path = event.watcher.path
-          @mutex.synchronize do
+          mutex.synchronize do
             # kqueue watches everything, but Listen only needs the
             # directory where stuffs happens.
-            @changed_dirs << (File.directory?(path) ? path : File.dirname(path))
+            @changed_directories << (File.directory?(path) ? path : File.dirname(path))
 
             # If it is a directory, and it has a write flag, it means a
             # file has been added so find out which and deal with it.
@@ -98,7 +99,7 @@ module Listen
         end
 
         KQueue::Queue.new.tap do |queue|
-          @directories.each do |directory|
+          directories.each do |directory|
             Find.find(directory) do |path|
               queue.watch_file(path, *EVENTS, &callback)
             end

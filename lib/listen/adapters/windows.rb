@@ -11,6 +11,8 @@ module Listen
       # Declare the adapter's dependencies
       dependency 'wdm', '~> 0.1'
 
+      attr_accessor :worker, :worker_thread, :poll_thread
+
       # Initializes the Adapter.
       #
       # @see Listen::Adapter#initialize
@@ -26,29 +28,27 @@ module Listen
       #
       def start(blocking = true)
         super
-
-        @worker_thread = Thread.new { @worker.run! }
+        @worker_thread = Thread.new { worker.run! }
 
         # Wait for the worker to start. This is needed to avoid a deadlock
         # when stopping immediately after starting.
         sleep 0.1
 
-        @poll_thread = Thread.new { poll_changed_dirs } if @report_changes
-
-        @worker_thread.join if blocking
+        @poll_thread = Thread.new { poll_changed_directories } if report_changes?
+        worker_thread.join if blocking
       end
 
       # Stops the adapter.
       #
       def stop
-        @mutex.synchronize do
-          return if @stopped
+        mutex.synchronize do
+          return if stopped
           super
         end
 
-        @worker.stop
-        @worker_thread.join if @worker_thread
-        @poll_thread.join if @poll_thread
+        worker.stop
+        Thread.kill(worker_thread) if worker_thread
+        poll_thread.join if poll_thread
       end
 
       # Checks if the adapter is usable on Windows.
@@ -69,15 +69,15 @@ module Listen
       #
       def init_worker
         callback = Proc.new do |change|
-          next if @paused
+          next if paused
 
-          @mutex.synchronize do
-            @changed_dirs << File.dirname(change.path)
+          mutex.synchronize do
+            @changed_directories << File.dirname(change.path)
           end
         end
 
         WDM::Monitor.new.tap do |worker|
-          @directories.each { |d| worker.watch_recursively(d, &callback) }
+          directories.each { |dir| worker.watch_recursively(dir, &callback) }
         end
       end
 
