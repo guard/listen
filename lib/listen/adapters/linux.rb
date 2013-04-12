@@ -4,11 +4,6 @@ module Listen
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'rb-inotify', '~> 0.9'
-
       # Watched inotify events
       #
       # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
@@ -26,6 +21,9 @@ module Listen
       EOS
 
       attr_accessor :worker, :worker_thread, :poll_thread
+
+      def self.target_os_regex; /linux/i; end
+      def self.adapter_gem; 'rb-inotify'; end
 
       # Initializes the Adapter.
       #
@@ -64,15 +62,6 @@ module Listen
         poll_thread.join if poll_thread
       end
 
-      # Checks if the adapter is usable on Linux.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /linux/i
-        super
-      end
-
     private
 
       # Initializes a INotify worker and adds a watcher for
@@ -105,7 +94,6 @@ module Listen
           directories.each { |dir| worker.watch(dir, *EVENTS, &callback) }
         end
       end
-
     end
 
   end
