@@ -238,11 +238,17 @@ module Listen
 
     private
 
+    # Initializes the directories to watch as well as the directories records.
+    #
+    # @see Listen::DirectoryRecord
+    #
     def initialize_directories_and_directories_records(directories)
       @directories = directories.map { |d| Pathname.new(d).realpath.to_s }
       @directories_records = directories.map { |d| DirectoryRecord.new(d) }
     end
 
+    # Initializes whether or not using relative paths.
+    #
     def initialize_relative_paths_usage(options)
       @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
     end
