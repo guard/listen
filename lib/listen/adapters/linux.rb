@@ -25,43 +25,14 @@ module Listen
         for information on how to solve this issue.
       EOS
 
-      attr_accessor :worker, :worker_thread, :poll_thread
-
       # Initializes the Adapter.
       #
       # @see Listen::Adapter#initialize
       #
       def initialize(directories, options = {}, &callback)
         super
-        @worker = init_worker
       rescue Errno::ENOSPC
         abort(INOTIFY_LIMIT_MESSAGE)
-      end
-
-      # Starts the adapter.
-      #
-      # @param [Boolean] blocking whether or not to block the current thread after starting
-      #
-      def start(blocking = true)
-        super
-
-        @worker_thread = Thread.new { worker.run }
-        @poll_thread   = Thread.new { poll_changed_directories } if report_changes?
-
-        worker_thread.join if blocking
-      end
-
-      # Stops the adapter.
-      #
-      def stop
-        mutex.synchronize do
-          return if stopped
-          super
-        end
-
-        worker.stop
-        Thread.kill(worker_thread) if worker_thread
-        poll_thread.join if poll_thread
       end
 
       # Checks if the adapter is usable on Linux.
@@ -73,14 +44,16 @@ module Listen
         super
       end
 
-    private
+      private
 
       # Initializes a INotify worker and adds a watcher for
       # each directory passed to the adapter.
       #
       # @return [INotify::Notifier] initialized worker
       #
-      def init_worker
+      # @see Listen::Adapter#initialize_worker
+      #
+      def initialize_worker
         callback = lambda do |event|
           if paused || (
             # Event on root directory
@@ -104,6 +77,14 @@ module Listen
         INotify::Notifier.new.tap do |worker|
           directories.each { |dir| worker.watch(dir, *EVENTS, &callback) }
         end
+      end
+
+      # Starts the worker in a new thread.
+      #
+      # @see Listen::Adapter#start_worker
+      #
+      def start_worker
+        @worker_thread = Thread.new { worker.run }
       end
 
     end
