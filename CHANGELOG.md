@@ -6,12 +6,14 @@
 
 ### Changes & deprecations
 
+- `Listen.to` does not block the current thread anymore. Use `Listen.to!` if you want the old behavior back. ([@rymai][])
 - `Listen::Listener#start` does not block the current thread anymore. Use `Listen::Listener#start!` if you want the old behavior back. ([@rymai][])
 - `Listen::Listener#start`'s `blocking` parameter is deprecated. ([@rymai][])
 
 ### Improvements
 
 - [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecate `Listen::MultiListener`. ([@rymai][])
+- New method: `Listen.to!` which blocks the current thread. ([@rymai][])
 - New method: `Listen::Listener#start!` to start the listener and block the current thread. ([@rymai][])
 - [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 - Add `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
