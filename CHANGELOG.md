@@ -4,13 +4,22 @@
 
 - [#93][] Remove dependency operator in the "gem install" message. (reported by [@scottdavis][], fixed by [@rymai][])
 
+### Changes & deprecations
+
+- [#98][] `Listen.to` does not block the current thread anymore. Use `Listen.to!` if you want the old behavior back. ([@rymai][])
+- [#98][] `Listen::Listener#start` does not block the current thread anymore. Use `Listen::Listener#start!` if you want the old behavior back. ([@rymai][])
+- [#98][] `Listen::Listener#start`'s `blocking` parameter is deprecated. ([@rymai][])
+
 ### Improvements
 
-- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecate `Listen::MultiListener`. ([@rymai][])
+- [#98][] New method: `Listen.to!` which blocks the current thread. ([@rymai][])
+- [#98][] New method: `Listen::Listener#start!` to start the listener and block the current thread. ([@martikaljuve][] & [@rymai][])
+- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecates `Listen::MultiListener`. ([@rymai][])
 - [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
-- Add `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
+- New methods: `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
 - Refactor `Listen::DependencyManager` internals. ([@rymai][])
+
 
 ## 0.7.3 - February 24, 2013
 
@@ -227,6 +236,7 @@
 [#93]: https://github.com/guard/listen/issues/93
 [#95]: https://github.com/guard/listen/issues/95
 [#96]: https://github.com/guard/listen/issues/96
+[#98]: https://github.com/guard/listen/issues/98
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@akerbos]: https://github.com/akerbos
 [@antifuchs]: https://github.com/antifuchs
@@ -236,6 +246,7 @@
 [@ebroder]: https://github.com/ebroder
 [@fny]: https://github.com/fny
 [@markiz]: https://github.com/markiz
+[@martikaljuve]: https://github.com/martikaljuve
 [@mat813]: https://github.com/mat813
 [@mbj]: https://github.com/mbj
 [@mrbinky3000]: https://github.com/mrbinky3000

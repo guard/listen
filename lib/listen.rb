@@ -14,6 +14,7 @@ module Listen
   end
 
   # Listens to file system modifications on a either single directory or multiple directories.
+  # When calling this method, the current thread is not blocked.
   #
   # @param (see Listen::Listener#new)
   #
@@ -25,9 +26,31 @@ module Listen
   # @return [Listen::Listener] the file listener if no block given
   #
   def self.to(*args, &block)
-    listener = Listener.new(*args, &block)
+    listener = _init_listener(*args, &block)
 
     block ? listener.start : listener
+  end
+
+  # Listens to file system modifications on a either single directory or multiple directories.
+  # When calling this method, the current thread is blocked.
+  #
+  # @param (see Listen::Listener#new)
+  #
+  # @yield [modified, added, removed] the changed files
+  # @yieldparam [Array<String>] modified the list of modified files
+  # @yieldparam [Array<String>] added the list of added files
+  # @yieldparam [Array<String>] removed the list of removed files
+  #
+  # @since 1.0.0
+  #
+  def self.to!(*args, &block)
+    _init_listener(*args, &block).start!
+  end
+
+  # @private
+  #
+  def self._init_listener(*args, &block)
+    Listener.new(*args, &block)
   end
 
 end
