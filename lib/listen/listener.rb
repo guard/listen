@@ -5,6 +5,11 @@ module Listen
 
     attr_reader :directories, :directories_records, :block, :adapter, :adapter_options, :use_relative_paths
 
+    BLOCKING_PARAMETER_DEPRECATION_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      The blocking parameter of Listen::Listener#start is deprecated.\n
+      Please use Listen::Adapter#start for a non-blocking listener and Listen::Listener#start! for a blocking one.
+    EOS
+
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
@@ -36,15 +41,27 @@ module Listen
 
     # Starts the listener by initializing the adapter and building
     # the directory record concurrently, then it starts the adapter to watch
-    # for changes.
+    # for changes. The current thread is not blocked after starting.
     #
-    # @param [Boolean] blocking whether or not to block the current thread after starting
+    # @see Listen::Listener#start!
     #
-    def start(blocking = true)
-      t = Thread.new { build_directories_records }
-      @adapter = initialize_adapter
-      t.join
-      adapter.start(blocking)
+    def start(deprecated_blocking = nil)
+      Kernel.warn "[Listen warning]:\n#{BLOCKING_PARAMETER_DEPRECATION_MESSAGE}" unless deprecated_blocking.nil?
+      setup
+      adapter.start
+    end
+
+    # Starts the listener by initializing the adapter and building
+    # the directory record concurrently, then it starts the adapter to watch
+    # for changes. The current thread is blocked after starting.
+    #
+    # @see Listen::Listener#start
+    #
+    # @since 1.0.0
+    #
+    def start!
+      setup
+      adapter.start!
     end
 
     # Stops the listener.
@@ -228,6 +245,14 @@ module Listen
 
     def initialize_relative_paths_usage(options)
       @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
+    end
+
+    # Build the directory record concurrently and initialize the adapter.
+    #
+    def setup
+      t = Thread.new { build_directories_records }
+      @adapter = initialize_adapter
+      t.join
     end
 
     # Initializes an adapter passing it the callback and adapters' options.

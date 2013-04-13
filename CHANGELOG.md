@@ -4,13 +4,20 @@
 
 - [#93][] Remove dependency operator in the "gem install" message. (reported by [@scottdavis][], fixed by [@rymai][])
 
+### Changes & deprecations
+
+- `Listen::Listener#start` does not block the current thread anymore. Use `Listen::Listener#start!` if you want the old behavior back. ([@rymai][])
+- `Listen::Listener#start`'s `blocking` parameter is deprecated. ([@rymai][])
+
 ### Improvements
 
 - [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecate `Listen::MultiListener`. ([@rymai][])
+- New method: `Listen::Listener#start!` to start the listener and block the current thread. ([@rymai][])
 - [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 - Add `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
 - Refactor `Listen::DependencyManager` internals. ([@rymai][])
+
 
 ## 0.7.3 - February 24, 2013
 
