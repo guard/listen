@@ -9,8 +9,6 @@ module Listen
     # file IO than the other implementations.
     #
     class Polling < Adapter
-      extend DependencyManager
-
       private
 
       # The default delay between checking for changes.
@@ -54,7 +52,6 @@ module Listen
         end
       rescue Interrupt
       end
-
     end
 
   end

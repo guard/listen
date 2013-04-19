@@ -4,21 +4,11 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'rb-fsevent', '~> 0.9'
-
       LAST_SEPARATOR_REGEX = /\/$/
 
-      # Checks if the adapter is usable on Mac OSX.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /darwin(1.+)?$/i
-        super
-      end
+
+      def self.target_os_regex; /darwin(1.+)?$/i; end
+      def self.adapter_gem; 'rb-fsevent'; end
 
       private
 
@@ -52,7 +42,6 @@ module Listen
         # TODO: Find a better way to block until the worker starts.
         sleep 0.1
       end
-
     end
 
   end

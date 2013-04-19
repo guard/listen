@@ -21,11 +21,6 @@ module Listen
     # The default delay between checking for changes.
     DEFAULT_LATENCY = 0.25
 
-    # The default warning message when there is a missing dependency.
-    MISSING_DEPENDENCY_MESSAGE = <<-EOS.gsub(/^\s*/, '')
-      For a better performance, it's recommended that you satisfy the missing dependency.
-    EOS
-
     # The default warning message when falling back to polling adapter.
     POLLING_FALLBACK_MESSAGE = <<-EOS.gsub(/^\s*/, '')
       Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback.
@@ -49,21 +44,14 @@ module Listen
     def self.select_and_initialize(directories, options = {}, &callback)
       return Adapters::Polling.new(directories, options, &callback) if options.delete(:force_polling)
 
-      warning = ''
-
-      begin
-        OPTIMIZED_ADAPTERS.each do |adapter|
-          namespaced_adapter = Adapters.const_get(adapter)
-          if namespaced_adapter.send(:usable_and_works?, directories, options)
-            return namespaced_adapter.new(directories, options, &callback)
-          end
+      OPTIMIZED_ADAPTERS.each do |adapter|
+        namespaced_adapter = Adapters.const_get(adapter)
+        if namespaced_adapter.send(:usable_and_works?, directories, options)
+          return namespaced_adapter.new(directories, options, &callback)
         end
-      rescue DependencyManager::Error => e
-        warning += e.message + "\n" + MISSING_DEPENDENCY_MESSAGE
       end
 
-      self.warn_polling_fallback(warning, options)
-
+      self.warn_polling_fallback(options)
       Adapters::Polling.new(directories, options, &callback)
     end
 
@@ -179,15 +167,6 @@ module Listen
       end
     end
 
-    # Checks if the adapter is usable on the current OS.
-    #
-    # @return [Boolean] whether the adapter is usable or not
-    #
-    def self.usable?
-      load_dependencies
-      dependencies_loaded?
-    end
-
     # Checks if the adapter is usable and works on the current OS.
     #
     # @param [String, Array<String>] directories the directories to watch
@@ -198,6 +177,22 @@ module Listen
     #
     def self.usable_and_works?(directories, options = {})
       usable? && Array(directories).all? { |d| works?(d, options) }
+    end
+
+    # Checks if the adapter is usable on target OS.
+    #
+    # @return [Boolean] whether usable or not
+    #
+    def self.usable?
+      load_dependency if RbConfig::CONFIG['target_os'] =~ target_os_regex
+    end
+
+    # Load the adapter gem
+    #
+    # @return [Boolean] whether required or not
+    #
+    def self.load_dependency
+      @loaded ||= require adapter_gem
     end
 
     # Runs a tests to determine if the adapter can actually pick up
@@ -296,10 +291,10 @@ module Listen
     # @param [Hash] options the adapter options
     # @option options [Boolean] polling_fallback_message to change polling fallback message or remove it
     #
-    def self.warn_polling_fallback(warning, options)
+    def self.warn_polling_fallback(options)
       return if options[:polling_fallback_message] == false
 
-      warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
+      warning = options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
       Kernel.warn "[Listen warning]:\n#{warning.gsub(/^(.*)/, '  \1')}"
     end
 

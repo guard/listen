@@ -36,19 +36,6 @@ describe Listen::Adapter do
         described_class.select_and_initialize('dir')
       end
 
-      context 'when the dependencies of an adapter are not satisfied' do
-        before do
-          Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
-            Listen::Adapters.const_get(adapter).stub(:usable_and_works?).and_raise(Listen::DependencyManager::Error)
-          end
-        end
-
-        it 'invites the user to satisfy the dependencies of the adapter in the warning' do
-          Kernel.should_receive(:warn).with(/#{Listen::Adapter::MISSING_DEPENDENCY_MESSAGE}/)
-          described_class.select_and_initialize('dir')
-        end
-      end
-
       context "with custom polling_fallback_message option" do
         it "warns with the custom polling fallback message" do
           Kernel.should_receive(:warn).with(/custom/)
@@ -88,14 +75,6 @@ describe Listen::Adapter do
   Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
     adapter_class = Listen::Adapters.const_get(adapter)
     if adapter_class.usable?
-      describe '.usable?' do
-        it 'checks the dependencies' do
-          adapter_class.should_receive(:load_dependencies)
-          adapter_class.should_receive(:dependencies_loaded?)
-          adapter_class.usable?
-        end
-      end
-
       describe '.usable_and_works?' do
         it 'checks if the adapter is usable' do
           adapter_class.stub(:works?)

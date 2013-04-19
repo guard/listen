@@ -4,11 +4,6 @@ module Listen
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'rb-inotify', '~> 0.9'
-
       # Watched inotify events
       #
       # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
@@ -25,6 +20,9 @@ module Listen
         for information on how to solve this issue.
       EOS
 
+      def self.target_os_regex; /linux/i; end
+      def self.adapter_gem; 'rb-inotify'; end
+
       # Initializes the Adapter.
       #
       # @see Listen::Adapter#initialize
@@ -33,15 +31,6 @@ module Listen
         super
       rescue Errno::ENOSPC
         abort(INOTIFY_LIMIT_MESSAGE)
-      end
-
-      # Checks if the adapter is usable on Linux.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /linux/i
-        super
       end
 
       private
@@ -86,7 +75,6 @@ module Listen
       def start_worker
         @worker_thread = Thread.new { worker.run }
       end
-
     end
 
   end

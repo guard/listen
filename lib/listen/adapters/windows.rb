@@ -1,4 +1,5 @@
 require 'set'
+require 'rubygems'
 
 module Listen
   module Adapters
@@ -6,21 +7,51 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Adapter
-      extend DependencyManager
 
-      # Declare the adapter's dependencies
-      dependency 'wdm', '~> 0.1'
+      BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
+        Please add the following to your Gemfile to avoid polling for changes:
+          require 'rbconfig'
+          gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+      EOS
 
-      # Checks if the adapter is usable on Windows.
+      def self.target_os_regex; /mswin|mingw/i; end
+      def self.adapter_gem; 'wdm'; end
+
+      # Checks if the adapter is usable on target OS.
       #
       # @return [Boolean] whether usable or not
       #
       def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /mswin|mingw/i
+        super if mri? && at_least_ruby_1_9?
+      end
+
+      # Load the adapter gem
+      #
+      # @return [Boolean] whether required or not
+      #
+      def self.load_dependency
         super
+      rescue Gem::LoadError
+        Kernel.warn BUNDLER_DECLARE_GEM
       end
 
       private
+
+      # Checks if Ruby engine is MRI.
+      #
+      # @return [Boolean]
+      #
+      def self.mri?
+        defined?(RUBY_ENGINE) && RUBY_ENGINE == 'ruby'
+      end
+
+      # Checks if Ruby engine is MRI.
+      #
+      # @return [Boolean]
+      #
+      def self.at_least_ruby_1_9?
+        Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('1.9.2')
+      end
 
       # Initializes a WDM monitor and adds a watcher for
       # each directory passed to the adapter.
