@@ -9,11 +9,34 @@ shared_examples_for 'a listener to changes on a file-system' do
       subject.start
     end
 
-    context 'with the blocking param set to false' do
-      it 'passes the blocking param to the adapter' do
-        adapter.should_receive(:start).with(false)
+    context 'with the blocking deprecated param set to true' do
+      it 'displays a deprecation notice' do
+        Kernel.should_receive(:warn).with(/#{Listen::Listener::BLOCKING_PARAMETER_DEPRECATION_MESSAGE}/)
+        subject.start(true)
+      end
+    end
+
+    context 'with the blocking deprecated param set to false' do
+      it 'displays a deprecation notice' do
+        Kernel.should_receive(:warn).with(/#{Listen::Listener::BLOCKING_PARAMETER_DEPRECATION_MESSAGE}/)
         subject.start(false)
       end
+    end
+  end
+
+  describe '#start!' do
+    before do
+      subject.stub(:initialize_adapter) { adapter }
+    end
+
+    it 'starts the adapter' do
+      adapter.should_receive(:start!)
+      subject.start!
+    end
+
+    it 'passes the blocking param to the adapter' do
+      adapter.should_receive(:start!)
+      subject.start!
     end
   end
 

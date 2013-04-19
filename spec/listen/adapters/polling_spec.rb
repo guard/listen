@@ -22,20 +22,20 @@ describe Listen::Adapters::Polling do
 
       it 'calls listener.on_change' do
         listener.should_receive(:on_change).at_least(1).times.with(['dir'], :recursive => true)
-        subject.start(false)
+        subject.start
         subject.wait_for_callback
       end
 
       it 'calls listener.on_change continuously' do
         subject.latency = 0.001
         listener.should_receive(:on_change).at_least(10).times.with(['dir'], :recursive => true)
-        subject.start(false)
+        subject.start
         10.times { subject.wait_for_callback }
       end
 
       it "doesn't call listener.on_change if paused" do
         subject.paused = true
-        subject.start(false)
+        subject.start
         subject.wait_for_callback
         @called.should be_nil
       end
@@ -46,20 +46,20 @@ describe Listen::Adapters::Polling do
 
       it 'calls listener.on_change' do
         listener.should_receive(:on_change).at_least(1).times.with(%w{dir1 dir2}, :recursive => true)
-        subject.start(false)
+        subject.start
         subject.wait_for_callback
       end
 
       it 'calls listener.on_change continuously' do
         subject.latency = 0.001
         listener.should_receive(:on_change).at_least(10).times.with(%w{dir1 dir2}, :recursive => true)
-        subject.start(false)
+        subject.start
         10.times { subject.wait_for_callback }
       end
 
       it "doesn't call listener.on_change if paused" do
         subject.paused = true
-        subject.start(false)
+        subject.start
         subject.wait_for_callback
         @called.should be_nil
       end
