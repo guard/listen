@@ -11,6 +11,49 @@ module Listen
 
       LAST_SEPARATOR_REGEX = /\/$/
 
+      attr_accessor :worker, :worker_thread, :poll_thread
+
+      # Initializes the Adapter.
+      #
+      # @see Listen::Adapter#initialize
+      #
+      def initialize(directories, options = {}, &callback)
+        super
+        @worker = init_worker
+      end
+
+      # Starts the adapter.
+      #
+      # @param [Boolean] blocking whether or not to block the current thread after starting
+      #
+      def start(blocking = true)
+        super
+
+        @worker_thread = Thread.new { worker.run }
+
+        # The FSEvent worker needs some time to start up. Turnstiles can't
+        # be used to wait for it as it runs in a loop.
+        # TODO: Find a better way to block until the worker starts.
+        sleep 0.1
+
+        @poll_thread = Thread.new { poll_changed_directories } if report_changes?
+
+        worker_thread.join if blocking
+      end
+
+      # Stops the adapter.
+      #
+      def stop
+        mutex.synchronize do
+          return if stopped
+          super
+        end
+
+        worker.stop
+        Thread.kill(worker_thread) if worker_thread
+        poll_thread.join if poll_thread
+      end
+
       # Checks if the adapter is usable on Mac OSX.
       #
       # @return [Boolean] whether usable or not
@@ -27,9 +70,7 @@ module Listen
       #
       # @return [FSEvent] initialized worker
       #
-      # @see Listen::Adapter#initialize_worker
-      #
-      def initialize_worker
+      def init_worker
         FSEvent.new.tap do |worker|
           worker.watch(directories.dup, :latency => latency) do |changes|
             next if paused
@@ -39,18 +80,6 @@ module Listen
             end
           end
         end
-      end
-
-      # Starts the worker in a new thread and sleep 0.1 second.
-      #
-      # @see Listen::Adapter#start_worker
-      #
-      def start_worker
-        @worker_thread = Thread.new { worker.run }
-        # The FSEvent worker needs some time to start up. Turnstiles can't
-        # be used to wait for it as it runs in a loop.
-        # TODO: Find a better way to block until the worker starts.
-        sleep 0.1
       end
 
     end

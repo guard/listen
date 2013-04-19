@@ -11,40 +11,22 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Detects file modification, addition and removal.
 * Checksum comparison for modifications made under the same second.
 * Allows supplying regexp-patterns to ignore and filter paths for better results.
-* Tested on all Ruby environments via [Travis CI](https://travis-ci.org/guard/listen).
+* Tested on all Ruby environments via [travis-ci](http://travis-ci.org/guard/listen).
 
 ## Install
 
-### Using Bundler
-
-The simplest way to install Listen is to use Bundler.
-
-Add Listen to your Gemfile:
-
-```ruby
-group :development do
-  gem 'listen'
-end
-```
-
-and install it by running Bundler:
-
-```bash
-$ bundle
-```
-
-### Install the gem with RubyGems
-
-```bash
-$ gem install listen
+``` bash
+gem install listen
 ```
 
 ## Usage
 
 There are **two ways** to use Listen:
 
-1. Block API: Call `Listen.to`/`Listen.to!` with either a single directory or multiple directories, then define the `change` callback in a block.
-2. "Object" API: Create a `listener` object and use it in a chainable way.
+1. Call `Listen.to` with either a single directory or multiple directories, then define the `change` callback in a block.
+2. Create a `listener` object and use it in an (ARel style) chainable way.
+
+Feel free to give your feeback via [Listen issues](https://github.com/guard/listen/issues)
 
 ### Block API
 
@@ -70,11 +52,10 @@ listener = listener.latency(0.5)
 listener = listener.force_polling(true)
 listener = listener.polling_fallback_message(false)
 listener = listener.change(&callback)
-listener.start
+listener.start # blocks execution!
 ```
 
-**Note**: All the "Object" API methods except `start`/`start!` return the listener
-and are thus chainable:
+### Chainable
 
 ``` ruby
 Listen.to('dir/path/to/listen')
@@ -84,7 +65,7 @@ Listen.to('dir/path/to/listen')
       .force_polling(true)
       .polling_fallback_message('custom message')
       .change(&callback)
-      .start
+      .start # blocks execution!
 ```
 
 ### Pause/Unpause
@@ -93,11 +74,11 @@ Listener can also easily be paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen')
-listener.start   # non-blocking mode
+listener.start(false) # non-blocking mode
 listener.pause   # stop listening to changes
 listener.paused? # => true
-listener.unpause # start listening to changes again
-listener.stop    # stop completely the listener
+listener.unpause
+listener.stop
 ```
 
 ## Changes callback
@@ -107,7 +88,7 @@ The registered callback gets invoked, when there are changes, with **three** par
 `modified_paths`, `added_paths` and `removed_paths` in that particular order.
 
 You can register a callback in two ways. The first way is by passing a block when calling
-the `Listen.to`/`Listen.to!` method or when initializing a listener object:
+the `Listen.to` method or when initializing a listener object:
 
 ```ruby
 Listen.to('path/to/app') do |modified, added, removed|
@@ -122,7 +103,7 @@ end
 
 ```
 
-The second way to register a callback is by calling the `#change` method on a
+The second way to register a callback is be calling the `change` method on any
 listener passing it a block:
 
 ```ruby
@@ -134,7 +115,7 @@ end
 listener = Listen.to('dir')
 listener.change(&callback) # convert the callback to a block and register it
 
-listener.start
+listener.start # blocks execution
 ```
 
 ### Paths in callbacks
@@ -176,30 +157,29 @@ end
 
 ## Options
 
-All the following options can be set through the `Listen.to`/`Listen.to!` params
-or via ["Object" API](#object-api) methods:
+These options can be set through `Listen.to` params or via methods (see the "Object" API)
 
 ```ruby
-:ignore => %r{app/CMake/}, /\.pid$/           # Ignore a list of paths (root directory or sub-dir)
-                                              # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
+:filter => /\.rb$/, /\.coffee$/                # Filter files to listen to via a regexps list.
+                                               # default: none
 
-:filter => /\.rb$/, /\.coffee$/               # Filter files to listen to via a regexps list.
-                                              # default: none
+:ignore => %r{app/CMake/}, /\.pid$/            # Ignore a list of paths (root directory or sub-dir)
+                                               # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
 
-:latency => 0.5                               # Set the delay (**in seconds**) between checking for changes
-                                              # default: 0.25 sec (1.0 sec for polling)
+:latency => 0.5                                # Set the delay (**in seconds**) between checking for changes
+                                               # default: 0.25 sec (1.0 sec for polling)
 
-:force_polling => true                        # Force the use of the polling adapter
-                                              # default: none
+:relative_paths => true                        # Enable the use of relative paths in the callback.
+                                               # default: false
 
-:polling_fallback_message => 'custom message' # Set a custom polling fallback message (or disable it with false)
-                                              # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
+:force_polling => true                         # Force the use of the polling adapter
+                                               # default: none
 
-:relative_paths => true                       # Enable the use of relative paths in the callback.
-                                              # default: false
+:polling_fallback_message => 'custom message'  # Set a custom polling fallback message (or disable it with `false`)
+                                               # default: "WARNING: Listen fallen back to polling, learn more at https://github.com/guard/listen#fallback."
 ```
 
-### Note on the patterns for ignoring and filtering paths
+### The patterns for filtering and ignoring paths
 
 Just like the unix convention of beginning absolute paths with the
 directory-separator (forward slash `/` in unix) and with no prefix for relative paths,
@@ -213,49 +193,40 @@ and not `%r{/build/}`.
 
 Use `#filter!` and `#ignore!` methods to overwrites default patterns.
 
-## Blocking listening to changes
+### Non-blocking listening to changes
 
-Calling `Listen.to` with a block doesn't block the current thread. If you want
-to block the current thread instead until the listener is stopped (which needs
-to be done from another thread), you can use `Listen.to!`.
+Starting a listener blocks the current thread by default. That means any code after the
+`start` call won't be run until the listener is stopped (which needs to be done from another thread).
 
-Similarly, if you're using the "Object" API, you can use `#start!` instead of `#start` to block the
-current thread until the listener is stopped.
+For advanced usage there is an option to disable this behavior and have the listener start working
+in the background without blocking. To enable non-blocking listening the `start` method of
+the listener needs to be called with `false` as a parameter.
 
-Here is an example of using a listener in the blocking mode:
-
-```ruby
-Listen.to!('dir/path/to/listen') # block execution
-
-# Code here will not run until the listener is stopped
-
-```
-
-Here is an example of using a listener started with the "Object" API in blocking mode:
+Here is an example of using a listener in the non-blocking mode:
 
 ```ruby
 listener = Listen.to('dir/path/to/listen')
-listener.start! # block execution
+listener.start(false) # doesn't block execution
 
-# Code here will not run until the listener is stopped
+# Code here will run immediately after starting the listener
 
 ```
 
-**Note**: Using the `Listen.to!` helper-method with or without a callback-block
-will always start the listener right away and block execution of the current thread.
+**note**: Using the `Listen.to` helper-method with a callback-block will always
+block execution. See the "Block API" section for an example.
 
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
-There are 4 OS-specific adapters to support Mac, Linux, *BSD and Windows.
-These adapters are fast as they use some system-calls to implement the notifying function.
+There are 3 OS-specific adapters to support Mac, Linux, *BSD and Windows. These adapters are fast
+as they use some system-calls to implement the notifying function.
 
 There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is unfortunately slower than the rest of the adapters.
 
 The Listen gem will choose the best and working adapter for your machine automatically. If you
 want to force the use of the polling adapter, either use the `:force_polling` option
-while initializing the listener or call the `#force_polling` method on your listener
+while initializing the listener or call the `force_polling` method on your listener
 before starting it.
 
 ## Polling fallback
@@ -264,12 +235,11 @@ When a OS-specific adapter doesn't work the Listen gem automatically falls back 
 Here are some things you could try to avoid the polling fallback:
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
-* Increase latency. (Please [open an issue](https://github.com/guard/listen/issues/new)
-if you think that default is too low.)
+* Increase latency. (Please [open an issue](https://github.com/guard/listen/issues/new) if you think that default is too low.)
 * Move or rename the listened folder.
 * Update/reboot your OS.
 
-If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
+If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to give all the details).
 
 ## Development [![Dependency Status](https://gemnasium.com/guard/listen.png?branch=master)](https://gemnasium.com/guard/listen)
 
@@ -288,7 +258,7 @@ Pull requests are very welcome! Please try to follow these simple rules if appli
 For questions please join us in our [Google group](http://groups.google.com/group/guard-dev) or on
 `#guard` (irc.freenode.net).
 
-## Acknowledgments
+## Acknowledgment
 
 * [Michael Kessler (netzpirat)][] for having written the [initial specs](https://github.com/guard/listen/commit/1e457b13b1bb8a25d2240428ce5ed488bafbed1f).
 * [Travis Tilley (ttilley)][] for this awesome work on [fssm][] & [rb-fsevent][].

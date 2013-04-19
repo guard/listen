@@ -7,7 +7,7 @@ module Listen
     # @deprecated
     #
     def initialize(*args, &block)
-      Kernel.warn "[Listen warning]:\nListen::MultiListener is deprecated, please use Listen::Listener instead."
+      puts "[DEPRECATED] Listen::MultiListener is deprecated, please use Listen::Listener instead."
       super
     end
 

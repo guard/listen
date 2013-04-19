@@ -6,22 +6,13 @@
 def watch(listener, expected_changes, *paths)
   sleep 0.05 # allow file/creation to be done (!)
 
-  callback = lambda do |changed_directories, options|
-    @called = true
-    listener.on_change(changed_directories)
-  end
-  @adapter = Listen::Adapter.select_and_initialize(paths, { :latency => test_latency }, &callback)
-  @adapter.stub(:start_poller) { nil }
+  callback = lambda { |changed_directories, options| @called = true; listener.on_change(changed_directories) }
+  @adapter = Listen::Adapter.select_and_initialize(paths, { :report_changes => false, :latency => test_latency }, &callback)
 
   forced_stop = false
-  prevent_deadlock = lambda do
-    sleep(10)
-    puts 'Forcing stop'
-    @adapter.stop
-    forced_stop = true
-  end
+  prevent_deadlock = Proc.new { sleep(10); puts "Forcing stop"; @adapter.stop; forced_stop = true }
 
-  @adapter.start
+  @adapter.start(false)
 
   yield
 
@@ -43,51 +34,25 @@ shared_examples_for 'a filesystem adapter' do
   subject { described_class.new(File.dirname(__FILE__), &Proc.new {}) }
 
   describe '#start' do
-    before { Kernel.stub(:warn) }
     after { subject.stop }
 
-    it 'do not block the current thread after starting the workers' do
-      @called = false
-      t = Thread.new { subject.start; @called = true }
-      sleep(test_latency * 3)
-      Thread.kill(t) if t
-      @called.should be_true
-    end
-
-    context 'with the blocking hash option set to false' do
-      subject { described_class.new(File.dirname(__FILE__), { :blocking => false }, &Proc.new {}) }
-
-      it 'does not block the current thread after starting the workers' do
-        @called = false
-        t = Thread.new { subject.start; @called = true }
-        sleep(test_latency * 3)
-        Thread.kill(t) if t
-        @called.should be_true
-      end
-    end
-  end
-
-  describe '#start!' do
-    before { Kernel.stub(:warn) }
-    after { subject.stop }
-
-    it 'blocks the current thread after starting the workers' do
-      @called = false
-      t = Thread.new { subject.start!; @called = true }
-      sleep(test_latency * 3)
-      Thread.kill(t) if t
-      @called.should be_false
-    end
-
-    context 'with the blocking hash option set to false' do
-      subject { described_class.new(File.dirname(__FILE__), { :blocking => true }, &Proc.new {}) }
-
+    context 'with the blocking param set to true' do
       it 'blocks the current thread after starting the workers' do
         @called = false
-        t = Thread.new { subject.start!; @called = true }
+        t = Thread.new { subject.start(true); @called = true }
         sleep(test_latency * 3)
         Thread.kill(t) if t
         @called.should be_false
+      end
+    end
+
+    context 'with the blocking param set to false' do
+      it 'does not block the current thread after starting the workers' do
+        @called = false
+        t = Thread.new { subject.start(false); @called = true }
+        sleep(test_latency * 3)
+        Thread.kill(t) if t
+        @called.should be_true
       end
     end
   end
@@ -100,7 +65,7 @@ shared_examples_for 'a filesystem adapter' do
     end
 
     context 'with a stopped adapter' do
-      before { subject.start; subject.stop }
+      before { subject.start(false); subject.stop }
 
       it 'returns false' do
         subject.should_not be_started
@@ -108,7 +73,7 @@ shared_examples_for 'a filesystem adapter' do
     end
 
     context 'with a started adapter' do
-      before { subject.start }
+      before { subject.start(false) }
       after  { subject.stop }
 
       it 'returns true' do

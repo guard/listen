@@ -1,6 +1,7 @@
 module Listen
   module Adapters
 
+    # The default delay between checking for changes.
     DEFAULT_POLLING_LATENCY = 1.0
 
     # Polling Adapter that works cross-platform and
@@ -11,38 +12,43 @@ module Listen
     class Polling < Adapter
       extend DependencyManager
 
-      private
+      attr_accessor :worker, :poll_thread
 
-      # The default delay between checking for changes.
+      # Initialize the Adapter.
       #
-      # @see Listen::Adapter#default_latency
+      # @see Listen::Adapter#initialize
       #
-      def default_latency
-        1.0
+      def initialize(directories, options = {}, &callback)
+        @latency ||= DEFAULT_POLLING_LATENCY
+        super
       end
 
-      # The thread on which the main thread should wait
-      # when the adapter has been started in blocking mode.
+      # Start the adapter.
       #
-      # @see Listen::Adapter#blocking_thread
+      # @param [Boolean] blocking whether or not to block the current thread after starting
       #
-      def blocking_thread
-        poller_thread
+      def start(blocking = true)
+        super
+        @poll_thread = Thread.new { poll }
+        poll_thread.join if blocking
       end
 
-      # @see Listen::Adapter#start_worker
+      # Stop the adapter.
       #
-      # @see Listen::Adapter#start_worker
-      #
-      def start_worker
-        # The polling adapter has no worker! Sad panda! :'(
+      def stop
+        mutex.synchronize do
+          return if stopped
+          super
+        end
+
+        poll_thread.join
       end
+
+    private
 
       # Poll listener directory for file system changes.
       #
-      # @see Listen::Adapter#poll_changed_directories
-      #
-      def poll_changed_directories
+      def poll
         until stopped
           next if paused
 

@@ -6,8 +6,7 @@ require 'fileutils'
 module Listen
   class Adapter
     attr_accessor :directories, :callback, :stopped, :paused,
-                  :mutex, :changed_directories, :turnstile, :latency,
-                  :worker, :worker_thread, :poller_thread
+                  :mutex, :changed_directories, :turnstile, :latency
 
     # The list of existing optimized adapters.
     OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]
@@ -67,11 +66,13 @@ module Listen
       Adapters::Polling.new(directories, options, &callback)
     end
 
+
     # Initializes the adapter.
     #
     # @param [String, Array<String>] directories the directories to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] report_changes whether or not to automatically report changes (run the callback)
     #
     # @yield [changed_directories, options] callback Callback called when a change happens
     # @yieldparam [Array<String>] changed_directories the changed directories
@@ -87,45 +88,26 @@ module Listen
       @mutex               = Mutex.new
       @changed_directories = Set.new
       @turnstile           = Turnstile.new
-      @latency             = options.fetch(:latency, default_latency)
-      @worker              = initialize_worker
+      @latency           ||= options[:latency] || DEFAULT_LATENCY
+      @report_changes      = options.fetch(:report_changes, true)
     end
 
-    # Starts the adapter and don't block the current thread.
+    # Starts the adapter.
     #
     # @param [Boolean] blocking whether or not to block the current thread after starting
     #
-    def start
+    def start(blocking = true)
       mutex.synchronize do
         return unless stopped
         @stopped = false
       end
-
-      start_worker
-      start_poller
-    end
-
-    # Starts the adapter and block the current thread.
-    #
-    # @since 1.0.0
-    #
-    def start!
-      start
-      blocking_thread.join
     end
 
     # Stops the adapter.
     #
     def stop
-      mutex.synchronize do
-        return if stopped
-        @stopped = true
-        turnstile.signal # ensure no thread is blocked
-      end
-
-      worker.stop if worker
-      Thread.kill(worker_thread) if worker_thread
-      poller_thread.join if poller_thread
+      @stopped = true
+      turnstile.signal # ensure no thread is blocked
     end
 
     # Pauses the adapter.
@@ -216,7 +198,7 @@ module Listen
       test_file = "#{directory}/.listen_test"
       callback  = lambda { |*| work = true }
       adapter   = self.new(directory, options, &callback)
-      adapter.start
+      adapter.start(false)
 
       FileUtils.touch(test_file)
 
@@ -245,49 +227,11 @@ module Listen
       turnstile.signal
     end
 
+    def report_changes?
+      @report_changes
+    end
+
     private
-
-    # The default delay between checking for changes.
-    #
-    # @note This method can be overriden on a per-adapter basis.
-    #
-    def default_latency
-      DEFAULT_LATENCY
-    end
-
-    # The thread on which the main thread should wait
-    # when the adapter has been started in blocking mode.
-    #
-    # @note This method can be overriden on a per-adapter basis.
-    #
-    def blocking_thread
-      worker_thread
-    end
-
-    # Initialize the adpater' specific worker.
-    #
-    # @note Each adapter must override this method
-    #   to initialize its own @worker.
-    #
-    def initialize_worker
-      nil
-    end
-
-    # Should start the worker in a new thread.
-    #
-    # @note Each adapter must override this method
-    #   to start its worker on a new @worker_thread thread.
-    #
-    def start_worker
-      raise NotImplementedError, "#{self.class} cannot respond to: #{__method__}"
-    end
-
-    # This method starts a new thread which poll for changes detected by
-    # the adapter and report them back to the user.
-    #
-    def start_poller
-      @poller_thread = Thread.new { poll_changed_directories }
-    end
 
     # Warn of polling fallback unless the :polling_fallback_message
     # has been set to false.
@@ -300,12 +244,11 @@ module Listen
       return if options[:polling_fallback_message] == false
 
       warning += options[:polling_fallback_message] || POLLING_FALLBACK_MESSAGE
-      Kernel.warn "[Listen warning]:\n#{warning.gsub(/^(.*)/, '  \1')}"
+      Kernel.warn "[Listen warning]:\n" + warning.gsub(/^(.*)/, '  \1')
     end
 
-    # Polls changed directories and reports them back when there are changes.
-    #
-    # @note This method can be overriden on a per-adapter basis.
+    # Polls changed directories and reports them back
+    # when there are changes.
     #
     def poll_changed_directories
       until stopped
