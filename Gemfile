@@ -4,6 +4,9 @@ gemspec
 
 gem 'rake'
 
+require 'rbconfig'
+gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+
 group :development do
   gem 'guard-rspec'
   gem 'yard'

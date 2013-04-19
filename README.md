@@ -39,6 +39,16 @@ $ bundle
 $ gem install listen
 ```
 
+### On Windows
+
+If your are on Windows and using Ruby MRI >= 1.9.2 you can try to use the [`wdm`](https://github.com/Maher4Ever/wdm) instead of polling.
+Please add the following to your Gemfile:
+
+```ruby
+require 'rbconfig'
+gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+```
+
 ## Usage
 
 There are **two ways** to use Listen:

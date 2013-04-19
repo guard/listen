@@ -179,7 +179,7 @@ module Listen
       usable? && Array(directories).all? { |d| works?(d, options) }
     end
 
-    # Checks if the adapter is usable on Windows.
+    # Checks if the adapter is usable on target OS.
     #
     # @return [Boolean] whether usable or not
     #

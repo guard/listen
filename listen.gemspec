@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
   s.add_dependency 'rb-inotify', '>= 0.9'
   s.add_dependency 'rb-kqueue',  '>= 0.2'
-  s.add_dependency 'wdm',        '>= 0.1'
 
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'rspec'
