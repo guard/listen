@@ -6,12 +6,10 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'wdm', '~> 0.1'
-
       attr_accessor :worker, :worker_thread, :poll_thread
+
+      def self.target_os_regex; /mswin|mingw/i; end
+      def self.adapter_gem; 'wdm'; end
 
       # Initializes the Adapter.
       #
@@ -49,15 +47,6 @@ module Listen
         worker.stop
         Thread.kill(worker_thread) if worker_thread
         poll_thread.join if poll_thread
-      end
-
-      # Checks if the adapter is usable on Windows.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /mswin|mingw/i
-        super
       end
 
     private

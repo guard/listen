@@ -4,14 +4,12 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'rb-fsevent', '~> 0.9'
-
       LAST_SEPARATOR_REGEX = /\/$/
 
       attr_accessor :worker, :worker_thread, :poll_thread
+
+      def self.target_os_regex; /darwin(1.+)?$/i; end
+      def self.adapter_gem; 'rb-fsevent'; end
 
       # Initializes the Adapter.
       #
@@ -54,15 +52,6 @@ module Listen
         poll_thread.join if poll_thread
       end
 
-      # Checks if the adapter is usable on Mac OSX.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /darwin(1.+)?$/i
-        super
-      end
-
       private
 
       # Initializes a FSEvent worker and adds a watcher for
@@ -81,7 +70,6 @@ module Listen
           end
         end
       end
-
     end
 
   end

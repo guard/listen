@@ -10,8 +10,6 @@ module Listen
     # file IO than the other implementations.
     #
     class Polling < Adapter
-      extend DependencyManager
-
       attr_accessor :worker, :poll_thread
 
       # Initialize the Adapter.
@@ -60,7 +58,6 @@ module Listen
         end
       rescue Interrupt
       end
-
     end
 
   end
