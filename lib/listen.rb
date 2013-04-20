@@ -1,15 +1,14 @@
-module Listen
+require 'listen/turnstile'
+require 'listen/listener'
+require 'listen/multi_listener'
+require 'listen/directory_record'
+require 'listen/adapter'
 
-  autoload :Turnstile,         'listen/turnstile'
-  autoload :Listener,          'listen/listener'
-  autoload :MultiListener,     'listen/multi_listener'
-  autoload :DirectoryRecord,   'listen/directory_record'
-  autoload :DependencyManager, 'listen/dependency_manager'
-  autoload :Adapter,           'listen/adapter'
+module Listen
 
   module Adapters
     Adapter::ADAPTERS.each do |adapter|
-      autoload adapter.to_sym, "listen/adapters/#{adapter.downcase}"
+      require "listen/adapters/#{adapter.downcase}"
     end
   end
 

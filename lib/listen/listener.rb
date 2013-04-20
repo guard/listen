@@ -2,7 +2,6 @@ require 'pathname'
 
 module Listen
   class Listener
-
     attr_reader :directories, :directories_records, :block, :adapter, :adapter_options, :use_relative_paths
 
     BLOCKING_PARAMETER_DEPRECATION_MESSAGE = <<-EOS.gsub(/^\s*/, '')

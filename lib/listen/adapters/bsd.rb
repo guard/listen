@@ -4,11 +4,6 @@ module Listen
     # Listener implementation for BSD's `kqueue`.
     #
     class BSD < Adapter
-      extend DependencyManager
-
-      # Declare the adapter's dependencies
-      dependency 'rb-kqueue', '~> 0.2'
-
       # Watched kqueue events
       #
       # @see http://www.freebsd.org/cgi/man.cgi?query=kqueue
@@ -16,14 +11,8 @@ module Listen
       #
       EVENTS = [:delete, :write, :extend, :attrib, :link, :rename, :revoke]
 
-      # Checks if the adapter is usable on BSD.
-      #
-      # @return [Boolean] whether usable or not
-      #
-      def self.usable?
-        return false if RbConfig::CONFIG['target_os'] !~ /freebsd/i
-        super
-      end
+      def self.target_os_regex; /freebsd/i; end
+      def self.adapter_gem; 'rb-kqueue'; end
 
       private
 
@@ -80,7 +69,6 @@ module Listen
           end
         end
       end
-
     end
 
   end
