@@ -5,8 +5,8 @@ describe Listen::MultiListener do
   describe '#initialize' do
     let(:options) do
       {
-        :ignore => /\.ssh/, :filter => [/.*\.rb/, /.*\.md/],
-        :latency => 0.5, :force_polling => true
+        ignore: /\.ssh/, filter: [/.*\.rb/, /.*\.md/],
+        latency: 0.5, force_polling: true
       }
     end
 

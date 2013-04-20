@@ -21,7 +21,7 @@ module Listen
       #
       def initialize_worker
         FSEvent.new.tap do |worker|
-          worker.watch(directories.dup, :latency => latency) do |changes|
+          worker.watch(directories.dup, latency: latency) do |changes|
             next if paused
 
             mutex.synchronize do

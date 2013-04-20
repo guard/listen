@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  let(:adapter)             { mock(Listen::Adapter, :start => true).as_null_object }
+  let(:adapter)             { mock(Listen::Adapter, start: true).as_null_object }
   let(:watched_directory)   { File.dirname(__FILE__) }
   let(:watched_directories) { [File.dirname(__FILE__), File.expand_path('../..', __FILE__)] }
 
@@ -28,9 +28,9 @@ describe Listen::Listener do
         end
       end
 
-      context 'with :relative_paths => false' do
+      context 'with relative_paths: false' do
         it 'sets the option for using relative paths in the callback to false' do
-          listener = described_class.new(watched_directories, :relative_paths => false)
+          listener = described_class.new(watched_directories, relative_paths: false)
           listener.instance_variable_get(:@use_relative_paths).should eq false
         end
       end
@@ -49,9 +49,9 @@ describe Listen::Listener do
         end
       end
 
-      context 'with :relative_paths => true' do
+      context 'with relative_paths: true' do
         it 'sets the option for using relative paths in the callback to false' do
-          listener = described_class.new(watched_directories, :relative_paths => true)
+          listener = described_class.new(watched_directories, relative_paths: true)
           listener.instance_variable_get(:@use_relative_paths).should eq false
         end
       end
@@ -64,8 +64,8 @@ describe Listen::Listener do
     context 'with custom options' do
       let(:options) do
         {
-          :ignore => /\.ssh/, :filter => [/.*\.rb/, /.*\.md/],
-          :latency => 0.5, :force_polling => true, :relative_paths => true
+          ignore: /\.ssh/, filter: [/.*\.rb/, /.*\.md/],
+          latency: 0.5, force_polling: true, relative_paths: true
         }
       end
       subject { described_class.new(watched_directory, options) }
@@ -83,7 +83,7 @@ describe Listen::Listener do
       end
 
       it 'sets adapter_options' do
-        subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.5, :force_polling => true)
+        subject.instance_variable_get(:@adapter_options).should eq(latency: 0.5, force_polling: true)
       end
     end
   end
@@ -156,12 +156,12 @@ describe Listen::Listener do
 
   describe '#on_change' do
     let(:directories) { %w{dir1 dir2 dir3} }
-    let(:changes)     { {:modified => [], :added => [], :removed => []} }
+    let(:changes)     { {modified: [], added: [], removed: []} }
     let(:callback)    { Proc.new { @called = true } }
 
     before do
       @called = false
-      subject.stub(:fetch_records_changes => changes)
+      subject.stub(fetch_records_changes: changes)
     end
 
     it 'fetches the changes of all directories records' do
@@ -192,7 +192,7 @@ describe Listen::Listener do
     context 'with changes to report' do
       let(:changes) do
         {
-          :modified => %w{path1}, :added => [], :removed => %w{path2}
+          modified: %w{path1}, added: [], removed: %w{path2}
         }
       end
 

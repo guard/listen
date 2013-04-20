@@ -283,7 +283,7 @@ module Listen
       directories_records.inject({}) do |h, r|
         # directory records skips paths outside their range, so passing the
         # whole `directories` array is not a problem.
-        record_changes = r.fetch_changes(directories_to_search, options.merge(:relative_paths => use_relative_paths))
+        record_changes = r.fetch_changes(directories_to_search, options.merge(relative_paths: use_relative_paths))
 
         if h.empty?
           h.merge!(record_changes)

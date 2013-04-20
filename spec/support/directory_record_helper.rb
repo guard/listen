@@ -24,7 +24,7 @@ def changes(root_path, options = {})
   paths = options.delete(:paths) || [root_path]
   options[:recursive] = true if options[:recursive].nil?
 
-  changes = @record.fetch_changes(paths, { :relative_paths => true }.merge(options))
+  changes = @record.fetch_changes(paths, { relative_paths: true }.merge(options))
 
   [changes[:modified], changes[:added], changes[:removed]]
 end

@@ -10,7 +10,7 @@ def watch(listener, expected_changes, *paths)
     @called = true
     listener.on_change(changed_directories)
   end
-  @adapter = Listen::Adapter.select_and_initialize(paths, { :latency => test_latency }, &callback)
+  @adapter = Listen::Adapter.select_and_initialize(paths, { latency: test_latency }, &callback)
   @adapter.stub(:start_poller) { nil }
 
   forced_stop = false
@@ -55,7 +55,7 @@ shared_examples_for 'a filesystem adapter' do
     end
 
     context 'with the blocking hash option set to false' do
-      subject { described_class.new(File.dirname(__FILE__), { :blocking => false }, &Proc.new {}) }
+      subject { described_class.new(File.dirname(__FILE__), { blocking: false }, &Proc.new {}) }
 
       it 'does not block the current thread after starting the workers' do
         @called = false
@@ -80,7 +80,7 @@ shared_examples_for 'a filesystem adapter' do
     end
 
     context 'with the blocking hash option set to false' do
-      subject { described_class.new(File.dirname(__FILE__), { :blocking => true }, &Proc.new {}) }
+      subject { described_class.new(File.dirname(__FILE__), { blocking: true }, &Proc.new {}) }
 
       it 'blocks the current thread after starting the workers' do
         @called = false
@@ -137,7 +137,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
-      context 'given a symlink', :unless => windows? do
+      context 'given a symlink', unless: windows? do
         it 'detects the added file' do
           fixtures do |path|
             listener.should_receive(:on_change).once.with do |array|
@@ -218,7 +218,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
-      context 'given a symlink', :unless => windows? do
+      context 'given a symlink', unless: windows? do
         it 'detects the modified file' do
           fixtures do |path|
             listener.should_receive(:on_change).once.with do |array|
@@ -251,7 +251,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
-      context 'given a file mode change', :unless => windows? do
+      context 'given a file mode change', unless: windows? do
         it 'does not detect the mode change' do
           fixtures do |path|
             listener.should_receive(:on_change).once.with do |array|
@@ -317,7 +317,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
-      context 'given a symlink', :unless => windows? do
+      context 'given a symlink', unless: windows? do
         it 'detects the file move' do
           fixtures do |path|
             listener.should_receive(:on_change).once.with do |array|
@@ -416,7 +416,7 @@ shared_examples_for 'an adapter that call properly listener#on_change' do |*args
         end
       end
 
-      context 'given a symlink', :unless => windows? do
+      context 'given a symlink', unless: windows? do
         it 'detects the file removal' do
           fixtures do |path|
             listener.should_receive(:on_change).once.with do |array|

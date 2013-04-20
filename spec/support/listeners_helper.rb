@@ -131,7 +131,7 @@ shared_examples_for 'a listener to changes on a file-system' do
   describe '#latency' do
     it 'sets the latency to @adapter_options' do
       subject.latency(0.7)
-      subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.7)
+      subject.instance_variable_get(:@adapter_options).should eq(latency: 0.7)
     end
 
     it 'returns the same listener to allow chaining' do
@@ -142,7 +142,7 @@ shared_examples_for 'a listener to changes on a file-system' do
   describe '#force_polling' do
     it 'sets force_polling to @adapter_options' do
       subject.force_polling(false)
-      subject.instance_variable_get(:@adapter_options).should eq(:force_polling => false)
+      subject.instance_variable_get(:@adapter_options).should eq(force_polling: false)
     end
 
     it 'returns the same listener to allow chaining' do
@@ -164,12 +164,12 @@ shared_examples_for 'a listener to changes on a file-system' do
   describe '#polling_fallback_message' do
     it 'sets custom polling fallback message to @adapter_options' do
       subject.polling_fallback_message('custom message')
-      subject.instance_variable_get(:@adapter_options).should eq(:polling_fallback_message => 'custom message')
+      subject.instance_variable_get(:@adapter_options).should eq(polling_fallback_message: 'custom message')
     end
 
     it 'sets polling fallback message to false in @adapter_options' do
       subject.polling_fallback_message(false)
-      subject.instance_variable_get(:@adapter_options).should eq(:polling_fallback_message => false)
+      subject.instance_variable_get(:@adapter_options).should eq(polling_fallback_message: false)
     end
 
     it 'returns the same listener to allow chaining' do
