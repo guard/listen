@@ -1,4 +1,4 @@
-## git master
+## 1.0.0 - April 20, 2013
 
 ### Bug fix
 
@@ -19,7 +19,6 @@
 - New methods: `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
 - Refactor `Listen::DependencyManager` internals. ([@rymai][])
-
 
 ## 0.7.3 - February 24, 2013
 
