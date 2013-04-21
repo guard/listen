@@ -1,6 +1,5 @@
 require 'listen/turnstile'
 require 'listen/listener'
-require 'listen/multi_listener'
 require 'listen/directory_record'
 require 'listen/adapter'
 
@@ -45,6 +44,8 @@ module Listen
   def self.to!(*args, &block)
     _init_listener(*args, &block).start!
   end
+
+  private
 
   # @private
   #

@@ -4,11 +4,6 @@ module Listen
   class Listener
     attr_reader :directories, :directories_records, :block, :adapter, :adapter_options, :use_relative_paths
 
-    BLOCKING_PARAMETER_DEPRECATION_MESSAGE = <<-EOS.gsub(/^\s*/, '')
-      The blocking parameter of Listen::Listener#start is deprecated.\n
-      Please use Listen::Adapter#start for a non-blocking listener and Listen::Listener#start! for a blocking one.
-    EOS
-
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
@@ -44,8 +39,7 @@ module Listen
     #
     # @see Listen::Listener#start!
     #
-    def start(deprecated_blocking = nil)
-      Kernel.warn "[Listen warning]:\n#{BLOCKING_PARAMETER_DEPRECATION_MESSAGE}" unless deprecated_blocking.nil?
+    def start
       setup
       adapter.start
     end
