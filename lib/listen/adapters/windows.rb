@@ -29,7 +29,7 @@ module Listen
       #
       # @return [Boolean] whether required or not
       #
-      def self.load_dependency
+      def self.load_dependent_adapter
         super
       rescue Gem::LoadError
         Kernel.warn BUNDLER_DECLARE_GEM
