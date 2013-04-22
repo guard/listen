@@ -1,3 +1,9 @@
+## 1.0.1 - April 22, 2013
+
+### Bug fix
+
+- [#103][] Support old version of rubygems. (reported by [@ahoward][], fixed by [@thibaudgg][])
+
 ## 1.0.0 - April 20, 2013
 
 ### Bug fix
@@ -236,7 +242,9 @@
 [#95]: https://github.com/guard/listen/issues/95
 [#96]: https://github.com/guard/listen/issues/96
 [#98]: https://github.com/guard/listen/issues/98
+[#103]: https://github.com/guard/listen/issues/103
 [@Maher4Ever]: https://github.com/Maher4Ever
+[@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
 [@antifuchs]: https://github.com/antifuchs
 [@cobychapple]: https://github.com/cobychapple
