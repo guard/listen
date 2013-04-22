@@ -50,7 +50,7 @@ module Listen
       # @return [Boolean]
       #
       def self.at_least_ruby_1_9?
-        Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('1.9.2')
+        Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('1.9.2')
       end
 
       # Initializes a WDM monitor and adds a watcher for
