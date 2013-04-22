@@ -1,3 +1,9 @@
+## 1.0.2 - April 22, 2013
+
+### Bug fix
+
+- [#104][] Avoid conflict with ActiveSupport::Dependencies::Loadable. ([@nysalor][])
+
 ## 1.0.1 - April 22, 2013
 
 ### Bug fix
@@ -243,6 +249,7 @@
 [#96]: https://github.com/guard/listen/issues/96
 [#98]: https://github.com/guard/listen/issues/98
 [#103]: https://github.com/guard/listen/issues/103
+[#104]: https://github.com/guard/listen/issues/104
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
@@ -260,6 +267,7 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
 [@rymai]: https://github.com/rymai
 [@scottdavis]: https://github.com/scottdavis
