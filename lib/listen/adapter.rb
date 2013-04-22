@@ -184,14 +184,14 @@ module Listen
     # @return [Boolean] whether usable or not
     #
     def self.usable?
-      load_dependency if RbConfig::CONFIG['target_os'] =~ target_os_regex
+      load_dependent_adapter if RbConfig::CONFIG['target_os'] =~ target_os_regex
     end
 
     # Load the adapter gem
     #
     # @return [Boolean] whether required or not
     #
-    def self.load_dependency
+    def self.load_dependent_adapter
       @loaded ||= require adapter_gem
     end
 
