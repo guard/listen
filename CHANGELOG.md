@@ -1,3 +1,9 @@
+## 1.0.3 - April 29, 2013
+
+### Bug fix
+
+- Rescue Errno::EBADF on sha1_checksum generation. ([@thibaudgg][])
+
 ## 1.0.2 - April 22, 2013
 
 ### Bug fix
