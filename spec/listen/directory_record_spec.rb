@@ -1185,7 +1185,7 @@ describe Listen::DirectoryRecord do
       end
     end
 
-    context 'within a directory containing a unix domain socket file' do
+    context 'within a directory containing a unix domain socket file', :unless => windows? do
       it 'does not raise an exception when hashing a unix domain socket file' do
         fixtures do |path|
           require 'socket'
