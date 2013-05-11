@@ -24,6 +24,12 @@ describe Listen::DirectoryRecord do
       subject.directory.should eq base_directory
     end
 
+    it 'sets the base directory expanded' do
+      cd File.dirname(base_directory)
+      subject = described_class.new(File.basename(base_directory))
+      subject.directory.should eq base_directory
+    end
+
     it 'sets the default ignoring patterns' do
       subject.ignoring_patterns.should =~ described_class.generate_default_ignoring_patterns
     end

@@ -2,6 +2,10 @@
 
 ### Bug fix
 
+- [#112][] Expand path for the given directories. (reported by [@nex3][], fixed by [@thibaudgg][])
+
+### Change
+
 - [#110][] Remove MultiListener deprecation warning message. (reported by [@nex3][], fixed by [@thibaudgg][])
 
 ## 1.0.3 - April 29, 2013
@@ -263,6 +267,7 @@
 [#103]: https://github.com/guard/listen/issues/103
 [#104]: https://github.com/guard/listen/issues/104
 [#110]: https://github.com/guard/listen/issues/110
+[#112]: https://github.com/guard/listen/issues/112
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
