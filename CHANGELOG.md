@@ -1,3 +1,9 @@
+## Master branch
+
+### Bug fix
+
+- [#110][] Remove MultiListener deprecation warning message. (reported by [@nex3][], fixed by [@thibaudgg][])
+
 ## 1.0.3 - April 29, 2013
 
 ### Bug fix
@@ -256,6 +262,7 @@
 [#98]: https://github.com/guard/listen/issues/98
 [#103]: https://github.com/guard/listen/issues/103
 [#104]: https://github.com/guard/listen/issues/104
+[#110]: https://github.com/guard/listen/issues/110
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
