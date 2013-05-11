@@ -1,4 +1,4 @@
-## Master branch
+## 1.1.0 - May 11, 2013
 
 ### Bug fix
 
