@@ -13,6 +13,14 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Allows supplying regexp-patterns to ignore and filter paths for better results.
 * Tested on all Ruby environments via [Travis CI](https://travis-ci.org/guard/listen).
 
+## Pending features
+
+Still not implemented, pull requests are welcome.
+
+* Symlinks support. [#25](https://github.com/guard/listen/issues/25)
+* Signal handling. [#105](https://github.com/guard/listen/issues/105)
+* Non-recursive directory scaning. [#111](https://github.com/guard/listen/issues/111)
+
 ## Install
 
 ### Using Bundler
