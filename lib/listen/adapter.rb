@@ -113,7 +113,10 @@ module Listen
 
       worker.stop if worker
       Thread.kill(worker_thread) if worker_thread
-      poller_thread.join if poller_thread
+      if poller_thread
+        poller_thread.kill
+        poller_thread.join
+      end
     end
 
     # Pauses the adapter.
