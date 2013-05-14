@@ -1,3 +1,9 @@
+## 1.1.1 - May 14, 2013
+
+### Bug fix
+
+- [#113][] Kill poller_thread before waiting for it to die. ([@antifuchs][])
+
 ## 1.1.0 - May 11, 2013
 
 ### Bug fix
@@ -268,6 +274,7 @@
 [#104]: https://github.com/guard/listen/issues/104
 [#110]: https://github.com/guard/listen/issues/110
 [#112]: https://github.com/guard/listen/issues/112
+[#113]: https://github.com/guard/listen/issues/113
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
