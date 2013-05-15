@@ -223,6 +223,21 @@ describe Listen::DirectoryRecord do
       subject.relative_to_base(File.join(base_directory, path))
     end
 
+    context 'when there are utf-8 chars in base directory' do
+      before do
+        fixtures do |path|
+          mkdir '目录'
+          @dir = described_class.new(path + '/目录')
+          @dir.build
+        end
+      end
+
+      it 'works' do
+        path = File.join @dir.directory, 'tmp/file.rb'
+        @dir.relative_to_base path
+      end
+    end
+
     context 'when containing regexp characters in the base directory' do
       before do
         fixtures do |path|

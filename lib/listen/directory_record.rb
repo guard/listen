@@ -190,10 +190,9 @@ module Listen
     # @return [String] the relative path
     #
     def relative_to_base(path)
-      return nil unless path[directory]
-
       path = path.force_encoding("BINARY") if path.respond_to?(:force_encoding)
-      path.sub(%r{^#{Regexp.quote(directory)}#{File::SEPARATOR}?}, '')
+      relative_path = Pathname.new(path).relative_path_from(Pathname.new directory).to_s
+      relative_path unless relative_path.start_with?('..')
     end
 
     private
