@@ -1,3 +1,9 @@
+## 1.1.2 - May 14, 2013
+
+### Bug fix
+
+- [#115][] Fix for directory containing non-ascii chars. ([@luikore][])
+
 ## 1.1.1 - May 14, 2013
 
 ### Bug fix
@@ -275,6 +281,7 @@
 [#110]: https://github.com/guard/listen/issues/110
 [#112]: https://github.com/guard/listen/issues/112
 [#113]: https://github.com/guard/listen/issues/113
+[#115]: https://github.com/guard/listen/issues/115
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
@@ -284,6 +291,7 @@
 [@dkubb]: https://github.com/dkubb
 [@ebroder]: https://github.com/ebroder
 [@fny]: https://github.com/fny
+[@luikore]: https://github.com/luikore
 [@markiz]: https://github.com/markiz
 [@martikaljuve]: https://github.com/martikaljuve
 [@mat813]: https://github.com/mat813
