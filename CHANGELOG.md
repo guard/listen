@@ -1,3 +1,9 @@
+## 1.1.3 - May 21, 2013
+
+### Bug fix
+
+- [#117][] Fix jruby error on Pathname#relative_path_from. ([@luikore][])
+
 ## 1.1.2 - May 14, 2013
 
 ### Bug fix
@@ -282,6 +288,7 @@
 [#112]: https://github.com/guard/listen/issues/112
 [#113]: https://github.com/guard/listen/issues/113
 [#115]: https://github.com/guard/listen/issues/115
+[#117]: https://github.com/guard/listen/issues/117
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
