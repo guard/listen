@@ -72,6 +72,15 @@ describe Listen::Adapter do
     end
   end
 
+  describe '.load_dependend_adapter' do
+    it 'returns true (success) even if the adapter_gem has already been required' do
+      described_class.stub(:adapter_gem => 'already_loaded_gem')
+      described_class.stub(:require => false)
+
+      described_class.load_dependent_adapter.should be_true
+    end
+  end
+
   Listen::Adapter::OPTIMIZED_ADAPTERS.each do |adapter|
     adapter_class = Listen::Adapters.const_get(adapter)
     if adapter_class.usable?
