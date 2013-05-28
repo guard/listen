@@ -192,10 +192,12 @@ module Listen
 
     # Load the adapter gem
     #
-    # @return [Boolean] whether required or not
+    # @return [Boolean] whether loaded or not
     #
     def self.load_dependent_adapter
-      @loaded ||= require adapter_gem
+      return true if @loaded
+      require adapter_gem
+      return @loaded = true
     end
 
     # Runs a tests to determine if the adapter can actually pick up
