@@ -1,3 +1,9 @@
+## 1.1.4 - May 28, 2013
+
+### Bug fix
+
+- [#118][] Prevent polling just because the adapter gem was already required. ([@nilbus][])
+
 ## 1.1.3 - May 21, 2013
 
 ### Bug fix
@@ -289,6 +295,7 @@
 [#113]: https://github.com/guard/listen/issues/113
 [#115]: https://github.com/guard/listen/issues/115
 [#117]: https://github.com/guard/listen/issues/117
+[#118]: https://github.com/guard/listen/issues/118
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
@@ -307,6 +314,7 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@nilbus]: https://github.com/nilbus
 [@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
 [@rymai]: https://github.com/rymai
