@@ -66,7 +66,7 @@ module Listen
     # Stops the listener.
     #
     def stop
-      adapter.stop
+      adapter && adapter.stop
     end
 
     # Pauses the listener.
