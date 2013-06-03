@@ -1,3 +1,9 @@
+## 1.1.5 - Jun 3, 2013
+
+### Bug fix
+
+- [#122][] Fix stop called very soon after starting. (reported by [@chriseppstein][], fixed by [@thibaudgg][])
+
 ## 1.1.4 - May 28, 2013
 
 ### Bug fix
