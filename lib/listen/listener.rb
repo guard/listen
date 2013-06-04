@@ -9,6 +9,8 @@ module Listen
       Please use Listen::Adapter#start for a non-blocking listener and Listen::Listener#start! for a blocking one.
     EOS
 
+    RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
+
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
@@ -249,6 +251,9 @@ module Listen
     # Initializes whether or not using relative paths.
     #
     def initialize_relative_paths_usage(options)
+      if directories.size > 1 && options[:relative_paths]
+        Kernel.warn "[Listen warning]: #{RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE}"
+      end
       @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
     end
 

@@ -50,6 +50,11 @@ describe Listen::Listener do
       end
 
       context 'with :relative_paths => true' do
+        it 'warns' do
+          Kernel.should_receive(:warn).with("[Listen warning]: #{Listen::Listener::RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE}")
+          listener = described_class.new(watched_directories, :relative_paths => true)
+        end
+
         it 'sets the option for using relative paths in the callback to false' do
           listener = described_class.new(watched_directories, :relative_paths => true)
           listener.instance_variable_get(:@use_relative_paths).should eq false
