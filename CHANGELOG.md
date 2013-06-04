@@ -1,3 +1,9 @@
+## 1.1.6 - Jun 4, 2013
+
+### Change
+
+- [#120][] Warn when using relative_paths option when listening to multiple diretories. (reported by [@chriseppstein][], added by [@thibaudgg][])
+
 ## 1.1.5 - Jun 3, 2013
 
 ### Bug fix
@@ -302,10 +308,13 @@
 [#115]: https://github.com/guard/listen/issues/115
 [#117]: https://github.com/guard/listen/issues/117
 [#118]: https://github.com/guard/listen/issues/118
+[#120]: https://github.com/guard/listen/issues/120
+[#122]: https://github.com/guard/listen/issues/122
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
 [@antifuchs]: https://github.com/antifuchs
+[@chriseppstein]: https://github.com/chriseppstein
 [@cobychapple]: https://github.com/cobychapple
 [@daemonza]: https://github.com/daemonza
 [@dkubb]: https://github.com/dkubb
