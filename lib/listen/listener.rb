@@ -21,6 +21,7 @@ module Listen
     # @option options [Boolean] relative_paths whether or not to use relative-paths in the callback
     # @option options [Boolean] force_polling whether to force the polling adapter or not
     # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
+    # @option options [Class] force_adapter force the use of this adapter class, skipping usual adapter selection
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -177,6 +178,21 @@ module Listen
     #
     def force_polling(value)
       @adapter_options[:force_polling] = value
+      self
+    end
+
+    # Sets whether to force the use of a particular adapter, rather than
+    # going through usual adapter selection process on start.
+    #
+    # @example Force use of Linux polling
+    #   force_adapter Listen::Adapters::Linux
+    #
+    # @param [Class] adapter class to use for file system event notification.
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def force_adapter(adapter_class)
+      @adapter_options[:force_adapter] = adapter_class
       self
     end
 
