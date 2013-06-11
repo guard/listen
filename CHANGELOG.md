@@ -1,3 +1,9 @@
+## 1.2.0 - Jun 11, 2013
+
+### Improvement
+
+- [#124][] New `force_adapter` option, skip the `.listen_test` adapter test. ([@nicobrevin][])
+
 ## 1.1.6 - Jun 4, 2013
 
 ### Change
@@ -310,6 +316,7 @@
 [#118]: https://github.com/guard/listen/issues/118
 [#120]: https://github.com/guard/listen/issues/120
 [#122]: https://github.com/guard/listen/issues/122
+[#124]: https://github.com/guard/listen/issues/124
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
@@ -329,6 +336,7 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@nicobrevin]: https://github.com/nicobrevin
 [@nilbus]: https://github.com/nilbus
 [@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
