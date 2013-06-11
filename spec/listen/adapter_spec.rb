@@ -24,6 +24,20 @@ describe Listen::Adapter do
       end
     end
 
+    context "with force_adapter option" do
+      it "returns an instance of the given adapter class" do
+        expected_adapter = Object.new
+        adapter_class = double('adapter_class')
+        options = {:force_adapter => adapter_class}
+
+        adapter_class.should_receive(:load_dependent_adapter)
+        adapter_class.should_receive(:new).with('dir', options) { expected_adapter }
+
+        adapter = described_class.select_and_initialize('dir', options)
+        adapter.should be(expected_adapter)
+      end
+    end
+
     context "with no specific adapter usable" do
       it "returns Listen::Adapters::Polling instance" do
         Kernel.stub(:warn)
