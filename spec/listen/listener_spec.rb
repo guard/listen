@@ -67,10 +67,14 @@ describe Listen::Listener do
     end
 
     context 'with custom options' do
+
+      let(:adapter_class) { double('adapter class') }
+
       let(:options) do
         {
           :ignore => /\.ssh/, :filter => [/.*\.rb/, /.*\.md/],
-          :latency => 0.5, :force_polling => true, :relative_paths => true
+          :latency => 0.5, :force_polling => true, :relative_paths => true,
+          :force_adapter => adapter_class
         }
       end
       subject { described_class.new(watched_directory, options) }
@@ -88,7 +92,7 @@ describe Listen::Listener do
       end
 
       it 'sets adapter_options' do
-        subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.5, :force_polling => true)
+        subject.instance_variable_get(:@adapter_options).should eq(:latency => 0.5, :force_polling => true, :force_adapter => adapter_class)
       end
     end
   end

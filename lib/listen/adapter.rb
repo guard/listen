@@ -42,7 +42,15 @@ module Listen
     # @return [Listen::Adapter] the chosen adapter
     #
     def self.select_and_initialize(directories, options = {}, &callback)
-      return Adapters::Polling.new(directories, options, &callback) if options.delete(:force_polling)
+      forced_adapter_class = options.delete(:force_adapter)
+      force_polling = options.delete(:force_polling)
+
+      if forced_adapter_class
+        forced_adapter_class.load_dependent_adapter
+        return forced_adapter_class.new(directories, options, &callback)
+      end
+
+      return Adapters::Polling.new(directories, options, &callback) if force_polling
 
       OPTIMIZED_ADAPTERS.each do |adapter|
         namespaced_adapter = Adapters.const_get(adapter)
