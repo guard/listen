@@ -31,7 +31,6 @@ module Listen
           end
         end
       end
-
     end
 
   end

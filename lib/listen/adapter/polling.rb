@@ -43,7 +43,6 @@ module Listen
         nap_time = _latency - (Time.now.to_f - start)
         sleep(nap_time) if nap_time > 0
       end
-
     end
 
   end

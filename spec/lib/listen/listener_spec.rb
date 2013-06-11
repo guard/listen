@@ -9,7 +9,7 @@ describe Listen::Listener do
     end
 
     it "sets block" do
-      block = -> (modified, added, removed) { }
+      block = Proc.new { |modified, added, removed| }
       listener = Listen::Listener.new('dir', &block)
       listener.block.should_not be_nil
     end
