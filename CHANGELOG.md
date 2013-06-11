@@ -1,3 +1,61 @@
+## 1.2.0 - Jun 11, 2013
+
+### Improvement
+
+- [#124][] New `force_adapter` option, skip the `.listen_test` adapter test. ([@nicobrevin][])
+
+## 1.1.6 - Jun 4, 2013
+
+### Change
+
+- [#120][] Warn when using relative_paths option when listening to multiple diretories. (reported by [@chriseppstein][], added by [@thibaudgg][])
+
+## 1.1.5 - Jun 3, 2013
+
+### Bug fix
+
+- [#122][] Fix stop called very soon after starting. (reported by [@chriseppstein][], fixed by [@thibaudgg][])
+
+## 1.1.4 - May 28, 2013
+
+### Bug fix
+
+- [#118][] Prevent polling just because the adapter gem was already required. ([@nilbus][])
+
+## 1.1.3 - May 21, 2013
+
+### Bug fix
+
+- [#117][] Fix jruby error on Pathname#relative_path_from. ([@luikore][])
+
+## 1.1.2 - May 14, 2013
+
+### Bug fix
+
+- [#115][] Fix for directory containing non-ascii chars. ([@luikore][])
+
+## 1.1.1 - May 14, 2013
+
+### Bug fix
+
+- [#113][] Kill poller_thread before waiting for it to die. ([@antifuchs][])
+
+## 1.1.0 - May 11, 2013
+
+### Bug fix
+
+- [#112][] Expand path for the given directories. (reported by [@nex3][], fixed by [@thibaudgg][])
+
+### Change
+
+- [#110][] Remove MultiListener deprecation warning message. (reported by [@nex3][], fixed by [@thibaudgg][])
+
+## 1.0.3 - April 29, 2013
+
+### Bug fix
+
+- Rescue Errno::EBADF on sha1_checksum generation. ([@thibaudgg][])
+
 ## 1.0.2 - April 22, 2013
 
 ### Bug fix
@@ -250,15 +308,26 @@
 [#98]: https://github.com/guard/listen/issues/98
 [#103]: https://github.com/guard/listen/issues/103
 [#104]: https://github.com/guard/listen/issues/104
+[#110]: https://github.com/guard/listen/issues/110
+[#112]: https://github.com/guard/listen/issues/112
+[#113]: https://github.com/guard/listen/issues/113
+[#115]: https://github.com/guard/listen/issues/115
+[#117]: https://github.com/guard/listen/issues/117
+[#118]: https://github.com/guard/listen/issues/118
+[#120]: https://github.com/guard/listen/issues/120
+[#122]: https://github.com/guard/listen/issues/122
+[#124]: https://github.com/guard/listen/issues/124
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
 [@antifuchs]: https://github.com/antifuchs
+[@chriseppstein]: https://github.com/chriseppstein
 [@cobychapple]: https://github.com/cobychapple
 [@daemonza]: https://github.com/daemonza
 [@dkubb]: https://github.com/dkubb
 [@ebroder]: https://github.com/ebroder
 [@fny]: https://github.com/fny
+[@luikore]: https://github.com/luikore
 [@markiz]: https://github.com/markiz
 [@martikaljuve]: https://github.com/martikaljuve
 [@mat813]: https://github.com/mat813
@@ -267,6 +336,8 @@
 [@napcs]: https://github.com/napcs
 [@netzpirat]: https://github.com/netzpirat
 [@nex3]: https://github.com/nex3
+[@nicobrevin]: https://github.com/nicobrevin
+[@nilbus]: https://github.com/nilbus
 [@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
 [@rymai]: https://github.com/rymai

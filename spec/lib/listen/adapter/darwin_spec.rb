@@ -1,20 +1,21 @@
 require 'spec_helper'
 
-describe Listen::Adapters::Darwin do
+describe Listen::Adapter::Darwin do
   if mac?
-    if Listen::Adapters::Darwin.usable?
-      it "is usable on Mac OS X >= 10.6" do
+    describe ".usable?" do
+      it "returns always true" do
         described_class.should be_usable
-      end
-
-      it_should_behave_like 'a filesystem adapter'
-      it_should_behave_like 'an adapter that call properly listener#on_change'
-    else
-      it "isn't usable on Mac OS X with #{RbConfig::CONFIG['RUBY_INSTALL_NAME']}" do
-        described_class.should_not be_usable
       end
     end
 
+    describe '#initialize' do
+      it 'requires rb-fsevent gem' do
+        described_class.new
+        require('rb-fsevent').should be_false
+      end
+    end
+
+    # it_should_behave_like 'an adapter that call properly notify listener on changes'
   end
 
   if windows?

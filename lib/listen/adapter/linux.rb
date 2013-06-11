@@ -1,9 +1,9 @@
 module Listen
-  module Adapters
+  module Adapter
 
     # Listener implementation for Linux `inotify`.
     #
-    class Linux < Adapter
+    class Linux < Base
       # Watched inotify events
       #
       # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
@@ -27,11 +27,11 @@ module Listen
       #
       # @see Listen::Adapter#initialize
       #
-      def initialize(directories, options = {}, &callback)
-        super
-      rescue Errno::ENOSPC
-        abort(INOTIFY_LIMIT_MESSAGE)
-      end
+      # def initialize(directories, options = {}, &callback)
+      #   super
+      # rescue Errno::ENOSPC
+      #   abort(INOTIFY_LIMIT_MESSAGE)
+      # end
 
       private
 

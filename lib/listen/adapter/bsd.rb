@@ -1,9 +1,9 @@
 module Listen
-  module Adapters
+  module Adapter
 
     # Listener implementation for BSD's `kqueue`.
     #
-    class BSD < Adapter
+    class BSD < Base
       # Watched kqueue events
       #
       # @see http://www.freebsd.org/cgi/man.cgi?query=kqueue

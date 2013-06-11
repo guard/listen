@@ -1,4 +1,5 @@
 require 'rubygems'
+
 require 'coveralls'
 Coveralls.wear!
 
@@ -13,7 +14,7 @@ RSpec.configure do |config|
   config.filter_run focus: true
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
-  config.filter_run_excluding broken: true
+  # config.filter_run_excluding broken: true
   config.fail_fast = true
 end
 
@@ -21,5 +22,6 @@ def test_latency
   0.1
 end
 
+
 # Crash loud in tests!
-Thread.abort_on_exception = true
+# Thread.abort_on_exception = true

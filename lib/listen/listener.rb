@@ -1,19 +1,16 @@
-require 'pathname'
+require 'listen/adapter'
+require 'listen/change'
 
 module Listen
   class Listener
-    attr_reader :directories, :directories_records, :block, :adapter, :adapter_options, :use_relative_paths
+    include Celluloid
+
+    attr_reader :options, :directories, :paused, :block
 
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
-    # @param [Hash] options the listen options
-    # @option options [Regexp] ignore a pattern for ignoring paths
-    # @option options [Regexp] filter a pattern for filtering paths
-    # @option options [Float] latency the delay between checking for changes in seconds
-    # @option options [Boolean] relative_paths whether or not to use relative-paths in the callback
-    # @option options [Boolean] force_polling whether to force the polling adapter or not
-    # @option options [String, Boolean] polling_fallback_message to change polling fallback message or remove it
+    # @param [Hash] options the listen options (see Listen::Listener::Options)
     #
     # @yield [modified, added, removed] the changed files
     # @yieldparam [Array<String>] modified the list of modified files
@@ -21,251 +18,118 @@ module Listen
     # @yieldparam [Array<String>] removed the list of removed files
     #
     def initialize(*args, &block)
-      options     = args.last.is_a?(Hash) ? args.pop : {}
-      directories = args.flatten
-      initialize_directories_and_directories_records(directories)
-      initialize_relative_paths_usage(options)
-      @block = block
+      @options     = _set_options(args.last.is_a?(Hash) ? args.pop : {})
+      # @directories = _set_directories(args.flatten)
+      @block       = block
 
-      ignore(*options.delete(:ignore))
-      filter(*options.delete(:filter))
-
-      @adapter_options = options
+      # initialize_directories_and_directories_records(directories)
+      # initialize_relative_paths_usage(options)
+      # ignore(*options.delete(:ignore))
+      # filter(*options.delete(:filter))
     end
 
     # Starts the listener by initializing the adapter and building
     # the directory record concurrently, then it starts the adapter to watch
     # for changes. The current thread is not blocked after starting.
     #
-    # @see Listen::Listener#start!
-    #
     def start
-      setup
-      adapter.start
+      # async.build_directories_records
+      _start_adapter
+      _wait_for_changes
+      @paused = false
     end
 
-    # Starts the listener by initializing the adapter and building
-    # the directory record concurrently, then it starts the adapter to watch
-    # for changes. The current thread is blocked after starting.
-    #
-    # @see Listen::Listener#start
-    #
-    # @since 1.0.0
-    #
-    def start!
-      setup
-      adapter.start!
-    end
-
-    # Stops the listener.
-    #
     def stop
-      adapter.stop
+      Celluloid::Actor.kill(adapter)
+      Actor[:listener].terminate
     end
 
-    # Pauses the listener.
-    #
-    # @return [Listen::Listener] the listener
-    #
     def pause
-      adapter.pause
-      self
+      @paused = true
     end
 
-    # Unpauses the listener.
-    #
-    # @return [Listen::Listener] the listener
-    #
     def unpause
-      build_directories_records
-      adapter.unpause
-      self
+      # async.build_directories_records
+      @paused = false
     end
 
-    # Returns whether the listener is paused or not.
-    #
-    # @return [Boolean] adapter paused status
-    #
     def paused?
-      !!adapter && adapter.paused?
-    end
-
-    # Adds ignoring patterns to the listener.
-    #
-    # @param (see Listen::DirectoryRecord#ignore)
-    #
-    # @return [Listen::Listener] the listener
-    #
-    # @see Listen::DirectoryRecord#ignore
-    #
-    def ignore(*regexps)
-      directories_records.each { |r| r.ignore(*regexps) }
-      self
-    end
-
-    # Replaces ignoring patterns in the listener.
-    #
-    # @param (see Listen::DirectoryRecord#ignore!)
-    #
-    # @return [Listen::Listener] the listener
-    #
-    # @see Listen::DirectoryRecord#ignore!
-    #
-    def ignore!(*regexps)
-      directories_records.each { |r| r.ignore!(*regexps) }
-      self
-    end
-
-    # Adds filtering patterns to the listener.
-    #
-    # @param (see Listen::DirectoryRecord#filter)
-    #
-    # @return [Listen::Listener] the listener
-    #
-    # @see Listen::DirectoryRecord#filter
-    #
-    def filter(*regexps)
-      directories_records.each { |r| r.filter(*regexps) }
-      self
-    end
-
-    # Replaces filtering patterns in the listener.
-    #
-    # @param (see Listen::DirectoryRecord#filter!)
-    #
-    # @return [Listen::Listener] the listener
-    #
-    # @see Listen::DirectoryRecord#filter!
-    #
-    def filter!(*regexps)
-      directories_records.each { |r| r.filter!(*regexps) }
-      self
-    end
-
-    # Sets the latency for the adapter. This is a helper method
-    # to simplify changing the latency directly from the listener.
-    #
-    # @example Wait 0.5 seconds each time before checking changes
-    #   latency 0.5
-    #
-    # @param [Float] seconds the amount of delay, in seconds
-    #
-    # @return [Listen::Listener] the listener
-    #
-    def latency(seconds)
-      @adapter_options[:latency] = seconds
-      self
-    end
-
-    # Sets whether the use of the polling adapter
-    # should be forced or not.
-    #
-    # @example Forcing the use of the polling adapter
-    #   force_polling true
-    #
-    # @param [Boolean] value whether to force the polling adapter or not
-    #
-    # @return [Listen::Listener] the listener
-    #
-    def force_polling(value)
-      @adapter_options[:force_polling] = value
-      self
-    end
-
-    # Sets whether the paths in the callback should be
-    # relative or absolute.
-    #
-    # @example Enabling relative paths in the callback
-    #   relative_paths true
-    #
-    # @param [Boolean] value whether to enable relative paths in the callback or not
-    #
-    # @return [Listen::Listener] the listener
-    #
-    def relative_paths(value)
-      @use_relative_paths = value
-      self
-    end
-
-    # Defines a custom polling fallback message or disable it.
-    #
-    # @example Disabling the polling fallback message
-    #   polling_fallback_message false
-    #
-    # @param [String, Boolean] value to change polling fallback message or remove it
-    #
-    # @return [Listen::Listener] the listener
-    #
-    def polling_fallback_message(value)
-      @adapter_options[:polling_fallback_message] = value
-      self
-    end
-
-    # Sets the callback that gets called on changes.
-    #
-    # @example Assign a callback to be called on changes
-    #   callback = lambda { |modified, added, removed| ... }
-    #   change &callback
-    #
-    # @param [Proc] block the callback proc
-    #
-    # @return [Listen::Listener] the listener
-    #
-    def change(&block) # modified, added, removed
-      @block = block
-      self
-    end
-
-    # Runs the callback passing it the changes if there are any.
-    #
-    # @param (see Listen::DirectoryRecord#fetch_changes)
-    #
-    # @see Listen::DirectoryRecord#fetch_changes
-    #
-    def on_change(directories, options = {})
-      changes = fetch_records_changes(directories, options)
-      unless changes.values.all? { |paths| paths.empty? }
-        block.call(changes[:modified], changes[:added], changes[:removed])
-      end
+      paused
     end
 
     private
+
+    def _set_options(options = {})
+      options[:latency] ||= nil
+      options[:force_polling] ||= false
+      options[:polling_fallback_message] ||= nil
+      options
+    end
+
+    def _start_adapter
+      Actor[:adapter] = Adapter.new
+      Actor[:adapter].async.start
+    end
+
+    def _wait_for_changes
+      async._receive_changes
+      every(0.1) do
+        changes = _new_changes
+        unless changes.values.all?(&:empty?)
+          block.call(changes[:modified], changes[:added], changes[:removed])
+        end
+      end
+    end
+
+    def _receive_changes
+      @changes = []
+      loop { @changes << receive }
+    end
+
+    def _new_changes
+      changes = { modified: [], added: [], removed: [] }
+      until @changes.empty?
+        change = @changes.pop
+        changes.keys.each { |key| changes[key] += change[key] }
+      end
+      changes
+    end
 
     # Initializes the directories to watch as well as the directories records.
     #
     # @see Listen::DirectoryRecord
     #
-    def initialize_directories_and_directories_records(directories)
-      @directories = directories.map { |d| Pathname.new(d).realpath.to_s }
-      @directories_records = directories.map { |d| DirectoryRecord.new(d) }
-    end
+    # def initialize_directories_and_directories_records(directories)
+    #   @directories = directories.map { |d| Pathname.new(d).realpath.to_s }
+    #   @directories_records = directories.map { |d| DirectoryRecord.new(d) }
+    # end
 
     # Initializes whether or not using relative paths.
     #
-    def initialize_relative_paths_usage(options)
-      @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
-    end
+    # def initialize_relative_paths_usage(options)
+    #   @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
+    # end
 
     # Build the directory record concurrently and initialize the adapter.
     #
-    def setup
-      t = Thread.new { build_directories_records }
-      @adapter = initialize_adapter
-      t.join
-    end
+    # def setup
+    #   t = Thread.new { build_directories_records }
+    #   @adapter = initialize_adapter
+    #   t.join
+    # end
 
     # Initializes an adapter passing it the callback and adapters' options.
     #
-    def initialize_adapter
-      callback = lambda { |changed_directories, options| self.on_change(changed_directories, options) }
-      Adapter.select_and_initialize(directories, adapter_options, &callback)
-    end
+    # def initialize_adapter
+    #   callback = lambda { |changed_directories, options| self.on_change(changed_directories, options) }
+    #   Adapter.select_and_initialize(directories, adapter_options, &callback)
+    # end
 
     # Build the watched directories' records.
     #
-    def build_directories_records
-      directories_records.each { |r| r.build }
-    end
+    # def _build_directories_records
+    #   directories_records.each { |r| r.build }
+    # end
 
     # Returns the sum of all the changes to the directories records
     #
@@ -273,21 +137,24 @@ module Listen
     #
     # @return [Hash] the changes
     #
-    def fetch_records_changes(directories_to_search, options)
-      directories_records.inject({}) do |h, r|
-        # directory records skips paths outside their range, so passing the
-        # whole `directories` array is not a problem.
-        record_changes = r.fetch_changes(directories_to_search, options.merge(relative_paths: use_relative_paths))
+    # def _fetch_records_changes(directories_to_search)
+    #   directories_records.inject({}) do |h, r|
+    #     # directory records skips paths outside their range, so passing the
+    #     # whole `directories` array is not a problem.
+    #     record_changes = r.fetch_changes(directories_to_search,
+    #       relative_paths: use_relative_paths,
+    #       recursive: recursive
+    #     )
 
-        if h.empty?
-          h.merge!(record_changes)
-        else
-          h.each { |k, v| h[k] += record_changes[k] }
-        end
+    #     if h.empty?
+    #       h.merge!(record_changes)
+    #     else
+    #       h.each { |k, v| h[k] += record_changes[k] }
+    #     end
 
-        h
-      end
-    end
+    #     h
+    #   end
+    # end
 
   end
 end

@@ -2,11 +2,11 @@ require 'set'
 require 'rubygems'
 
 module Listen
-  module Adapters
+  module Adapter
 
     # Adapter implementation for Windows `wdm`.
     #
-    class Windows < Adapter
+    class Windows < Base
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
