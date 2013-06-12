@@ -1,3 +1,9 @@
+## 1.2.1 - Jun 11, 2013
+
+### Improvement
+
+- Ignore 'bundle' folder by default. ([@thibaudgg][])
+
 ## 1.2.0 - Jun 11, 2013
 
 ### Improvement
