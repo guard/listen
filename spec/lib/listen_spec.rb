@@ -11,15 +11,9 @@ describe Listen do
       described_class.to('/path')
     end
 
-    it "registries listener actor" do
+    it "registers listener actor" do
       described_class.to('/path')
       Celluloid::Actor[:listener].should eq listener
-    end
-
-    it "calls listener start asynchronously " do
-      # TODO
-      described_class.to('/path')
-      # Celluloid::Actor[:listener].should eq listener
     end
   end
 end

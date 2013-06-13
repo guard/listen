@@ -13,7 +13,7 @@ end
 class MockActor
   include Celluloid
 
-  attr_accessor :options, :directories_path
+  attr_accessor :options, :directories
 
   def initialize
     @options = {}

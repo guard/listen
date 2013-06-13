@@ -21,12 +21,12 @@ module Listen
         _listener.options[:latency] || DEFAULT_LATENCY
       end
 
-      def _directories_path
-        _listener.directories_path
+      def _directories
+        _listener.directories
       end
 
       def _notify_change(path, options)
-        _change_pool.async.change(path, options)
+        _change_pool.async.change(path, options) if _listener.listen?
       end
 
       def _listener

@@ -23,11 +23,11 @@ describe Listen::Adapter::Base do
   end
 
   describe "#_directories_path" do
-    let(:directories_path) { ['directories_path'] }
+    let(:directories) { ['directory_path'] }
 
     it "returns directories path from listener actor" do
-      listener.directories_path = directories_path
-      adapter.send(:_directories_path).should eq directories_path
+      listener.directories = directories
+      adapter.send(:_directories).should eq directories
     end
   end
 
@@ -39,9 +39,22 @@ describe Listen::Adapter::Base do
       Celluloid::Actor[:change_pool] = change_pool
     }
 
-    it "calls change on change_pool asynchronously" do
-      change_pool_async.should_receive(:change).with('path', type: 'Dir', recurcise: true)
-      adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
+    context "listener listen" do
+      before { listener.stub(:listen?) { true} }
+
+      it "calls change on change_pool asynchronously" do
+        change_pool_async.should_receive(:change).with('path', type: 'Dir', recurcise: true)
+        adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
+      end
+    end
+
+    context "listener doesn't listen" do
+      before { listener.stub(:listen?) { false } }
+
+      it "calls change on change_pool asynchronously" do
+        change_pool_async.should_not_receive(:change)
+        adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
+      end
     end
   end
 end

@@ -25,7 +25,7 @@ module Listen
 
       def _poll_directories
         _napped_loop do
-          _directories_path.each do |path|
+          _directories.each do |path|
             _notify_change(path, type: 'Dir', recursive: true)
           end
         end

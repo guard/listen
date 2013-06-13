@@ -1,8 +1,3 @@
-require 'listen/record'
-require 'listen/directory'
-require 'listen/file'
-require 'listen/silencer'
-
 module Listen
   class Change
     include Celluloid
@@ -14,17 +9,22 @@ module Listen
     private
 
     def _file_change(path, options)
-      if change = File.new(path).change
-        _notify_change(change, path)
+      change = File.new(path).change
+      if change && _listener.listen?
+        _notify_listener(change, path)
       end
     end
 
     def _dir_change(path, options)
-      Directory.new(path, options).change
+      Directory.new(path, options).scan
     end
 
-    def _notify_change(change, path)
-      Actor[:listener].mailbox << { change => path }
+    def _notify_listener(change, path)
+      _listener.mailbox << { change => path }
+    end
+
+    def _listener
+      Actor[:listener]
     end
   end
 end

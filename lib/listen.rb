@@ -1,8 +1,7 @@
 require 'celluloid'
-require 'listen/listener'
+Dir["./lib/**/*.rb"].each { |file| require file }
 
 module Listen
-  include Celluloid
 
   # Listens to file system modifications on a either single directory or multiple directories.
   #
@@ -16,7 +15,6 @@ module Listen
   # @return [Listen::Listener] the listener
   #
   def self.to(*args, &block)
-    Actor[:listener] = Listener.new(*args, &block)
-    Actor[:listener].async.start
+    Celluloid::Actor[:listener] = Listener.new(*args, &block)
   end
 end

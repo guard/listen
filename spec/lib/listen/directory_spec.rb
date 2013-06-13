@@ -12,7 +12,7 @@ describe Listen::Directory do
     Celluloid::Actor[:change_pool] = change_pool
   }
 
-  describe "#change" do
+  describe "#scan" do
     let(:dir_path) { path.join('dir') }
     let(:file_path) { dir_path.join('file.rb') }
     let(:other_file_path) { dir_path.join('other_file.rb') }
@@ -33,7 +33,7 @@ describe Listen::Directory do
           it "calls change only for file path" do
             change_pool_async.should_receive(:change).with(file_path, type: 'File')
             change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir')
-            dir.change
+            dir.scan
           end
         end
 
@@ -47,7 +47,7 @@ describe Listen::Directory do
             change_pool_async.should_receive(:change).with(file_path, type: 'File')
             change_pool_async.should_receive(:change).with(other_file_path, type: 'File')
             change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir')
-            dir.change
+            dir.scan
           end
         end
       end
@@ -58,7 +58,7 @@ describe Listen::Directory do
         context "non-existing dir path" do
           it "calls change only for file path" do
             change_pool_async.should_not_receive(:change)
-            dir.change
+            dir.scan
           end
         end
 
@@ -72,7 +72,7 @@ describe Listen::Directory do
             change_pool_async.should_receive(:change).with(file_path, type: 'File')
             change_pool_async.should_not_receive(:change).with(other_file_path, type: 'File')
             change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir')
-            dir.change
+            dir.scan
           end
         end
       end
@@ -91,7 +91,7 @@ describe Listen::Directory do
           it "calls change for file & inside_dir path" do
             change_pool_async.should_receive(:change).with(file_path, type: 'File')
             change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
-            dir.change
+            dir.scan
           end
         end
 
@@ -105,7 +105,7 @@ describe Listen::Directory do
             change_pool_async.should_receive(:change).with(file_path, type: 'File')
             change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
             change_pool_async.should_receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
-            dir.change
+            dir.scan
           end
         end
       end
@@ -116,7 +116,7 @@ describe Listen::Directory do
         context "non-existing dir path" do
           it "calls change only for file path" do
             change_pool_async.should_not_receive(:change)
-            dir.change
+            dir.scan
           end
         end
 
@@ -128,7 +128,7 @@ describe Listen::Directory do
 
           it "calls change for file & other_file paths" do
             change_pool_async.should_receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
-            dir.change
+            dir.scan
           end
         end
       end

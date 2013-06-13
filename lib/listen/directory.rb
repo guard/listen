@@ -7,7 +7,7 @@ module Listen
       @options = options
     end
 
-    def change
+    def scan
       _all_entries.each do |entry_path, data|
         case data[:type]
         when 'File' then _async_change(entry_path, type: 'File')

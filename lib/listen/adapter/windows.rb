@@ -1,6 +1,3 @@
-require 'set'
-require 'rubygems'
-
 module Listen
   module Adapter
 

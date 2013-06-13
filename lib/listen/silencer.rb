@@ -1,5 +1,6 @@
 module Listen
   class Silencer
+    # TODO
 
     # Adds ignoring patterns to the listener.
     #
@@ -176,7 +177,6 @@ module Listen
       path = relative_to_base(path)
       @filtering_patterns.any? { |pattern| pattern =~ path }
     end
-
 
   end
 end

@@ -13,13 +13,15 @@ describe Listen::Adapter::Polling do
   end
 
   describe "#start" do
-    let(:directories_path) { ['directories_path'] }
-    before { listener.stub(:options) { {} } }
+    let(:directories) { ['directory_path'] }
+    before {
+      listener.stub(:options) { {} }
+      listener.directories = directories
+    }
 
     it "notifies change on every listener directories path" do
-      listener.directories_path = directories_path
       adapter.async.start
-      adapter.should_receive(:_notify_change).with('directories_path', type: 'Dir', recursive: true)
+      adapter.should_receive(:_notify_change).with('directory_path', type: 'Dir', recursive: true)
     end
   end
 

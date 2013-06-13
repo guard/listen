@@ -21,16 +21,31 @@ describe Listen::Change do
       end
 
       context "that returns a change" do
-        it "notifies change to listener" do
-          file.stub(:change) { :changed }
-          mailbox.should_receive(:<<).with(changed: 'file_path')
-          change.change('file_path', type: 'File')
+        before { file.stub(:change) { :changed } }
+
+        context "listener listen" do
+          before { listener.stub(:listen?) { true } }
+
+          it "notifies change to listener" do
+            mailbox.should_receive(:<<).with(changed: 'file_path')
+            change.change('file_path', type: 'File')
+          end
+        end
+
+        context "listener doesn't listen" do
+          before { listener.stub(:listen?) { false } }
+
+          it "notifies change to listener" do
+            mailbox.should_not_receive(:<<)
+            change.change('file_path', type: 'File')
+          end
         end
       end
 
       context "that returns no change" do
+        before { file.stub(:change) { nil } }
+
         it "doesn't notifies no change" do
-          file.stub(:change) { nil }
           mailbox.should_not_receive(:<<)
           change.change('file_path', type: 'File')
         end
@@ -42,9 +57,9 @@ describe Listen::Change do
       let(:dir_options) { { type: 'Dir', recursive: true } }
       before { Listen::Directory.stub(:new) { dir } }
 
-      it "calls Listen::Directory#change" do
+      it "calls Listen::Directory#scan" do
         Listen::Directory.should_receive(:new).with('dir_path', dir_options) { dir }
-        dir.should_receive(:change)
+        dir.should_receive(:scan)
         change.change('dir_path', dir_options)
       end
     end
