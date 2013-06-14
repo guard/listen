@@ -1,3 +1,10 @@
+require 'listen/adapter/base'
+require 'listen/adapter/bsd'
+require 'listen/adapter/darwin'
+require 'listen/adapter/linux'
+require 'listen/adapter/polling'
+require 'listen/adapter/windows'
+
 module Listen
   module Adapter
     OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]

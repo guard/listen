@@ -1,3 +1,10 @@
+## 2.0.0
+
+### Breaking changes
+
+- "Object" API removed, use normal "block" API instead.
+- filter & filter! options removed, please use ignore & ignore! instead.
+
 ## 1.2.0 - Jun 11, 2013
 
 ### Improvement

@@ -10,6 +10,9 @@ describe Listen::Change do
   }
 
   describe "#change" do
+    let(:silencer) { mock(Listen::Silencer, silenced?: false) }
+    before { Listen::Silencer.stub(:new) { silencer } }
+
     context "file path" do
       let(:file) { mock(Listen::File) }
       before { Listen::File.stub(:new) { file } }
@@ -17,6 +20,12 @@ describe Listen::Change do
       it "calls Listen::File#change" do
         Listen::File.should_receive(:new).with('file_path') { file }
         file.should_receive(:change)
+        change.change('file_path', type: 'File')
+      end
+
+      it "doesn't call Listen::File#change if path is silenced" do
+        silencer.should_receive(:silenced?).with('file_path') { true }
+        Listen::File.should_not_receive(:new)
         change.change('file_path', type: 'File')
       end
 

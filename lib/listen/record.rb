@@ -23,5 +23,12 @@ module Listen
     def dir_entries(path)
       @paths[path]
     end
+
+    # TODO test
+    def build
+      Actor[:listener].directories.each do |path|
+        Actor[:change_pool].change(path, type: 'Dir', recursive: true)
+      end
+    end
   end
 end

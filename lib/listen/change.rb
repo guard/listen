@@ -1,8 +1,19 @@
+require 'listen/file'
+require 'listen/directory'
+require 'listen/silencer'
+
 module Listen
   class Change
     include Celluloid
 
+    attr_accessor :silencer
+
+    def initialize
+      @silencer = Silencer.new(_listener.options)
+    end
+
     def change(path, options)
+      return if silencer.silenced?(path)
       send("_#{options[:type].downcase}_change", path, options)
     end
 

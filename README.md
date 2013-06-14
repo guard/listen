@@ -81,6 +81,7 @@ Listener can also easily be paused/unpaused:
 ``` ruby
 listener = Listen.to('dir/path/to/listen') { |modified, added, removed| # ... }
 listener.start
+listener.listen? # => true
 listener.pause   # stop listening to changes
 listener.paused? # => true
 listener.unpause # start listening to changes again
@@ -132,14 +133,10 @@ sleep
 All the following options can be set through the `Listen.to` after the path(s) params.
 
 ```ruby
-ignore: %r{app/CMake/}, /\.pid$/   # Ignore a list of paths (root directory or sub-dir)
-                                   # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::DirectoryRecord
+ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
+                                   # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
 
-ignore!: # TODO
-
-filter: /\.rb$/, /\.coffee$/               # Filter files to listen to via a regexps list.
-                                              # default: none
-filter!: # TODO
+ignore!: %r{/foo/bar}                           # Same as ignore options, but overwrite default ignored paths.
 
 latency: 0.5                               # Set the delay (**in seconds**) between checking for changes
                                               # default: 0.25 sec (1.0 sec for polling)
@@ -153,20 +150,6 @@ force_polling: true                        # Force the use of the polling adapte
 polling_fallback_message: 'custom message' # Set a custom polling fallback message (or disable it with false)
                                               # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 ```
-
-### Note on the patterns for ignoring and filtering paths
-
-Just like the unix convention of beginning absolute paths with the
-directory-separator (forward slash `/` in unix) and with no prefix for relative paths,
-Listen doesn't prefix relative paths (to the watched directory) with a directory-separator.
-
-Therefore make sure _NOT_ to prefix your regexp-patterns for filtering or ignoring paths
-with a directory-separator, otherwise they won't work as expected.
-
-As an example: to ignore the `build` directory in a C-project, use `%r{build/}`
-and not `%r{/build/}`.
-
-Use `:filter!` and `:ignore!` options to overwrites default patterns.
 
 ## Listen adapters
 

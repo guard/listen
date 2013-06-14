@@ -1,4 +1,4 @@
-# require 'spec_helper'
+require 'spec_helper'
 
 describe Listen::Listener do
   let(:listener) { Listen::Listener.new }

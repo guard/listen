@@ -1,3 +1,7 @@
+require 'listen/adapter'
+require 'listen/change'
+require 'listen/record'
+
 module Listen
   class Listener
     include Celluloid
