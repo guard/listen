@@ -57,10 +57,10 @@ describe Listen::File do
           end
 
           context "none record path md5" do
-            let(:record_md5) { 'foo' }
+            let(:record_md5) { nil }
 
-            it "returns modified" do
-              file.change.should eq :modified
+            it "doesn't returns modified" do
+              file.change.should be_nil
             end
             it "sets path in record with mtime and md5" do
               record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String) })
@@ -80,7 +80,7 @@ describe Listen::File do
     end
 
     context "path not present in record" do
-      before { record.stub_chain(:future, :file_data) { stub(value: nil) } }
+      before { record.stub_chain(:future, :file_data) { stub(value: {}) } }
 
       context "existing path" do
         around { |example| touch file_path; example.run }

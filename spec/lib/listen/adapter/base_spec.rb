@@ -1,13 +1,25 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Base do
-  let(:adapter) { described_class.new }
+  let(:adapter) { described_class.new(listener) }
   let(:listener) { MockActor.new }
   before { Celluloid::Actor[:listener] = listener }
 
   describe ".usable?" do
     it "raises when not implemented" do
       expect { described_class.usable? }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe "#need_record?" do
+    it "raises when not implemented" do
+      expect { adapter.need_record? }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe "#start" do
+    it "raises when not implemented" do
+      expect { adapter.start }.to raise_error(NotImplementedError)
     end
   end
 
@@ -19,15 +31,6 @@ describe Listen::Adapter::Base do
     it "returns latency from listener actor if present" do
       listener.options[:latency] = 1234
       adapter.send(:_latency).should eq 1234
-    end
-  end
-
-  describe "#_directories_path" do
-    let(:directories) { ['directory_path'] }
-
-    it "returns directories path from listener actor" do
-      listener.directories = directories
-      adapter.send(:_directories).should eq directories
     end
   end
 

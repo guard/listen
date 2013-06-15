@@ -6,10 +6,11 @@ module Listen
   class Change
     include Celluloid
 
-    attr_accessor :silencer
+    attr_accessor :listener, :silencer
 
-    def initialize
-      @silencer = Silencer.new(_listener.options)
+    def initialize(listener)
+      @listener = listener
+      @silencer = Silencer.new(listener.options)
     end
 
     def change(path, options)
@@ -21,7 +22,7 @@ module Listen
 
     def _file_change(path, options)
       change = File.new(path).change
-      if change && _listener.listen?
+      if change && listener.listen? && !options[:silence]
         _notify_listener(change, path)
       end
     end
@@ -31,11 +32,7 @@ module Listen
     end
 
     def _notify_listener(change, path)
-      _listener.mailbox << { change => path }
-    end
-
-    def _listener
-      Actor[:listener]
+      listener.changes << { change => path }
     end
   end
 end

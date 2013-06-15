@@ -10,7 +10,7 @@ module Listen
     def scan
       _all_entries.each do |entry_path, data|
         case data[:type]
-        when 'File' then _async_change(entry_path, type: 'File')
+        when 'File' then _async_change(entry_path, options.merge(type: 'File'))
         when 'Dir'
           _async_change(entry_path, options.merge(type: 'Dir')) if options[:recursive]
         end

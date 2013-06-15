@@ -10,6 +10,12 @@ describe Listen::Record do
       record.set_path(path, data)
       record.paths.should eq({ '/dir/path' => { 'file.rb' => data } })
     end
+
+    it "sets path and keeps old data not overwritten" do
+      record.set_path(path, data.merge(foo: 1, bar: 2))
+      record.set_path(path, data.merge(foo: 3))
+      record.paths.should eq({ '/dir/path' => { 'file.rb' => data.merge(foo: 3, bar: 2) } })
+    end
   end
 
   describe "#unset_path" do
@@ -40,11 +46,12 @@ describe Listen::Record do
     end
 
     context "path not present" do
-      it "return nil" do
-        record.file_data(path).should be_nil
+      it "return empty hash" do
+        record.file_data(path).should be_empty
       end
     end
   end
+
   describe "#dir_entries" do
     context "path is present" do
       before { record.set_path(path, data) }
@@ -60,4 +67,6 @@ describe Listen::Record do
       end
     end
   end
+
+  pending "#build"
 end

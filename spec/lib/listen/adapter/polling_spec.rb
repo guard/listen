@@ -1,14 +1,19 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:adapter) { described_class.new }
   let(:listener) { MockActor.new }
+  let(:adapter) { described_class.new(listener) }
   before { Celluloid::Actor[:listener] = listener }
-  after { listener.terminate }
 
   describe ".usable?" do
     it "returns always true" do
       described_class.should be_usable
+    end
+  end
+
+  describe "#need_record?" do
+    it "returns true" do
+      adapter.need_record?.should be_true
     end
   end
 

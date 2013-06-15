@@ -15,6 +15,6 @@ module Listen
   # @return [Listen::Listener] the listener
   #
   def self.to(*args, &block)
-    Celluloid::Actor[:listener] = Listener.new(*args, &block)
+    Listener.new(*args, &block)
   end
 end

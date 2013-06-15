@@ -24,15 +24,19 @@ module Listen
     private
 
     def _new_path?
-      _exist? && _record_data.nil?
+      _exist? && !_record_data?
     end
 
     def _existing_path?
-      _exist? && _record_data
+      _exist? && _record_data?
     end
 
     def _removed_path?
       !_exist?
+    end
+
+    def _record_data?
+      !_record_data.empty?
     end
 
     def _exist?
@@ -45,7 +49,7 @@ module Listen
 
     def _content_modified?
       @data.merge!(md5: _md5)
-      _md5 != _record_data[:md5]
+      _record_data[:md5] && _md5 != _record_data[:md5]
     end
 
     def _set_record_data
@@ -58,8 +62,7 @@ module Listen
     end
 
     def _record_data
-      future = _record.future.file_data(path)
-      future.value
+      @_record_data ||= _record.future.file_data(path).value
     end
 
     def _record

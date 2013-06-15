@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 describe Listen::Change do
-  let(:change) { Listen::Change.new }
+  let(:change) { Listen::Change.new(listener) }
   let(:listener) { MockActor.new }
-  let(:mailbox) { mock('mailbox', :<< => true) }
+  let(:listener_changes) { mock("listener_changes") }
   before {
     Celluloid::Actor[:listener] = listener
-    listener.stub(:mailbox) { mailbox }
+    listener.stub(:changes) { listener_changes }
   }
 
   describe "#change" do
@@ -36,7 +36,7 @@ describe Listen::Change do
           before { listener.stub(:listen?) { true } }
 
           it "notifies change to listener" do
-            mailbox.should_receive(:<<).with(changed: 'file_path')
+            listener_changes.should_receive(:<<).with(changed: 'file_path')
             change.change('file_path', type: 'File')
           end
         end
@@ -45,7 +45,7 @@ describe Listen::Change do
           before { listener.stub(:listen?) { false } }
 
           it "notifies change to listener" do
-            mailbox.should_not_receive(:<<)
+            listener_changes.should_not_receive(:<<)
             change.change('file_path', type: 'File')
           end
         end
@@ -55,7 +55,7 @@ describe Listen::Change do
         before { file.stub(:change) { nil } }
 
         it "doesn't notifies no change" do
-          mailbox.should_not_receive(:<<)
+          listener_changes.should_not_receive(:<<)
           change.change('file_path', type: 'File')
         end
       end

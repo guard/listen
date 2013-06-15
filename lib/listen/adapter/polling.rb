@@ -17,15 +17,19 @@ module Listen
         _poll_directories
       end
 
+      def need_record?
+        true
+      end
+
       private
 
       def _latency
-        Actor[:listener].options[:latency] || DEFAULT_POLLING_LATENCY
+        listener.options[:latency] || DEFAULT_POLLING_LATENCY
       end
 
       def _poll_directories
         _napped_loop do
-          _directories.each do |path|
+          listener.directories.each do |path|
             _notify_change(path, type: 'Dir', recursive: true)
           end
         end

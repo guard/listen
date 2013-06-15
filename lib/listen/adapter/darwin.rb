@@ -9,13 +9,18 @@ module Listen
         RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
       end
 
-      def initialize
+      def initialize(listener)
         require 'rb-fsevent'
+        super
       end
 
       def start
         worker = _init_worker
         worker.run
+      end
+
+      def need_record?
+        true
       end
 
       private

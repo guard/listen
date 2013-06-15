@@ -32,6 +32,13 @@ describe Listen::Listener do
     end
   end
 
+  pending "#start"
+  pending "#stop"
+  pending "#pause"
+  pending "#unpause"
+  pending "#paused?"
+  pending "#listen?"
+
   # TODO
 
   # context 'with one path to listen to' do

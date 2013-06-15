@@ -10,23 +10,19 @@ module Listen
     OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]
     POLLING_FALLBACK_MESSAGE = "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 
-    def self.new
-      adapter_class = _select
-      adapter_class.new
+    def self.new(listener)
+      adapter_class = _select(listener.options)
+      adapter_class.new(listener)
     end
 
     private
 
-    def self._select
-      return Polling if _listener_options[:force_polling]
+    def self._select(options)
+      return Polling if options[:force_polling]
       return _usable_adapter_class if _usable_adapter_class
 
-      _warn_polling_fallback
+      _warn_polling_fallback(options)
       Polling
-    end
-
-    def self._listener_options
-      Celluloid::Actor[:listener].options
     end
 
     def self._usable_adapter_class
@@ -34,10 +30,10 @@ module Listen
       adapters.detect { |adapter| adapter.send(:usable?) }
     end
 
-    def self._warn_polling_fallback
-      return if _listener_options[:polling_fallback_message] == false
+    def self._warn_polling_fallback(options)
+      return if options[:polling_fallback_message] == false
 
-      warning = _listener_options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
+      warning = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
       Kernel.warn "[Listen warning]:\n#{warning.gsub(/^(.*)/, '  \1')}"
     end
   end

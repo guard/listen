@@ -2,20 +2,30 @@ require 'spec_helper'
 
 describe Listen::Adapter::Darwin do
   if mac?
+    let(:listener) { MockActor.new }
+    let(:adapter) { described_class.new(listener) }
+    before { Celluloid::Actor[:listener] = listener }
+
     describe ".usable?" do
       it "returns always true" do
         described_class.should be_usable
       end
     end
 
+    describe "#need_record?" do
+      it "returns true" do
+        adapter.need_record?.should be_true
+      end
+    end
+
     describe '#initialize' do
       it 'requires rb-fsevent gem' do
-        described_class.new
+        described_class.new(listener)
         require('rb-fsevent').should be_false
       end
     end
 
-    # it_should_behave_like 'an adapter that call properly notify listener on changes'
+    pending "#start"
   end
 
   if windows?

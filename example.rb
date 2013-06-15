@@ -1,6 +1,6 @@
 require 'listen'
 
-listener = Listen.to(Dir.pwd, force_polling: true) do |modified, added, removed|
+listener = Listen.to(Dir.pwd, force_polling: true, ignore: /coverage/) do |modified, added, removed|
   p "---------------------"
   p "modified: #{modified}"
   p "added   : #{added}"
@@ -8,4 +8,3 @@ listener = Listen.to(Dir.pwd, force_polling: true) do |modified, added, removed|
 end
 listener.start
 sleep
-
