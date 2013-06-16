@@ -4,7 +4,7 @@ require 'listen/record'
 
 module Listen
   class Listener
-    attr_reader :options, :directories, :paused, :changes, :block
+    attr_accessor :options, :directories, :paused, :changes, :block
 
     # Initializes the directories listener.
     #
@@ -17,7 +17,7 @@ module Listen
     # @yieldparam [Array<String>] removed the list of removed files
     #
     def initialize(*args, &block)
-      @options     = _set_options(args.last.is_a?(Hash) ? args.pop : {})
+      @options     = _init_options(args.last.is_a?(Hash) ? args.pop : {})
       @directories = args.flatten.map { |path| Pathname.new(path) }
       @changes     = []
       @block       = block
@@ -29,10 +29,9 @@ module Listen
     #
     def start
       _init_actors
-      _build_record_if_needed
+      unpause
       adapter.async.start
       Thread.new { _wait_for_changes }
-      unpause
     end
 
     def stop
@@ -68,30 +67,29 @@ module Listen
 
     private
 
-    def _set_options(options = {})
-      options[:latency]                  ||= nil
-      options[:force_polling]            ||= false
-      options[:polling_fallback_message] ||= nil
-      options
+    def _init_options(options = {})
+      { latency: nil,
+        force_polling: false,
+        polling_fallback_message: nil }.merge(options)
     end
 
     def _init_actors
       Celluloid::Actor[:change_pool] = Change.pool(args: self)
       Celluloid::Actor[:adapter]     = Adapter.new(self)
-      Celluloid::Actor[:record]      = Record.new if adapter.need_record?
+      Celluloid::Actor[:record]      = Record.new(self) if adapter.need_record?
     end
 
     def _build_record_if_needed
-      record && record.build(directories)
+      record && record.build
     end
 
     def _wait_for_changes
       loop do
-        sleep 0.1
         changes = _pop_changes
         unless changes.values.all?(&:empty?)
           block.call(changes[:modified], changes[:added], changes[:removed])
         end
+        sleep 0.1
       end
     end
 

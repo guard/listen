@@ -2,9 +2,8 @@ require 'spec_helper'
 
 describe Listen::Adapter::Darwin do
   if mac?
-    let(:listener) { MockActor.new }
+    let(:listener) { mock(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
-    before { Celluloid::Actor[:listener] = listener }
 
     describe ".usable?" do
       it "returns always true" do

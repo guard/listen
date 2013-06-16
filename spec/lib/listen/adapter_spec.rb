@@ -2,9 +2,8 @@ require 'spec_helper'
 
 describe Listen::Adapter do
   let(:adapter) { Listen::Adapter.new(listener) }
-  let(:listener) { MockActor.new }
+  let(:listener) { mock(Listen::Listener, options: {}) }
   before {
-    Celluloid::Actor[:listener] = listener
     Listen::Adapter::BSD.stub(:usable?) { false }
     Listen::Adapter::Darwin.stub(:usable?) { false }
     Listen::Adapter::Linux.stub(:usable?) { false }
@@ -13,7 +12,7 @@ describe Listen::Adapter do
 
   describe ".new" do
     it "returns Polling adapter if forced" do
-      listener.options[:force_polling] = true
+      listener.stub(:options) { { force_polling: true } }
       adapter.should be_kind_of Listen::Adapter::Polling
     end
 
@@ -50,13 +49,13 @@ describe Listen::Adapter do
       end
 
       it "doesn't warn if polling_fallback_message is false" do
-        listener.options[:polling_fallback_message] = false
+        listener.stub(:options) { { polling_fallback_message: false } }
         Kernel.should_not_receive(:warn)
         adapter
       end
 
       it "warns polling fallback with custom message if set" do
-        listener.options[:polling_fallback_message] = 'custom fallback message'
+        listener.stub(:options) { { polling_fallback_message: 'custom fallback message' } }
         Kernel.should_receive(:warn).with("[Listen warning]:\n  custom fallback message")
         adapter
       end

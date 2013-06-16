@@ -2,10 +2,11 @@ module Listen
   class Record
     include Celluloid
 
-    attr_accessor :paths
+    attr_accessor :paths, :listener
 
-    def initialize
-      @paths = _init_paths
+    def initialize(listener)
+      @listener = listener
+      @paths    = _init_paths
     end
 
     def set_path(path, data)
@@ -25,9 +26,9 @@ module Listen
     end
 
     # TODO test
-    def build(directories)
+    def build
       @paths = _init_paths
-      directories.each do |path|
+      listener.directories.each do |path|
         Actor[:change_pool].async.change(path, type: 'Dir', recursive: true, silence: true)
       end
     end

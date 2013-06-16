@@ -2,8 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Base do
   let(:adapter) { described_class.new(listener) }
-  let(:listener) { MockActor.new }
-  before { Celluloid::Actor[:listener] = listener }
+  let(:listener) { mock(Listen::Listener, options: {}) }
 
   describe ".usable?" do
     it "raises when not implemented" do
@@ -29,17 +28,17 @@ describe Listen::Adapter::Base do
     end
 
     it "returns latency from listener actor if present" do
-      listener.options[:latency] = 1234
+      listener.stub(:options) { { latency: 1234 } }
       adapter.send(:_latency).should eq 1234
     end
   end
 
   describe "#_notify_change" do
-    let(:change_pool) { MockActor.pool }
+    let(:change_pool) { mock(Listen::Change) }
     let(:change_pool_async) { stub('ChangePoolAsync') }
     before {
       change_pool.stub(:async) { change_pool_async }
-      Celluloid::Actor[:change_pool] = change_pool
+      Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
     }
 
     context "listener listen" do

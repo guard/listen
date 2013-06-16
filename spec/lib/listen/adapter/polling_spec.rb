@@ -1,9 +1,8 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:listener) { MockActor.new }
+  let(:listener) { mock(Listen::Listener, options: {}) }
   let(:adapter) { described_class.new(listener) }
-  before { Celluloid::Actor[:listener] = listener }
 
   describe ".usable?" do
     it "returns always true" do
@@ -21,12 +20,14 @@ describe Listen::Adapter::Polling do
     let(:directories) { ['directory_path'] }
     before {
       listener.stub(:options) { {} }
-      listener.directories = directories
+      listener.stub(:directories) { directories }
     }
 
     it "notifies change on every listener directories path" do
-      adapter.async.start
       adapter.should_receive(:_notify_change).with('directory_path', type: 'Dir', recursive: true)
+      t = Thread.new { adapter.start }
+      sleep 0.01
+      t.kill
     end
   end
 
@@ -36,7 +37,7 @@ describe Listen::Adapter::Polling do
     end
 
     it "returns latency from listener actor if present" do
-      listener.options[:latency] = 1234
+      listener.stub(:options) { { latency: 1234 } }
       adapter.send(:_latency).should eq 1234
     end
   end

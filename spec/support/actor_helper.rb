@@ -9,13 +9,3 @@ RSpec.configuration.before(:each) do
     end
   end
 end
-
-class MockActor
-  include Celluloid
-
-  attr_accessor :options, :directories
-
-  def initialize
-    @options = {}
-  end
-end

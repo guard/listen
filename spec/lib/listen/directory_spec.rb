@@ -1,15 +1,15 @@
 require 'spec_helper'
 
 describe Listen::Directory do
-  let(:record) { MockActor.new }
-  let(:change_pool) { MockActor.pool }
+  let(:record) { mock(Listen::Record) }
+  let(:change_pool) { mock(Listen::Change) }
   let(:change_pool_async) { stub('ChangePoolAsync') }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { |path| example.run } }
   before {
     change_pool.stub(:async) { change_pool_async }
-    Celluloid::Actor[:record] = record
-    Celluloid::Actor[:change_pool] = change_pool
+    Celluloid::Actor.stub(:[]).with(:record) { record }
+    Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
   }
 
   describe "#scan" do

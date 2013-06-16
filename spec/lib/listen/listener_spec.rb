@@ -2,6 +2,15 @@ require 'spec_helper'
 
 describe Listen::Listener do
   let(:listener) { Listen::Listener.new }
+  let(:record) { mock(Listen::Record, terminate: true, build: true) }
+  let(:adapter) { mock(Listen::Adapter::Base) }
+  let(:change_pool) { mock(Listen::Change, terminate: true) }
+  let(:change_pool_async) { stub('ChangePoolAsync') }
+  before {
+    Celluloid::Actor.stub(:[]).with(:adapter) { adapter }
+    Celluloid::Actor.stub(:[]).with(:record) { record }
+    Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
+  }
 
   describe "initialize" do
     it "sets paused to false" do
@@ -32,12 +41,134 @@ describe Listen::Listener do
     end
   end
 
-  pending "#start"
-  pending "#stop"
-  pending "#pause"
-  pending "#unpause"
-  pending "#paused?"
-  pending "#listen?"
+  describe "#start" do
+    before {
+      Celluloid::Actor.stub(:[]=)
+      adapter.stub(:need_record?)
+      adapter.stub_chain(:async, :start)
+    }
+
+    it "registers change_pool" do
+      Listen::Change.should_receive(:pool).with(args: listener) { change_pool }
+      Celluloid::Actor.should_receive(:[]=).with(:change_pool, change_pool)
+      listener.start
+    end
+
+    it "registers adaper" do
+      Listen::Adapter.should_receive(:new).with(listener) { adapter }
+      Celluloid::Actor.should_receive(:[]=).with(:adapter, adapter)
+      listener.start
+    end
+
+    it "registers record if needed?" do
+      adapter.should_receive(:need_record?) { true }
+      Listen::Record.should_receive(:new).with(listener) { record }
+      Celluloid::Actor.should_receive(:[]=).with(:record, record)
+      listener.start
+    end
+
+    it "builds record" do
+      record.should_receive(:build)
+      listener.start
+    end
+
+    it "sets paused to false" do
+      listener.start
+      listener.paused.should be_false
+    end
+
+    it "starts adapter asynchronously" do
+      async_stub = stub
+      adapter.should_receive(:async) { async_stub }
+      async_stub.should_receive(:start)
+      listener.start
+    end
+
+    it "starts adapter asynchronously" do
+      async_stub = stub
+      adapter.should_receive(:async) { async_stub }
+      async_stub.should_receive(:start)
+      listener.start
+    end
+
+    it "calls block on changes" do
+      listener.changes = [{ modified: 'foo' }]
+      block_stub = stub('block')
+      listener.block = block_stub
+      block_stub.should_receive(:call).with(['foo'], [], [])
+      listener.start
+      sleep 0.01
+    end
+  end
+
+  describe "#stop" do
+    before { Celluloid::Actor.stub(:kill) }
+
+    it "kills adapter" do
+      Celluloid::Actor.should_receive(:kill).with(adapter)
+      listener.stop
+    end
+
+    it "terminates change_pool" do
+      change_pool.should_receive(:terminate)
+      listener.stop
+    end
+
+    it "terminates record" do
+      record.should_receive(:terminate)
+      listener.stop
+    end
+  end
+
+  describe "#pause" do
+    it "sets paused to true" do
+      listener.pause
+      listener.paused.should be_true
+    end
+  end
+
+  describe "#unpause" do
+    it "builds record" do
+      record.should_receive(:build)
+      listener.unpause
+    end
+
+    it "sets paused to false" do
+      record.stub(:build)
+      listener.unpause
+      listener.paused.should be_false
+    end
+  end
+
+  describe "#paused?" do
+    it "returns true when paused" do
+      listener.paused = true
+      listener.should be_paused
+    end
+    it "returns false when not paused (nil)" do
+      listener.paused = nil
+      listener.should_not be_paused
+    end
+    it "returns false when not paused (false)" do
+      listener.paused = false
+      listener.should_not be_paused
+    end
+  end
+
+  describe "#paused?" do
+    it "returns true when not paused (false)" do
+      listener.paused = false
+      listener.listen?.should be_true
+    end
+    it "returns false when not paused (nil)" do
+      listener.paused = nil
+      listener.listen?.should be_false
+    end
+    it "returns false when paused" do
+      listener.paused = true
+      listener.listen?.should be_false
+    end
+  end
 
   # TODO
 

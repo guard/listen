@@ -22,6 +22,5 @@ def test_latency
   0.1
 end
 
-
 # Crash loud in tests!
-# Thread.abort_on_exception = true
+Thread.abort_on_exception = true

@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe Listen::Record do
-  let(:record) { Listen::Record.new }
+  let(:listener) { mock(Listen::Listener, options: {}) }
+  let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
   let(:data) { { type: 'File' } }
 
@@ -68,5 +69,25 @@ describe Listen::Record do
     end
   end
 
-  pending "#build"
+  describe "#build" do
+    let(:directories) { ['dir_path'] }
+    let(:change_pool) { mock(Listen::Change, terminate: true) }
+    let(:change_pool_async) { stub('ChangePoolAsync', change: true) }
+    before {
+      change_pool.stub(:async) { change_pool_async }
+      Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
+      listener.stub(:directories) { directories }
+    }
+
+    it "re-inits paths" do
+      record.set_path(path, data)
+      record.build
+      record.file_data(path).should be_empty
+    end
+
+    it "calls change asynchronously on all directories to build record"  do
+      change_pool_async.should_receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
+      record.build
+    end
+  end
 end

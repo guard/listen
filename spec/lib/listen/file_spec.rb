@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe Listen::File do
-  let(:record) { MockActor.new }
+  let(:record) { mock(Listen::Record, async: stub(set_path: true, unset_path: true)) }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { |path| example.run } }
-  before { Celluloid::Actor[:record] = record }
+  before { Celluloid::Actor.stub(:[]).with(:record) { record } }
 
   describe "#change" do
     let(:file_path) { path.join('file.rb') }

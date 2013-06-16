@@ -2,10 +2,9 @@ require 'spec_helper'
 
 describe Listen::Change do
   let(:change) { Listen::Change.new(listener) }
-  let(:listener) { MockActor.new }
+  let(:listener) { mock(Listen::Listener, options: {}) }
   let(:listener_changes) { mock("listener_changes") }
   before {
-    Celluloid::Actor[:listener] = listener
     listener.stub(:changes) { listener_changes }
   }
 
@@ -38,6 +37,13 @@ describe Listen::Change do
           it "notifies change to listener" do
             listener_changes.should_receive(:<<).with(changed: 'file_path')
             change.change('file_path', type: 'File')
+          end
+
+          context "silence option" do
+            it "notifies change to listener" do
+              listener_changes.should_not_receive(:<<)
+              change.change('file_path', type: 'File', silence: true)
+            end
           end
         end
 
