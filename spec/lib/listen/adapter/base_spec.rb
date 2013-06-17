@@ -4,24 +4,6 @@ describe Listen::Adapter::Base do
   let(:adapter) { described_class.new(listener) }
   let(:listener) { mock(Listen::Listener, options: {}) }
 
-  describe ".usable?" do
-    it "raises when not implemented" do
-      expect { described_class.usable? }.to raise_error
-    end
-  end
-
-  describe "#need_record?" do
-    it "raises when not implemented" do
-      expect { adapter.need_record? }.to raise_error
-    end
-  end
-
-  describe "#start" do
-    it "raises when not implemented" do
-      expect { adapter.start }.to raise_error
-    end
-  end
-
   describe "#_latency" do
     it "returns default_latency with listener actor latency not present" do
       adapter.send(:_latency).should eq Listen::Adapter::Base::DEFAULT_LATENCY
