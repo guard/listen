@@ -36,7 +36,7 @@ module Listen
 
     def stop
       Celluloid::Actor.kill(adapter)
-      Celluloid::Actor[:change_pool].terminate
+      Celluloid::Actor[:listen_change_pool].terminate
       record && record.terminate
     end
 
@@ -58,11 +58,11 @@ module Listen
     end
 
     def adapter
-      Celluloid::Actor[:adapter]
+      Celluloid::Actor[:listen_adapter]
     end
 
     def record
-      Celluloid::Actor[:record]
+      Celluloid::Actor[:listen_record]
     end
 
     private
@@ -74,9 +74,9 @@ module Listen
     end
 
     def _init_actors
-      Celluloid::Actor[:change_pool] = Change.pool(args: self)
-      Celluloid::Actor[:adapter]     = Adapter.new(self)
-      Celluloid::Actor[:record]      = Record.new(self) if adapter.need_record?
+      Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
+      Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
+      Celluloid::Actor[:listen_record]      = Record.new(self) if adapter.need_record?
     end
 
     def _build_record_if_needed

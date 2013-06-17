@@ -75,7 +75,7 @@ describe Listen::Record do
     let(:change_pool_async) { stub('ChangePoolAsync', change: true) }
     before {
       change_pool.stub(:async) { change_pool_async }
-      Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
+      Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
       listener.stub(:directories) { directories }
     }
 

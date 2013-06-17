@@ -8,8 +8,8 @@ describe Listen::Directory do
   around { |example| fixtures { |path| example.run } }
   before {
     change_pool.stub(:async) { change_pool_async }
-    Celluloid::Actor.stub(:[]).with(:record) { record }
-    Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
+    Celluloid::Actor.stub(:[]).with(:listen_record) { record }
+    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
   }
 
   describe "#scan" do

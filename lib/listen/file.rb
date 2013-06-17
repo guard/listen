@@ -66,7 +66,7 @@ module Listen
     end
 
     def _record
-      Celluloid::Actor[:record]
+      Celluloid::Actor[:listen_record]
     end
 
     def _mtime

@@ -32,7 +32,7 @@ module Listen
       end
 
       def _notify_change(path, options)
-        Actor[:change_pool].async.change(path, options) if listener.listen?
+        Actor[:listen_change_pool].async.change(path, options) if listener.listen?
       end
     end
 

@@ -7,9 +7,9 @@ describe Listen::Listener do
   let(:change_pool) { mock(Listen::Change, terminate: true) }
   let(:change_pool_async) { stub('ChangePoolAsync') }
   before {
-    Celluloid::Actor.stub(:[]).with(:adapter) { adapter }
-    Celluloid::Actor.stub(:[]).with(:record) { record }
-    Celluloid::Actor.stub(:[]).with(:change_pool) { change_pool }
+    Celluloid::Actor.stub(:[]).with(:listen_adapter) { adapter }
+    Celluloid::Actor.stub(:[]).with(:listen_record) { record }
+    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
   }
 
   describe "initialize" do
@@ -53,20 +53,20 @@ describe Listen::Listener do
 
     it "registers change_pool" do
       Listen::Change.should_receive(:pool).with(args: listener) { change_pool }
-      Celluloid::Actor.should_receive(:[]=).with(:change_pool, change_pool)
+      Celluloid::Actor.should_receive(:[]=).with(:listen_change_pool, change_pool)
       listener.start
     end
 
     it "registers adaper" do
       Listen::Adapter.should_receive(:new).with(listener) { adapter }
-      Celluloid::Actor.should_receive(:[]=).with(:adapter, adapter)
+      Celluloid::Actor.should_receive(:[]=).with(:listen_adapter, adapter)
       listener.start
     end
 
     it "registers record if needed?" do
       adapter.should_receive(:need_record?) { true }
       Listen::Record.should_receive(:new).with(listener) { record }
-      Celluloid::Actor.should_receive(:[]=).with(:record, record)
+      Celluloid::Actor.should_receive(:[]=).with(:listen_record, record)
       listener.start
     end
 

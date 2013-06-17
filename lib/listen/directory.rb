@@ -45,11 +45,11 @@ module Listen
     end
 
     def _record
-      Celluloid::Actor[:record]
+      Celluloid::Actor[:listen_record]
     end
 
     def _change_pool
-      Celluloid::Actor[:change_pool]
+      Celluloid::Actor[:listen_change_pool]
     end
 
     def _async_change(entry_path, options)
