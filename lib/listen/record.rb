@@ -22,10 +22,9 @@ module Listen
     end
 
     def dir_entries(path)
-      @paths[path]
+      @paths[path.to_s]
     end
 
-    # TODO test
     def build
       @paths = _init_paths
       listener.directories.each do |path|

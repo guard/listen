@@ -2,242 +2,52 @@
 require 'spec_helper'
 
 # TODO
+def listen(paths, options = {})
+  @changes = {}
+  listener = Listen.to(*paths, options) do |modified, added, removed|
+    @changes = { modified: modified, added: added, removed: removed }
+  end
+  listener.start
+  sleep 1 # wait adapter
+  yield
+  sleep 0.1 # wait for changes
+  listener.stop
+  @changes
+end
 
-# describe Listen::DirectoryRecord do
-#   let(:base_directory) { File.dirname(__FILE__) }
+describe "Listen" do
+  let(:path) { Pathname.new(Dir.pwd) }
+  let(:file_path) { path.join('file.rb').to_s }
+  around { |example| fixtures { |path| example.run } }
 
-#   subject { described_class.new(base_directory) }
+  context "force_polling option to true" do
+    let(:options) { { force_polling: true } }
 
-#   describe '.generate_default_ignoring_patterns' do
-#     it 'creates regexp patterns from the default ignored directories and extensions' do
-#       described_class.generate_default_ignoring_patterns.should include(
-#         %r{^(?:\.rbx|\.bundle|\.git|\.svn|log|tmp|vendor)/},
-#         %r{(?:\.DS_Store)$}
-#       )
-#     end
+    context "nothing in listen dir" do
+      it "listens to file addition" do
+        listen(path, options) {
+          touch file_path
+        }.should eq({ modified: [], added: [file_path], removed: [] })
+      end
+    end
 
-#     it 'memoizes the generated results' do
-#       described_class.generate_default_ignoring_patterns.should equal described_class.generate_default_ignoring_patterns
-#     end
-#   end
+    context "file in listen dir" do
+      around { |example| touch file_path; example.run }
 
-#   describe '#initialize' do
-#     it 'sets the base directory' do
-#       subject.directory.should eq base_directory
-#     end
+      it "listens to file modification" do
+        listen(path, options) {
+          touch file_path
+        }.should eq({ modified: [file_path], added: [], removed: [] })
+      end
 
-#     it 'sets the default ignoring patterns' do
-#       subject.ignoring_patterns.should =~ described_class.generate_default_ignoring_patterns
-#     end
-
-#     it 'sets the default filtering patterns' do
-#       subject.filtering_patterns.should eq []
-#     end
-
-#     it 'raises an error when the passed path does not exist' do
-#       expect { described_class.new('no way I exist') }.to raise_error(ArgumentError)
-#     end
-
-#     it 'raises an error when the passed path is not a directory' do
-#       expect { described_class.new(__FILE__) }.to raise_error(ArgumentError)
-#     end
-#   end
-
-#   describe '#ignore' do
-#     it 'adds the passed paths to the list of ignored paths in the record' do
-#       subject.ignore(%r{^\.old/}, %r{\.pid$}, nil)
-#       subject.ignoring_patterns.should include(%r{^\.old/}, %r{\.pid$})
-#       subject.ignoring_patterns.should_not include(nil)
-#     end
-#   end
-
-#   describe '#ignore!' do
-#     it 'replace the ignored paths in the record' do
-#       subject.ignore!(%r{^\.old/}, %r{\.pid$}, nil)
-#       subject.ignoring_patterns.should eq [%r{^\.old/}, %r{\.pid$}]
-#     end
-#   end
-
-#   describe '#filter' do
-#     it 'adds the passed regexps to the list of filters that determine the stored paths' do
-#       subject.filter(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)}, nil)
-#       subject.filtering_patterns.should include(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
-#       subject.filtering_patterns.should_not include(nil)
-#     end
-#   end
-
-#   describe '#filter!' do
-#     it 'replaces the passed regexps in the list of filters that determine the stored paths' do
-#       subject.filter!(%r{\.(?:jpe?g|gif|png)}, %r{\.(?:mp3|ogg|a3c)})
-#       subject.filtering_patterns.should have(2).regexps
-#       subject.filtering_patterns.should =~ [%r{\.(?:mp3|ogg|a3c)}, %r{\.(?:jpe?g|gif|png)}]
-#     end
-#   end
-
-#   describe '#ignored?' do
-#     before { subject.stub(:relative_to_base) { |path| path } }
-
-#     it 'tests paths relative to the base directory' do
-#       subject.should_receive(:relative_to_base).with('file.txt')
-#       subject.ignored?('file.txt')
-#     end
-
-#     it 'returns true when the passed path is a default ignored path' do
-#       subject.ignored?('tmp/some_process.pid').should be_true
-#       subject.ignored?('dir/.DS_Store').should be_true
-#       subject.ignored?('.git/config').should be_true
-#     end
-
-#     it 'returns false when the passed path is not a default ignored path' do
-#       subject.ignored?('nested/tmp/some_process.pid').should be_false
-#       subject.ignored?('nested/.git').should be_false
-#       subject.ignored?('dir/.DS_Store/file').should be_false
-#       subject.ignored?('file.git').should be_false
-#     end
-
-#     it 'returns true when the passed path is ignored' do
-#       subject.ignore(%r{\.pid$})
-#       subject.ignored?('dir/some_process.pid').should be_true
-#     end
-
-#     it 'returns false when the passed path is not ignored' do
-#       subject.ignore(%r{\.pid$})
-#       subject.ignored?('dir/some_file.txt').should be_false
-#     end
-#   end
-
-#   describe '#filtered?' do
-#     before { subject.stub(:relative_to_base) { |path| path } }
-
-#     context 'when no filtering patterns are set' do
-#       it 'returns true for any path' do
-#         subject.filtered?('file.txt').should be_true
-#       end
-#     end
-
-#     context 'when filtering patterns are set' do
-#       before { subject.filter(%r{\.(?:jpe?g|gif|png)}) }
-
-#       it 'tests paths relative to the base directory' do
-#         subject.should_receive(:relative_to_base).with('file.txt')
-#         subject.filtered?('file.txt')
-#       end
-
-#       it 'returns true when the passed path is filtered' do
-#         subject.filter(%r{\.(?:jpe?g|gif|png)})
-#         subject.filtered?('dir/picture.jpeg').should be_true
-#       end
-
-#       it 'returns false when the passed path is not filtered' do
-#         subject.filter(%r{\.(?:jpe?g|gif|png)})
-#         subject.filtered?('dir/song.mp3').should be_false
-#       end
-#     end
-#   end
-
-#   describe '#build' do
-#     it 'stores all files' do
-#       fixtures do |path|
-#         touch 'file.rb'
-#         mkdir 'a_directory'
-#         touch 'a_directory/file.txt'
-
-#         record = described_class.new(path)
-#         record.build
-
-#         record.paths[path]['file.rb'].type.should eq 'File'
-#         record.paths[path]['a_directory'].type.should eq 'Dir'
-#         record.paths["#{path}/a_directory"]['file.txt'].type.should eq 'File'
-#       end
-#     end
-
-#     context 'with ignored path set' do
-#       it 'does not store ignored directory or its childs' do
-#         fixtures do |path|
-#           mkdir 'ignored_directory'
-#           mkdir 'ignored_directory/child_directory'
-#           touch 'ignored_directory/file.txt'
-
-#           record = described_class.new(path)
-#           record.ignore %r{^ignored_directory/}
-#           record.build
-
-#           record.paths[path]['/a_ignored_directory'].should be_nil
-#           record.paths["#{path}/a_ignored_directory"]['child_directory'].should be_nil
-#           record.paths["#{path}/a_ignored_directory"]['file.txt'].should be_nil
-#         end
-#       end
-
-#       it 'does not store ignored files' do
-#         fixtures do |path|
-#           touch 'ignored_file.rb'
-
-#           record = described_class.new(path)
-#           record.ignore %r{^ignored_file.rb$}
-#           record.build
-
-#           record.paths[path]['ignored_file.rb'].should be_nil
-#         end
-#       end
-#     end
-
-#     context 'with filters set' do
-#       it 'only stores filterd files' do
-#         fixtures do |path|
-#           touch 'file.rb'
-#           touch 'file.zip'
-#           mkdir 'a_directory'
-#           touch 'a_directory/file.txt'
-#           touch 'a_directory/file.rb'
-
-#           record = described_class.new(path)
-#           record.filter(/\.txt$/, /.*\.zip/)
-#           record.build
-
-#           record.paths[path]['file.rb'].should be_nil
-#           record.paths[path]['file.zip'].type.should eq 'File'
-#           record.paths[path]['a_directory'].type.should eq 'Dir'
-#           record.paths["#{path}/a_directory"]['file.txt'].type.should eq 'File'
-#           record.paths["#{path}/a_directory"]['file.rb'].should be_nil
-#         end
-#       end
-#     end
-#   end
-
-#   describe '#relative_to_base' do
-#     it 'removes the path of the base-directory from the passed path' do
-#       path = 'dir/to/app/file.rb'
-#       subject.relative_to_base(File.join(base_directory, path)).should eq path
-#     end
-
-#     it 'returns nil when the passed path is not inside the base-directory' do
-#       subject.relative_to_base('/tmp/some_random_path').should be_nil
-#     end
-
-#     it 'works with non UTF-8 paths' do
-#       path = "tmp/\xE4\xE4"
-#       subject.relative_to_base(File.join(base_directory, path))
-#     end
-
-#     context 'when containing regexp characters in the base directory' do
-#       before do
-#         fixtures do |path|
-#           mkdir 'a_directory$'
-#           @dir = described_class.new(path + '/a_directory$')
-#           @dir.build
-#         end
-#       end
-
-#       it 'removes the path of the base-directory from the passed path' do
-#         path = 'dir/to/app/file.rb'
-#         @dir.relative_to_base(File.join(@dir.directory, path)).should eq path
-#       end
-
-#       it 'returns nil when the passed path is not inside the base-directory' do
-#         @dir.relative_to_base('/tmp/some_random_path').should be_nil
-#       end
-#     end
-#   end
+      it "listens to file removal" do
+        listen(path, options) {
+          rm file_path
+        }.should eq({ modified: [], added: [], removed: [file_path] })
+      end
+    end
+  end
+end
 
 #   describe '#fetch_changes' do
 #     context 'with single file changes' do
