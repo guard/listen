@@ -1,3 +1,9 @@
+## 1.2.2 - Jun 17, 2013
+
+### Bug fix
+
+- Rescue all error on sha1_checksum generation. ([@thibaudgg][])
+
 ## 1.2.1 - Jun 11, 2013
 
 ### Improvement
