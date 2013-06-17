@@ -7,4 +7,6 @@ listener = Listen.to(Dir.pwd, force_polling: true, ignore: /coverage/) do |modif
   p "removed : #{removed}"
 end
 listener.start
+p "started"
 sleep
+# listener.stop

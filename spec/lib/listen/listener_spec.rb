@@ -43,6 +43,9 @@ describe Listen::Listener do
 
   describe "#start" do
     before {
+      Listen::Change.stub(:pool)
+      Listen::Adapter.stub(:new)
+      Listen::Record.stub(:new)
       Celluloid::Actor.stub(:[]=)
       adapter.stub(:need_record?)
       adapter.stub_chain(:async, :start)
