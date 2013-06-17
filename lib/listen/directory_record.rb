@@ -344,7 +344,7 @@ module Listen
     #
     def sha1_checksum(path)
       Digest::SHA1.file(path).to_s
-    rescue Errno::EACCES, Errno::ENOENT, Errno::ENXIO, Errno::EOPNOTSUPP, Errno::EBADF
+    rescue
       nil
     end
 
