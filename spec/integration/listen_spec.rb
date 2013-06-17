@@ -8,9 +8,9 @@ def listen(paths, options = {})
     @changes = { modified: modified, added: added, removed: removed }
   end
   listener.start
-  sleep 1 # wait adapter
+  sleep 2 # wait adapter
   yield
-  sleep 0.1 # wait for changes
+  sleep 0.2 # wait for changes
   listener.stop
   @changes
 end
