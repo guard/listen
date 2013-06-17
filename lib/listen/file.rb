@@ -71,6 +71,8 @@ module Listen
 
     def _mtime
       @mtime ||= ::File.lstat(path).mtime.to_f
+    rescue
+      0.0
     end
 
     def _md5
