@@ -6,19 +6,19 @@ describe Listen::Adapter::Base do
 
   describe ".usable?" do
     it "raises when not implemented" do
-      expect { described_class.usable? }.to raise_error(NotImplementedError)
+      expect { described_class.usable? }.to raise_error
     end
   end
 
   describe "#need_record?" do
     it "raises when not implemented" do
-      expect { adapter.need_record? }.to raise_error(NotImplementedError)
+      expect { adapter.need_record? }.to raise_error
     end
   end
 
   describe "#start" do
     it "raises when not implemented" do
-      expect { adapter.start }.to raise_error(NotImplementedError)
+      expect { adapter.start }.to raise_error
     end
   end
 
