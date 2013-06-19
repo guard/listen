@@ -29,29 +29,30 @@
 #   [changes[:modified], changes[:added], changes[:removed]]
 # end
 
-# # Generates a small time difference before performing a time sensitive
-# # task (like comparing mtimes of files).
-# #
-# # @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2
-# #   and platform that support it (OS X 10.8 not included),
-# #   that's why we generate a difference that's greater than 1 second.
-# #
-# def small_time_difference
-#   t = Time.now
-#   diff = t.to_f - t.to_i
 
-#   sleep(1.05 - diff)
-# end
+# Generates a small time difference before performing a time sensitive
+# task (like comparing mtimes of files).
+#
+# @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2
+#   and platform that support it (OS X 10.8 not included),
+#   that's why we generate a difference that's greater than 1 second.
+#
+def small_time_difference
+  t = Time.now
+  diff = t.to_f - t.to_i
 
-# # Ensures that the test runs at almost the same second at which
-# # changes are being checked.
-# #
-# def ensure_same_second
-#   t = Time.now
-#   diff = t.to_f - t.to_i
+  sleep(1.05 - diff)
+end
 
-#   # We are not at the end of a second
-#   if diff >= (1 - Listen::Adapter::DEFAULT_LATENCY)
-#     sleep(1.05 - diff)
-#   end
-# end
+# Ensures that the test runs at almost the same second at which
+# changes are being checked.
+#
+def ensure_same_second
+  t = Time.now
+  diff = t.to_f - t.to_i
+
+  # We are not at the end of a second
+  if diff >= (1 - Listen::Adapter::Base::DEFAULT_LATENCY)
+    sleep(1.05 - diff)
+  end
+end
