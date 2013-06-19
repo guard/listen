@@ -11,9 +11,9 @@ end
 def setup_listener(paths, options)
   Listen.to(*paths, options) do |modified, added, removed|
     @changes = {
-      modified: relative_path(modified, *paths),
-      added: relative_path(added, *paths),
-      removed: relative_path(removed, *paths) }
+      modified: relative_path(modified, *paths).sort,
+      added: relative_path(added, *paths).sort,
+      removed: relative_path(removed, *paths).sort }
   end
 end
 
@@ -50,7 +50,7 @@ describe "Listen" do
           listen {
             touch 'file1.rb'
             touch 'file2.rb'
-          }.should eq({ modified: [], added: ['file2.rb', 'file1.rb'], removed: [] })
+          }.should eq({ modified: [], added: ['file1.rb', 'file2.rb'], removed: [] })
         end
 
         it "listens to file moved inside" do
