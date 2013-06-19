@@ -44,12 +44,18 @@ module Listen
     end
 
     def _modified?
-      (_mtime == _record_data[:mtime] && _content_modified?) || _mtime > _record_data[:mtime]
+      (_mtime == _record_data[:mtime] && (_content_modified? || _mode_modified?)) ||
+        _mtime > _record_data[:mtime]
     end
 
     def _content_modified?
       @data.merge!(md5: _md5)
       _record_data[:md5] && _md5 != _record_data[:md5]
+    end
+
+    def _mode_modified?
+      @data.merge!(mode: _mode)
+      _record_data[:mode] && _mode != _record_data[:mode]
     end
 
     def _set_record_data
@@ -70,9 +76,21 @@ module Listen
     end
 
     def _mtime
-      @mtime ||= ::File.lstat(path).mtime.to_f
+      @mtime ||= _lstat.mtime.to_f
     rescue
       0.0
+    end
+
+    def _mode
+      @mode ||= _lstat.mode
+    rescue
+      nil
+    end
+
+    def _lstat
+      @lstat ||= ::File.lstat(path)
+    rescue
+      nil
     end
 
     def _md5

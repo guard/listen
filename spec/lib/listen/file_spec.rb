@@ -13,7 +13,8 @@ describe Listen::File do
     context "path present in record" do
       let(:record_mtime) { nil }
       let(:record_md5) { nil }
-      let(:record_data) { { type: 'File', mtime: record_mtime, md5: record_md5 } }
+      let(:record_mode) { nil }
+      let(:record_data) { { type: 'File', mtime: record_mtime, md5: record_md5, mode: record_mode } }
       before { record.stub_chain(:future, :file_data) { stub(value: record_data) } }
 
       context "non-existing path" do
@@ -62,14 +63,34 @@ describe Listen::File do
             it "doesn't returns modified" do
               file.change.should be_nil
             end
-            it "sets path in record with mtime and md5" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String) })
+            it "sets path in record with mtime, md5 and mode" do
+              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String), mode: kind_of(Integer)})
               file.change
             end
           end
 
           context "same record path md5" do
             let(:record_md5) { Digest::MD5.file(file_path).digest }
+
+            it "returns modified" do
+              file.change.should be_nil
+            end
+          end
+
+          context "none record path mode" do
+            let(:record_mode) { nil }
+
+            it "doesn't returns modified" do
+              file.change.should be_nil
+            end
+            it "sets path in record with mtime, md5 and mode" do
+              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String), mode: kind_of(Integer)})
+              file.change
+            end
+          end
+
+          context "same record path mode" do
+            let(:record_mode) { ::File.lstat(file_path).mode }
 
             it "returns modified" do
               file.change.should be_nil
