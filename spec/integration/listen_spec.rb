@@ -75,7 +75,6 @@ describe "Listen" do
         end
 
         it "listens only once to mutltiple file touch in the same second", unless: high_file_time_precision_supported? do
-          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
@@ -85,7 +84,6 @@ describe "Listen" do
         end
 
         it "listens mutltiple time to file modification in the same second" do
-          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
