@@ -87,7 +87,10 @@ module Listen
       loop do
         changes = _pop_changes
         unless changes.values.all?(&:empty?)
-          block.call(changes[:modified], changes[:added], changes[:removed])
+          block.call(
+            changes[:modified].uniq,
+            changes[:added].uniq,
+            changes[:removed].uniq)
         end
         sleep 0.1
       end
