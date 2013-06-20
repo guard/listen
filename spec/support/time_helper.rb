@@ -9,5 +9,11 @@ def sleep_until_next_second
   t = Time.now
   diff = t.to_f - t.to_i
 
-  sleep(1 - diff)
+  sleep(1.05 - diff)
+end
+
+def high_file_time_precision_supported?
+  @high_file_time_precision ||=File.mtime(__FILE__).to_f.to_s[-2..-1] != '.0'
+rescue
+  false
 end
