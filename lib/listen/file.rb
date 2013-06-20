@@ -10,6 +10,7 @@ module Listen
     def change
       if _existing_path?
         modified = _modified?
+        p "file modified: #{_mtime}" if _modified?
         _set_record_data
         :modified if modified
       elsif _new_path?
