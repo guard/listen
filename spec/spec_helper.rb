@@ -18,9 +18,5 @@ RSpec.configure do |config|
   config.fail_fast = true
 end
 
-def test_latency
-  0.1
-end
-
 # Crash loud in tests!
 Thread.abort_on_exception = true

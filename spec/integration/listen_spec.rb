@@ -4,12 +4,13 @@ require 'spec_helper'
 def listen
   @changes = { modified: [], added: [], removed: [] }
   yield
-  sleep 0.3 # wait for changes
+  sleep 0.2 # wait for changes
   @changes
 end
 
 def setup_listener(paths, options)
   Listen.to(*paths, options) do |modified, added, removed|
+    p "changes: #{Time.now.to_f}"
     @changes = {
       modified: relative_path(modified, *paths).sort,
       added: relative_path(added, *paths).sort,
@@ -28,7 +29,10 @@ describe "Listen" do
   before {
     @listener = setup_listener(paths, options)
     @listener.start
-    sleep 1 # wait for adapter start
+    p "started: #{Time.now.to_f}"
+    sleep 0.1 # wait for adapter start
+    sleep_until_next_second
+    p "ready to go: #{Time.now.to_f}"
   }
  after { @listener.stop }
 
@@ -37,7 +41,7 @@ describe "Listen" do
     around { |example| fixtures { |path| example.run } }
 
     context "force_polling option to true" do
-      let(:options) { { force_polling: true, latency: 0.2 } }
+      let(:options) { { force_polling: true, latency: 0.1 } }
 
       context "nothing in listen dir" do
         it "listens to file addition" do
@@ -71,7 +75,7 @@ describe "Listen" do
         end
 
         it "listens only once to mutltiple file touch in the same second" do
-          ensure_same_second
+          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
@@ -81,7 +85,7 @@ describe "Listen" do
         end
 
         it "listens mutltiple time to file modification in the same second" do
-          ensure_same_second
+          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
@@ -94,7 +98,7 @@ describe "Listen" do
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-          small_time_difference
+          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
