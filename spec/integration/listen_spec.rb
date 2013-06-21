@@ -2,6 +2,7 @@
 require 'spec_helper'
 
 def listen
+  reset_changes
   @changes = { modified: [], added: [], removed: [] }
   yield
   sleep 0.2 # wait for changes
@@ -9,12 +10,12 @@ def listen
 end
 
 def setup_listener(paths, options)
+  reset_changes
   Listen.to(*paths, options) do |modified, added, removed|
     # p "changes: #{Time.now.to_f} #{modified} - #{added} - #{removed}"
-    @changes = {
-      modified: relative_path(modified, *paths).sort,
-      added: relative_path(added, *paths).sort,
-      removed: relative_path(removed, *paths).sort }
+    @changes[:modified] += relative_path(modified, *paths).sort
+    @changes[:added]    += relative_path(added, *paths).sort
+    @changes[:removed]  += relative_path(removed, *paths).sort
   end
 end
 
@@ -23,6 +24,10 @@ def relative_path(changes, *paths)
     paths.flatten.each { |path| change.gsub!(%r{#{path.to_s}/}, '') }
     change
   end
+end
+
+def reset_changes
+  @changes = { modified: [], added: [], removed: [] }
 end
 
 describe "Listen" do
@@ -34,7 +39,10 @@ describe "Listen" do
     sleep_until_next_second
     # p "ready to go: #{Time.now.to_f}"
   }
- after { @listener.stop }
+ after {
+  sleep 0.2
+  @listener.stop
+}
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }
