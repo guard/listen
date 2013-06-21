@@ -9,19 +9,25 @@ def listen
   @changes
 end
 
-def setup_listener(paths, options)
+def setup_listener(options)
   reset_changes
-  Listen.to(*paths, options) do |modified, added, removed|
+  Listen.to(paths, options) do |modified, added, removed|
     # p "changes: #{Time.now.to_f} #{modified} - #{added} - #{removed}"
-    @changes[:modified] += relative_path(modified, *paths).sort
-    @changes[:added]    += relative_path(added, *paths).sort
-    @changes[:removed]  += relative_path(removed, *paths).sort
+    add_changes(:modified, modified)
+    add_changes(:added, added)
+    add_changes(:removed, removed)
   end
 end
 
-def relative_path(changes, *paths)
+def add_changes(type, changes)
+  @changes[type] += relative_path(changes)
+  @changes[type].uniq!
+  @changes[type].sort!
+end
+
+def relative_path(changes)
   changes.map do |change|
-    paths.flatten.each { |path| change.gsub!(%r{#{path.to_s}/}, '') }
+    [paths].flatten.each { |path| change.gsub!(%r{#{path.to_s}/}, '') }
     change
   end
 end
@@ -32,7 +38,7 @@ end
 
 describe "Listen" do
   before {
-    @listener = setup_listener(paths, options)
+    @listener = setup_listener(options)
     @listener.start
     # p "started: #{Time.now.to_f}"
     sleep 0.2 # wait for adapter start
