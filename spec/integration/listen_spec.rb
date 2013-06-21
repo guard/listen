@@ -10,7 +10,7 @@ end
 
 def setup_listener(paths, options)
   Listen.to(*paths, options) do |modified, added, removed|
-    p "changes: #{Time.now.to_f} #{modified} - #{added} - #{removed}"
+    # p "changes: #{Time.now.to_f} #{modified} - #{added} - #{removed}"
     @changes = {
       modified: relative_path(modified, *paths).sort,
       added: relative_path(added, *paths).sort,
@@ -29,10 +29,10 @@ describe "Listen" do
   before {
     @listener = setup_listener(paths, options)
     @listener.start
-    p "started: #{Time.now.to_f}"
+    # p "started: #{Time.now.to_f}"
     sleep 0.2 # wait for adapter start
     sleep_until_next_second
-    p "ready to go: #{Time.now.to_f}"
+    # p "ready to go: #{Time.now.to_f}"
   }
  after { @listener.stop }
 
@@ -66,7 +66,9 @@ describe "Listen" do
       end
 
       context "file in listen dir" do
-        around { |example| touch 'file.rb'; sleep_until_next_second; example.run }
+        around { |example|
+          touch 'file.rb';
+          sleep_until_next_second; example.run }
 
         it "listens to file touch" do
           listen {
@@ -128,7 +130,9 @@ describe "Listen" do
       end
 
       context "hidden file in listen dir" do
-        around { |example| touch '.hidden'; sleep_until_next_second; example.run }
+        around { |example|
+          touch '.hidden';
+          sleep_until_next_second; example.run }
 
         it "listens to file touch" do
           listen {
@@ -138,7 +142,9 @@ describe "Listen" do
       end
 
       context "dir in listen dir" do
-        around { |example| mkdir_p 'dir'; sleep_until_next_second; example.run }
+        around { |example|
+          mkdir_p 'dir';
+          sleep_until_next_second; example.run }
 
         it "listens to file touch" do
           listen {
@@ -148,7 +154,9 @@ describe "Listen" do
       end
 
       context "dir with file in listen dir" do
-        around { |example| mkdir_p 'dir'; touch 'dir/file.rb'; sleep_until_next_second; example.run }
+        around { |example|
+          mkdir_p 'dir'; touch 'dir/file.rb';
+          sleep_until_next_second; example.run }
 
         it "listens to file move" do
           listen {
@@ -158,7 +166,9 @@ describe "Listen" do
       end
 
       context "ignored dir with file in listen dir" do
-        around { |example| mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb'; example.run }
+        around { |example|
+          mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb';
+          sleep_until_next_second; example.run }
         let(:options) { { force_polling: true, ignore: /ignored_dir/ } }
 
         it "doesn't listen to file touch" do
