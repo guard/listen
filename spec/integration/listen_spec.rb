@@ -2,10 +2,11 @@
 require 'spec_helper'
 
 def listen
+  sleep 0.25 # wait for changes
+  sleep_until_next_second
   reset_changes
-  @changes = { modified: [], added: [], removed: [] }
   yield
-  sleep 0.2 # wait for changes
+  sleep 0.25 # wait for changes
   @changes
 end
 
@@ -40,13 +41,10 @@ describe "Listen" do
   before {
     @listener = setup_listener(options)
     @listener.start
-    # p "started: #{Time.now.to_f}"
-    sleep 0.2 # wait for adapter start
-    sleep_until_next_second
-    # p "ready to go: #{Time.now.to_f}"
+    sleep 0.25 # wait for adapter start
   }
  after {
-  sleep 0.2
+  sleep 0.25
   @listener.stop
 }
 
@@ -80,39 +78,9 @@ describe "Listen" do
       end
 
       context "file in listen dir" do
-        around { |example|
-          touch 'file.rb';
-          sleep_until_next_second; example.run }
+        around { |example| touch 'file.rb'; example.run }
 
         it "listens to file touch" do
-          listen {
-            touch 'file.rb'
-          }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-        end
-
-        it "listens only once to mutltiple file touch in the same second", unless: high_file_time_precision_supported? do
-          listen {
-            touch 'file.rb'
-          }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-          listen {
-            touch 'file.rb'
-          }.should eq({ modified: [], added: [], removed: [] })
-        end
-
-        it "listens mutltiple time to file modification in the same second" do
-          listen {
-            touch 'file.rb'
-          }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-          listen {
-            open('file.rb', 'w') { |f| f.write('foo') }
-          }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-        end
-
-        it "listens to mutltiple file touch if not in the same second" do
-          listen {
-            touch 'file.rb'
-          }.should eq({ modified: ['file.rb'], added: [], removed: [] })
-          sleep_until_next_second
           listen {
             touch 'file.rb'
           }.should eq({ modified: ['file.rb'], added: [], removed: [] })
@@ -144,9 +112,7 @@ describe "Listen" do
       end
 
       context "hidden file in listen dir" do
-        around { |example|
-          touch '.hidden';
-          sleep_until_next_second; example.run }
+        around { |example| touch '.hidden'; example.run }
 
         it "listens to file touch" do
           listen {
@@ -156,9 +122,7 @@ describe "Listen" do
       end
 
       context "dir in listen dir" do
-        around { |example|
-          mkdir_p 'dir';
-          sleep_until_next_second; example.run }
+        around { |example| mkdir_p 'dir'; example.run }
 
         it "listens to file touch" do
           listen {
@@ -168,9 +132,7 @@ describe "Listen" do
       end
 
       context "dir with file in listen dir" do
-        around { |example|
-          mkdir_p 'dir'; touch 'dir/file.rb';
-          sleep_until_next_second; example.run }
+        around { |example| mkdir_p 'dir'; touch 'dir/file.rb'; example.run }
 
         it "listens to file move" do
           listen {
@@ -180,9 +142,7 @@ describe "Listen" do
       end
 
       context "ignored dir with file in listen dir" do
-        around { |example|
-          mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb';
-          sleep_until_next_second; example.run }
+        around { |example| mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb'; example.run }
         let(:options) { { force_polling: true, ignore: /ignored_dir/ } }
 
         it "doesn't listen to file touch" do
