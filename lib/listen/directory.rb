@@ -8,6 +8,7 @@ module Listen
     end
 
     def scan
+      _update_record
       _all_entries.each do |entry_path, data|
         case data[:type]
         when 'File' then _async_change(entry_path, options.merge(type: 'File'))
@@ -18,6 +19,14 @@ module Listen
     end
 
     private
+
+    def _update_record
+      if ::Dir.exists?(path)
+        _record.async.set_path(path, { type: 'Dir'})
+      else
+        _record.async.unset_path(path)
+      end
+    end
 
     def _all_entries
       _record_entries.merge(_entries)

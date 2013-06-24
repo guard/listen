@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::Directory do
-  let(:record) { mock(Listen::Record) }
+  let(:record) { mock(Listen::Record, async: stub(set_path: true, unset_path: true)) }
   let(:change_pool) { mock(Listen::Change) }
   let(:change_pool_async) { stub('ChangePoolAsync') }
   let(:path) { Pathname.new(Dir.pwd) }
@@ -27,9 +27,19 @@ describe Listen::Directory do
         let(:record_dir_entries) { {
           'file.rb' => { type: 'File' },
           'inside_dir' => { type: 'Dir' } } }
-        before { record.stub_chain(:future, :dir_entries) { stub(value: record_dir_entries) } }
+        before {
+          record.stub_chain(:future, :dir_entries) { stub(value: record_dir_entries) }
+          change_pool_async.stub(:change)
+        }
 
         context "empty dir" do
+          around { |example| mkdir dir_path; example.run }
+
+          it "sets record dir path" do
+            record.async.should_receive(:set_path).with(dir_path, type: 'Dir')
+            dir.scan
+          end
+
           it "calls change only for file path" do
             change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
             change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
@@ -58,6 +68,11 @@ describe Listen::Directory do
         context "non-existing dir path" do
           it "calls change only for file path" do
             change_pool_async.should_not_receive(:change)
+            dir.scan
+          end
+
+          it "unsets record dir path" do
+            record.async.should_receive(:unset_path).with(dir_path)
             dir.scan
           end
         end

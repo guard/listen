@@ -141,6 +141,26 @@ describe "Listen" do
         end
       end
 
+      context "two dirs with files in listen dir" do
+        around { |example|
+          mkdir_p 'dir1'; touch 'dir1/file1.rb'
+          mkdir_p 'dir2'; touch 'dir2/file2.rb'
+          example.run }
+
+        it "listens to multiple file moves" do
+          listen {
+            mv 'dir1/file1.rb', 'dir2/file1.rb'
+            mv 'dir2/file2.rb', 'dir1/file2.rb'
+          }.should eq({ modified: [], added: ['dir1/file2.rb', 'dir2/file1.rb'], removed: ['dir1/file1.rb', 'dir2/file2.rb'] })
+        end
+
+        it "listens to dir move" do
+          listen {
+            mv 'dir1', 'dir2/'
+          }.should eq({ modified: [], added: ['dir2/dir1/file1.rb'], removed: ['dir1/file1.rb'] })
+        end
+      end
+
       context "ignored dir with file in listen dir" do
         around { |example| mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb'; example.run }
         let(:options) { { force_polling: true, ignore: /ignored_dir/ } }
