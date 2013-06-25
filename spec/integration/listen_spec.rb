@@ -37,7 +37,7 @@ def reset_changes
   @changes = { modified: [], added: [], removed: [] }
 end
 
-describe "Listen" do
+describe "Listen", retry: 3 do
   before {
     @listener = setup_listener(options)
     @listener.start

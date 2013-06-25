@@ -1,5 +1,5 @@
 require 'rubygems'
-
+require 'rspec/retry'
 require 'coveralls'
 Coveralls.wear!
 
