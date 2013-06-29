@@ -23,8 +23,6 @@ describe Listen::Adapter::Darwin do
         require('rb-fsevent').should be_false
       end
     end
-
-    pending "#start"
   end
 
   if windows?

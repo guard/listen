@@ -36,8 +36,8 @@ describe Listen::File do
           it "returns modified" do
             file.change.should eq :modified
           end
-          it "sets path in record with mtime" do
-            record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float) })
+          it "sets path in record with mtime and mode" do
+            record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: 33188 })
             file.change
           end
         end
@@ -51,8 +51,8 @@ describe Listen::File do
             it "returns modified" do
               file.change.should eq :modified
             end
-            it "sets path in record with mtime and md5" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String) })
+            it "sets path in record with mtime, mode and md5" do
+              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: 33188, md5: kind_of(String) })
               file.change
             end
           end
@@ -63,8 +63,8 @@ describe Listen::File do
             it "doesn't returns modified" do
               file.change.should be_nil
             end
-            it "sets path in record with mtime, md5 and mode" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String), mode: kind_of(Integer)})
+            it "sets path in record with mtime, mode and md5" do
+              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: 33188, md5: kind_of(String)})
               file.change
             end
           end
@@ -109,8 +109,8 @@ describe Listen::File do
         it "returns added" do
           file.change.should eq :added
         end
-        it "sets path in record with mtime" do
-          record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float) })
+        it "sets path in record with mtime and mode" do
+          record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: 33188 })
           file.change
         end
       end

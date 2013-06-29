@@ -13,7 +13,7 @@ module Listen
         case data[:type]
         when 'File' then _async_change(entry_path, options.merge(type: 'File'))
         when 'Dir'
-          _async_change(entry_path, options.merge(type: 'Dir')) if options[:recursive]
+          _async_change(entry_path, options.merge(type: 'Dir')) if _recursive_scan?(entry_path)
         end
       end
     end
@@ -59,6 +59,10 @@ module Listen
 
     def _change_pool
       Celluloid::Actor[:listen_change_pool]
+    end
+
+    def _recursive_scan?(path)
+      !::Dir.exists?(path) || options[:recursive]
     end
 
     def _async_change(entry_path, options)

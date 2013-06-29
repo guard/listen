@@ -40,9 +40,9 @@ describe Listen::Directory do
             dir.scan
           end
 
-          it "calls change only for file path" do
+          it "calls change for file path and dir that doesn't exist" do
             change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
-            change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
+            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
             dir.scan
           end
         end
@@ -53,10 +53,10 @@ describe Listen::Directory do
             touch other_file_path;
             example.run }
 
-          it "calls change for file & other_file paths" do
+          it "calls change for file & other_file paths and dir that doesn't exist" do
             change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
             change_pool_async.should_receive(:change).with(other_file_path, type: 'File', recursive: false)
-            change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
+            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
             dir.scan
           end
         end

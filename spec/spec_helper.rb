@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'rspec/retry'
 require 'coveralls'
 Coveralls.wear!
 
@@ -20,3 +19,6 @@ end
 
 # Crash loud in tests!
 Thread.abort_on_exception = true
+
+require 'rspec/retry'
+ENV['RSPEC_RETRY'] ||= ENV['TRAVIS'] ? '3' : '1'

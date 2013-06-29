@@ -30,10 +30,20 @@ module Listen
       #
       def _init_worker
         FSEvent.new.tap do |worker|
-          worker.watch(listen.directories, latency: _latency) do |changes|
-            directories_path = changes.map { |path| path.sub(/\/$/, '') }
-            directories_path.each { |path| _notify_change(path, type: 'Dir') }
+          worker.watch(_directories_path, latency: _latency) do |changes|
+            _changes_path(changes).each { |path| _notify_change(path, type: 'Dir') }
           end
+        end
+      end
+
+      def _directories_path
+        listener.directories.map(&:to_s)
+      end
+
+      def _changes_path(changes)
+        changes.map do |path|
+          path.sub!(/\/$/, '')
+          Pathname.new(path)
         end
       end
     end

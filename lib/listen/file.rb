@@ -59,7 +59,7 @@ module Listen
     end
 
     def _set_record_data
-      @data.merge!(mtime: _mtime)
+      @data.merge!(mtime: _mtime, mode: _mode)
       _record.async.set_path(path, data)
     end
 
