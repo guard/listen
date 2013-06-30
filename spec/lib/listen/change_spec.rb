@@ -13,56 +13,71 @@ describe Listen::Change do
     before { Listen::Silencer.stub(:new) { silencer } }
 
     context "file path" do
-      let(:file) { mock(Listen::File) }
-      before { Listen::File.stub(:new) { file } }
+      context "with known change" do
+        it "notifies change directly to listener" do
+          listener_changes.should_receive(:<<).with(modified: 'file_path')
+          change.change('file_path', type: 'File', change: :modified)
+        end
 
-      it "calls Listen::File#change" do
-        Listen::File.should_receive(:new).with('file_path') { file }
-        file.should_receive(:change)
-        change.change('file_path', type: 'File')
+        it "doesn't notify to listener if path is silenced" do
+          silencer.should_receive(:silenced?).with('file_path') { true }
+          listener_changes.should_not_receive(:<<)
+          change.change('file_path', type: 'File', change: :modified)
+        end
       end
 
-      it "doesn't call Listen::File#change if path is silenced" do
-        silencer.should_receive(:silenced?).with('file_path') { true }
-        Listen::File.should_not_receive(:new)
-        change.change('file_path', type: 'File')
-      end
+      context "with unknown change" do
+        let(:file) { mock(Listen::File) }
+        before { Listen::File.stub(:new) { file } }
 
-      context "that returns a change" do
-        before { file.stub(:change) { :changed } }
+        it "calls Listen::File#change" do
+          Listen::File.should_receive(:new).with('file_path') { file }
+          file.should_receive(:change)
+          change.change('file_path', type: 'File')
+        end
 
-        context "listener listen" do
-          before { listener.stub(:listen?) { true } }
+        it "doesn't call Listen::File#change if path is silenced" do
+          silencer.should_receive(:silenced?).with('file_path') { true }
+          Listen::File.should_not_receive(:new)
+          change.change('file_path', type: 'File')
+        end
 
-          it "notifies change to listener" do
-            listener_changes.should_receive(:<<).with(changed: 'file_path')
-            change.change('file_path', type: 'File')
+        context "that returns a change" do
+          before { file.stub(:change) { :modified } }
+
+          context "listener listen" do
+            before { listener.stub(:listen?) { true } }
+
+            it "notifies change to listener" do
+              listener_changes.should_receive(:<<).with(modified: 'file_path')
+              change.change('file_path', type: 'File')
+            end
+
+            context "silence option" do
+              it "notifies change to listener" do
+                listener_changes.should_not_receive(:<<)
+                change.change('file_path', type: 'File', silence: true)
+              end
+            end
           end
 
-          context "silence option" do
+          context "listener doesn't listen" do
+            before { listener.stub(:listen?) { false } }
+
             it "notifies change to listener" do
               listener_changes.should_not_receive(:<<)
-              change.change('file_path', type: 'File', silence: true)
+              change.change('file_path', type: 'File')
             end
           end
         end
 
-        context "listener doesn't listen" do
-          before { listener.stub(:listen?) { false } }
+        context "that returns no change" do
+          before { file.stub(:change) { nil } }
 
-          it "notifies change to listener" do
+          it "doesn't notifies no change" do
             listener_changes.should_not_receive(:<<)
             change.change('file_path', type: 'File')
           end
-        end
-      end
-
-      context "that returns no change" do
-        before { file.stub(:change) { nil } }
-
-        it "doesn't notifies no change" do
-          listener_changes.should_not_receive(:<<)
-          change.change('file_path', type: 'File')
         end
       end
     end

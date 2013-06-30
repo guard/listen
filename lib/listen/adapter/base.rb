@@ -31,6 +31,10 @@ module Listen
         listener.options[:latency] || DEFAULT_LATENCY
       end
 
+      def _directories_path
+        listener.directories.map(&:to_s)
+      end
+
       def _notify_change(path, options)
         Actor[:listen_change_pool].async.change(path, options) if listener.listen?
       end

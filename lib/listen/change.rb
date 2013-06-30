@@ -15,7 +15,11 @@ module Listen
 
     def change(path, options)
       return if silencer.silenced?(path)
-      send("_#{options[:type].downcase}_change", path, options)
+      if change = options[:change]
+        _notify_listener(change, path)
+      else
+        send("_#{options[:type].downcase}_change", path, options)
+      end
     end
 
     private

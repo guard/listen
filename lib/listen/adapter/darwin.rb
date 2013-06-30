@@ -36,10 +36,6 @@ module Listen
         end
       end
 
-      def _directories_path
-        listener.directories.map(&:to_s)
-      end
-
       def _changes_path(changes)
         changes.map do |path|
           path.sub!(/\/$/, '')
