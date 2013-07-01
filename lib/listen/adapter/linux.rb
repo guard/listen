@@ -54,6 +54,8 @@ module Listen
 
       def _worker_callback
         lambda do |event|
+          p event.absolute_name
+          p event.flags
           next if _skip_event?(event)
 
           if _dir_event?(event)
