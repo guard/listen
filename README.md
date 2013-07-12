@@ -219,6 +219,9 @@ or via ["Object" API](#object-api) methods:
 
 :relative_paths => true                       # Enable the use of relative paths in the callback.
                                               # default: false
+
+:recursive => true                            # Listen to changes within directories recursively.
+                                              # default: true
 ```
 
 ### Note on the patterns for ignoring and filtering paths

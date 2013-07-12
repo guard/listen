@@ -206,6 +206,27 @@ describe Listen::DirectoryRecord do
         end
       end
     end
+
+    context 'with recursive disabled' do
+      it 'only scans top level directory' do
+        fixtures do |path|
+          touch 'file.rb'
+          touch 'file.zip'
+          mkdir 'a_directory'
+          touch 'a_directory/file.txt'
+          touch 'a_directory/file.rb'
+
+          record = described_class.new(path, false)
+          record.build
+
+          record.paths[path]['file.rb'].type.should eq 'File'
+          record.paths[path]['file.zip'].type.should eq 'File'
+          record.paths[path]['a_directory'].should be_nil
+          record.paths["#{path}/a_directory"]['file.txt'].should be_nil
+          record.paths["#{path}/a_directory"]['file.rb'].should be_nil
+        end
+      end
+    end
   end
 
   describe '#relative_to_base' do

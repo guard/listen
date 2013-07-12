@@ -55,10 +55,10 @@ module Listen
     #
     # @option [String] directory the directory to keep track of
     #
-    def initialize(directory)
+    def initialize(directory, recursive = true)
       raise ArgumentError, "The path '#{directory}' is not a directory!" unless File.directory?(directory)
 
-      @directory, @sha1_checksums = File.expand_path(directory), Hash.new
+      @directory, @recursive, @sha1_checksums = File.expand_path(directory), recursive, Hash.new
       @ignoring_patterns, @filtering_patterns = Set.new, Set.new
 
       @ignoring_patterns.merge(DirectoryRecord.generate_default_ignoring_patterns)
@@ -293,12 +293,16 @@ module Listen
         next if path == @directory
 
         if File.directory?(path)
-          # Add a trailing slash to directories when checking if a directory is
-          # ignored to optimize finding them as Find.find doesn't.
-          if ignored?(path + File::SEPARATOR) || (directory != path && (!options[:recursive] && existing_path?(path)))
-            Find.prune # Don't look any further into this directory.
+          if @recursive
+            # Add a trailing slash to directories when checking if a directory
+            # is ignored to optimize finding them as Find.find doesn't.
+            if ignored?(path + File::SEPARATOR) || (directory != path && (!options[:recursive] && existing_path?(path)))
+              Find.prune # Don't look any further into this directory.
+            else
+              insert_path(path)
+            end
           else
-            insert_path(path)
+            Find.prune # Don't look into sub-directories
           end
         elsif !ignored?(path) && filtered?(path) && !existing_path?(path)
           if File.file?(path)
@@ -358,12 +362,16 @@ module Listen
         next if path == directory
 
         if File.directory?(path)
-          # Add a trailing slash to directories when checking if a directory is
-          # ignored to optimize finding them as Find.find doesn't.
-          if ignored?(path + File::SEPARATOR)
-            Find.prune # Don't look any further into this directory.
+          if @recursive
+            # Add a trailing slash to directories when checking if a directory
+            # is ignored to optimize finding them as Find.find doesn't.
+            if ignored?(path + File::SEPARATOR)
+              Find.prune # Don't look any further into this directory.
+            else
+              yield(path)
+            end
           else
-            yield(path)
+            Find.prune # Don't look into sub-directories
           end
         elsif !ignored?(path) && filtered?(path)
           yield(path)
