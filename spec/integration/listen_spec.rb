@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require 'spec_helper'
 
-describe "Listen", retry: ENV['RSPEC_RETRY'].to_i do
+describe "Listen" do
   before {
     @listener = setup_listener(options)
     @listener.start

@@ -21,4 +21,6 @@ end
 Thread.abort_on_exception = true
 
 require 'rspec/retry'
-ENV['RSPEC_RETRY'] ||= ENV['TRAVIS'] ? '3' : '1'
+RSpec.configure do |config|
+  config.default_retry_count = ENV['CI'] ? 3 : 1
+end
