@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter do
   let(:adapter) { Listen::Adapter.new(listener) }
-  let(:listener) { mock(Listen::Listener, options: {}) }
+  let(:listener) { double(Listen::Listener, options: {}) }
   before {
     Listen::Adapter::BSD.stub(:usable?) { false }
     Listen::Adapter::Darwin.stub(:usable?) { false }
@@ -26,7 +26,7 @@ describe Listen::Adapter do
       adapter.should be_kind_of Listen::Adapter::Darwin
     end
 
-    it "returns Linux adapter when usable" do
+    fit "returns Linux adapter when usable" do
       Listen::Adapter::Linux.stub(:usable?) { true }
       adapter.should be_kind_of Listen::Adapter::Linux
     end

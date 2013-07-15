@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::File do
-  let(:record) { mock(Listen::Record, async: stub(set_path: true, unset_path: true)) }
+  let(:record) { double(Listen::Record, async: double(set_path: true, unset_path: true)) }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { |path| example.run } }
   before { Celluloid::Actor.stub(:[]).with(:listen_record) { record } }
@@ -15,7 +15,7 @@ describe Listen::File do
       let(:record_md5) { nil }
       let(:record_mode) { nil }
       let(:record_data) { { type: 'File', mtime: record_mtime, md5: record_md5, mode: record_mode } }
-      before { record.stub_chain(:future, :file_data) { stub(value: record_data) } }
+      before { record.stub_chain(:future, :file_data) { double(value: record_data) } }
 
       context "non-existing path" do
         it "returns added" do
@@ -101,7 +101,7 @@ describe Listen::File do
     end
 
     context "path not present in record" do
-      before { record.stub_chain(:future, :file_data) { stub(value: {}) } }
+      before { record.stub_chain(:future, :file_data) { double(value: {}) } }
 
       context "existing path" do
         around { |example| touch file_path; example.run }

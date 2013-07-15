@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::Record do
-  let(:listener) { mock(Listen::Listener, options: {}) }
+  let(:listener) { double(Listen::Listener, options: {}) }
   let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
   let(:data) { { type: 'File' } }
@@ -71,8 +71,8 @@ describe Listen::Record do
 
   describe "#build" do
     let(:directories) { ['dir_path'] }
-    let(:change_pool) { mock(Listen::Change, terminate: true) }
-    let(:change_pool_async) { stub('ChangePoolAsync', change: true) }
+    let(:change_pool) { double(Listen::Change, terminate: true) }
+    let(:change_pool_async) { double('ChangePoolAsync', change: true) }
     before {
       change_pool.stub(:async) { change_pool_async }
       Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }

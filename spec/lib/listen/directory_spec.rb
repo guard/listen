@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Listen::Directory do
-  let(:record) { mock(Listen::Record, async: stub(set_path: true, unset_path: true)) }
-  let(:change_pool) { mock(Listen::Change) }
-  let(:change_pool_async) { stub('ChangePoolAsync') }
+  let(:record) { double(Listen::Record, async: double(set_path: true, unset_path: true)) }
+  let(:change_pool) { double(Listen::Change) }
+  let(:change_pool_async) { double('ChangePoolAsync') }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { |path| example.run } }
   before {
@@ -28,7 +28,7 @@ describe Listen::Directory do
           'file.rb' => { type: 'File' },
           'inside_dir' => { type: 'Dir' } } }
         before {
-          record.stub_chain(:future, :dir_entries) { stub(value: record_dir_entries) }
+          record.stub_chain(:future, :dir_entries) { double(value: record_dir_entries) }
           change_pool_async.stub(:change)
         }
 
@@ -63,7 +63,7 @@ describe Listen::Directory do
       end
 
       context "dir paths not present in record" do
-        before { record.stub_chain(:future, :dir_entries) { stub(value: {}) } }
+        before { record.stub_chain(:future, :dir_entries) { double(value: {}) } }
 
         context "non-existing dir path" do
           it "calls change only for file path" do
@@ -100,7 +100,7 @@ describe Listen::Directory do
         let(:record_dir_entries) { {
           'file.rb' => { type: 'File' },
           'inside_dir' => { type: 'Dir' } } }
-        before { record.stub_chain(:future, :dir_entries) { stub(value: record_dir_entries) } }
+        before { record.stub_chain(:future, :dir_entries) { double(value: record_dir_entries) } }
 
         context "empty dir" do
           it "calls change for file & inside_dir path" do
@@ -126,7 +126,7 @@ describe Listen::Directory do
       end
 
       context "dir paths not present in record" do
-        before { record.stub_chain(:future, :dir_entries) { stub(value: {}) } }
+        before { record.stub_chain(:future, :dir_entries) { double(value: {}) } }
 
         context "non-existing dir path" do
           it "calls change only for file path" do

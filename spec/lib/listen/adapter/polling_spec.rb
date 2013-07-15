@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:listener) { mock(Listen::Listener, options: {}) }
+  let(:listener) { double(Listen::Listener, options: {}) }
   let(:adapter) { described_class.new(listener) }
 
   describe ".usable?" do

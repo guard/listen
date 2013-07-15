@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Listen::Change do
   let(:change) { Listen::Change.new(listener) }
-  let(:listener) { mock(Listen::Listener, options: {}) }
-  let(:listener_changes) { mock("listener_changes") }
+  let(:listener) { double(Listen::Listener, options: {}) }
+  let(:listener_changes) { double("listener_changes") }
   before {
     listener.stub(:changes) { listener_changes }
   }
 
   describe "#change" do
-    let(:silencer) { mock(Listen::Silencer, silenced?: false) }
+    let(:silencer) { double(Listen::Silencer, silenced?: false) }
     before { Listen::Silencer.stub(:new) { silencer } }
 
     context "file path" do
@@ -27,7 +27,7 @@ describe Listen::Change do
       end
 
       context "with unknown change" do
-        let(:file) { mock(Listen::File) }
+        let(:file) { double(Listen::File) }
         before { Listen::File.stub(:new) { file } }
 
         it "calls Listen::File#change" do
@@ -83,7 +83,7 @@ describe Listen::Change do
     end
 
     context "directory path" do
-      let(:dir) { mock(Listen::Directory) }
+      let(:dir) { double(Listen::Directory) }
       let(:dir_options) { { type: 'Dir', recursive: true } }
       before { Listen::Directory.stub(:new) { dir } }
 

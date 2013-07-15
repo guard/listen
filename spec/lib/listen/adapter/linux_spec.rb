@@ -14,7 +14,7 @@ describe Listen::Adapter::Linux do
   end
 
   if linux?
-    let(:listener) { mock(Listen::Listener) }
+    let(:listener) { double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe ".usable?" do

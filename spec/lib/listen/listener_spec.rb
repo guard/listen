@@ -2,10 +2,10 @@ require 'spec_helper'
 
 describe Listen::Listener do
   let(:listener) { Listen::Listener.new }
-  let(:record) { mock(Listen::Record, terminate: true, build: true) }
-  let(:adapter) { mock(Listen::Adapter::Base) }
-  let(:change_pool) { mock(Listen::Change, terminate: true) }
-  let(:change_pool_async) { stub('ChangePoolAsync') }
+  let(:record) { double(Listen::Record, terminate: true, build: true) }
+  let(:adapter) { double(Listen::Adapter::Base) }
+  let(:change_pool) { double(Listen::Change, terminate: true) }
+  let(:change_pool_async) { double('ChangePoolAsync') }
   before {
     Celluloid::Actor.stub(:[]).with(:listen_adapter) { adapter }
     Celluloid::Actor.stub(:[]).with(:listen_record) { record }
@@ -81,14 +81,14 @@ describe Listen::Listener do
     end
 
     it "starts adapter asynchronously" do
-      async_stub = stub
+      async_stub = double
       adapter.should_receive(:async) { async_stub }
       async_stub.should_receive(:start)
       listener.start
     end
 
     it "starts adapter asynchronously" do
-      async_stub = stub
+      async_stub = double
       adapter.should_receive(:async) { async_stub }
       async_stub.should_receive(:start)
       listener.start
@@ -96,7 +96,7 @@ describe Listen::Listener do
 
     it "calls block on changes" do
       listener.changes = [{ modified: 'foo' }]
-      block_stub = stub('block')
+      block_stub = double('block')
       listener.block = block_stub
       block_stub.should_receive(:call).with(['foo'], [], [])
       listener.start
@@ -235,7 +235,7 @@ describe Listen::Listener do
   #   end
   # end
 
-  # let(:adapter)             { mock(Listen::Adapter, start: true).as_null_object }
+  # let(:adapter)             { double(Listen::Adapter, start: true).as_null_object }
   # let(:watched_directory)   { File.dirname(__FILE__) }
   # let(:watched_directories) { [File.dirname(__FILE__), File.expand_path('../..', __FILE__)] }
 

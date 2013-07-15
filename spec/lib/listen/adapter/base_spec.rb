@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Base do
   let(:adapter) { described_class.new(listener) }
-  let(:listener) { mock(Listen::Listener, options: {}) }
+  let(:listener) { double(Listen::Listener, options: {}) }
 
   describe "#_latency" do
     it "returns default_latency with listener actor latency not present" do
@@ -16,8 +16,8 @@ describe Listen::Adapter::Base do
   end
 
   describe "#_notify_change" do
-    let(:change_pool) { mock(Listen::Change) }
-    let(:change_pool_async) { stub('ChangePoolAsync') }
+    let(:change_pool) { double(Listen::Change) }
+    let(:change_pool_async) { double('ChangePoolAsync') }
     before {
       change_pool.stub(:async) { change_pool_async }
       Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
