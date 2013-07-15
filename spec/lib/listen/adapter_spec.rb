@@ -18,22 +18,26 @@ describe Listen::Adapter do
 
     it "returns BSD adapter when usable" do
       Listen::Adapter::BSD.stub(:usable?) { true }
-      adapter.should be_kind_of Listen::Adapter::BSD
+      Listen::Adapter::BSD.should_receive(:new)
+      adapter
     end
 
     it "returns Darwin adapter when usable" do
       Listen::Adapter::Darwin.stub(:usable?) { true }
-      adapter.should be_kind_of Listen::Adapter::Darwin
+      Listen::Adapter::Darwin.should_receive(:new)
+      adapter
     end
 
-    fit "returns Linux adapter when usable" do
+    it "returns Linux adapter when usable" do
       Listen::Adapter::Linux.stub(:usable?) { true }
-      adapter.should be_kind_of Listen::Adapter::Linux
+      Listen::Adapter::Linux.should_receive(:new)
+      adapter
     end
 
     it "returns Windows adapter when usable" do
       Listen::Adapter::Windows.stub(:usable?) { true }
-      adapter.should be_kind_of Listen::Adapter::Windows
+      Listen::Adapter::Windows.should_receive(:new)
+      adapter
     end
 
     context "no usable adapters" do
