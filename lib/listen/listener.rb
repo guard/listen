@@ -33,6 +33,7 @@ module Listen
       directories = args.flatten
       initialize_directories_and_directories_records(directories)
       initialize_relative_paths_usage(options)
+      initialize_recursive_usage(options)
       @block = block
 
       ignore(*options.delete(:ignore))
@@ -261,7 +262,7 @@ module Listen
     #
     def initialize_directories_and_directories_records(directories)
       @directories = directories.map { |d| Pathname.new(d).realpath.to_s }
-      @directories_records = directories.map { |d| DirectoryRecord.new(d) }
+      @directories_records = directories.map { |d| DirectoryRecord.new(d, @use_recursive) }
     end
 
     # Initializes whether or not using relative paths.
@@ -271,6 +272,12 @@ module Listen
         Kernel.warn "[Listen warning]: #{RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE}"
       end
       @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
+    end
+
+    # Initializes whether or not scan directories recursively.
+    #
+    def initialize_recursive_usage(options)
+      @use_recursive = options.delete(:recursive) { true }
     end
 
     # Build the directory record concurrently and initialize the adapter.
