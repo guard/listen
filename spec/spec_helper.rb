@@ -22,5 +22,5 @@ Thread.abort_on_exception = true
 
 require 'rspec/retry'
 RSpec.configure do |config|
-  config.default_retry_count = ENV['CI'] ? 5 : 1
+  config.default_retry_count = ENV['CI'] ? 3 : 1
 end
