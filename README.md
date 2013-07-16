@@ -19,7 +19,7 @@ Still not implemented, pull requests are welcome.
 
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 * Signal handling. [#105](https://github.com/guard/listen/issues/105)
-* Non-recursive directory scaning. [#111](https://github.com/guard/listen/issues/111)
+* Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
 
 ## Install
 
