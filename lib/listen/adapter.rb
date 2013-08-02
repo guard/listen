@@ -216,10 +216,12 @@ module Listen
     # @param [String, Pathname] directory the directory to watch
     # @param [Hash] options the adapter options
     # @option options [Float] latency the delay between checking for changes in seconds
+    # @option options [Boolean] force_to_work don't Test the Adapter in case the Filesystem is read only
     #
     # @return [Boolean] whether the adapter works or not
     #
     def self.works?(directory, options = {})
+      return true if options[:force_to_work]
       work      = false
       test_file = "#{directory}/.listen_test"
       callback  = lambda { |*| work = true }
