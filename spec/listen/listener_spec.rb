@@ -182,6 +182,21 @@ describe Listen::Listener do
       subject.on_change(directories)
     end
 
+    context "with a callback raising an exception" do
+      let(:callback) { Proc.new { raise 'foo' } }
+
+      before do
+        subject.change(&callback)
+        subject.stub(:fetch_records_changes => { :modified => ['foo'], :added => [], :removed => [] } )
+      end
+
+      it "stops the adapter and warns" do
+        Kernel.should_receive(:warn).with("[Listen warning]: Change block raise an execption: #<RuntimeError: foo>")
+        subject.on_change(directories)
+      end
+
+    end
+
     context 'with no changes to report' do
       if RUBY_VERSION[/^1.8/]
         it 'does not run the callback' do

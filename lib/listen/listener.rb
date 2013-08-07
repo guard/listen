@@ -251,6 +251,9 @@ module Listen
       unless changes.values.all? { |paths| paths.empty? }
         block.call(changes[:modified], changes[:added], changes[:removed])
       end
+    rescue => ex
+      Kernel.warn "[Listen warning]: Change block raise an execption: #{ex.inspect}"
+      stop
     end
 
     private
