@@ -253,7 +253,6 @@ module Listen
       end
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raise an execption: #{ex.inspect}"
-      stop
     end
 
     private
