@@ -1,3 +1,9 @@
+## 1.2.3 - Aug 9, 2013
+
+### Improvement
+
+- Rescue changes callback and warms if something bad happens. (reported by [@21croissants][], added by [@thibaudgg][])
+
 ## 1.2.2 - Jun 17, 2013
 
 ### Bug fix
@@ -329,6 +335,7 @@
 [#120]: https://github.com/guard/listen/issues/120
 [#122]: https://github.com/guard/listen/issues/122
 [#124]: https://github.com/guard/listen/issues/124
+[@21croissants]: https://github.com/21croissants
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
