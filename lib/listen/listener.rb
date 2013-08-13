@@ -272,7 +272,7 @@ module Listen
       if directories.size > 1 && options[:relative_paths]
         Kernel.warn "[Listen warning]: #{RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE}"
       end
-      @use_relative_paths = directories.one? && options.delete(:relative_paths) { true }
+      @use_relative_paths = directories.one? && options.delete(:relative_paths) { false }
     end
 
     # Build the directory record concurrently and initialize the adapter.

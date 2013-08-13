@@ -102,7 +102,7 @@
 
 - [#98][] New method: `Listen.to!` which blocks the current thread. ([@rymai][])
 - [#98][] New method: `Listen::Listener#start!` to start the listener and block the current thread. ([@martikaljuve][] & [@rymai][])
-- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecates `Listen::MultiListener`. ([@rymai][])
+- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecates `Listen::MultiListener`, defaults `Listener#relative_paths` to `true` when listening to a single directory (see [#131][]). ([@rymai][])
 - [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 - New methods: `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
