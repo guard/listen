@@ -1201,7 +1201,7 @@ describe Listen::DirectoryRecord do
           lambda {
             touch 'removed_file.txt'
             changes(path) { touch 'removed_file.txt' }
-          }.should_not raise_error(Errno::ENOENT)
+          }.should_not raise_error
         end
       end
     end
@@ -1211,7 +1211,7 @@ describe Listen::DirectoryRecord do
         fixtures do |path|
           require 'socket'
           UNIXServer.new('unix_domain_socket.sock')
-          lambda { changes(path){} }.should_not raise_error(Errno::ENXIO)
+          lambda { changes(path){} }.should_not raise_error
         end
       end
     end

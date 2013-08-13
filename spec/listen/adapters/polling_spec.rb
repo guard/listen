@@ -12,7 +12,7 @@ describe Listen::Adapters::Polling do
   end
 
   describe '#poll' do
-    let(:listener) { mock(Listen::Listener) }
+    let(:listener) { double(Listen::Listener) }
     let(:callback) { lambda { |changed_directories, options| @called = true; listener.on_change(changed_directories, options) } }
 
     after { subject.stop }
