@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen do
   describe '#to' do
-    let(:listener)       { mock(Listen::Listener) }
+    let(:listener)       { double(Listen::Listener) }
     let(:listener_class) { Listen::Listener }
     before { listener_class.stub(:new => listener) }
 
