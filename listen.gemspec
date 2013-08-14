@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ['Thibaud Guillaume-Gentil', 'Maher Sallam']
   s.email       = ['thibaud@thibaud.me', 'maher@sallam.me']
   s.homepage    = 'https://github.com/guard/listen'
+  s.license     = 'MIT'
   s.summary     = 'Listen to file modifications'
   s.description = 'The Listen gem listens to file modifications and notifies you about the changes. Works everywhere!'
 
