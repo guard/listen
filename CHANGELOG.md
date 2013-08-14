@@ -1,3 +1,9 @@
+## 1.3.0 - Aug 14, 2013
+
+### Change
+
+- Defaults `Listener#relative_paths` to `false` when listening to a single directory (see [#131][]). ([@rehevkor5][])
+
 ## 1.2.3 - Aug 9, 2013
 
 ### Improvement
@@ -335,6 +341,7 @@
 [#120]: https://github.com/guard/listen/issues/120
 [#122]: https://github.com/guard/listen/issues/122
 [#124]: https://github.com/guard/listen/issues/124
+[#131]: https://github.com/guard/listen/issues/131
 [@21croissants]: https://github.com/21croissants
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
@@ -359,6 +366,7 @@
 [@nilbus]: https://github.com/nilbus
 [@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
+[@rehevkor5]: https://github.com/rehevkor5
 [@rymai]: https://github.com/rymai
 [@scottdavis]: https://github.com/scottdavis
 [@sunaku]: https://github.com/sunaku
