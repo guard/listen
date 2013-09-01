@@ -8,17 +8,25 @@ The `v2.0` branch is a work in progress and doesn't work as the moment!
 
 ## Features
 
-* Works everywhere!
 * Supports watching multiple directories from a single listener.
 * OS-specific adapters for Mac OS X 10.6+, Linux, *BSD and Windows.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * Checksum comparison for modifications made under the same second.
-* Tested on all Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen).
+* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen).
 
 # TODO
 
-* Raise if OS-specific adapter doesn't work.
+* Signal handling. #105
+* Raise if OS-specific adapter doesn't work?
+
+## Pending features (for 2.x)
+
+Still not implemented, pull requests are welcome.
+
+* Symlinks support. #25
+* Non-recursive directory scanning. #111
+* Support JRuby and Rubinius.
 
 ## Install
 
@@ -76,7 +84,7 @@ sleep
 
 ### Pause/Unpause/Stop
 
-Listener can also easily be paused/unpaused:
+Listener can also be easily paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen') { |modified, added, removed| # ... }
