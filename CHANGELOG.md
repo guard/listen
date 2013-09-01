@@ -1,9 +1,17 @@
-## 2.0.0
+## 2.0.0 (Unreleased)
 
 ### Breaking changes
 
+- Ruby MRI < 1.9.2 support removed.
+- JRuby and Rubinius support removed for now, due to lack of time. (Any help is welcome to add it back.)
 - "Object" API removed, use normal "block" API instead.
 - filter & filter! options removed, please use ignore & ignore! instead.
+- start method will no more block now.
+
+### Improvement
+
+- Full rewrite with Celluloid.
+- Simpler & better API.
 
 ## 1.3.0 - Aug 14, 2013
 
