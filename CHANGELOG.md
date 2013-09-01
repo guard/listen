@@ -5,6 +5,30 @@
 - "Object" API removed, use normal "block" API instead.
 - filter & filter! options removed, please use ignore & ignore! instead.
 
+## 1.3.0 - Aug 14, 2013
+
+### Change
+
+- Defaults `Listener#relative_paths` to `false` when listening to a single directory (see [#131][]). ([@rehevkor5][])
+
+## 1.2.3 - Aug 9, 2013
+
+### Improvement
+
+- Rescue changes callback and warms if something bad happens. (reported by [@21croissants][], added by [@thibaudgg][])
+
+## 1.2.2 - Jun 17, 2013
+
+### Bug fix
+
+- Rescue all error on sha1_checksum generation. ([@thibaudgg][])
+
+## 1.2.1 - Jun 11, 2013
+
+### Improvement
+
+- Ignore 'bundle' folder by default. ([@thibaudgg][])
+
 ## 1.2.0 - Jun 11, 2013
 
 ### Improvement
@@ -91,7 +115,7 @@
 
 - [#98][] New method: `Listen.to!` which blocks the current thread. ([@rymai][])
 - [#98][] New method: `Listen::Listener#start!` to start the listener and block the current thread. ([@martikaljuve][] & [@rymai][])
-- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecates `Listen::MultiListener`. ([@rymai][])
+- [#95][] Make `Listen::Listener` capable of listening to multiple directories, deprecates `Listen::MultiListener`, defaults `Listener#relative_paths` to `true` when listening to a single directory (see [#131][]). ([@rymai][])
 - [#85][] Compute the SHA1 sum only for regular files. ([@antifuchs][])
 - New methods: `Listen::Adapter#pause`, `Listen::Adapter#unpause` and `Listen::Adapter#paused?`. ([@rymai][])
 - Refactor `Listen::DirectoryRecord` internals. ([@rymai][])
@@ -324,6 +348,11 @@
 [#120]: https://github.com/guard/listen/issues/120
 [#122]: https://github.com/guard/listen/issues/122
 [#124]: https://github.com/guard/listen/issues/124
+<<<<<<< HEAD
+=======
+[#131]: https://github.com/guard/listen/issues/131
+[@21croissants]: https://github.com/21croissants
+>>>>>>> master
 [@Maher4Ever]: https://github.com/Maher4Ever
 [@ahoward]: https://github.com/ahoward
 [@akerbos]: https://github.com/akerbos
@@ -347,6 +376,7 @@
 [@nilbus]: https://github.com/nilbus
 [@nysalor]: https://github.com/nysalor
 [@piotr-sokolowski]: https://github.com/piotr-sokolowski
+[@rehevkor5]: https://github.com/rehevkor5
 [@rymai]: https://github.com/rymai
 [@scottdavis]: https://github.com/scottdavis
 [@sunaku]: https://github.com/sunaku

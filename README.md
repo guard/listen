@@ -15,17 +15,17 @@ The `v2.0` branch is a work in progress and doesn't work as the moment!
 * Checksum comparison for modifications made under the same second.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen).
 
-# TODO
+# TODO (for 2.0)
 
-* Signal handling. #105
+* Signal handling. [#105](https://github.com/guard/listen/issues/105)
 * Raise if OS-specific adapter doesn't work?
 
 ## Pending features (for 2.x)
 
 Still not implemented, pull requests are welcome.
 
-* Symlinks support. #25
-* Non-recursive directory scanning. #111
+* Symlinks support. [#25](https://github.com/guard/listen/issues/25)
+* Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
 * Support JRuby and Rubinius.
 
 ## Install

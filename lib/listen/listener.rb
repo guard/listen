@@ -6,6 +6,8 @@ module Listen
   class Listener
     attr_accessor :options, :directories, :paused, :changes, :block
 
+    RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
+
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
