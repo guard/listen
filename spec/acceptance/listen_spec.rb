@@ -7,10 +7,11 @@ describe "Listen" do
     @listener.start
     sleep 0.25 # wait for adapter start
   }
- after {
-  sleep 0.25
-  @listener.stop
-}
+  after {
+    sleep 0.25
+    @listener.stop
+  }
+  let(:listener) { @listener }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }
