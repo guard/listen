@@ -252,7 +252,8 @@ module Listen
         block.call(changes[:modified], changes[:added], changes[:removed])
       end
     rescue => ex
-      Kernel.warn "[Listen warning]: Change block raise an execption: #{ex.inspect}"
+      Kernel.warn "[Listen warning]: Change block raise an execption: #{$!}"
+      Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
     end
 
     private

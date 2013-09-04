@@ -8,6 +8,7 @@ describe Listen::Listener do
     Listen::Adapter.stub(:select_and_initialize) { adapter }
     # Don't build a record of the files inside the base directory.
     Listen::DirectoryRecord.any_instance.stub(:build)
+    Kernel.stub(:warn)
   end
   subject { described_class.new(watched_directories) }
 
@@ -209,7 +210,8 @@ describe Listen::Listener do
       end
 
       it "stops the adapter and warns" do
-        Kernel.should_receive(:warn).with("[Listen warning]: Change block raise an execption: #<RuntimeError: foo>")
+        Kernel.should_receive(:warn).with("[Listen warning]: Change block raise an execption: foo")
+        Kernel.should_receive(:warn).with(/^Backtrace:.*/)
         subject.on_change(directories)
       end
 
