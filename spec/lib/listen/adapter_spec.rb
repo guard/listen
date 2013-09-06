@@ -13,7 +13,7 @@ describe Listen::Adapter do
   describe ".new" do
     it "returns Polling adapter if forced" do
       listener.stub(:options) { { force_polling: true } }
-      adapter.should be_kind_of Listen::Adapter::Polling
+      expect(adapter).to be_kind_of Listen::Adapter::Polling
     end
 
     it "returns BSD adapter when usable" do
