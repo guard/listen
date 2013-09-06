@@ -16,6 +16,12 @@ describe Listen::Adapter do
       expect(adapter).to be_kind_of Listen::Adapter::Polling
     end
 
+    it "returns Polling adapter if not on MRI" do
+      stub_const("RUBY_ENGINE", 'foo')
+      Listen::Adapter::Linux.stub(:usable?) { true }
+      expect(adapter).to be_kind_of Listen::Adapter::Polling
+    end
+
     it "returns BSD adapter when usable" do
       Listen::Adapter::BSD.stub(:usable?) { true }
       Listen::Adapter::BSD.should_receive(:new)
