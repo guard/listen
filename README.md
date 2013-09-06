@@ -147,9 +147,7 @@ ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
 ignore!: %r{/foo/bar}                           # Same as ignore options, but overwrite default ignored paths.
 
 latency: 0.5                               # Set the delay (**in seconds**) between checking for changes
-                                              # default: 0.25 sec (1.0 sec for polling)
-
-force_adapter: Listen::Adapter::Darwin   # TODO
+                                            # default: 0.25 sec (1.0 sec for polling)
 
 force_polling: true                        # Force the use of the polling adapter
                                               # default: none
