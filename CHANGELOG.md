@@ -1,5 +1,4 @@
-# !!! CHANGELOG moved to Github [releases](https://github.com/guard/listen/releases) page !!!
-
+# !!! Moved to Github [releases](https://github.com/guard/listen/releases) page !!!
 
 ## 1.2.2 - Jun 17, 2013
 
