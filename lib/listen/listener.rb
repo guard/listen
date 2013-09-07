@@ -96,6 +96,9 @@ module Listen
         end
         sleep 0.1
       end
+    rescue => ex
+      Kernel.warn "[Listen warning]: Change block raise an execption: #{$!}"
+      Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
     end
 
     def _pop_changes

@@ -3,7 +3,7 @@ require 'spec_helper'
 
 describe "Listen" do
   before {
-    @listener = setup_listener(options)
+    @listener = setup_listener(options, callback)
     @listener.start
     sleep 0.25 # wait for adapter start
   }
@@ -11,11 +11,27 @@ describe "Listen" do
     sleep 0.25
     @listener.stop
   }
+  let(:callback) { ->(modified, added, removed) {
+    add_changes(:modified, modified)
+    add_changes(:added, added)
+    add_changes(:removed, removed)
+  } }
+  let(:options) { { } }
   let(:listener) { @listener }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }
     around { |example| fixtures { |path| example.run } }
+
+    context "with change block raising" do
+      let(:callback) { ->(x,y,z) { raise 'foo' } }
+
+      it "warns the backtrace" do
+        Kernel.should_receive(:warn).with("[Listen warning]: Change block raise an execption: foo")
+        Kernel.should_receive(:warn).with(/^Backtrace:.*/)
+        listen { touch 'file.rb' }
+      end
+    end
 
     [false, true].each do |polling|
       context "force_polling option to #{polling}" do
