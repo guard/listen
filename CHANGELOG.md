@@ -1,29 +1,4 @@
-## 2.0.0 (Unreleased)
-
-### Breaking changes
-
-- Ruby MRI < 1.9.2 support removed.
-- JRuby and Rubinius support removed for now, due to lack of time. (Any help is welcome to add it back.)
-- "Object" API removed, use normal "block" API instead.
-- filter & filter! options removed, please use ignore & ignore! instead.
-- start method will no more block now.
-
-### Improvement
-
-- Full rewrite with Celluloid.
-- Simpler & better API.
-
-## 1.3.0 - Aug 14, 2013
-
-### Change
-
-- Defaults `Listener#relative_paths` to `false` when listening to a single directory (see [#131][]). ([@rehevkor5][])
-
-## 1.2.3 - Aug 9, 2013
-
-### Improvement
-
-- Rescue changes callback and warms if something bad happens. (reported by [@21croissants][], added by [@thibaudgg][])
+# !!! CHANGELOG moved to Github [releases](https://github.com/guard/listen/releases) page !!!
 
 ## 1.2.2 - Jun 17, 2013
 
