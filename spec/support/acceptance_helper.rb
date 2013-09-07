@@ -7,14 +7,9 @@ def listen
   @changes
 end
 
-def setup_listener(options)
+def setup_listener(options, callback)
   reset_changes
-  Listen.to(paths, options) do |modified, added, removed|
-    # p "changes: #{Time.now.to_f} #{modified} - #{added} - #{removed}"
-    add_changes(:modified, modified)
-    add_changes(:added, added)
-    add_changes(:removed, removed)
-  end
+  Listen.to(paths, options, &callback)
 end
 
 def add_changes(type, changes)
