@@ -24,8 +24,6 @@ Pull request or help is very welcome.
 
 ## Install
 
-### Using Bundler
-
 The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ```ruby
@@ -34,10 +32,9 @@ The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ## Usage
 
-Call `Listen.to` with either a single directory or multiple directories, then define the `change` callback in a block.
+Call `Listen.to` with either a single directory or multiple directories, then define the "changes" callback in a block.
 
 ``` ruby
-# Listen to a single directory.
 listener = Listen.to('dir/to/listen', 'dir/to/listen2') do |modified, added, removed|
   puts "modified absolute path: #{modified}"
   puts "added absolute path: #{added}"
@@ -47,7 +44,7 @@ listener.start # not blocking
 sleep
 ```
 
-### Pause/Unpause/Stop
+### Pause / unpause / stop
 
 Listener can also be easily paused/unpaused:
 
@@ -65,7 +62,8 @@ listener.stop    # stop completely the listener
 
 Changes to the listened-to directories gets reported back to the user in a callback.
 The registered callback gets invoked, when there are changes, with **three** parameters:
-`modified_paths`, `added_paths` and `removed_paths` in that particular order.
+`modified`, `added` and `removed` paths, in that particular order.
+Paths are always returned in their absolute form.
 
 Example:
 
@@ -73,7 +71,7 @@ Example:
 listener = Listen.to('path/to/app') do |modified, added, removed|
   # This block will be called when there are changes.
 end
-listener.start # not blocking
+listener.start
 sleep
 ```
 
@@ -85,13 +83,13 @@ callback = Proc.new do |modified, added, removed|
   # This proc will be called when there are changes.
 end
 listener = Listen.to('dir', &callback)
-listener.start # not blocking
+listener.start
 sleep
 ```
 
 ## Options
 
-All the following options can be set through the `Listen.to` after the path(s) params.
+All the following options can be set through the `Listen.to` after the directory path(s) params.
 
 ```ruby
 ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
