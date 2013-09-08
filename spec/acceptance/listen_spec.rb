@@ -74,6 +74,12 @@ describe "Listen" do
             }.should eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
+          it "listens to file echo" do
+            listen {
+              `echo  foo > #{Dir.pwd}/file.rb`
+            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+          end
+
           it "listens to file removal" do
             listen {
               rm 'file.rb'
