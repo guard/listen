@@ -9,11 +9,11 @@ The `v2.0` branch is a work in progress!
 ## Features
 
 * Supports watching multiple directories from a single listener.
-* OS-specific adapters for Mac OS X 10.6+, Linux, *BSD and Windows.
+* OS-specific adapters for Mac OS X 10.6+, Linux, *BSD and Windows on MRI, [more info](#listen-adapters) bellow.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * File content checksum comparison for modifications made under the same second.
-* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen).
+* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen), JRuby and Rubinius should work with polling.
 
 ## Not implemented features
 
@@ -111,16 +111,17 @@ polling_fallback_message: 'custom message'      # Set a custom polling fallback 
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
-There are 4 OS-specific adapters to support Mac, Linux, *BSD and Windows.
+There are 4 OS-specific adapters to support Darwin, Linux, *BSD and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
 
 There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is slower than the rest of the adapters.
 
-The Listen gem choose the best and working adapter for your machine automatically. If you
-want to force the use of the polling adapter, either use the `:force_polling` option
-while initializing the listener or call the `#force_polling` method on your listener
-before starting it.
+Darwin and Linux adapter are dependencies of the Listen gem so they work out of the box. For other adapters a specific gem need to be added to your Gemfile, please read bellow.
+
+The Listen gem choose the good adapter (if present) automatically. If you
+want to force the use of the polling adapter use the `:force_polling` option
+while initializing the listener.
 
 ### On Windows
 
@@ -132,10 +133,20 @@ require 'rbconfig'
 gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 ```
 
-## Polling fallback
+### On *BSD
+
+If your are on *BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
+Please add the following to your Gemfile:
+
+```ruby
+require 'rbconfig'
+gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
+```
+
+## Issues
 
 Sometimes OS-specific adapter doesn't work, :'(
-Here are some things you could try to avoid the polling fallback:
+Here are some things you could try to avoid forcing polling.
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
 * Move or rename the listened folder.

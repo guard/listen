@@ -1,36 +1,41 @@
 require 'spec_helper'
 
 describe Listen::Adapter::BSD do
-  # if bsd?
-  #   if Listen::Adapter::BSD.usable?
-  #     it "is usable on BSD" do
-  #       described_class.should be_usable
-  #     end
 
-  #     it_should_behave_like 'a filesystem adapter'
-  #     it_should_behave_like 'an adapter that call properly listener#on_change'
-  #   else
-  #     it "isn't usable on BSD with #{RbConfig::CONFIG['RUBY_INSTALL_NAME']}" do
-  #       described_class.should_not be_usable
-  #     end
-  #   end
-  # end
+  if bsd?
+    let(:listener) { double(Listen::Listener) }
+    let(:adapter) { described_class.new(listener) }
 
-  # if linux?
-  #   it "isn't usable on Linux" do
-  #     described_class.should_not be_usable
-  #   end
-  # end
+    describe ".usable?" do
+      it "returns always true" do
+        expect(described_class).to be_usable
+      end
+    end
 
-  # if darwin?
-  #   it "isn't usable on Mac OS X" do
-  #     described_class.should_not be_usable
-  #   end
-  # end
+    describe '#initialize' do
+      it 'requires rb-kqueue and find gem' do
+        described_class.new(listener)
+        expect(require('rb-kqueue')).to be_false
+        expect(require('find')).to be_false
+      end
+    end
+  end
 
-  # if windows?
-  #   it "isn't usable on Windows" do
-  #     described_class.should_not be_usable
-  #   end
-  # end
+  if darwin?
+    it "isn't usable on Darwin" do
+      expect(described_class).to_not be_usable
+    end
+  end
+
+  if linux?
+    it "isn't usable on Linux" do
+      expect(described_class).to_not be_usable
+    end
+  end
+
+  if windows?
+    it "isn't usable on Windows" do
+      expect(described_class).to_not be_usable
+    end
+  end
 end
