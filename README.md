@@ -143,7 +143,7 @@ require 'rbconfig'
 gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
 ```
 
-## Issues
+### Issues
 
 Sometimes OS-specific adapter doesn't work, :'(
 Here are some things you could try to avoid forcing polling.
