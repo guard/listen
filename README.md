@@ -4,7 +4,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## WARNING
 
-The `v2.0` branch is a work in progress and doesn't work as the moment!
+The `v2.0` branch is a work in progress!
 
 ## Features
 
@@ -12,71 +12,36 @@ The `v2.0` branch is a work in progress and doesn't work as the moment!
 * OS-specific adapters for Mac OS X 10.6+, Linux, *BSD and Windows.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
-* Checksum comparison for modifications made under the same second.
+* File content checksum comparison for modifications made under the same second.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen).
 
-# TODO (for 2.0)
+## Not implemented features
 
-* Signal handling. [#105](https://github.com/guard/listen/issues/105)
-* Raise if OS-specific adapter doesn't work?
-
-## Pending features (for 2.x)
-
-Still not implemented, pull requests are welcome.
+Pull request or help is very welcome.
 
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 * Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
-* Support JRuby and Rubinius.
 
 ## Install
 
 ### Using Bundler
 
-The simplest way to install Listen is to use Bundler.
-
-Add Listen to your Gemfile:
+The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ```ruby
-group :development do
-  gem 'listen'
-end
-```
-
-and install it by running Bundler:
-
-```bash
-$ bundle
-```
-
-### Install the gem with RubyGems
-
-```bash
-$ gem install listen
+  gem 'listen', '~> 2.0'
 ```
 
 ## Usage
 
-Call `Listen.to``with either a single directory or multiple directories, then define the `change` callback in a block.
+Call `Listen.to` with either a single directory or multiple directories, then define the `change` callback in a block.
 
 ``` ruby
 # Listen to a single directory.
-listener = Listen.to('dir/path/to/listen') do |modified, added, removed|
-  puts "modified path: #{modified}"
-  puts "added path: #{added}"
-  puts "removed path: #{removed}"
-end
-listener.start # not blocking
-sleep
-```
-
-or...
-
-``` ruby
-# Listen to multiple directories.
-listener = Listen.to('dir/to/awesome_app', 'dir/to/other_app') do |modified, added, removed|
-  puts "modified path: #{modified}"
-  puts "added path: #{added}"
-  puts "removed path: #{removed}"
+listener = Listen.to('dir/to/listen', 'dir/to/listen2') do |modified, added, removed|
+  puts "modified absolute path: #{modified}"
+  puts "added absolute path: #{added}"
+  puts "removed absolute path: #{removed}"
 end
 listener.start # not blocking
 sleep
@@ -110,7 +75,9 @@ listener = Listen.to('path/to/app') do |modified, added, removed|
 end
 listener.start # not blocking
 sleep
-# or ...
+```
+
+or ...
 
 ```ruby
 # Create a callback
@@ -122,39 +89,25 @@ listener.start # not blocking
 sleep
 ```
 
-### Paths in callbacks
-
-Listeners invoke callbacks passing them absolute paths:
-
-```ruby
-# Assume someone changes the 'style.css' file in '/home/user/app/css' after creating
-# the listener.
-listener = Listen.to('/home/user/app/css') do |modified, added, removed|
-  modified.inspect # => ['/home/user/app/css/style.css']
-end
-listener.start # not blocking
-sleep
-```
-
 ## Options
 
 All the following options can be set through the `Listen.to` after the path(s) params.
 
 ```ruby
 ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
-                                   # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
+                                                # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
 
 ignore!: %r{/foo/bar}                           # Same as ignore options, but overwrite default ignored paths.
 
-latency: 0.5                               # Set the delay (**in seconds**) between checking for changes
-                                            # default: 0.25 sec (1.0 sec for polling)
+latency: 0.5                                    # Set the delay (**in seconds**) between checking for changes
+                                                # default: 0.25 sec (1.0 sec for polling)
 
-force_polling: true                        # Force the use of the polling adapter
-                                              # default: none
+force_polling: true                             # Force the use of the polling adapter
+                                                # default: none
 
 
-polling_fallback_message: 'custom message' # Set a custom polling fallback message (or disable it with false)
-                                              # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
+polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
+                                                # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 ```
 
 ## Listen adapters
@@ -166,7 +119,7 @@ These adapters are fast as they use some system-calls to implement the notifying
 There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is slower than the rest of the adapters.
 
-The Listen gem will choose the best and working adapter for your machine automatically. If you
+The Listen gem choose the best and working adapter for your machine automatically. If you
 want to force the use of the polling adapter, either use the `:force_polling` option
 while initializing the listener or call the `#force_polling` method on your listener
 before starting it.
@@ -178,12 +131,12 @@ Please add the following to your Gemfile:
 
 ```ruby
 require 'rbconfig'
-gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 ```
 
 ## Polling fallback
 
-When a OS-specific adapter doesn't work the Listen gem automatically falls back to the polling adapter.
+Sometimes OS-specific adapter doesn't work, :'(
 Here are some things you could try to avoid the polling fallback:
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
