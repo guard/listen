@@ -17,10 +17,6 @@ module Listen
         _poll_directories
       end
 
-      def need_record?
-        true
-      end
-
       private
 
       def _latency

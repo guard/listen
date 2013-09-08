@@ -21,10 +21,6 @@ module Listen
         raise NotImplementedError
       end
 
-      def need_record?
-        raise NotImplementedError
-      end
-
       private
 
       def _latency

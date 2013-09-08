@@ -19,10 +19,6 @@ module Listen
         worker.run
       end
 
-      def need_record?
-        true
-      end
-
       private
 
       # Initializes a FSEvent worker and adds a watcher for

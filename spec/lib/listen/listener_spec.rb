@@ -47,7 +47,6 @@ describe Listen::Listener do
       Listen::Adapter.stub(:new)
       Listen::Record.stub(:new)
       Celluloid::Actor.stub(:[]=)
-      adapter.stub(:need_record?)
       adapter.stub_chain(:async, :start)
     }
 
@@ -63,8 +62,7 @@ describe Listen::Listener do
       listener.start
     end
 
-    it "registers record if needed?" do
-      adapter.should_receive(:need_record?) { true }
+    it "registers record" do
       Listen::Record.should_receive(:new).with(listener) { record }
       Celluloid::Actor.should_receive(:[]=).with(:listen_record, record)
       listener.start

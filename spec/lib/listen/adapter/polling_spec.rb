@@ -6,13 +6,7 @@ describe Listen::Adapter::Polling do
 
   describe ".usable?" do
     it "returns always true" do
-      described_class.should be_usable
-    end
-  end
-
-  describe "#need_record?" do
-    it "returns true" do
-      adapter.need_record?.should be_true
+      expect(described_class).to be_usable
     end
   end
 

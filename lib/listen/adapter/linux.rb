@@ -36,10 +36,6 @@ module Listen
         abort(INOTIFY_LIMIT_MESSAGE)
       end
 
-      def need_record?
-        true
-      end
-
       private
 
       # Initializes a INotify worker and adds a watcher for
@@ -54,8 +50,6 @@ module Listen
 
       def _worker_callback
         lambda do |event|
-          p event.absolute_name
-          p event.flags
           next if _skip_event?(event)
 
           if _dir_event?(event)
@@ -92,7 +86,6 @@ module Listen
       def _event_path(event)
         Pathname.new(event.absolute_name)
       end
-
     end
 
   end

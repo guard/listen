@@ -22,7 +22,7 @@ describe Listen::Adapter::BSD do
   #   end
   # end
 
-  # if mac?
+  # if darwin?
   #   it "isn't usable on Mac OS X" do
   #     described_class.should_not be_usable
   #   end

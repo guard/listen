@@ -1,4 +1,4 @@
-def mac?
+def darwin?
   RbConfig::CONFIG['target_os'] =~ /darwin/i
 end
 

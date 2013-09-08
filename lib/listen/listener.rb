@@ -78,7 +78,7 @@ module Listen
     def _init_actors
       Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
       Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
-      Celluloid::Actor[:listen_record]      = Record.new(self) if adapter.need_record?
+      Celluloid::Actor[:listen_record]      = Record.new(self)
     end
 
     def _build_record_if_needed
