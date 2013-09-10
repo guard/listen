@@ -27,6 +27,7 @@ describe Listen::Listener do
   describe "options" do
     it "sets default options" do
       listener.options.should eq({
+        debug: false,
         latency: nil,
         force_polling: false,
         polling_fallback_message: nil })
@@ -35,6 +36,7 @@ describe Listen::Listener do
     it "sets new options on initialize" do
       listener = Listen::Listener.new('path', latency: 1.234)
       listener.options.should eq({
+        debug: false,
         latency: 1.234,
         force_polling: false,
         polling_fallback_message: nil })

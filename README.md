@@ -103,9 +103,11 @@ latency: 0.5                                    # Set the delay (**in seconds**)
 force_polling: true                             # Force the use of the polling adapter
                                                 # default: none
 
-
 polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
                                                 # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
+
+debug: true                                     # Enable Celluloid logger
+                                                # default: false
 ```
 
 ## Listen adapters

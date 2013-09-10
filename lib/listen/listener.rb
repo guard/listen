@@ -23,6 +23,7 @@ module Listen
       @directories = args.flatten.map { |path| Pathname.new(path) }
       @changes     = []
       @block       = block
+      _init_debug
     end
 
     # Starts the listener by initializing the adapter and building
@@ -72,9 +73,18 @@ module Listen
     private
 
     def _init_options(options = {})
-      { latency: nil,
+      { debug: false,
+        latency: nil,
         force_polling: false,
         polling_fallback_message: nil }.merge(options)
+    end
+
+    def _init_debug
+      if options[:debug]
+        Celluloid.logger.level = Logger::INFO
+      else
+        Celluloid.logger = nil
+      end
     end
 
     def _init_actors
