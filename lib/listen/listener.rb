@@ -34,13 +34,14 @@ module Listen
       _init_actors
       unpause
       adapter.async.start
-      Thread.new { _wait_for_changes }
+      @thread = Thread.new { _wait_for_changes }
     end
 
     def stop
       Celluloid::Actor.kill(adapter)
       Celluloid::Actor[:listen_change_pool].terminate
       record && record.terminate
+      @thread && @thread.kill
     end
 
     def pause
