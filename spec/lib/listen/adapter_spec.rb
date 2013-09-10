@@ -73,4 +73,5 @@ describe Listen::Adapter do
       end
     end
   end
+
 end
