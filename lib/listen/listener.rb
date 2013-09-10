@@ -30,6 +30,7 @@ module Listen
     # for changes. The current thread is not blocked after starting.
     #
     def start
+      _signals_trap
       _init_actors
       unpause
       adapter.async.start
@@ -79,6 +80,12 @@ module Listen
       Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
       Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
       Celluloid::Actor[:listen_record]      = Record.new(self)
+    end
+
+    def _signals_trap
+      if Signal.list.keys.include?('INT')
+        Signal.trap('INT') { exit }
+      end
     end
 
     def _build_record_if_needed

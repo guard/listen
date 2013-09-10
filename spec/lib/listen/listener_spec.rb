@@ -50,6 +50,11 @@ describe Listen::Listener do
       adapter.stub_chain(:async, :start)
     }
 
+    it "traps INT signal" do
+      expect(Signal).to receive(:trap).with('INT')
+      listener.start
+    end
+
     it "registers change_pool" do
       Listen::Change.should_receive(:pool).with(args: listener) { change_pool }
       Celluloid::Actor.should_receive(:[]=).with(:listen_change_pool, change_pool)
