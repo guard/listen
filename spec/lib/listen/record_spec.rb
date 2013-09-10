@@ -72,9 +72,8 @@ describe Listen::Record do
   describe "#build" do
     let(:directories) { ['dir_path'] }
     let(:change_pool) { double(Listen::Change, terminate: true) }
-    let(:change_pool_async) { double('ChangePoolAsync', change: true) }
     before {
-      change_pool.stub(:async) { change_pool_async }
+      change_pool.stub(:change)
       Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
       listener.stub(:directories) { directories }
     }
@@ -86,7 +85,7 @@ describe Listen::Record do
     end
 
     it "calls change asynchronously on all directories to build record"  do
-      change_pool_async.should_receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
+      change_pool.should_receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
       record.build
     end
   end
