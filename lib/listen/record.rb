@@ -28,7 +28,7 @@ module Listen
     def build
       @paths = _init_paths
       listener.directories.each do |path|
-        Actor[:listen_change_pool].async.change(path, type: 'Dir', recursive: true, silence: true)
+        Actor[:listen_change_pool].change(path, type: 'Dir', recursive: true, silence: true)
       end
     end
 
