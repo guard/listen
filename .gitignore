@@ -13,6 +13,9 @@ bundle
 Gemfile.lock
 spec/.fixtures
 coverage
+.ruby-version
+example.rb
+test.txt
 
 ## MAC OS
 .DS_Store
@@ -22,6 +25,3 @@ coverage
 Desktop DB
 Desktop DF
 
-.ruby-version
-
-example.rb
