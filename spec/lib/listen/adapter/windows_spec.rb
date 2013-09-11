@@ -9,11 +9,9 @@ describe Listen::Adapter::Windows do
       it "returns always true" do
         expect(described_class).to be_usable
       end
-    end
 
-    describe '#initialize' do
       it 'requires wdm gem' do
-        described_class.new(listener)
+        described_class.usable?
         expect(require('wdm')).to be_false
       end
     end

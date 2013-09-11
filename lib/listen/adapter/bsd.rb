@@ -55,7 +55,7 @@ module Listen
             # file has been added so find out which and deal with it.
             # No need to check for removed files, kqueue will forget them
             # when the vfs does.
-           _watch_new_file(event) if _new_file_added?(event)
+           _watch_for_new_file(event) if _new_file_added?(event)
         end
       end
 
@@ -76,7 +76,7 @@ module Listen
         File.directory?(event.watcher.path) && event.flags.include?(:write)
       end
 
-      def _watch_new_file(event)
+      def _watch_for_new_file(event)
         queue = event.watcher.queue
         Find.find(path) do |file_path|
           _watch_file(file_path, queue) unless queue.watchers.detect { |k,v| v.path == file.to_s }

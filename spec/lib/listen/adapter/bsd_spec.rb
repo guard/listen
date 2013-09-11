@@ -10,11 +10,9 @@ describe Listen::Adapter::BSD do
       it "returns always true" do
         expect(described_class).to be_usable
       end
-    end
 
-    describe '#initialize' do
       it 'requires rb-kqueue and find gem' do
-        described_class.new(listener)
+        described_class.usable?
         expect(require('rb-kqueue')).to be_false
         expect(require('find')).to be_false
       end
