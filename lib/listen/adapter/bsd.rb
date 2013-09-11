@@ -31,7 +31,7 @@ module Listen
 
       def start
         worker = _init_worker
-        worker.run
+        worker.poll
       end
 
       private
