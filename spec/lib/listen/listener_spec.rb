@@ -49,6 +49,7 @@ describe Listen::Listener do
       Listen::Adapter.stub(:new)
       Listen::Record.stub(:new)
       Celluloid::Actor.stub(:[]=)
+      Celluloid.stub(:cores) { 1 }
       adapter.stub_chain(:async, :start)
     }
 
@@ -58,7 +59,7 @@ describe Listen::Listener do
     end
 
     it "registers change_pool" do
-      Listen::Change.should_receive(:pool).with(args: listener) { change_pool }
+      Listen::Change.should_receive(:pool).with(size: 1, args: listener) { change_pool }
       Celluloid::Actor.should_receive(:[]=).with(:listen_change_pool, change_pool)
       listener.start
     end
