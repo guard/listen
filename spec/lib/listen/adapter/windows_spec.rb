@@ -12,7 +12,7 @@ describe Listen::Adapter::Windows do
 
       it 'requires wdm gem' do
         described_class.usable?
-        expect(require('wdm')).to be_false
+        expect(defined?(WDM)).to be_true
       end
     end
   end

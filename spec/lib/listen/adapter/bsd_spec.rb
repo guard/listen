@@ -13,8 +13,8 @@ describe Listen::Adapter::BSD do
 
       it 'requires rb-kqueue and find gem' do
         described_class.usable?
-        expect(require('rb-kqueue')).to be_false
-        expect(require('find')).to be_false
+        expect(defined?(KQueue)).to be_true
+        expect(defined?(Find)).to be_true
       end
     end
   end

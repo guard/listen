@@ -16,6 +16,7 @@ module Listen
       def self.usable?
         if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
           require 'wdm'
+          true
         end
       rescue Gem::LoadError
         Kernel.warn BUNDLER_DECLARE_GEM

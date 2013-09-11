@@ -23,6 +23,7 @@ module Listen
         if RbConfig::CONFIG['target_os'] =~ /freebsd/i
           require 'rb-kqueue'
           require 'find'
+          true
         end
       rescue Gem::LoadError
         Kernel.warn BUNDLER_DECLARE_GEM

@@ -14,7 +14,7 @@ describe Listen::Adapter::Linux do
     describe '#initialize' do
       it 'requires rb-inotify gem' do
         described_class.new(listener)
-        expect(require('rb-inotify')).to be_false
+        expect(defined?(INotify)).to be_true
       end
     end
   end
