@@ -6,6 +6,8 @@
 #   that's why we generate a difference that's greater than 1 second.
 #
 def sleep_until_next_second
+  return unless darwin?
+
   t = Time.now
   diff = t.to_f - t.to_i
 

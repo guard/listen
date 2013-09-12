@@ -5,12 +5,8 @@ describe "Listen" do
   before {
     @listener = setup_listener(options, callback)
     @listener.start
-    sleep 0.25 # wait for adapter start
   }
-  after {
-    sleep 0.25
-    @listener.stop
-  }
+  after { @listener.stop }
   let(:callback) { ->(modified, added, removed) {
     add_changes(:modified, modified)
     add_changes(:added, added)
