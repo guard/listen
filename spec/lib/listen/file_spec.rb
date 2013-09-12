@@ -9,6 +9,13 @@ describe Listen::File do
   describe "#change" do
     let(:file_path) { path.join('file.rb') }
     let(:file) { Listen::File.new(file_path) }
+    let(:expected_data) {
+      if darwin?
+        { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) }
+      else
+        { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
+      end
+    }
 
     context "path present in record" do
       let(:record_mtime) { nil }
@@ -36,14 +43,37 @@ describe Listen::File do
           it "returns modified" do
             file.change.should eq :modified
           end
-          it "sets path in record with mtime and mode" do
-            record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) })
+
+          it "sets path in record with expected data" do
+            record.async.should_receive(:set_path).with(file_path, expected_data)
             file.change
           end
         end
 
         context "same record path mtime" do
           let(:record_mtime) { ::File.lstat(file_path).mtime.to_f }
+          let(:record_mode)  { ::File.lstat(file_path).mode }
+          let(:record_md5)   { Digest::MD5.file(file_path).digest }
+
+          context "same record path mode" do
+            it "returns nil" do
+              file.change.should be_nil
+            end
+          end
+
+          context "diferent record path mode" do
+            let(:record_mode) { 'foo' }
+
+            it "returns modified" do
+              file.change.should eq :modified
+            end
+          end
+
+          context "same record path md5" do
+            it "returns nil" do
+              file.change.should be_nil
+            end
+          end
 
           context "different record path md5" do
             let(:record_md5) { 'foo' }
@@ -51,51 +81,12 @@ describe Listen::File do
             it "returns modified" do
               file.change.should eq :modified
             end
-            it "sets path in record with mtime, mode and md5" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) })
+            it "sets path in record with expected data" do
+              record.async.should_receive(:set_path).with(file_path, expected_data)
               file.change
             end
           end
 
-          context "none record path md5" do
-            let(:record_md5) { nil }
-
-            it "doesn't returns modified" do
-              file.change.should be_nil
-            end
-            it "sets path in record with mtime, mode and md5" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) })
-              file.change
-            end
-          end
-
-          context "same record path md5" do
-            let(:record_md5) { Digest::MD5.file(file_path).digest }
-
-            it "returns modified" do
-              file.change.should be_nil
-            end
-          end
-
-          context "none record path mode" do
-            let(:record_mode) { nil }
-
-            it "doesn't returns modified" do
-              file.change.should be_nil
-            end
-            it "sets path in record with mtime, md5 and mode" do
-              record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), md5: kind_of(String), mode: kind_of(Integer) })
-              file.change
-            end
-          end
-
-          context "same record path mode" do
-            let(:record_mode) { ::File.lstat(file_path).mode }
-
-            it "returns modified" do
-              file.change.should be_nil
-            end
-          end
         end
       end
     end
@@ -109,8 +100,9 @@ describe Listen::File do
         it "returns added" do
           file.change.should eq :added
         end
-        it "sets path in record with mtime and mode" do
-          record.async.should_receive(:set_path).with(file_path, {type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) })
+
+        it "sets path in record with expected data" do
+          record.async.should_receive(:set_path).with(file_path, expected_data)
           file.change
         end
       end

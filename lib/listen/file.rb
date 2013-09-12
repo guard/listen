@@ -8,10 +8,9 @@ module Listen
     end
 
     def change
-      if _existing_path?
-        modified = _modified?
+      if _existing_path? && _modified?
         _set_record_data
-        :modified if modified
+        :modified
       elsif _new_path?
         _set_record_data
         :added
@@ -44,27 +43,34 @@ module Listen
     end
 
     def _modified?
-      (_mtime == _record_data[:mtime] && (_content_modified? || _mode_modified?)) ||
-        _mtime > _record_data[:mtime]
-    end
-
-    def _content_modified?
-      @data.merge!(md5: _md5)
-      _record_data[:md5] && _md5 != _record_data[:md5]
+      _mtime > _record_data[:mtime] || _mode_modified? || _content_modified?
     end
 
     def _mode_modified?
-      @data.merge!(mode: _mode)
-      _record_data[:mode] && _mode != _record_data[:mode]
+      _mode != _record_data[:mode]
+    end
+
+    # Only useful on Darwin because of the file mtime second precision
+    #
+    def _content_modified?
+      _md5 != _record_data[:md5]
     end
 
     def _set_record_data
-      @data.merge!(mtime: _mtime, mode: _mode)
+      @data.merge!(_new_data)
       _record.async.set_path(path, data)
     end
 
     def _unset_record_data
       _record.async.unset_path(path)
+    end
+
+    # Only Darwin need md5 comparaison because of the file mtime second precision
+    #
+    def _new_data
+      data = { mtime: _mtime, mode: _mode }
+      data[:md5] = _md5 if RbConfig::CONFIG['target_os'] =~ /darwin/i
+      data
     end
 
     def _record_data

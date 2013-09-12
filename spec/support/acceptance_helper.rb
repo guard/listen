@@ -14,7 +14,6 @@ end
 
 def add_changes(type, changes)
   @changes[type] += relative_path(changes)
-  @changes[type].uniq!
   @changes[type].sort!
 end
 

@@ -74,6 +74,13 @@ describe "Listen" do
             }.should eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
+          it "listens to file modification and wait" do
+            listen {
+              open('file.rb', 'w') { |f| f.write('foo') }
+              sleep 0.5
+            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+          end
+
           it "listens to file echo" do
             listen {
               `echo  foo > #{Dir.pwd}/file.rb`
