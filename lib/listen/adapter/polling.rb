@@ -7,7 +7,7 @@ module Listen
     # file IO than the other implementations.
     #
     class Polling < Base
-      DEFAULT_POLLING_LATENCY = 0.2
+      DEFAULT_POLLING_LATENCY = 1.0
 
       def self.usable?
         true
