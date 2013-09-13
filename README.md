@@ -15,7 +15,7 @@ The `v2.0` branch is a work in progress!
 * File content checksum comparison for modifications made under the same second (OS X only).
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen), JRuby and Rubinius should work with polling.
 
-## Not implemented features
+## Pending features
 
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 * Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
