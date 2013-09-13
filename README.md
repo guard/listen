@@ -22,6 +22,10 @@ The `v2.0` branch is a work in progress!
 
 Pull request or help is very welcome for these, thanks!
 
+## Changelog
+
+The Changelog is on now on the [Github releases](https://github.com/guard/listen/releases) section.
+
 ## Install
 
 The simplest way to install Listen is to use [Bundler](http://bundler.io).
