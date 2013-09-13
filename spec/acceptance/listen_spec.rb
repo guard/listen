@@ -2,18 +2,17 @@
 require 'spec_helper'
 
 describe "Listen" do
-  before {
-    @listener = setup_listener(options, callback)
-    @listener.start
-  }
-  after { @listener.stop }
+  let(:options) { { } }
   let(:callback) { ->(modified, added, removed) {
     add_changes(:modified, modified)
     add_changes(:added, added)
     add_changes(:removed, removed)
   } }
-  let(:options) { { } }
-  let(:listener) { @listener }
+  before {
+    @listener = setup_listener(options, callback)
+    @listener.start
+  }
+  after { @listener.stop }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }

@@ -53,9 +53,6 @@ module Listen
     # Only useful on Darwin because of the file mtime second precision
     #
     def _content_modified?
-      p "_content_modified? called"
-      p _mtime
-      p _record_data[:mtime]
       _record_data[:md5] && _md5 != _record_data[:md5]
     end
 
