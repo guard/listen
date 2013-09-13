@@ -9,18 +9,18 @@ The `v2.0` branch is a work in progress!
 ## Features
 
 * Supports watching multiple directories from a single listener.
-* OS-specific adapters for Mac OS X 10.6+, Linux, *BSD and Windows on MRI, [more info](#listen-adapters) bellow.
+* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, *BSD and Windows, [more info](#listen-adapters) bellow.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
-* File content checksum comparison for modifications made under the same second.
+* File content checksum comparison for modifications made under the same second (OS X only).
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen), JRuby and Rubinius should work with polling.
 
 ## Not implemented features
 
-Pull request or help is very welcome.
-
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 * Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
+
+Pull request or help is very welcome for these, thanks!
 
 ## Install
 
