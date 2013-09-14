@@ -4,7 +4,9 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## WARNING
 
-The `v2.0` branch is a work in progress!
+Master branch is `v2.0.0.beta` version, use the [v1.3 branch](https://github.com/guard/listen/tree/v1.3) for the stable release.
+
+*BSD and Windows adapter are still a work in progress, any help is very welcome. Thanks!
 
 ## Features
 
@@ -15,12 +17,14 @@ The `v2.0` branch is a work in progress!
 * File content checksum comparison for modifications made under the same second (OS X only).
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen), JRuby and Rubinius should work with polling.
 
+Please note that Windows and *BSD adapter aren't continuously and automaticaly tested.
+
 ## Pending features
 
-* Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 * Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
+* Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 
-Pull request or help is very welcome for these, thanks!
+Pull request or help is very welcome for these.
 
 ## Changelog
 
