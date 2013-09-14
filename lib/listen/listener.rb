@@ -107,11 +107,8 @@ module Listen
     def _wait_for_changes
       loop do
         changes = _pop_changes
-        unless changes.values.all?(&:empty?)
-          block.call(
-            changes[:modified].uniq,
-            changes[:added].uniq,
-            changes[:removed].uniq)
+        unless changes.all? { |_,v| v.empty? }
+          block.call(changes[:modified], changes[:added], changes[:removed])
         end
         sleep 0.1
       end
@@ -126,7 +123,7 @@ module Listen
         change = @changes.pop
         change.each { |k, v| changes[k] << v.to_s }
       end
-      changes
+      changes.each { |_, v| v.uniq! }
     end
   end
 end
