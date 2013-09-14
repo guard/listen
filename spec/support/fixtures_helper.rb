@@ -20,9 +20,7 @@ def fixtures(number_of_directories = 1)
   paths.each { |p| mkdir_p(p) }
 
   cd(paths.first) if number_of_directories == 1
-
   yield(*paths)
-
 ensure
   cd current_pwd
   paths.map { |p| rm_rf(p) if File.exists?(p) }
