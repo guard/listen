@@ -9,13 +9,13 @@ describe Listen::Record do
   describe "#set_path" do
     it "sets path by spliting direname and basename" do
       record.set_path(path, data)
-      record.paths.should eq({ '/dir/path' => { 'file.rb' => data } })
+      expect(record.paths).to eq({ '/dir/path' => { 'file.rb' => data } })
     end
 
     it "sets path and keeps old data not overwritten" do
       record.set_path(path, data.merge(foo: 1, bar: 2))
       record.set_path(path, data.merge(foo: 3))
-      record.paths.should eq({ '/dir/path' => { 'file.rb' => data.merge(foo: 3, bar: 2) } })
+      expect(record.paths).to eq({ '/dir/path' => { 'file.rb' => data.merge(foo: 3, bar: 2) } })
     end
   end
 
@@ -25,14 +25,14 @@ describe Listen::Record do
 
       it "unsets path" do
         record.unset_path(path)
-        record.paths.should eq({ '/dir/path' => {} })
+        expect(record.paths).to eq({ '/dir/path' => {} })
       end
     end
 
     context "path not present" do
       it "unsets path" do
         record.unset_path(path)
-        record.paths.should eq({ '/dir/path' => {} })
+        expect(record.paths).to eq({ '/dir/path' => {} })
       end
     end
   end
@@ -42,13 +42,13 @@ describe Listen::Record do
       before { record.set_path(path, data) }
 
       it "returns file data" do
-        record.file_data(path).should eq data
+        expect(record.file_data(path)).to eq data
       end
     end
 
     context "path not present" do
       it "return empty hash" do
-        record.file_data(path).should be_empty
+        expect(record.file_data(path)).to be_empty
       end
     end
   end
@@ -58,13 +58,13 @@ describe Listen::Record do
       before { record.set_path(path, data) }
 
       it "returns file path" do
-        record.dir_entries('/dir/path').should eq({ 'file.rb' => data })
+        expect(record.dir_entries('/dir/path')).to eq({ 'file.rb' => data })
       end
     end
 
     context "path not present" do
       it "unsets path" do
-        record.dir_entries('/dir/path').should eq({})
+        expect(record.dir_entries('/dir/path')).to eq({})
       end
     end
   end
@@ -81,7 +81,7 @@ describe Listen::Record do
     it "re-inits paths" do
       record.set_path(path, data)
       record.build
-      record.file_data(path).should be_empty
+      expect(record.file_data(path)).to be_empty
     end
 
     it "calls change asynchronously on all directories to build record"  do

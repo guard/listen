@@ -27,12 +27,12 @@ describe Listen::Adapter::Polling do
 
   describe "#_latency" do
     it "returns default_latency with listener actor latency not present" do
-      adapter.send(:_latency).should eq Listen::Adapter::Polling::DEFAULT_POLLING_LATENCY
+      expect(adapter.send(:_latency)).to eq Listen::Adapter::Polling::DEFAULT_POLLING_LATENCY
     end
 
     it "returns latency from listener actor if present" do
       listener.stub(:options) { { latency: 1234 } }
-      adapter.send(:_latency).should eq 1234
+      expect(adapter.send(:_latency)).to eq 1234
     end
   end
 end

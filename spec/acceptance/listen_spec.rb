@@ -35,23 +35,23 @@ describe "Listen" do
 
         context "nothing in listen dir" do
           it "listens to file addition" do
-            listen {
+            expect(listen {
               touch 'file.rb'
-            }.should eq({ modified: [], added: ['file.rb'], removed: [] })
+            }).to eq({ modified: [], added: ['file.rb'], removed: [] })
           end
 
           it "listens to multiple files addition" do
-            listen {
+            expect(listen {
               touch 'file1.rb'
               touch 'file2.rb'
-            }.should eq({ modified: [], added: ['file1.rb', 'file2.rb'], removed: [] })
+            }).to eq({ modified: [], added: ['file1.rb', 'file2.rb'], removed: [] })
           end
 
           it "listens to file moved inside" do
             touch '../file.rb'
-            listen {
+            expect(listen {
               mv '../file.rb', 'file.rb'
-            }.should eq({ modified: [], added: ['file.rb'], removed: [] })
+            }).to eq({ modified: [], added: ['file.rb'], removed: [] })
           end
         end
 
@@ -59,46 +59,46 @@ describe "Listen" do
           around { |example| touch 'file.rb'; example.run }
 
           it "listens to file touch" do
-            listen {
+            expect(listen {
               touch 'file.rb'
-            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+            }).to eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
           it "listens to file modification" do
-            listen {
+            expect(listen {
               open('file.rb', 'w') { |f| f.write('foo') }
-            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+            }).to eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
           it "listens to file modification and wait" do
-            listen {
+            expect(listen {
               open('file.rb', 'w') { |f| f.write('foo') }
               sleep 0.5
-            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+            }).to eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
           it "listens to file echo" do
-            listen {
+            expect(listen {
               `echo  foo > #{Dir.pwd}/file.rb`
-            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+            }).to eq({ modified: ['file.rb'], added: [], removed: [] })
           end
 
           it "listens to file removal" do
-            listen {
+            expect(listen {
               rm 'file.rb'
-            }.should eq({ modified: [], added: [], removed: ['file.rb'] })
+            }).to eq({ modified: [], added: [], removed: ['file.rb'] })
           end
 
           it "listens to file moved out" do
-            listen {
+            expect(listen {
               mv 'file.rb', '../file.rb'
-            }.should eq({ modified: [], added: [], removed: ['file.rb'] })
+            }).to eq({ modified: [], added: [], removed: ['file.rb'] })
           end
 
           it "listens to file mode change" do
-            listen {
+            expect(listen {
               chmod 0777, 'file.rb'
-            }.should eq({ modified: ['file.rb'], added: [], removed: [] })
+            }).to eq({ modified: ['file.rb'], added: [], removed: [] })
           end
         end
 
@@ -106,9 +106,9 @@ describe "Listen" do
           around { |example| touch '.hidden'; example.run }
 
           it "listens to file touch" do
-            listen {
+            expect(listen {
               touch '.hidden'
-            }.should eq({ modified: ['.hidden'], added: [], removed: [] })
+            }).to eq({ modified: ['.hidden'], added: [], removed: [] })
           end
         end
 
@@ -116,9 +116,9 @@ describe "Listen" do
           around { |example| mkdir_p 'dir'; example.run }
 
           it "listens to file touch" do
-            listen {
+            expect(listen {
               touch 'dir/file.rb'
-            }.should eq({ modified: [], added: ['dir/file.rb'], removed: [] })
+            }).to eq({ modified: [], added: ['dir/file.rb'], removed: [] })
           end
         end
 
@@ -126,9 +126,9 @@ describe "Listen" do
           around { |example| mkdir_p 'dir'; touch 'dir/file.rb'; example.run }
 
           it "listens to file move" do
-            listen {
+            expect(listen {
               mv 'dir/file.rb', 'file.rb'
-            }.should eq({ modified: [], added: ['file.rb'], removed: ['dir/file.rb'] })
+            }).to eq({ modified: [], added: ['file.rb'], removed: ['dir/file.rb'] })
           end
         end
 
@@ -139,16 +139,16 @@ describe "Listen" do
             example.run }
 
           it "listens to multiple file moves" do
-            listen {
+            expect(listen {
               mv 'dir1/file1.rb', 'dir2/file1.rb'
               mv 'dir2/file2.rb', 'dir1/file2.rb'
-            }.should eq({ modified: [], added: ['dir1/file2.rb', 'dir2/file1.rb'], removed: ['dir1/file1.rb', 'dir2/file2.rb'] })
+            }).to eq({ modified: [], added: ['dir1/file2.rb', 'dir2/file1.rb'], removed: ['dir1/file1.rb', 'dir2/file2.rb'] })
           end
 
           it "listens to dir move" do
-            listen {
+            expect(listen {
               mv 'dir1', 'dir2/'
-            }.should eq({ modified: [], added: ['dir2/dir1/file1.rb'], removed: ['dir1/file1.rb'] })
+            }).to eq({ modified: [], added: ['dir2/dir1/file1.rb'], removed: ['dir1/file1.rb'] })
           end
         end
 
@@ -157,9 +157,9 @@ describe "Listen" do
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /ignored_dir/ } }
 
           it "doesn't listen to file touch" do
-            listen {
+            expect(listen {
               touch 'ignored_dir/file.rb'
-            }.should eq({ modified: [], added: [], removed: [] })
+            }).to eq({ modified: [], added: [], removed: [] })
           end
         end
 
@@ -168,9 +168,9 @@ describe "Listen" do
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
 
           it "doesn't listen to file touch" do
-            listen {
+            expect(listen {
               touch 'file.rb'
-            }.should eq({ modified: [], added: [], removed: [] })
+            }).to eq({ modified: [], added: [], removed: [] })
           end
         end
 
@@ -179,11 +179,11 @@ describe "Listen" do
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
 
           it "overwrites existing patterns" do
-            listen {
+            expect(listen {
               listener.ignore(/\.txt/)
               touch 'file.rb'
               touch 'file.txt'
-            }.should eq({ modified: [], added: [], removed: [] })
+            }).to eq({ modified: [], added: [], removed: [] })
           end
         end
 
@@ -191,11 +191,11 @@ describe "Listen" do
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
 
           it "overwrites existing patterns" do
-            listen {
+            expect(listen {
               listener.ignore!(/\.txt/)
               touch 'file.rb'
               touch 'file.txt'
-            }.should eq({ modified: [], added: ['file.rb'], removed: [] })
+            }).to eq({ modified: [], added: ['file.rb'], removed: [] })
           end
         end
       end

@@ -17,19 +17,19 @@ describe Listen::Listener do
 
   describe "initialize" do
     it "sets paused to false" do
-      listener.should_not be_paused
+      expect(listener).not_to be_paused
     end
 
     it "sets block" do
       block = Proc.new { |modified, added, removed| }
       listener = Listen::Listener.new('dir', &block)
-      listener.block.should_not be_nil
+      expect(listener.block).not_to be_nil
     end
   end
 
   describe "options" do
     it "sets default options" do
-      listener.options.should eq({
+      expect(listener.options).to eq({
         debug: false,
         latency: nil,
         force_polling: false,
@@ -38,7 +38,7 @@ describe Listen::Listener do
 
     it "sets new options on initialize" do
       listener = Listen::Listener.new('path', latency: 1.234)
-      listener.options.should eq({
+      expect(listener.options).to eq({
         debug: false,
         latency: 1.234,
         force_polling: false,
@@ -93,7 +93,7 @@ describe Listen::Listener do
 
     it "sets paused to false" do
       listener.start
-      listener.paused.should be_false
+      expect(listener.paused).to be_false
     end
 
     it "starts adapter asynchronously" do
@@ -156,7 +156,7 @@ describe Listen::Listener do
   describe "#pause" do
     it "sets paused to true" do
       listener.pause
-      listener.paused.should be_true
+      expect(listener.paused).to be_true
     end
   end
 
@@ -169,37 +169,37 @@ describe Listen::Listener do
     it "sets paused to false" do
       record.stub(:build)
       listener.unpause
-      listener.paused.should be_false
+      expect(listener.paused).to be_false
     end
   end
 
   describe "#paused?" do
     it "returns true when paused" do
       listener.paused = true
-      listener.should be_paused
+      expect(listener).to be_paused
     end
     it "returns false when not paused (nil)" do
       listener.paused = nil
-      listener.should_not be_paused
+      expect(listener).not_to be_paused
     end
     it "returns false when not paused (false)" do
       listener.paused = false
-      listener.should_not be_paused
+      expect(listener).not_to be_paused
     end
   end
 
   describe "#paused?" do
     it "returns true when not paused (false)" do
       listener.paused = false
-      listener.listen?.should be_true
+      expect(listener.listen?).to be_true
     end
     it "returns false when not paused (nil)" do
       listener.paused = nil
-      listener.listen?.should be_false
+      expect(listener.listen?).to be_false
     end
     it "returns false when paused" do
       listener.paused = true
-      listener.listen?.should be_false
+      expect(listener.listen?).to be_false
     end
   end
 

@@ -26,7 +26,7 @@ describe Listen::File do
 
       context "non-existing path" do
         it "returns added" do
-          file.change.should eq :removed
+          expect(file.change).to eq :removed
         end
         it "sets path in record" do
           record.async.should_receive(:unset_path).with(file_path)
@@ -41,7 +41,7 @@ describe Listen::File do
           let(:record_mtime) { (Time.now - 1).to_f }
 
           it "returns modified" do
-            file.change.should eq :modified
+            expect(file.change).to eq :modified
           end
 
           it "sets path in record with expected data" do
@@ -57,7 +57,7 @@ describe Listen::File do
 
           context "same record path mode" do
             it "returns nil" do
-              file.change.should be_nil
+              expect(file.change).to be_nil
             end
           end
 
@@ -65,13 +65,13 @@ describe Listen::File do
             let(:record_mode) { 'foo' }
 
             it "returns modified" do
-              file.change.should eq :modified
+              expect(file.change).to eq :modified
             end
           end
 
           context "same record path md5" do
             it "returns nil" do
-              file.change.should be_nil
+              expect(file.change).to be_nil
             end
           end
 
@@ -79,7 +79,7 @@ describe Listen::File do
             let(:record_md5) { 'foo' }
 
             it "returns modified" do
-              file.change.should eq :modified
+              expect(file.change).to eq :modified
             end
             it "sets path in record with expected data" do
               record.async.should_receive(:set_path).with(file_path, expected_data)
@@ -98,7 +98,7 @@ describe Listen::File do
         around { |example| touch file_path; example.run }
 
         it "returns added" do
-          file.change.should eq :added
+          expect(file.change).to eq :added
         end
 
         it "sets path in record with expected data" do
