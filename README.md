@@ -66,6 +66,18 @@ listener.unpause # start listening to changes again
 listener.stop    # stop completely the listener
 ```
 
+### Ignore / ignore!
+
+Liste ignore some folder and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
+
+``` ruby
+listener = Listen.to('dir/path/to/listen', ignore: /\.txt/) { |modified, added, removed| # ... }
+listener.start
+listener.ignore! /\.pkg/  # overwrite all patterns and only ignore pkg extension.
+listener.ignore /\.rb/    # ignore rb extension in addition of pkg.
+sleep
+``
+
 ## Changes callback
 
 Changes to the listened-to directories gets reported back to the user in a callback.

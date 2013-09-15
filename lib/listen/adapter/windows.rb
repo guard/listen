@@ -33,6 +33,7 @@ module Listen
       # each directory passed to the adapter.
       #
       # @return [WDM::Monitor] initialized worker
+      #
       def _init_worker
         WDM::Monitor.new.tap do |worker|
           _directories_path.each { |path| worker.watch_recursively(path, &_worker_callback) }

@@ -42,6 +42,7 @@ module Listen
       # each directory passed to the adapter.
       #
       # @return [INotify::Notifier] initialized worker
+      #
       def _init_worker
         INotify::Notifier.new.tap do |worker|
           _directories_path.each { |path| worker.watch(path, *EVENTS, &_worker_callback) }

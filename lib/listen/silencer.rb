@@ -1,7 +1,9 @@
 module Listen
   class Silencer
+    include Celluloid
+
     # The default list of directories that get ignored.
-    DEFAULT_IGNORED_DIRECTORIES = %w[.rbx .bundle .git .svn .hg bundle log tmp vendor]
+    DEFAULT_IGNORED_DIRECTORIES = %w[.rbx .bundle .git .svn .hg bundle log tmp vendor/ruby]
 
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
@@ -14,7 +16,7 @@ module Listen
     end
 
     def silenced?(path)
-      patterns.any? { |pattern| pattern =~ path.to_s }
+      patterns.any? { |pattern| path.to_s =~ pattern }
     end
 
     private
@@ -23,7 +25,7 @@ module Listen
       @patterns = []
       @patterns << _default_patterns unless options[:ignore!]
       @patterns << options[:ignore] << options[:ignore!]
-      @patterns.compact
+      @patterns.compact!
       @patterns.flatten!
     end
 

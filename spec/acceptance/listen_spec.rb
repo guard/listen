@@ -8,11 +8,12 @@ describe "Listen" do
     add_changes(:added, added)
     add_changes(:removed, removed)
   } }
+  let(:listener) { @listener }
   before {
     @listener = setup_listener(options, callback)
     @listener.start
   }
-  after { @listener.stop }
+  after { listener.stop }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }
@@ -153,7 +154,7 @@ describe "Listen" do
 
         context "ignored dir with file in listen dir" do
           around { |example| mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb'; example.run }
-          let(:options) { { force_polling: polling, ignore: /ignored_dir/ } }
+          let(:options) { { force_polling: polling, latency: 0.1, ignore: /ignored_dir/ } }
 
           it "doesn't listen to file touch" do
             listen {
@@ -164,12 +165,37 @@ describe "Listen" do
 
         context "with ignored file in listen dir" do
           around { |example| touch 'file.rb'; example.run }
-          let(:options) { { force_polling: polling, ignore: /\.rb$/ } }
+          let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
 
           it "doesn't listen to file touch" do
             listen {
               touch 'file.rb'
             }.should eq({ modified: [], added: [], removed: [] })
+          end
+        end
+
+        describe "#ignore" do
+          around { |example| touch 'file.rb'; example.run }
+          let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
+
+          it "overwrites existing patterns" do
+            listen {
+              listener.ignore(/\.txt/)
+              touch 'file.rb'
+              touch 'file.txt'
+            }.should eq({ modified: [], added: [], removed: [] })
+          end
+        end
+
+        describe "#ignore!" do
+          let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }
+
+          it "overwrites existing patterns" do
+            listen {
+              listener.ignore!(/\.txt/)
+              touch 'file.rb'
+              touch 'file.txt'
+            }.should eq({ modified: [], added: ['file.rb'], removed: [] })
           end
         end
       end

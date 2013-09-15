@@ -1,12 +1,15 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  let(:listener) { Listen::Listener.new }
+  let(:listener) { Listen::Listener.new(options) }
+  let(:options) { {} }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
+  let(:silencer) { double(Listen::Silencer, terminate: true) }
   let(:adapter) { double(Listen::Adapter::Base) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before {
+    Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer }
     Celluloid::Actor.stub(:[]).with(:listen_adapter) { adapter }
     Celluloid::Actor.stub(:[]).with(:listen_record) { record }
     Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
@@ -45,6 +48,7 @@ describe Listen::Listener do
 
   describe "#start" do
     before {
+      Listen::Silencer.stub(:new)
       Listen::Change.stub(:pool)
       Listen::Adapter.stub(:new)
       Listen::Record.stub(:new)
@@ -55,6 +59,12 @@ describe Listen::Listener do
 
     it "traps INT signal" do
       expect(Signal).to receive(:trap).with('INT')
+      listener.start
+    end
+
+    it "registers silencer" do
+      Listen::Silencer.should_receive(:new).with(listener.options) { silencer }
+      Celluloid::Actor.should_receive(:[]=).with(:listen_silencer, silencer)
       listener.start
     end
 
@@ -111,7 +121,21 @@ describe Listen::Listener do
   end
 
   describe "#stop" do
-    before { Celluloid::Actor.stub(:kill) }
+    let(:thread) { double(kill: true) }
+    before {
+      Celluloid::Actor.stub(:kill)
+      listener.stub(:thread) { thread }
+    }
+
+    it "kills thread" do
+      expect(thread).to receive(:kill)
+      listener.stop
+    end
+
+    it "terminates silencer" do
+      expect(silencer).to receive(:terminate)
+      listener.stop
+    end
 
     it "kills adapter" do
       Celluloid::Actor.should_receive(:kill).with(adapter)
@@ -176,6 +200,64 @@ describe Listen::Listener do
     it "returns false when paused" do
       listener.paused = true
       listener.listen?.should be_false
+    end
+  end
+
+  describe "#ignore" do
+    let(:new_silencer) { double(Listen::Silencer) }
+    before { Celluloid::Actor.stub(:[]=) }
+
+    it "resets silencer actor with new pattern" do
+      expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [nil, /foo/])) { new_silencer }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      listener.ignore(/foo/)
+    end
+
+    context "with existing ignore options" do
+      let(:options) { { ignore: /bar/ } }
+
+      it "adds up to existing ignore options" do
+        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [/bar/, /foo/]))
+        listener.ignore(/foo/)
+      end
+    end
+
+    context "with existing ignore options (array)" do
+      let(:options) { { ignore: [/bar/] } }
+
+      it "adds up to existing ignore options" do
+        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [[/bar/], /foo/]))
+        listener.ignore(/foo/)
+      end
+    end
+  end
+
+  describe "#ignore!" do
+    let(:new_silencer) { double(Listen::Silencer) }
+    before { Celluloid::Actor.stub(:[]=) }
+
+    it "resets silencer actor with new pattern" do
+      expect(Listen::Silencer).to receive(:new).with(hash_including(ignore!: /foo/)) { new_silencer }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      listener.ignore!(/foo/)
+    end
+
+    context "with existing ignore! options" do
+      let(:options) { { ignore!: /bar/ } }
+
+      it "overwrites existing ignore options" do
+        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore!: [/foo/]))
+        listener.ignore!([/foo/])
+      end
+    end
+
+    context "with existing ignore options" do
+      let(:options) { { ignore: /bar/ } }
+
+      it "deletes ignore options" do
+        expect(Listen::Silencer).to receive(:new).with(hash_not_including(ignore: /bar/))
+        listener.ignore!([/foo/])
+      end
     end
   end
 

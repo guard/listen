@@ -1,20 +1,18 @@
 require 'listen/file'
 require 'listen/directory'
-require 'listen/silencer'
 
 module Listen
   class Change
     include Celluloid
 
-    attr_accessor :listener, :silencer
+    attr_accessor :listener
 
     def initialize(listener)
       @listener = listener
-      @silencer = Silencer.new(listener.options)
     end
 
     def change(path, options)
-      return if silencer.silenced?(path)
+      return if _silencer.silenced?(path)
       if change = options[:change]
         _notify_listener(change, path)
       else
@@ -38,5 +36,10 @@ module Listen
     def _notify_listener(change, path)
       listener.changes << { change => path }
     end
+
+    def _silencer
+      Celluloid::Actor[:listen_silencer]
+    end
+
   end
 end

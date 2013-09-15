@@ -1,10 +1,11 @@
 require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
+require 'listen/silencer'
 
 module Listen
   class Listener
-    attr_accessor :options, :directories, :paused, :changes, :block
+    attr_accessor :options, :directories, :paused, :changes, :block, :thread
 
     RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
 
@@ -34,40 +35,66 @@ module Listen
       _signals_trap
       _init_actors
       unpause
-      adapter.async.start
+      Celluloid::Actor[:listen_adapter].async.start
       @thread = Thread.new { _wait_for_changes }
     end
 
+    # Terminates all Listen actors and kill the adapter.
+    #
     def stop
-      Celluloid::Actor.kill(adapter)
+      thread.kill
+      Celluloid::Actor.kill(Celluloid::Actor[:listen_adapter])
+      Celluloid::Actor[:listen_silencer].terminate
       Celluloid::Actor[:listen_change_pool].terminate
-      record && record.terminate
-      @thread && @thread.kill
+      Celluloid::Actor[:listen_record].terminate
     end
 
+    # Pauses listening callback (adapter still running)
+    #
     def pause
       @paused = true
     end
 
+    # Unpauses listening callback
+    #
     def unpause
-      _build_record_if_needed
+      Celluloid::Actor[:listen_record].build
       @paused = false
     end
 
+    # Returns true if Listener is paused
+    #
+    # @return [Boolean]
+    #
     def paused?
       @paused == true
     end
 
+    # Returns true if Listener is not paused
+    #
+    # @return [Boolean]
+    #
     def listen?
       @paused == false
     end
 
-    def adapter
-      Celluloid::Actor[:listen_adapter]
+    # Adds ignore patterns to the existing one (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
+    #
+    # @param [Regexp, Hash<Regexp>] new ignoring patterns.
+    #
+    def ignore(regexps)
+      options[:ignore] = [options[:ignore], regexps]
+      Celluloid::Actor[:listen_silencer] = Silencer.new(options)
     end
 
-    def record
-      Celluloid::Actor[:listen_record]
+    # Overwrites ignore patterns (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
+    #
+    # @param [Regexp, Hash<Regexp>] new ignoring patterns.
+    #
+    def ignore!(regexps)
+      options.delete(:ignore)
+      options[:ignore!] = regexps
+      Celluloid::Actor[:listen_silencer] = Silencer.new(options)
     end
 
     private
@@ -89,6 +116,7 @@ module Listen
 
     def _init_actors
       cores = Celluloid.cores || 2
+      Celluloid::Actor[:listen_silencer]    = Silencer.new(options)
       Celluloid::Actor[:listen_change_pool] = Change.pool(size: cores, args: self)
       Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
       Celluloid::Actor[:listen_record]      = Record.new(self)
@@ -98,10 +126,6 @@ module Listen
       if Signal.list.keys.include?('INT')
         Signal.trap('INT') { exit }
       end
-    end
-
-    def _build_record_if_needed
-      record && record.build
     end
 
     def _wait_for_changes

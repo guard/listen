@@ -10,7 +10,7 @@ describe Listen::Change do
 
   describe "#change" do
     let(:silencer) { double(Listen::Silencer, silenced?: false) }
-    before { Listen::Silencer.stub(:new) { silencer } }
+    before { Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer } }
 
     context "file path" do
       context "with known change" do

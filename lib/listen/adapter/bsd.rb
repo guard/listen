@@ -40,6 +40,7 @@ module Listen
       # the directories passed to the adapter.
       #
       # @return [INotify::Notifier] initialized kqueue
+      #
       def _init_worker
         KQueue::Queue.new.tap do |queue|
           _directories_path.each do |path|
