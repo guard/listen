@@ -63,31 +63,31 @@ describe Listen::Listener do
     end
 
     it "registers silencer" do
-      Listen::Silencer.should_receive(:new).with(listener.options) { silencer }
-      Celluloid::Actor.should_receive(:[]=).with(:listen_silencer, silencer)
+      expect(Listen::Silencer).to receive(:new).with(listener.options) { silencer }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, silencer)
       listener.start
     end
 
     it "registers change_pool" do
-      Listen::Change.should_receive(:pool).with(size: 1, args: listener) { change_pool }
-      Celluloid::Actor.should_receive(:[]=).with(:listen_change_pool, change_pool)
+      expect(Listen::Change).to receive(:pool).with(size: 1, args: listener) { change_pool }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_change_pool, change_pool)
       listener.start
     end
 
     it "registers adaper" do
-      Listen::Adapter.should_receive(:new).with(listener) { adapter }
-      Celluloid::Actor.should_receive(:[]=).with(:listen_adapter, adapter)
+      expect(Listen::Adapter).to receive(:new).with(listener) { adapter }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_adapter, adapter)
       listener.start
     end
 
     it "registers record" do
-      Listen::Record.should_receive(:new).with(listener) { record }
-      Celluloid::Actor.should_receive(:[]=).with(:listen_record, record)
+      expect(Listen::Record).to receive(:new).with(listener) { record }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_record, record)
       listener.start
     end
 
     it "builds record" do
-      record.should_receive(:build)
+      expect(record).to receive(:build)
       listener.start
     end
 
@@ -98,15 +98,15 @@ describe Listen::Listener do
 
     it "starts adapter asynchronously" do
       async_stub = double
-      adapter.should_receive(:async) { async_stub }
-      async_stub.should_receive(:start)
+      expect(adapter).to receive(:async) { async_stub }
+      expect(async_stub).to receive(:start)
       listener.start
     end
 
     it "starts adapter asynchronously" do
       async_stub = double
-      adapter.should_receive(:async) { async_stub }
-      async_stub.should_receive(:start)
+      expect(adapter).to receive(:async) { async_stub }
+      expect(async_stub).to receive(:start)
       listener.start
     end
 
@@ -114,7 +114,7 @@ describe Listen::Listener do
       listener.changes = [{ modified: 'foo' }]
       block_stub = double('block')
       listener.block = block_stub
-      block_stub.should_receive(:call).with(['foo'], [], [])
+      expect(block_stub).to receive(:call).with(['foo'], [], [])
       listener.start
       sleep 0.01
     end
@@ -138,17 +138,17 @@ describe Listen::Listener do
     end
 
     it "kills adapter" do
-      Celluloid::Actor.should_receive(:kill).with(adapter)
+      expect(Celluloid::Actor).to receive(:kill).with(adapter)
       listener.stop
     end
 
     it "terminates change_pool" do
-      change_pool.should_receive(:terminate)
+      expect(change_pool).to receive(:terminate)
       listener.stop
     end
 
     it "terminates record" do
-      record.should_receive(:terminate)
+      expect(record).to receive(:terminate)
       listener.stop
     end
   end
@@ -162,7 +162,7 @@ describe Listen::Listener do
 
   describe "#unpause" do
     it "builds record" do
-      record.should_receive(:build)
+      expect(record).to receive(:build)
       listener.unpause
     end
 

@@ -27,7 +27,7 @@ describe Listen::Adapter::Base do
       before { listener.stub(:listen?) { true} }
 
       it "calls change on change_pool asynchronously" do
-        change_pool_async.should_receive(:change).with('path', type: 'Dir', recurcise: true)
+        expect(change_pool_async).to receive(:change).with('path', type: 'Dir', recurcise: true)
         adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
       end
     end
@@ -36,7 +36,7 @@ describe Listen::Adapter::Base do
       before { listener.stub(:listen?) { false } }
 
       it "calls change on change_pool asynchronously" do
-        change_pool_async.should_not_receive(:change)
+        expect(change_pool_async).to_not receive(:change)
         adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
       end
     end

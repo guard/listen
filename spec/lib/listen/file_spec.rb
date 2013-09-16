@@ -29,7 +29,7 @@ describe Listen::File do
           expect(file.change).to eq :removed
         end
         it "sets path in record" do
-          record.async.should_receive(:unset_path).with(file_path)
+          expect(record.async).to receive(:unset_path).with(file_path)
           file.change
         end
       end
@@ -45,7 +45,7 @@ describe Listen::File do
           end
 
           it "sets path in record with expected data" do
-            record.async.should_receive(:set_path).with(file_path, expected_data)
+            expect(record.async).to receive(:set_path).with(file_path, expected_data)
             file.change
           end
         end
@@ -82,7 +82,7 @@ describe Listen::File do
               expect(file.change).to eq :modified
             end
             it "sets path in record with expected data" do
-              record.async.should_receive(:set_path).with(file_path, expected_data)
+              expect(record.async).to receive(:set_path).with(file_path, expected_data)
               file.change
             end
           end
@@ -102,7 +102,7 @@ describe Listen::File do
         end
 
         it "sets path in record with expected data" do
-          record.async.should_receive(:set_path).with(file_path, expected_data)
+          expect(record.async).to receive(:set_path).with(file_path, expected_data)
           file.change
         end
       end

@@ -25,25 +25,25 @@ describe Listen::Adapter do
     if RUBY_ENGINE == 'ruby'
       it "returns BSD adapter when usable" do
         Listen::Adapter::BSD.stub(:usable?) { true }
-        Listen::Adapter::BSD.should_receive(:new)
+        expect(Listen::Adapter::BSD).to receive(:new)
         adapter
       end
 
       it "returns Darwin adapter when usable" do
         Listen::Adapter::Darwin.stub(:usable?) { true }
-        Listen::Adapter::Darwin.should_receive(:new)
+        expect(Listen::Adapter::Darwin).to receive(:new)
         adapter
       end
 
       it "returns Linux adapter when usable" do
         Listen::Adapter::Linux.stub(:usable?) { true }
-        Listen::Adapter::Linux.should_receive(:new)
+        expect(Listen::Adapter::Linux).to receive(:new)
         adapter
       end
 
       it "returns Windows adapter when usable" do
         Listen::Adapter::Windows.stub(:usable?) { true }
-        Listen::Adapter::Windows.should_receive(:new)
+        expect(Listen::Adapter::Windows).to receive(:new)
         adapter
       end
 
@@ -55,19 +55,19 @@ describe Listen::Adapter do
         end
 
         it "warns polling fallback with default message" do
-          Kernel.should_receive(:warn).with("[Listen warning]:\n  #{described_class::POLLING_FALLBACK_MESSAGE}")
+          expect(Kernel).to receive(:warn).with("[Listen warning]:\n  #{described_class::POLLING_FALLBACK_MESSAGE}")
           adapter
         end
 
         it "doesn't warn if polling_fallback_message is false" do
           listener.stub(:options) { { polling_fallback_message: false } }
-          Kernel.should_not_receive(:warn)
+          expect(Kernel).to_not receive(:warn)
           adapter
         end
 
         it "warns polling fallback with custom message if set" do
           listener.stub(:options) { { polling_fallback_message: 'custom fallback message' } }
-          Kernel.should_receive(:warn).with("[Listen warning]:\n  custom fallback message")
+          expect(Kernel).to receive(:warn).with("[Listen warning]:\n  custom fallback message")
           adapter
         end
       end

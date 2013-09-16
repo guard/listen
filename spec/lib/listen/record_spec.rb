@@ -85,7 +85,7 @@ describe Listen::Record do
     end
 
     it "calls change asynchronously on all directories to build record"  do
-      change_pool.should_receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
+      expect(change_pool).to receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
       record.build
     end
   end

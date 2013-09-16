@@ -23,8 +23,8 @@ describe "Listen" do
       let(:callback) { ->(x,y,z) { raise 'foo' } }
 
       it "warns the backtrace" do
-        Kernel.should_receive(:warn).with("[Listen warning]: Change block raise an execption: foo")
-        Kernel.should_receive(:warn).with(/^Backtrace:.*/)
+        expect(Kernel).to receive(:warn).with("[Listen warning]: Change block raise an execption: foo")
+        expect(Kernel).to receive(:warn).with(/^Backtrace:.*/)
         listen { touch 'file.rb' }
       end
     end

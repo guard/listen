@@ -36,13 +36,13 @@ describe Listen::Directory do
           around { |example| mkdir dir_path; example.run }
 
           it "sets record dir path" do
-            record.async.should_receive(:set_path).with(dir_path, type: 'Dir')
+            expect(record.async).to receive(:set_path).with(dir_path, type: 'Dir')
             dir.scan
           end
 
           it "calls change for file path and dir that doesn't exist" do
-            change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
-            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
+            expect(change_pool_async).to receive(:change).with(file_path, type: 'File', recursive: false)
+            expect(change_pool_async).to receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
             dir.scan
           end
         end
@@ -54,9 +54,9 @@ describe Listen::Directory do
             example.run }
 
           it "calls change for file & other_file paths and dir that doesn't exist" do
-            change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
-            change_pool_async.should_receive(:change).with(other_file_path, type: 'File', recursive: false)
-            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
+            expect(change_pool_async).to receive(:change).with(file_path, type: 'File', recursive: false)
+            expect(change_pool_async).to receive(:change).with(other_file_path, type: 'File', recursive: false)
+            expect(change_pool_async).to receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
             dir.scan
           end
         end
@@ -67,12 +67,12 @@ describe Listen::Directory do
 
         context "non-existing dir path" do
           it "calls change only for file path" do
-            change_pool_async.should_not_receive(:change)
+            expect(change_pool_async).to_not receive(:change)
             dir.scan
           end
 
           it "unsets record dir path" do
-            record.async.should_receive(:unset_path).with(dir_path)
+            expect(record.async).to receive(:unset_path).with(dir_path)
             dir.scan
           end
         end
@@ -84,9 +84,9 @@ describe Listen::Directory do
             example.run }
 
           it "calls change for file & other_file paths" do
-            change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: false)
-            change_pool_async.should_not_receive(:change).with(other_file_path, type: 'File', recursive: false)
-            change_pool_async.should_not_receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
+            expect(change_pool_async).to receive(:change).with(file_path, type: 'File', recursive: false)
+            expect(change_pool_async).to_not receive(:change).with(other_file_path, type: 'File', recursive: false)
+            expect(change_pool_async).to_not receive(:change).with(inside_dir_path, type: 'Dir', recursive: false)
             dir.scan
           end
         end
@@ -104,8 +104,8 @@ describe Listen::Directory do
 
         context "empty dir" do
           it "calls change for file & inside_dir path" do
-            change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: true)
-            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
+            expect(change_pool_async).to receive(:change).with(file_path, type: 'File', recursive: true)
+            expect(change_pool_async).to receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
             dir.scan
           end
         end
@@ -117,9 +117,9 @@ describe Listen::Directory do
             example.run }
 
           it "calls change for file, other_file & inside_dir paths" do
-            change_pool_async.should_receive(:change).with(file_path, type: 'File', recursive: true)
-            change_pool_async.should_receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
-            change_pool_async.should_receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
+            expect(change_pool_async).to receive(:change).with(file_path, type: 'File', recursive: true)
+            expect(change_pool_async).to receive(:change).with(inside_dir_path, type: 'Dir', recursive: true)
+            expect(change_pool_async).to receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
             dir.scan
           end
         end
@@ -130,7 +130,7 @@ describe Listen::Directory do
 
         context "non-existing dir path" do
           it "calls change only for file path" do
-            change_pool_async.should_not_receive(:change)
+            expect(change_pool_async).to_not receive(:change)
             dir.scan
           end
         end
@@ -142,7 +142,7 @@ describe Listen::Directory do
             example.run }
 
           it "calls change for file & other_file paths" do
-            change_pool_async.should_receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
+            expect(change_pool_async).to receive(:change).with(other_inside_dir_path, type: 'Dir', recursive: true)
             dir.scan
           end
         end
