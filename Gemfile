@@ -10,6 +10,7 @@ gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
 
 group :development do
   gem 'yard', require: false
+  gem 'guard', github: 'guard/guard', branch: 'listen2'
   gem 'guard-rspec', require: false
 end
 
