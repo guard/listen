@@ -1,11 +1,14 @@
 require 'celluloid'
 require 'listen/listener'
+require 'listen/tcp/listener'
 
 module Listen
   class << self
     attr_accessor :stopping
 
     # Listens to file system modifications on a either single directory or multiple directories.
+    #
+    # When :forward_to is specified, this listener will broadcast modifications over TCP.
     #
     # @param (see Listen::Listener#new)
     #
@@ -18,7 +21,12 @@ module Listen
     #
     def to(*args, &block)
       @stopping = false
-      Listener.new(*args, &block)
+      options = args.last.is_a?(Hash) ? args.last : {}
+      if target = options.delete(:forward_to)
+        TCP::Listener.new(target, :broadcaster, *args, &block)
+      else
+        Listener.new(*args, &block)
+      end
     end
 
     # Stop all listeners
