@@ -14,6 +14,8 @@ module Listen
       # @param [String] host to broadcast on
       # @param [String] port to broadcast on
       #
+      # Note: Listens on all addresses when host is nil
+      #
       def initialize host, port
         @server = TCPServer.new(host, port)
         @sockets = []
