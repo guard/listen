@@ -87,7 +87,7 @@ module Listen
           raise ArgumentError, 'TCP::Listener requires target to be given'
         end
 
-        @host = DEFAULT_HOST
+        @host = DEFAULT_HOST if recipient?
 
         if target.is_a? Fixnum
           @port = target

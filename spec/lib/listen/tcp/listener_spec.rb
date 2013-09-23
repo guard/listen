@@ -28,14 +28,6 @@ describe Listen::TCP::Listener do
     its(:host) { should eq host }
     its(:port) { should eq port }
 
-    context 'when host is omitted' do
-      subject {
-        described_class.new(port, :recipient)
-      }
-
-      its(:host) { should eq described_class::DEFAULT_HOST }
-    end
-
     it 'raises on invalid mode' do
       expect do
         described_class.new(port, :foo)
@@ -56,6 +48,10 @@ describe Listen::TCP::Listener do
 
     it { should be_a_broadcaster }
     it { should_not be_a_recipient }
+
+    context 'when host is omitted' do
+      its(:host) { should be_nil }
+    end
   end
 
   context 'when recipient' do
@@ -65,6 +61,10 @@ describe Listen::TCP::Listener do
 
     it { should_not be_a_broadcaster }
     it { should be_a_recipient }
+
+    context 'when host is omitted' do
+      its(:host) { should eq described_class::DEFAULT_HOST }
+    end
   end
 
   # TODO: Spec all the things
