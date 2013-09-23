@@ -49,17 +49,14 @@ module Listen
 
       # Hook to broadcast changes over TCP while honouring
       # paused-state and invoking the original callback block
-      BROADCASTER_HOOK = Proc.new { |*args|
-        next if @paused
-        message = Message.new(args)
-        Celluloid::Actor[:listen_broadcaster].async.broadcast(message.payload)
-        yield @block if @block
-      }
-
-      # When broadcasting, activates the above hook
       def block
         if broadcaster?
-          BROADCASTER_HOOK
+          Proc.new { |*args|
+            next if @paused
+            message = Message.new(args)
+            Celluloid::Actor[:listen_broadcaster].async.broadcast(message.payload)
+            @block.call(*args) if @block
+          }
         else
           super
         end
