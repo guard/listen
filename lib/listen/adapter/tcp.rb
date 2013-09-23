@@ -17,10 +17,7 @@ module Listen
 
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
-        # Passing a regular TCPSocket to Celluloid::IO's seems
-        # to work around an issue with Errno::ECONNREFUSED on
-        # local addresses
-        @socket = TCPSocket.new ::TCPSocket.new(listener.host, listener.port)
+        @socket = TCPSocket.new(listener.host, listener.port)
         @buffer = String.new
         run
       end
