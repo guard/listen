@@ -1,3 +1,4 @@
+require 'pathname'
 require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
