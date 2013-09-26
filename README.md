@@ -4,7 +4,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## WARNING
 
-Master branch is `v2.0.0.beta` version, use the [v1.3 branch](https://github.com/guard/listen/tree/v1.3) for the stable release.
+Master branch is `v2.0.0.pre.1` version, use the [v1.3 branch](https://github.com/guard/listen/tree/v1.3) for the stable release.
 
 *BSD and Windows adapter are still a work in progress, any help is very welcome. Thanks!
 
@@ -25,10 +25,6 @@ Please note that Windows and *BSD adapter aren't continuously and automaticaly t
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
 
 Pull request or help is very welcome for these.
-
-## Changelog
-
-The Changelog is on now on the [Github releases](https://github.com/guard/listen/releases) section.
 
 ## Install
 
@@ -177,7 +173,7 @@ Here are some things you could try to avoid forcing polling.
 
 If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
 
-## Development [![Dependency Status](https://gemnasium.com/guard/listen.png?branch=master)](https://gemnasium.com/guard/listen)
+## Development
 
 * Documentation hosted at [RubyDoc](http://rubydoc.info/github/guard/listen/master/frames).
 * Source hosted at [GitHub](https://github.com/guard/listen).
@@ -188,7 +184,6 @@ Pull requests are very welcome! Please try to follow these simple rules if appli
 * Make sure your patches are well tested. All specs must pass on [Travis CI](https://travis-ci.org/guard/listen).
 * Update the [Yard](http://yardoc.org/) documentation.
 * Update the [README](https://github.com/guard/listen/blob/master/README.md).
-* Update the [CHANGELOG](https://github.com/guard/listen/blob/master/CHANGELOG.md) for noteworthy changes (don't forget to run `bundle exec pimpmychangelog` and watch the magic happen)!
 * Please **do not change** the version number.
 
 For questions please join us in our [Google group](http://groups.google.com/group/guard-dev) or on
@@ -209,7 +204,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 
 ## Contributors
 
-[https://github.com/guard/listen/contributors](https://github.com/guard/listen/contributors)
+[https://github.com/guard/listen/graphs/contributors](https://github.com/guard/listen/graphs/contributors)
 
 [Thibaud Guillaume-Gentil (thibaudgg)]: https://github.com/thibaudgg
 [Maher Sallam]: https://github.com/Maher4Ever
