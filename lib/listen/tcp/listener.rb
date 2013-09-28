@@ -16,7 +16,7 @@ module Listen
       #
       # @param (see Listen::Listener#new)
       #
-      def initialize target, mode, *args, &block
+      def initialize(target, mode, *args, &block)
         self.mode = mode
         self.target = target
 
@@ -68,7 +68,7 @@ module Listen
       #
       # @param [Symbol] mode (either :broadcaster or :recipient)
       #
-      def mode= mode
+      def mode=(mode)
         unless [:broadcaster, :recipient].include? mode
           raise ArgumentError, 'TCP::Listener requires mode to be either :broadcaster or :recipient'
         end
@@ -79,7 +79,7 @@ module Listen
       #
       # @param [String/Fixnum] target to listen on (hostname:port or port)
       #
-      def target= target
+      def target=(target)
         unless target
           raise ArgumentError, 'TCP::Listener requires target to be given'
         end

@@ -44,7 +44,7 @@ module Listen
       end
 
       # Buffers incoming data and dispatches messages accordingly
-      def handle_data data
+      def handle_data(data)
         @buffer << data
         while message = Listen::TCP::Message.from_buffer(@buffer)
           message.object.flatten.each do |path|

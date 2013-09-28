@@ -12,12 +12,12 @@ module Listen
       #
       # @param [Object] object to initialize message with
       #
-      def initialize object = nil
+      def initialize(object = nil)
         self.object = object if object
       end
 
       # Generates message size and payload for given object
-      def object= obj
+      def object=(obj)
         @object = obj
         @body = Marshal.dump(@object)
         @size = @body.bytesize
@@ -25,14 +25,14 @@ module Listen
       end
 
       # Extracts message size and loads object from given payload
-      def payload= payload
+      def payload=(payload)
         @payload = payload
         @size, @body = @payload.unpack(PAYLOAD_FORMAT)
         @object = Marshal.load(@body)
       end
 
       # Extracts a message from given buffer
-      def self.from_buffer buffer
+      def self.from_buffer(buffer)
         if buffer.bytesize > HEADER_SIZE
           size = buffer.unpack(HEADER_FORMAT).first
           payload_size = HEADER_SIZE + size
