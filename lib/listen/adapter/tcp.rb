@@ -43,12 +43,14 @@ module Listen
         end
       end
 
-      # Buffers incoming data and dispatches messages accordingly
+      # Buffers incoming data and handles messages accordingly
       def handle_data(data)
         @buffer << data
         while message = Listen::TCP::Message.from_buffer(@buffer)
-          message.object.flatten.each do |path|
-            _notify_change(path, type: 'file')
+          message.object.each do |change, paths|
+            paths.each do |path|
+              _notify_change(path, change: change)
+            end
           end
         end
       end

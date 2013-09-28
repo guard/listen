@@ -47,15 +47,20 @@ module Listen
         end
       end
 
-      # Hook to broadcast changes over TCP while honouring
-      # paused-state and invoking the original callback block
+      # Hook to broadcast changes over TCP
       def block
         if broadcaster?
-          Proc.new { |*args|
+          Proc.new { |modified, added, removed|
+
+            # Honour paused-state
             next if @paused
-            message = Message.new(args)
+
+            # Broadcast changes as a hash (see Listen::Adapter::TCP::handle_data)
+            message = Message.new(modified: modified, added: added, removed: removed)
             Celluloid::Actor[:listen_broadcaster].async.broadcast(message.payload)
-            @block.call(*args) if @block
+
+            # Invoke the original callback block
+            @block.call(modified, added, removed) if @block
           }
         else
           super
