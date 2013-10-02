@@ -22,7 +22,7 @@ describe Listen::Listener do
 
     it "sets block" do
       block = Proc.new { |modified, added, removed| }
-      listener = Listen::Listener.new('dir', &block)
+      listener = Listen::Listener.new('lib', &block)
       expect(listener.block).not_to be_nil
     end
 
@@ -42,7 +42,7 @@ describe Listen::Listener do
     end
 
     it "sets new options on initialize" do
-      listener = Listen::Listener.new('path', latency: 1.234)
+      listener = Listen::Listener.new('lib', latency: 1.234)
       expect(listener.options).to eq({
         debug: false,
         latency: 1.234,
