@@ -22,7 +22,7 @@ module Listen
     #
     def initialize(*args, &block)
       @options     = _init_options(args.last.is_a?(Hash) ? args.pop : {})
-      @directories = args.flatten.map { |path| Pathname.new(path) }
+      @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @changes     = []
       @block       = block
       _init_debug

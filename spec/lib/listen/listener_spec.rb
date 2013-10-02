@@ -25,6 +25,11 @@ describe Listen::Listener do
       listener = Listen::Listener.new('dir', &block)
       expect(listener.block).not_to be_nil
     end
+
+    it "sets directories with realpath" do
+      listener = Listen::Listener.new('lib', 'spec')
+      expect(listener.directories).to eq [Pathname.new("#{Dir.pwd}/lib"), Pathname.new("#{Dir.pwd}/spec")]
+    end
   end
 
   describe "options" do
