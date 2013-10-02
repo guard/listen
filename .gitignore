@@ -14,7 +14,7 @@ Gemfile.lock
 spec/.fixtures
 coverage
 .ruby-version
-example.rb
+example*
 test.txt
 
 ## MAC OS
