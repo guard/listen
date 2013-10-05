@@ -2,12 +2,6 @@
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
-## WARNING
-
-Master branch is `v2.0.0.pre.1` version, use the [v1.3 branch](https://github.com/guard/listen/tree/v1.3) for the stable release.
-
-*BSD and Windows adapter are still a work in progress, any help is very welcome. Thanks!
-
 ## Features
 
 * Supports watching multiple directories from a single listener.
