@@ -116,9 +116,8 @@ module Listen
     end
 
     def _init_actors
-      cores = Celluloid.cores || 2
       Celluloid::Actor[:listen_silencer]    = Silencer.new(options)
-      Celluloid::Actor[:listen_change_pool] = Change.pool(size: cores, args: self)
+      Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
       Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
       Celluloid::Actor[:listen_record]      = Record.new(self)
     end
