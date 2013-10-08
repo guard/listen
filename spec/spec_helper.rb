@@ -30,5 +30,5 @@ Celluloid.logger.level = Logger::ERROR
 
 require 'rspec/retry'
 RSpec.configure do |config|
-  config.default_retry_count = ENV['CI'] ? 3 : 1
+  config.default_retry_count = ci? ? 3 : 1
 end
