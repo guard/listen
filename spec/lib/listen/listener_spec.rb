@@ -74,7 +74,7 @@ describe Listen::Listener do
     end
 
     it "registers change_pool" do
-      expect(Listen::Change).to receive(:pool).with(size: 1, args: listener) { change_pool }
+      expect(Listen::Change).to receive(:pool).with(args: listener) { change_pool }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_change_pool, change_pool)
       listener.start
     end
