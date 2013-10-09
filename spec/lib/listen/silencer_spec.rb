@@ -9,26 +9,38 @@ describe Listen::Silencer do
 
     context "default ignore" do
       Listen::Silencer::DEFAULT_IGNORED_DIRECTORIES.each do |dir|
-        let(:path) { pwd.join(dir) }
+        describe do
+          let(:path) { pwd.join(dir) }
 
-        it "silences default ignored directory: #{dir}" do
-          expect(silencer.silenced?(path)).to be_true
-        end
+          it "silences default ignored directory: #{dir}" do
+            expect(silencer.silenced?(path)).to be_true
+          end
 
-        context "with a directory just containing the same name" do
-          let(:path) { pwd.join("#{dir}foo") }
+          context "with a directory beginning with the same name" do
+            let(:path) { pwd.join("#{dir}foo") }
 
-          it "doesn't silences default ignored directory: #{dir}foo" do
-            expect(silencer.silenced?(path)).to be_false
+            it "doesn't silences default ignored directory: #{dir}foo" do
+              expect(silencer.silenced?(path)).to be_false
+            end
+          end
+
+          context "with a directory ending with the same name" do
+            let(:path) { pwd.join("foo#{dir}") }
+
+            it "doesn't silences default ignored directory: foo#{dir}" do
+              expect(silencer.silenced?(path)).to be_false
+            end
           end
         end
       end
 
       Listen::Silencer::DEFAULT_IGNORED_EXTENSIONS.each do |extension|
-        let(:path) { pwd.join(extension) }
+        describe do
+          let(:path) { pwd.join(extension) }
 
-        it "silences default ignored extension: #{extension}" do
-          expect(silencer.silenced?(path)).to be_true
+          it "silences default ignored extension: #{extension}" do
+            expect(silencer.silenced?(path)).to be_true
+          end
         end
       end
     end
