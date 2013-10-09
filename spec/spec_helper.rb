@@ -23,12 +23,16 @@ RSpec.configure do |config|
   end
 end
 
-
-# Crash loud in tests!
-Thread.abort_on_exception = true
-Celluloid.logger.level = Logger::ERROR
-
 require 'rspec/retry'
 RSpec.configure do |config|
   config.default_retry_count = ci? ? 3 : 1
+end
+
+require 'celluloid/rspec'
+Thread.abort_on_exception = true
+Celluloid.logger.level = Logger::ERROR
+
+RSpec.configuration.before(:each) do
+  Celluloid.shutdown
+  Celluloid.boot
 end

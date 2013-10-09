@@ -1,8 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:listener) { double(Listen::Listener, options: {}) }
+  let(:listener) { double(Listen::Listener, options: {}, listen?: true) }
   let(:adapter) { described_class.new(listener) }
+  let(:change_pool) { double(Listen::Change, terminate: true) }
+  let(:change_pool_async) { double('ChangePoolAsync') }
+  before {
+    change_pool.stub(:async) { change_pool_async }
+    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+  }
 
   describe ".usable?" do
     it "returns always true" do
@@ -18,7 +24,7 @@ describe Listen::Adapter::Polling do
     }
 
     it "notifies change on every listener directories path" do
-      adapter.should_receive(:_notify_change).with('directory_path', type: 'Dir', recursive: true)
+      expect(change_pool_async).to receive(:change).with('directory_path', type: 'Dir', recursive: true)
       t = Thread.new { adapter.start }
       sleep 0.01
       t.kill
