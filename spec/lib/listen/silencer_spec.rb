@@ -14,6 +14,14 @@ describe Listen::Silencer do
         it "silences default ignored directory: #{dir}" do
           expect(silencer.silenced?(path)).to be_true
         end
+
+        context "with a directory just containing the same name" do
+          let(:path) { pwd.join("#{dir}foo") }
+
+          it "doesn't silences default ignored directory: #{dir}foo" do
+            expect(silencer.silenced?(path)).to be_false
+          end
+        end
       end
 
       Listen::Silencer::DEFAULT_IGNORED_EXTENSIONS.each do |extension|

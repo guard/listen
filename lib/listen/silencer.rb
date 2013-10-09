@@ -35,7 +35,7 @@ module Listen
 
     def _default_ignored_directories_patterns
       ignored_directories = DEFAULT_IGNORED_DIRECTORIES.map { |d| Regexp.escape(d) }
-      %r{(?:#{ignored_directories.join('|')})}
+      %r{(?:#{ignored_directories.join('|')})/}
     end
 
     def _default_ignored_extensions_patterns
