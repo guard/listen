@@ -139,7 +139,7 @@ module Listen
       _terminate_celluloid_actors
       exit
     rescue => ex
-      Kernel.warn "[Listen warning]: Change block raise an execption: #{$!}"
+      Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
     end
 

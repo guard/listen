@@ -13,7 +13,13 @@ describe "Listen" do
     @listener = setup_listener(options, callback)
     @listener.start
   }
-  after { listener.stop }
+  after {
+    begin
+      listener.stop
+    rescue SystemExit
+      # ignore the SystemExit error from the thread
+    end
+  }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }
@@ -23,7 +29,7 @@ describe "Listen" do
       let(:callback) { ->(x,y,z) { raise 'foo' } }
 
       it "warns the backtrace" do
-        expect(Kernel).to receive(:warn).with("[Listen warning]: Change block raise an execption: foo")
+        expect(Kernel).to receive(:warn).with("[Listen warning]: Change block raised an exception: foo")
         expect(Kernel).to receive(:warn).with(/^Backtrace:.*/)
         listen { touch 'file.rb' }
       end
