@@ -43,11 +43,8 @@ module Listen
     # Terminates all Listen actors and kill the adapter.
     #
     def stop
-      thread.kill
-      Celluloid::Actor.kill(Celluloid::Actor[:listen_adapter])
-      Celluloid::Actor[:listen_silencer].terminate
-      Celluloid::Actor[:listen_change_pool].terminate
-      Celluloid::Actor[:listen_record].terminate
+      @stopping = true
+      thread.join
     end
 
     # Pauses listening callback (adapter still running)
@@ -124,20 +121,25 @@ module Listen
 
     def _signals_trap
       if Signal.list.keys.include?('INT')
-        Signal.trap('INT') { exit }
+        Signal.trap('INT') { stop }
       end
     end
 
     def _wait_for_changes
       loop do
+        break if @stopping
+
         changes = _pop_changes
         unless changes.all? { |_,v| v.empty? }
           block.call(changes[:modified], changes[:added], changes[:removed])
         end
         sleep 0.1
       end
+
+      _terminate_celluloid_actors
+      exit
     rescue => ex
-      Kernel.warn "[Listen warning]: Change block raise an execption: #{$!}"
+      Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
     end
 
@@ -148,6 +150,13 @@ module Listen
         change.each { |k, v| changes[k] << v.to_s }
       end
       changes.each { |_, v| v.uniq! }
+    end
+
+    def _terminate_celluloid_actors
+      Celluloid::Actor.kill(Celluloid::Actor[:listen_adapter])
+      Celluloid::Actor[:listen_silencer].terminate
+      Celluloid::Actor[:listen_change_pool].terminate
+      Celluloid::Actor[:listen_record].terminate
     end
   end
 end

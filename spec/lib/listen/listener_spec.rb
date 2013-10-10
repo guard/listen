@@ -126,34 +126,11 @@ describe Listen::Listener do
   end
 
   describe "#stop" do
-    let(:thread) { double(kill: true) }
-    before {
-      Celluloid::Actor.stub(:kill)
-      listener.stub(:thread) { thread }
-    }
+    let(:thread) { double(join: true) }
+    before { listener.stub(:thread) { thread } }
 
-    it "kills thread" do
-      expect(thread).to receive(:kill)
-      listener.stop
-    end
-
-    it "terminates silencer" do
-      expect(silencer).to receive(:terminate)
-      listener.stop
-    end
-
-    it "kills adapter" do
-      expect(Celluloid::Actor).to receive(:kill).with(adapter)
-      listener.stop
-    end
-
-    it "terminates change_pool" do
-      expect(change_pool).to receive(:terminate)
-      listener.stop
-    end
-
-    it "terminates record" do
-      expect(record).to receive(:terminate)
+    it "joins thread" do
+      expect(thread).to receive(:join)
       listener.stop
     end
   end
