@@ -18,8 +18,9 @@ module Listen
           require 'wdm'
           true
         end
-      rescue Gem::LoadError
+      rescue LoadError
         Kernel.warn BUNDLER_DECLARE_GEM
+        false
       end
 
       def start
