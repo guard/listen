@@ -18,7 +18,7 @@ module Listen
     private
 
     def self._select(options)
-      return Polling if options[:force_polling] || not_mri?
+      return Polling if options[:force_polling]
       return _usable_adapter_class if _usable_adapter_class
 
       _warn_polling_fallback(options)
@@ -35,10 +35,6 @@ module Listen
 
       warning = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
       Kernel.warn "[Listen warning]:\n#{warning.gsub(/^(.*)/, '  \1')}"
-    end
-
-    def self.not_mri?
-      RUBY_ENGINE != 'ruby'
     end
   end
 end

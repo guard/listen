@@ -120,6 +120,7 @@ module Listen
     end
 
     def _signals_trap
+      return if defined?(JRUBY_VERSION)
       if Signal.list.keys.include?('INT')
         Signal.trap('INT') { stop }
       end
