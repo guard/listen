@@ -8,23 +8,23 @@ module Listen
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
 
-    attr_accessor :options, :patterns
+    attr_accessor :listener, :patterns
 
-    def initialize(options = {})
-      @options = options
+    def initialize(listener)
+      @listener = listener
       _init_patterns
     end
 
     def silenced?(path)
-      patterns.any? { |pattern| path.to_s =~ pattern }
+      patterns.any? { |pattern| _relative_path(path) =~ pattern }
     end
 
     private
 
     def _init_patterns
       @patterns = []
-      @patterns << _default_patterns unless options[:ignore!]
-      @patterns << options[:ignore] << options[:ignore!]
+      @patterns << _default_patterns unless listener.options[:ignore!]
+      @patterns << listener.options[:ignore] << listener.options[:ignore!]
       @patterns.compact!
       @patterns.flatten!
     end
@@ -35,12 +35,17 @@ module Listen
 
     def _default_ignored_directories_patterns
       ignored_directories = DEFAULT_IGNORED_DIRECTORIES.map { |d| Regexp.escape(d) }
-      %r{/(?:#{ignored_directories.join('|')})(/|$)}
+      %r{^(?:#{ignored_directories.join('|')})(/|$)}
     end
 
     def _default_ignored_extensions_patterns
       ignored_extensions = DEFAULT_IGNORED_EXTENSIONS.map { |e| Regexp.escape(e) }
       %r{(?:#{ignored_extensions.join('|')})$}
+    end
+
+    def _relative_path(path)
+      relative_paths = listener.directories.map { |dir| path.relative_path_from(dir).to_s }
+      relative_paths.detect { |path| !path.start_with?('../') }
     end
   end
 end

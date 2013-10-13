@@ -70,6 +70,8 @@ listener.ignore /\.rb/    # ignore rb extension in addition of pkg.
 sleep
 ```
 
+  Note: Ignoring regexp patterns are evaluated against relative paths.
+
 ## Changes callback
 
 Changes to the listened-to directories gets reported back to the user in a callback.

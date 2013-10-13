@@ -1,10 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Silencer do
-  let(:silencer) { Listen::Silencer.new(options) }
+  let(:options) { {} }
+  let(:listener) { double(Listen::Listener,
+    directories: [Pathname.new(Dir.pwd), Pathname.new("/Users/Shared/")],
+    options: options
+  ) }
+  let(:silencer) { Listen::Silencer.new(listener) }
 
   describe "#silenced?" do
-    let(:options) { {} }
     let(:pwd) { Pathname.new(Dir.pwd) }
 
     context "default ignore" do
@@ -46,7 +50,7 @@ describe Listen::Silencer do
     end
 
     context "with ignore options" do
-      let(:options) { { ignore: [%r{foo/bar}, /\.pid$/] } }
+      let(:options) { { ignore: [%r{^foo/bar}, /\.pid$/] } }
 
       it "silences custom ignored directory" do
         path = pwd.join('foo', 'bar')

@@ -68,7 +68,7 @@ describe Listen::Listener do
     end
 
     it "registers silencer" do
-      expect(Listen::Silencer).to receive(:new).with(listener.options) { silencer }
+      expect(Listen::Silencer).to receive(:new).with(listener) { silencer }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, silencer)
       listener.start
     end
@@ -190,7 +190,7 @@ describe Listen::Listener do
     before { Celluloid::Actor.stub(:[]=) }
 
     it "resets silencer actor with new pattern" do
-      expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [nil, /foo/])) { new_silencer }
+      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
       listener.ignore(/foo/)
     end
@@ -199,8 +199,9 @@ describe Listen::Listener do
       let(:options) { { ignore: /bar/ } }
 
       it "adds up to existing ignore options" do
-        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [/bar/, /foo/]))
+        expect(Listen::Silencer).to receive(:new).with(listener)
         listener.ignore(/foo/)
+        expect(listener.options).to include(ignore: [/bar/, /foo/])
       end
     end
 
@@ -208,8 +209,9 @@ describe Listen::Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it "adds up to existing ignore options" do
-        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore: [[/bar/], /foo/]))
+        expect(Listen::Silencer).to receive(:new).with(listener)
         listener.ignore(/foo/)
+        expect(listener.options).to include(ignore: [[/bar/], /foo/])
       end
     end
   end
@@ -219,17 +221,19 @@ describe Listen::Listener do
     before { Celluloid::Actor.stub(:[]=) }
 
     it "resets silencer actor with new pattern" do
-      expect(Listen::Silencer).to receive(:new).with(hash_including(ignore!: /foo/)) { new_silencer }
+      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
       listener.ignore!(/foo/)
+      expect(listener.options).to include(ignore!: /foo/)
     end
 
     context "with existing ignore! options" do
       let(:options) { { ignore!: /bar/ } }
 
       it "overwrites existing ignore options" do
-        expect(Listen::Silencer).to receive(:new).with(hash_including(ignore!: [/foo/]))
+        expect(Listen::Silencer).to receive(:new).with(listener)
         listener.ignore!([/foo/])
+        expect(listener.options).to include(ignore!: [/foo/])
       end
     end
 
@@ -237,8 +241,9 @@ describe Listen::Listener do
       let(:options) { { ignore: /bar/ } }
 
       it "deletes ignore options" do
-        expect(Listen::Silencer).to receive(:new).with(hash_not_including(ignore: /bar/))
+        expect(Listen::Silencer).to receive(:new).with(listener)
         listener.ignore!([/foo/])
+        expect(listener.options).to_not include(ignore: /bar/)
       end
     end
   end

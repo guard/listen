@@ -81,8 +81,8 @@ module Listen
     # @param [Regexp, Hash<Regexp>] new ignoring patterns.
     #
     def ignore(regexps)
-      options[:ignore] = [options[:ignore], regexps]
-      Celluloid::Actor[:listen_silencer] = Silencer.new(options)
+      @options[:ignore] = [options[:ignore], regexps]
+      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
     end
 
     # Overwrites ignore patterns (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
@@ -90,9 +90,9 @@ module Listen
     # @param [Regexp, Hash<Regexp>] new ignoring patterns.
     #
     def ignore!(regexps)
-      options.delete(:ignore)
-      options[:ignore!] = regexps
-      Celluloid::Actor[:listen_silencer] = Silencer.new(options)
+      @options.delete(:ignore)
+      @options[:ignore!] = regexps
+      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
     end
 
     private
@@ -113,7 +113,7 @@ module Listen
     end
 
     def _init_actors
-      Celluloid::Actor[:listen_silencer]    = Silencer.new(options)
+      Celluloid::Actor[:listen_silencer]    = Silencer.new(self)
       Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
       Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
       Celluloid::Actor[:listen_record]      = Record.new(self)
