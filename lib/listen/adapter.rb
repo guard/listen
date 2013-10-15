@@ -34,7 +34,7 @@ module Listen
       return if options[:polling_fallback_message] == false
 
       warning = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
-      Kernel.warn "[Listen warning]:\n#{warning.gsub(/^(.*)/, '  \1')}"
+      Kernel.warn "[Listen warning]:\n  #{warning}"
     end
   end
 end

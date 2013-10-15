@@ -137,7 +137,7 @@ module Listen
         sleep 0.1
       end
 
-      _terminate_celluloid_actors
+      _terminate_actors
       exit
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
@@ -153,7 +153,7 @@ module Listen
       changes.each { |_, v| v.uniq! }
     end
 
-    def _terminate_celluloid_actors
+    def _terminate_actors
       Celluloid::Actor.kill(Celluloid::Actor[:listen_adapter])
       Celluloid::Actor[:listen_silencer].terminate
       Celluloid::Actor[:listen_change_pool].terminate
