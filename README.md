@@ -11,9 +11,11 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * File content checksum comparison for modifications made under the same second (OS X only).
-* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen), JRuby and Rubinius should work with polling.
+* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
-Please note that Windows and *BSD adapter aren't continuously and automaticaly tested.
+Please note that:
+- Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
+- Windows and *BSD adapter aren't continuously and automaticaly tested.
 
 ## Pending features
 
