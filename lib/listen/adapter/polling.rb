@@ -14,7 +14,7 @@ module Listen
       end
 
       def start
-        _poll_directories
+        Thread.new { _poll_directories }
       end
 
       private

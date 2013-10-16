@@ -32,7 +32,7 @@ module Listen
 
       def start
         worker = _init_worker
-        worker.poll
+        Thread.new { worker.poll }
       end
 
       private

@@ -25,7 +25,7 @@ module Listen
 
       def start
         worker = _init_worker
-        worker.run!
+        Thread.new { worker.run! }
       end
 
       private

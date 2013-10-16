@@ -154,7 +154,7 @@ module Listen
     end
 
     def _terminate_actors
-      Celluloid::Actor.kill(Celluloid::Actor[:listen_adapter])
+      Celluloid::Actor[:listen_adapter].terminate
       Celluloid::Actor[:listen_silencer].terminate
       Celluloid::Actor[:listen_change_pool].terminate
       Celluloid::Actor[:listen_record].terminate

@@ -31,7 +31,7 @@ module Listen
 
       def start
         worker = _init_worker
-        worker.run
+        Thread.new { worker.run }
       rescue Errno::ENOSPC
         abort(INOTIFY_LIMIT_MESSAGE)
       end
