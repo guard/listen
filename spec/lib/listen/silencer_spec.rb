@@ -77,6 +77,39 @@ describe Listen::Silencer do
       end
     end
 
+    context "with only options (regexp)" do
+      let(:options) { { only: %r{foo} } }
+
+      it "doesn't silence good directory" do
+        path = pwd.join('foo')
+        expect(silencer.silenced?(path)).to be_false
+      end
+
+      it "silences other directory" do
+        path = pwd.join('bar')
+        expect(silencer.silenced?(path)).to be_true
+      end
+    end
+
+    context "with only options (array)" do
+      let(:options) { { only: [%r{foo}, %r{.txt$}] } }
+
+      it "doesn't silence good directory" do
+        path = pwd.join('foo')
+        expect(silencer.silenced?(path)).to be_false
+      end
+
+      it "doesn't silence good file" do
+        path = pwd.join('foo/bar.txt')
+        expect(silencer.silenced?(path)).to be_false
+      end
+
+      it "silences other directory" do
+        path = pwd.join('bar.txt')
+        expect(silencer.silenced?(path)).to be_true
+      end
+    end
+
     it "doesn't silence normal path" do
       path = pwd.join('some_dir', 'some_file.rb')
       expect(silencer.silenced?(path)).to be_false

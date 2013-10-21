@@ -180,6 +180,17 @@ describe "Listen" do
           end
         end
 
+        context "with only option" do
+          let(:options) { { force_polling: polling, only: /\.rb$/ } }
+
+          it "listens only to file touch matching with only patterns" do
+            expect(listen {
+              touch 'file.rb'
+              touch 'file.txt'
+            }).to eq({ modified: [], added: ['file.rb'], removed: [] })
+          end
+        end
+
         describe "#ignore" do
           around { |example| touch 'file.rb'; example.run }
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /\.rb$/ } }

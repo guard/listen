@@ -189,7 +189,7 @@ describe Listen::Listener do
     let(:new_silencer) { double(Listen::Silencer) }
     before { Celluloid::Actor.stub(:[]=) }
 
-    it "resets silencer actor with new pattern" do
+    it "resets silencer actor" do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
       listener.ignore(/foo/)
@@ -220,7 +220,7 @@ describe Listen::Listener do
     let(:new_silencer) { double(Listen::Silencer) }
     before { Celluloid::Actor.stub(:[]=) }
 
-    it "resets silencer actor with new pattern" do
+    it "resets silencer actor" do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
       expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
       listener.ignore!(/foo/)
@@ -244,6 +244,27 @@ describe Listen::Listener do
         expect(Listen::Silencer).to receive(:new).with(listener)
         listener.ignore!([/foo/])
         expect(listener.options).to_not include(ignore: /bar/)
+      end
+    end
+  end
+
+  describe "#only" do
+    let(:new_silencer) { double(Listen::Silencer) }
+    before { Celluloid::Actor.stub(:[]=) }
+
+    it "resets silencer actor" do
+      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
+      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      listener.only(/foo/)
+    end
+
+    context "with existing only options" do
+      let(:options) { { only: /bar/ } }
+
+      it "overwrites existing ignore options" do
+        expect(Listen::Silencer).to receive(:new).with(listener)
+        listener.only([/foo/])
+        expect(listener.options).to include(only: [/foo/])
       end
     end
   end
