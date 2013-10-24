@@ -6,7 +6,7 @@ module Listen
     DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby]
 
     # The default list of files that get ignored.
-    DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store]
+    DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store .tmp]
 
     attr_accessor :listener, :patterns
 
