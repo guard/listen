@@ -37,15 +37,17 @@ describe Listen::Listener do
       expect(listener.options).to eq({
         debug: false,
         latency: nil,
+        wait_for_delay: 0.1,
         force_polling: false,
         polling_fallback_message: nil })
     end
 
     it "sets new options on initialize" do
-      listener = Listen::Listener.new('lib', latency: 1.234)
+      listener = Listen::Listener.new('lib', latency: 1.234, wait_for_delay: 0.85)
       expect(listener.options).to eq({
         debug: false,
         latency: 1.234,
+        wait_for_delay: 0.85,
         force_polling: false,
         polling_fallback_message: nil })
     end

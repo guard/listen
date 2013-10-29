@@ -100,6 +100,7 @@ module Listen
     def _init_options(options = {})
       { debug: false,
         latency: nil,
+        wait_for_delay: 0.1,
         force_polling: false,
         polling_fallback_message: nil }.merge(options)
     end
@@ -134,7 +135,7 @@ module Listen
         unless changes.all? { |_,v| v.empty? }
           block.call(changes[:modified], changes[:added], changes[:removed])
         end
-        sleep 0.1
+        sleep options[:wait_for_delay]
       end
 
       _terminate_actors
