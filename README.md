@@ -116,6 +116,9 @@ ignore!: %r{/foo/bar}                           # Same as ignore options, but ov
 latency: 0.5                                    # Set the delay (**in seconds**) between checking for changes
                                                 # default: 0.25 sec (1.0 sec for polling)
 
+wait_for_delay: 4                               # Set the delay (**in seconds**) between calls to the callback when changes exist
+                                                # default: 0.10 sec
+
 force_polling: true                             # Force the use of the polling adapter
                                                 # default: none
 
