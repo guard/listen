@@ -7,7 +7,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 ## Features
 
 * Supports watching multiple directories from a single listener.
-* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, *BSD and Windows, [more info](#listen-adapters) bellow.
+* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, *BSD and Windows, [more info](#listen-adapters) below.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * File content checksum comparison for modifications made under the same second (OS X only).
@@ -48,7 +48,7 @@ sleep
 
 ### Pause / unpause / stop
 
-Listener can also be easily paused/unpaused:
+Listeners can also be easily paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen') { |modified, added, removed| # ... }
@@ -62,7 +62,7 @@ listener.stop    # stop completely the listener
 
 ### Ignore / ignore!
 
-Liste ignore some folder and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
+Listen ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen', ignore: /\.txt/) { |modified, added, removed| # ... }
@@ -138,15 +138,15 @@ These adapters are fast as they use some system-calls to implement the notifying
 There is also a polling adapter which is a cross-platform adapter and it will
 work on any system. This adapter is slower than the rest of the adapters.
 
-Darwin and Linux adapter are dependencies of the Listen gem so they work out of the box. For other adapters a specific gem need to be added to your Gemfile, please read bellow.
+The Darwin and Linux adapters are dependencies of the Listen gem so they work out of the box. For other adapters a specific gem will have to be added to your Gemfile, please read below.
 
-The Listen gem choose the good adapter (if present) automatically. If you
-want to force the use of the polling adapter use the `:force_polling` option
+The Listen gem will choose the best adapter automatically, if present. If you
+want to force the use of the polling adapter, use the `:force_polling` option
 while initializing the listener.
 
 ### On Windows
 
-If your are on Windows you can try to use the [`wdm`](https://github.com/Maher4Ever/wdm) instead of polling.
+If your are on Windows, you can try to use the [`wdm`](https://github.com/Maher4Ever/wdm) instead of polling.
 Please add the following to your Gemfile:
 
 ```ruby
@@ -166,11 +166,11 @@ gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
 
 ### Issues
 
-Sometimes OS-specific adapter doesn't work, :'(
+Sometimes OS-specific adapters don't work. :'(
 Here are some things you could try to avoid forcing polling.
 
-* [Update your Dropbox client](http://www.dropbox.com/downloading) (if used).
-* Move or rename the listened folder.
+* [Update your Dropbox client](http://www.dropbox.com/downloading), if you have Dropbox installed.
+* Move or rename the listened directory.
 * Update/reboot your OS.
 * Increase latency.
 
