@@ -62,7 +62,7 @@ listener.stop    # stop completely the listener
 
 ### Ignore / ignore!
 
-Listen ignores some folder and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
+Listen ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen', ignore: /\.txt/) { |modified, added, removed| # ... }
@@ -170,7 +170,7 @@ Sometimes OS-specific adapters don't work. :'(
 Here are some things you could try to avoid forcing polling.
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading), if you have Dropbox installed.
-* Move or rename the listened folder.
+* Move or rename the listened directory.
 * Update/reboot your OS.
 * Increase latency.
 
