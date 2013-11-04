@@ -19,7 +19,7 @@ module Listen
     def silenced?(path)
       if only_patterns
         p path
-        !only_patterns.all? { |pattern| _relative_path(path) =~ pattern }
+        !only_patterns.any? { |pattern| _relative_path(path) =~ pattern }
       else
         ignore_patterns.any? { |pattern| _relative_path(path) =~ pattern }
       end
