@@ -158,6 +158,17 @@ describe "Listen" do
           end
         end
 
+        context "default ignored dir with file in listen dir" do
+          around { |example| mkdir_p '.bundle'; touch '.bundle/file.rb'; example.run }
+          let(:options) { { force_polling: polling, latency: 0.1 } }
+
+          it "doesn't listen to file touch" do
+            expect(listen {
+              touch '.bundle/file.rb'
+            }).to eq({ modified: [], added: [], removed: [] })
+          end
+        end
+
         context "ignored dir with file in listen dir" do
           around { |example| mkdir_p 'ignored_dir'; touch 'ignored_dir/file.rb'; example.run }
           let(:options) { { force_polling: polling, latency: 0.1, ignore: /ignored_dir/ } }
@@ -181,11 +192,23 @@ describe "Listen" do
         end
 
         context "with only option" do
-          let(:options) { { force_polling: polling, only: /\.rb$/ } }
+          let(:options) { { force_polling: polling, latency: 0.1, only: /\.rb$/ } }
 
           it "listens only to file touch matching with only patterns" do
             expect(listen {
               touch 'file.rb'
+              touch 'file.txt'
+            }).to eq({ modified: [], added: ['file.rb'], removed: [] })
+          end
+        end
+
+        context "with ignore and only option" do
+          let(:options) { { force_polling: polling, latency: 0.1, ignore: /bar\.rb$/, only: /\.rb$/ } }
+
+          it "listens only to file touch matching with only patterns" do
+            expect(listen {
+              touch 'file.rb'
+              touch 'bar.rb'
               touch 'file.txt'
             }).to eq({ modified: [], added: ['file.rb'], removed: [] })
           end

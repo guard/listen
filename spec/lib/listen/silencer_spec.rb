@@ -49,26 +49,28 @@ describe Listen::Silencer do
       end
     end
 
-    context "with ignore options" do
+    context 'with ignore options (regexp)' do
+      let(:options) { { ignore: /\.pid$/ } }
+
+      it "silences path matching custom ignore regex" do
+        expect(silencer.silenced?(pwd.join('foo.pid'))).to be_true
+      end
+    end
+
+    context 'with ignore options (array)' do
       let(:options) { { ignore: [%r{^foo/bar}, /\.pid$/] } }
 
-      it "silences custom ignored directory" do
-        path = pwd.join('foo', 'bar')
-        expect(silencer.silenced?(path)).to be_true
-      end
-
-      it "silences custom ignored extension" do
-        path = pwd.join('foo.pid')
-        expect(silencer.silenced?(path)).to be_true
+      it "silences paths matching custom ignore regexes" do
+        expect(silencer.silenced?(pwd.join('foo/bar/baz'))).to be_true
+        expect(silencer.silenced?(pwd.join('foo.pid'))).to be_true
       end
     end
 
     context "with ignore! options" do
-      let(:options) { { ignore!: %r{foo/bar} } }
+      let(:options) { { ignore!: /\.pid$/ } }
 
       it "silences custom ignored directory" do
-        path = pwd.join('foo', 'bar')
-        expect(silencer.silenced?(path)).to be_true
+        expect(silencer.silenced?(pwd.join('foo.pid'))).to be_true
       end
 
       it "doesn't silence default ignored directory" do
@@ -80,38 +82,67 @@ describe Listen::Silencer do
     context "with only options (regexp)" do
       let(:options) { { only: %r{foo} } }
 
-      it "doesn't silence good directory" do
-        path = pwd.join('foo')
+      it "do not take only regex in account if type is Unknown" do
+        path = pwd.join('baz')
         expect(silencer.silenced?(path)).to be_false
+      end
+
+      it "do not silence path matches only regex if type is File" do
+        path = pwd.join('foo')
+        expect(silencer.silenced?(path, 'File')).to be_false
       end
 
       it "silences other directory" do
         path = pwd.join('bar')
-        expect(silencer.silenced?(path)).to be_true
+        expect(silencer.silenced?(path, 'File')).to be_true
       end
     end
 
     context "with only options (array)" do
       let(:options) { { only: [%r{^foo/}, %r{\.txt$}] } }
 
+      it "do not take only regex in account if type is Unknown" do
+        expect(silencer.silenced?(pwd.join('baz'))).to be_false
+      end
+
       it "doesn't silence good directory" do
-        path = pwd.join('foo/bar.rb')
-        expect(silencer.silenced?(path)).to be_false
+        expect(silencer.silenced?(pwd.join('foo/bar.rb'), 'File')).to be_false
       end
 
       it "doesn't silence good file" do
-        path = pwd.join('bar.txt')
-        expect(silencer.silenced?(path)).to be_false
+        expect(silencer.silenced?(pwd.join('bar.txt'), 'File')).to be_false
       end
 
       it "silences other directory" do
-        path = pwd.join('bar/baz.rb')
-        expect(silencer.silenced?(path)).to be_true
+        expect(silencer.silenced?(pwd.join('bar/baz.rb'), 'File')).to be_true
       end
 
       it "silences other file" do
-        path = pwd.join('bar.rb')
-        expect(silencer.silenced?(path)).to be_true
+        expect(silencer.silenced?(pwd.join('bar.rb'), 'File')).to be_true
+      end
+    end
+
+    context 'with ignore and only options' do
+      let(:options) { { only: /\.pid$/, ignore: %r{^bar} } }
+
+      it "do not take only regex in account if type is Unknown" do
+        expect(silencer.silenced?(pwd.join('baz'))).to be_false
+      end
+
+      it "do not take only regex in account if type is Unknown but silences if ignore regex matches path" do
+        expect(silencer.silenced?(pwd.join('bar'))).to be_true
+      end
+
+      it 'silences path not matching custom only regex' do
+        expect(silencer.silenced?(pwd.join('foo.rb'), 'File')).to be_true
+      end
+
+      it 'silences path matching custom ignore regex' do
+        expect(silencer.silenced?(pwd.join('bar.pid', 'File'))).to be_true
+      end
+
+      it 'do not silence path matching custom only regex and not matching custom ignore regex' do
+        expect(silencer.silenced?(pwd.join('foo.pid', 'File'))).to be_false
       end
     end
 
