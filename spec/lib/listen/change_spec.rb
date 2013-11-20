@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe Listen::Change do
   let(:change) { Listen::Change.new(listener) }
-  let(:listener) { double(Listen::Listener, options: {}) }
+  let(:listener) { double('Listen::Listener', options: {}) }
   let(:listener_changes) { double("listener_changes") }
   before {
     listener.stub(:changes) { listener_changes }
   }
 
   describe "#change" do
-    let(:silencer) { double(Listen::Silencer, silenced?: false) }
+    let(:silencer) { double('Listen::Silencer', silenced?: false) }
     before { Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer } }
 
     context "file path" do
@@ -20,14 +20,16 @@ describe Listen::Change do
         end
 
         it "doesn't notify to listener if path is silenced" do
-          expect(silencer).to receive(:silenced?).with('file_path') { true }
+          # expect(silencer).to receive(:silenced?).with('file_path', 'File').and_return(true)
+          expect(silencer).to receive(:silenced?).and_return(true)
           expect(listener_changes).to_not receive(:<<)
+
           change.change('file_path', type: 'File', change: :modified)
         end
       end
 
       context "with unknown change" do
-        let(:file) { double(Listen::File) }
+        let(:file) { double('Listen::File') }
         before { Listen::File.stub(:new) { file } }
 
         it "calls Listen::File#change" do
@@ -37,8 +39,9 @@ describe Listen::Change do
         end
 
         it "doesn't call Listen::File#change if path is silenced" do
-          expect(silencer).to receive(:silenced?).with('file_path') { true }
+          expect(silencer).to receive(:silenced?).with('file_path', 'File').and_return(true)
           expect(Listen::File).to_not receive(:new)
+
           change.change('file_path', type: 'File')
         end
 
