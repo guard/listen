@@ -17,6 +17,8 @@ module Listen
     end
 
     def silenced?(path, type = 'Unknown')
+      print "silenced? #{type} \t #{path}\n"
+
       silenced = false
 
       if only_patterns && type == 'File'
