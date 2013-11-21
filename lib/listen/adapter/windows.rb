@@ -43,7 +43,7 @@ module Listen
 
       def _worker_callback
         lambda do |change|
-            _notify_change(_path(change.path), type: 'file', change: _change(change.type))
+            _notify_change(_path(change.path), type: 'File', change: _change(change.type))
         end
       end
 
