@@ -67,12 +67,25 @@ Listen ignores some directories and extensions by default (See DEFAULT_IGNORED_D
 ``` ruby
 listener = Listen.to('dir/path/to/listen', ignore: /\.txt/) { |modified, added, removed| # ... }
 listener.start
-listener.ignore! /\.pkg/  # overwrite all patterns and only ignore pkg extension.
-listener.ignore /\.rb/    # ignore rb extension in addition of pkg.
+listener.ignore! /\.pkg/ # overwrite all patterns and only ignore pkg extension.
+listener.ignore /\.rb/   # ignore rb extension in addition of pkg.
 sleep
 ```
 
   Note: Ignoring regexp patterns are evaluated against relative paths.
+
+### Only
+
+Listen catches all files (less the ignored once) by default, if you want to only listen to a specific type of file (ie: just rb extension) you should use the `only` option/method.
+
+``` ruby
+listener = Listen.to('dir/path/to/listen', only: /\.rb$/) { |modified, added, removed| # ... }
+listener.start
+listener.only /_spec\.rb$/ # overwrite all existing only patterns.
+sleep
+```
+
+  Note: Only regexp patterns are evaluated only against relative **file** paths.
 
 ## Changes callback
 
@@ -112,6 +125,9 @@ ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
                                                 # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
 
 ignore!: %r{/foo/bar}                           # Same as ignore options, but overwrite default ignored paths.
+
+only: %r{.rb$}                                  # Only listen to specific files
+                                                # default: none
 
 latency: 0.5                                    # Set the delay (**in seconds**) between checking for changes
                                                 # default: 0.25 sec (1.0 sec for polling)
