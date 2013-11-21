@@ -78,7 +78,7 @@ module Listen
 
     # Adds ignore patterns to the existing one (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
     #
-    # @param [Regexp, Hash<Regexp>] new ignoring patterns.
+    # @param [Regexp, Array<Regexp>] new ignoring patterns.
     #
     def ignore(regexps)
       @options[:ignore] = [options[:ignore], regexps]
@@ -87,11 +87,20 @@ module Listen
 
     # Overwrites ignore patterns (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
     #
-    # @param [Regexp, Hash<Regexp>] new ignoring patterns.
+    # @param [Regexp, Array<Regexp>] new ignoring patterns.
     #
     def ignore!(regexps)
       @options.delete(:ignore)
       @options[:ignore!] = regexps
+      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
+    end
+
+    # Sets only patterns, to listen only to specific regexps
+    #
+    # @param [Regexp, Array<Regexp>] new ignoring patterns.
+    #
+    def only(regexps)
+      @options[:only] = regexps
       Celluloid::Actor[:listen_silencer] = Silencer.new(self)
     end
 

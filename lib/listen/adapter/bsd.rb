@@ -52,7 +52,7 @@ module Listen
 
       def _worker_callback
         lambda do |event|
-           _notify_change(_event_path(event), type: 'file', change: _change(event.flags))
+           _notify_change(_event_path(event), type: 'File', change: _change(event.flags))
 
             # If it is a directory, and it has a write flag, it means a
             # file has been added so find out which and deal with it.

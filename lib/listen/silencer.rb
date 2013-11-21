@@ -8,28 +8,41 @@ module Listen
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store .tmp]
 
-    attr_accessor :listener, :patterns
+    attr_accessor :listener, :only_patterns, :ignore_patterns
 
     def initialize(listener)
       @listener = listener
-      _init_patterns
+      _init_only_patterns
+      _init_ignore_patterns
     end
 
-    def silenced?(path)
-      patterns.any? { |pattern| _relative_path(path) =~ pattern }
+    def silenced?(path, type = 'Unknown')
+      silenced = false
+
+      if only_patterns && type == 'File'
+        silenced = !only_patterns.any? { |pattern| _relative_path(path) =~ pattern }
+      end
+
+      silenced ||= ignore_patterns.any? { |pattern| _relative_path(path) =~ pattern }
     end
 
     private
 
-    def _init_patterns
-      @patterns = []
-      @patterns << _default_patterns unless listener.options[:ignore!]
-      @patterns << listener.options[:ignore] << listener.options[:ignore!]
-      @patterns.compact!
-      @patterns.flatten!
+    def _init_only_patterns
+      if listener.options[:only]
+        @only_patterns = Array(listener.options[:only])
+      end
     end
 
-    def _default_patterns
+    def _init_ignore_patterns
+      @ignore_patterns = []
+      @ignore_patterns << _default_ignore_patterns unless listener.options[:ignore!]
+      @ignore_patterns << listener.options[:ignore] << listener.options[:ignore!]
+      @ignore_patterns.compact!
+      @ignore_patterns.flatten!
+    end
+
+    def _default_ignore_patterns
       [_default_ignored_directories_patterns, _default_ignored_extensions_patterns]
     end
 

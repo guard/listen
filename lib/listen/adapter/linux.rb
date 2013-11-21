@@ -56,7 +56,7 @@ module Listen
           if _dir_event?(event)
             _notify_change(_event_path(event), type: 'Dir')
           else
-            _notify_change(_event_path(event), type: 'file', change: _change(event.flags))
+            _notify_change(_event_path(event), type: 'File', change: _change(event.flags))
           end
         end
       end

@@ -12,7 +12,8 @@ module Listen
     end
 
     def change(path, options)
-      return if _silencer.silenced?(path)
+      return if _silencer.silenced?(path, options[:type])
+
       if change = options[:change]
         _notify_listener(change, path)
       else

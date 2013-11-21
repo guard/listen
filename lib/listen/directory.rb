@@ -11,7 +11,8 @@ module Listen
       _update_record
       _all_entries.each do |entry_path, data|
         case data[:type]
-        when 'File' then _async_change(entry_path, options.merge(type: 'File'))
+        when 'File'
+          _async_change(entry_path, options.merge(type: 'File'))
         when 'Dir'
           _async_change(entry_path, options.merge(type: 'Dir')) if _recursive_scan?(entry_path)
         end
@@ -34,6 +35,7 @@ module Listen
 
     def _entries
       return {} unless ::Dir.exists?(path)
+
       entries = ::Dir.entries(path) - %w[. ..]
       entries = entries.map { |entry| [entry, type: _entry_type(entry)] }
       Hash[*entries.flatten]
