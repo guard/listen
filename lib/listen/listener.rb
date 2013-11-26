@@ -130,6 +130,8 @@ module Listen
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
       adapter_class = Adapter.select(options)
+      p adapter_class
+      p registry[:change_pool]
       supervisor.add(adapter_class, as: :adapter, args: self)
     end
 
