@@ -1,13 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:listener) { double(Listen::Listener, options: {}, listen?: true) }
+  let(:registry) { double(Celluloid::Registry) }
+  let(:listener) { double(Listen::Listener, registry: registry, options: {}, listen?: true) }
   let(:adapter) { described_class.new(listener) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before {
     change_pool.stub(:async) { change_pool_async }
-    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+    registry.stub(:[]).with(:change_pool) { change_pool }
   }
 
   describe ".usable?" do

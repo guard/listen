@@ -1,8 +1,9 @@
 module Listen
   class Directory
-    attr_accessor :path, :options
+    attr_accessor :listener, :path, :options
 
-    def initialize(path, options = {})
+    def initialize(listener, path, options = {})
+      @listener    = listener
       @path    = path
       @options = options
     end
@@ -56,11 +57,11 @@ module Listen
     end
 
     def _record
-      Celluloid::Actor[:listen_record]
+      listener.registry[:record]
     end
 
     def _change_pool
-      Celluloid::Actor[:listen_change_pool]
+      listener.registry[:change_pool]
     end
 
     def _recursive_scan?(path)

@@ -1,8 +1,9 @@
 module Listen
   class File
-    attr_accessor :path, :data
+    attr_accessor :listener, :path, :data
 
-    def initialize(path)
+    def initialize(listener, path)
+      @listener = listener
       @path = path
       @data = { type: 'File' }
     end
@@ -78,7 +79,7 @@ module Listen
     end
 
     def _record
-      Celluloid::Actor[:listen_record]
+      listener.registry[:record]
     end
 
     def _mtime

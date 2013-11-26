@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe Listen::Change do
   let(:change) { Listen::Change.new(listener) }
-  let(:listener) { double('Listen::Listener', options: {}) }
+  let(:registry) { double(Celluloid::Registry) }
+  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
   let(:listener_changes) { double("listener_changes") }
   before {
     listener.stub(:changes) { listener_changes }
@@ -10,7 +11,7 @@ describe Listen::Change do
 
   describe "#change" do
     let(:silencer) { double('Listen::Silencer', silenced?: false) }
-    before { Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer } }
+    before { registry.stub(:[]).with(:silencer) { silencer } }
 
     context "file path" do
       context "with known change" do
@@ -33,7 +34,7 @@ describe Listen::Change do
         before { Listen::File.stub(:new) { file } }
 
         it "calls Listen::File#change" do
-          expect(Listen::File).to receive(:new).with('file_path') { file }
+          expect(Listen::File).to receive(:new).with(listener, 'file_path') { file }
           expect(file).to receive(:change)
           change.change('file_path', type: 'File')
         end
@@ -91,7 +92,7 @@ describe Listen::Change do
       before { Listen::Directory.stub(:new) { dir } }
 
       it "calls Listen::Directory#scan" do
-        expect(Listen::Directory).to receive(:new).with('dir_path', dir_options) { dir }
+        expect(Listen::Directory).to receive(:new).with(listener, 'dir_path', dir_options) { dir }
         expect(dir).to receive(:scan)
         change.change('dir_path', dir_options)
       end

@@ -1,7 +1,8 @@
 require 'spec_helper'
 
 describe Listen::Record do
-  let(:listener) { double(Listen::Listener, options: {}) }
+  let(:registry) { double(Celluloid::Registry) }
+  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
   let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
   let(:data) { { type: 'File' } }
@@ -74,7 +75,7 @@ describe Listen::Record do
     let(:change_pool) { double(Listen::Change, terminate: true) }
     before {
       change_pool.stub(:change)
-      Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+      registry.stub(:[]).with(:change_pool) { change_pool }
       listener.stub(:directories) { directories }
     }
 

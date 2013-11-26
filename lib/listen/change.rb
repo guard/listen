@@ -24,14 +24,14 @@ module Listen
     private
 
     def _file_change(path, options)
-      change = File.new(path).change
+      change = File.new(listener, path).change
       if change && listener.listen? && !options[:silence]
         _notify_listener(change, path)
       end
     end
 
     def _dir_change(path, options)
-      Directory.new(path, options).scan
+      Directory.new(listener, path, options).scan
     end
 
     def _notify_listener(change, path)
@@ -39,7 +39,7 @@ module Listen
     end
 
     def _silencer
-      Celluloid::Actor[:listen_silencer]
+      listener.registry[:silencer]
     end
 
   end

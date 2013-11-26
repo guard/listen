@@ -13,13 +13,7 @@ describe "Listen" do
     @listener = setup_listener(options, callback)
     @listener.start
   }
-  after {
-    begin
-      listener.stop
-    rescue SystemExit
-      # ignore the SystemExit error from the thread
-    end
-  }
+  after { listener.stop }
 
   context "with one listen dir" do
     let(:paths) { Pathname.new(Dir.pwd) }

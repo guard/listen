@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Listen::Directory do
+  let(:registry) { double(Celluloid::Registry) }
+  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
   let(:record) { double(Listen::Record, async: double(set_path: true, unset_path: true)) }
   let(:change_pool) { double(Listen::Change) }
   let(:change_pool_async) { double('ChangePoolAsync') }
@@ -8,8 +10,8 @@ describe Listen::Directory do
   around { |example| fixtures { |path| example.run } }
   before {
     change_pool.stub(:async) { change_pool_async }
-    Celluloid::Actor.stub(:[]).with(:listen_record) { record }
-    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+    registry.stub(:[]).with(:record) { record }
+    registry.stub(:[]).with(:change_pool) { change_pool }
   }
 
   describe "#scan" do
@@ -18,7 +20,7 @@ describe Listen::Directory do
     let(:other_file_path) { dir_path.join('other_file.rb') }
     let(:inside_dir_path) { dir_path.join('inside_dir') }
     let(:other_inside_dir_path) { dir_path.join('other_inside_dir') }
-    let(:dir) { Listen::Directory.new(dir_path, options) }
+    let(:dir) { Listen::Directory.new(listener, dir_path, options) }
 
     context "with recursive off" do
       let(:options) { { recursive: false } }

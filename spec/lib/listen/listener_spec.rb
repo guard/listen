@@ -3,16 +3,21 @@ require 'spec_helper'
 describe Listen::Listener do
   let(:listener) { Listen::Listener.new(options) }
   let(:options) { {} }
+  let(:registry) { double(Celluloid::Registry, :[]= => true) }
+  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true) }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
   let(:adapter) { double(Listen::Adapter::Base) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before {
-    Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer }
-    Celluloid::Actor.stub(:[]).with(:listen_adapter) { adapter }
-    Celluloid::Actor.stub(:[]).with(:listen_record) { record }
-    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+    Celluloid::Registry.stub(:new) { registry }
+    Celluloid::SupervisionGroup.stub(:run!) { supervisor }
+    registry.stub(:[]).with(:silencer) { silencer }
+    registry.stub(:[]).with(:adapter) { adapter }
+    registry.stub(:[]).with(:record) { record }
+    registry.stub(:[]).with(:change_pool) { change_pool }
+
   }
 
   describe "initialize" do
@@ -55,12 +60,6 @@ describe Listen::Listener do
 
   describe "#start" do
     before {
-      Listen::Silencer.stub(:new)
-      Listen::Change.stub(:pool)
-      Listen::Adapter.stub(:new)
-      Listen::Record.stub(:new)
-      Celluloid::Actor.stub(:[]=)
-      Celluloid.stub(:cores) { 1 }
       adapter.stub_chain(:async, :start)
     }
 
@@ -70,26 +69,23 @@ describe Listen::Listener do
     end
 
     it "registers silencer" do
-      expect(Listen::Silencer).to receive(:new).with(listener) { silencer }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, silencer)
+      expect(supervisor).to receive(:add).with(Listen::Silencer, as: :silencer, args: listener)
       listener.start
     end
 
-    it "registers change_pool" do
-      expect(Listen::Change).to receive(:pool).with(args: listener) { change_pool }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_change_pool, change_pool)
+    it "supervises change_pool" do
+      expect(supervisor).to receive(:pool).with(Listen::Change, as: :change_pool, args: listener)
       listener.start
     end
 
-    it "registers adaper" do
-      expect(Listen::Adapter).to receive(:new).with(listener) { adapter }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_adapter, adapter)
+    it "supervises adaper" do
+      Listen::Adapter.stub(:select) { Listen::Adapter::Polling }
+      expect(supervisor).to receive(:add).with(Listen::Adapter::Polling, as: :adapter, args: listener)
       listener.start
     end
 
-    it "registers record" do
-      expect(Listen::Record).to receive(:new).with(listener) { record }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_record, record)
+    it "supervises record" do
+      expect(supervisor).to receive(:add).with(Listen::Record, as: :record, args: listener)
       listener.start
     end
 
@@ -193,7 +189,7 @@ describe Listen::Listener do
 
     it "resets silencer actor" do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       listener.ignore(/foo/)
     end
 
@@ -224,7 +220,7 @@ describe Listen::Listener do
 
     it "resets silencer actor" do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       listener.ignore!(/foo/)
       expect(listener.options).to include(ignore!: /foo/)
     end
@@ -256,7 +252,7 @@ describe Listen::Listener do
 
     it "resets silencer actor" do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
-      expect(Celluloid::Actor).to receive(:[]=).with(:listen_silencer, new_silencer)
+      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       listener.only(/foo/)
     end
 

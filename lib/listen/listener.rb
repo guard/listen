@@ -7,6 +7,7 @@ require 'listen/silencer'
 module Listen
   class Listener
     attr_accessor :options, :directories, :paused, :changes, :block, :thread
+    attr_accessor :registry, :supervisor
 
     RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
 
@@ -25,6 +26,8 @@ module Listen
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @changes     = []
       @block       = block
+      @registry    = Celluloid::Registry.new
+      @supervisor  = Celluloid::SupervisionGroup.run!(@registry)
       _init_debug
     end
 
@@ -36,7 +39,7 @@ module Listen
       _signals_trap
       _init_actors
       unpause
-      Celluloid::Actor[:listen_adapter].async.start
+      registry[:adapter].async.start
       @thread = Thread.new { _wait_for_changes }
     end
 
@@ -56,7 +59,7 @@ module Listen
     # Unpauses listening callback
     #
     def unpause
-      Celluloid::Actor[:listen_record].build
+      registry[:record].build
       @paused = false
     end
 
@@ -82,7 +85,7 @@ module Listen
     #
     def ignore(regexps)
       @options[:ignore] = [options[:ignore], regexps]
-      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
+      registry[:silencer] = Silencer.new(self)
     end
 
     # Overwrites ignore patterns (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
@@ -92,7 +95,7 @@ module Listen
     def ignore!(regexps)
       @options.delete(:ignore)
       @options[:ignore!] = regexps
-      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
+      registry[:silencer] = Silencer.new(self)
     end
 
     # Sets only patterns, to listen only to specific regexps
@@ -101,7 +104,7 @@ module Listen
     #
     def only(regexps)
       @options[:only] = regexps
-      Celluloid::Actor[:listen_silencer] = Silencer.new(self)
+      registry[:silencer] = Silencer.new(self)
     end
 
     private
@@ -123,10 +126,11 @@ module Listen
     end
 
     def _init_actors
-      Celluloid::Actor[:listen_silencer]    = Silencer.new(self)
-      Celluloid::Actor[:listen_change_pool] = Change.pool(args: self)
-      Celluloid::Actor[:listen_adapter]     = Adapter.new(self)
-      Celluloid::Actor[:listen_record]      = Record.new(self)
+      supervisor.add(Silencer, as: :silencer, args: self)
+      supervisor.add(Record, as: :record, args: self)
+      supervisor.pool(Change, as: :change_pool, args: self)
+      adapter_class = Adapter.select(options)
+      supervisor.add(adapter_class, as: :adapter, args: self)
     end
 
     def _signals_trap
@@ -147,8 +151,7 @@ module Listen
         sleep options[:wait_for_delay]
       end
 
-      _terminate_actors
-      exit
+      supervisor.finalize
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
@@ -161,13 +164,6 @@ module Listen
         change.each { |k, v| changes[k] << v.to_s }
       end
       changes.each { |_, v| v.uniq! }
-    end
-
-    def _terminate_actors
-      Celluloid::Actor[:listen_adapter].terminate
-      Celluloid::Actor[:listen_silencer].terminate
-      Celluloid::Actor[:listen_change_pool].terminate
-      Celluloid::Actor[:listen_record].terminate
     end
   end
 end

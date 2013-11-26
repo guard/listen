@@ -1,14 +1,16 @@
 require 'spec_helper'
 
 describe Listen::File do
+  let(:registry) { double(Celluloid::Registry) }
+  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
   let(:record) { double(Listen::Record, async: double(set_path: true, unset_path: true)) }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { |path| example.run } }
-  before { Celluloid::Actor.stub(:[]).with(:listen_record) { record } }
+  before { registry.stub(:[]).with(:record) { record } }
 
   describe "#change" do
     let(:file_path) { path.join('file.rb') }
-    let(:file) { Listen::File.new(file_path) }
+    let(:file) { Listen::File.new(listener, file_path) }
     let(:expected_data) {
       if darwin?
         { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) }

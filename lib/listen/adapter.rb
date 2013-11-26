@@ -10,20 +10,15 @@ module Listen
     OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]
     POLLING_FALLBACK_MESSAGE = "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 
-    def self.new(listener)
-      adapter_class = _select(listener.options)
-      adapter_class.new(listener)
-    end
-
-    private
-
-    def self._select(options)
+    def self.select(options = {})
       return Polling if options[:force_polling]
       return _usable_adapter_class if _usable_adapter_class
 
       _warn_polling_fallback(options)
       Polling
     end
+
+    private
 
     def self._usable_adapter_class
       adapters = OPTIMIZED_ADAPTERS.map { |adapter| Adapter.const_get(adapter) }
