@@ -32,6 +32,7 @@ module Listen
       end
 
       def _notify_change(path, options)
+        sleep 0.01 until listener.registry[:change_pool]
         listener.registry[:change_pool].async.change(path, options) if listener.listen?
       end
     end
