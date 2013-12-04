@@ -3,7 +3,7 @@ module Listen
     include Celluloid
 
     # The default list of directories that get ignored.
-    DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby]
+    DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby vendor/bundle]
 
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store .tmp]
