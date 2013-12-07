@@ -143,7 +143,7 @@ module Listen
 
     def _wait_for_changes
       loop do
-        break if @stopping
+        break if @stopping || Listen.stopping
 
         changes = _pop_changes
         unless changes.all? { |_,v| v.empty? }
