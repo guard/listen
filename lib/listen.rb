@@ -3,6 +3,7 @@ require 'listen/listener'
 
 module Listen
   class << self
+    attr_accessor :stopping
 
     # Listens to file system modifications on a either single directory or multiple directories.
     #
@@ -16,17 +17,14 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def to(*args, &block)
+      @stopping = false
       Listener.new(*args, &block)
     end
-
-
-    attr_accessor :stopping
 
     # Stop all listeners
     #
     def stop
       @stopping = true
     end
-
   end
 end
