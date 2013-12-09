@@ -13,6 +13,14 @@ module Listen
           gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
       EOS
 
+      # Suggestion on disabling "safe writes" on IDE's
+      #
+      WDM_SETTING_SUGGESTION = <<-EOS.gsub(/^ {6}/, '')
+        With WDM enabled its suggested to disable  "safe writes" from IDE's.
+        This prevent temp files from firing deletions and recreations in fast success.
+        The "wait_for_delay" is amended to 0 if it was the original 0.1
+      EOS
+
       def self.usable?
         if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
           require 'wdm'
@@ -24,6 +32,12 @@ module Listen
       end
 
       def start
+        Kernel.warn WDM_SETTING_SUGGESTION
+
+        if listener.options[:wait_for_delay] == 0.1
+          listener.options[:wait_for_delay] = 0
+        end
+
         worker = _init_worker
         Thread.new { worker.run! }
       end
