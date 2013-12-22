@@ -1,6 +1,7 @@
 language: ruby
 bundler_args: --without tool
 rvm:
+  - 2.1.0
   - 1.9.3
   - 2.0.0
   - jruby-19mode
@@ -9,6 +10,7 @@ matrix:
   allow_failures:
     - rvm: jruby-19mode
     - rvm: rbx-19mode
+    - rvm: 2.1.0
 notifications:
   recipients:
     - thibaud@thibaud.me
