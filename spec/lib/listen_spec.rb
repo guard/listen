@@ -28,7 +28,7 @@ describe Listen do
     end
   end
 
-  describe '#on' do
+  describe '.on' do
     it 'initializes TCP-listener in recipient-mode' do
       expect(Listen::TCP::Listener).to receive(:new).with(4000, :recipient, '/path')
       described_class.on(4000, '/path')
