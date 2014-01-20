@@ -34,21 +34,22 @@ module Listen
     def stop
       @stopping = true
     end
-  end
 
-  # Listens to file system modifications broadcast over TCP.
-  #
-  # @param [String/Fixnum] target to listen on (hostname:port or port)
-  #
-  # @yield [modified, added, removed] the changed files
-  # @yieldparam [Array<String>] modified the list of modified files
-  # @yieldparam [Array<String>] added the list of added files
-  # @yieldparam [Array<String>] removed the list of removed files
-  #
-  # @return [Listen::Listener] the listener
-  #
-  def self.on(target, *args, &block)
-    TCP::Listener.new(target, :recipient, *args, &block)
+    # Listens to file system modifications broadcast over TCP.
+    #
+    # @param [String/Fixnum] target to listen on (hostname:port or port)
+    #
+    # @yield [modified, added, removed] the changed files
+    # @yieldparam [Array<String>] modified the list of modified files
+    # @yieldparam [Array<String>] added the list of added files
+    # @yieldparam [Array<String>] removed the list of removed files
+    #
+    # @return [Listen::Listener] the listener
+    #
+    def on(target, *args, &block)
+      TCP::Listener.new(target, :recipient, *args, &block)
+    end
+
   end
 
 end
