@@ -55,7 +55,7 @@ module Listen
             # Honour paused-state
             next if @paused
 
-            # Broadcast changes as a hash (see Listen::Adapter::TCP::handle_data)
+            # Broadcast changes as a hash (see Listen::Adapter::TCP#handle_data)
             message = Message.new(modified: modified, added: added, removed: removed)
             Celluloid::Actor[:listen_broadcaster].async.broadcast(message.payload)
 
