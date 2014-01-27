@@ -39,14 +39,6 @@ module Listen
         end
       end
 
-      # Stops TCP broadcaster
-      def stop
-        super
-        if broadcaster?
-          Celluloid::Actor[:listen_broadcaster].terminate
-        end
-      end
-
       # Hook to broadcast changes over TCP
       def block
         if broadcaster?
