@@ -36,8 +36,8 @@ module Listen
 
       # Continuously receive and asynchronously handle data
       def run
-        loop do
-          async.handle_data(@socket.recv(RECEIVE_WINDOW))
+        while data = @socket.recv(RECEIVE_WINDOW)
+          async.handle_data(data)
         end
       end
 

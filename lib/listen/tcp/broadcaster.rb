@@ -52,9 +52,9 @@ module Listen
 
       # Continuously accept and handle incoming connections
       def run
-        loop {
-          async.handle_connection(@server.accept)
-        }
+        while socket = @server.accept
+          handle_connection(socket)
+        end
       end
 
       # Handles incoming socket connection
