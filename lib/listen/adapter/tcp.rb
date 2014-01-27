@@ -31,8 +31,6 @@ module Listen
         end
       end
 
-      private
-
       # Number of bytes to receive at a time
       RECEIVE_WINDOW = 1024
 

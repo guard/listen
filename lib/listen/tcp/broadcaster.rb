@@ -50,8 +50,6 @@ module Listen
         false
       end
 
-      private
-
       # Continuously accept and handle incoming connections
       def run
         loop {
