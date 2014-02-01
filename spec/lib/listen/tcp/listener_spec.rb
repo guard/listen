@@ -7,16 +7,22 @@ describe Listen::TCP::Listener do
 
   subject { described_class.new("#{host}:#{port}", :recipient, options) }
   let(:options) { {} }
+  let(:registry) { double(Celluloid::Registry, :[]= => true) }
+  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true) }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
   let(:adapter) { double(Listen::Adapter::Base) }
+  let(:broadcaster) { double(Listen::TCP::Broadcaster) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before {
-    Celluloid::Actor.stub(:[]).with(:listen_silencer) { silencer }
-    Celluloid::Actor.stub(:[]).with(:listen_adapter) { adapter }
-    Celluloid::Actor.stub(:[]).with(:listen_record) { record }
-    Celluloid::Actor.stub(:[]).with(:listen_change_pool) { change_pool }
+    Celluloid::Registry.stub(:new) { registry }
+    Celluloid::SupervisionGroup.stub(:run!) { supervisor }
+    registry.stub(:[]).with(:silencer) { silencer }
+    registry.stub(:[]).with(:adapter) { adapter }
+    registry.stub(:[]).with(:record) { record }
+    registry.stub(:[]).with(:change_pool) { change_pool }
+    registry.stub(:[]).with(:broadcaster) { broadcaster }
   }
 
   describe '#initialize' do

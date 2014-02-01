@@ -35,7 +35,7 @@ module Listen
       def start
         super
         if broadcaster?
-          Celluloid::Actor[:listen_broadcaster] = Broadcaster.new(host, port)
+          supervisor.add(Broadcaster, as: :broadcaster, args: [host, port])
         end
       end
 
@@ -49,7 +49,7 @@ module Listen
 
             # Broadcast changes as a hash (see Listen::Adapter::TCP#handle_message)
             message = Message.new(modified: modified, added: added, removed: removed)
-            Celluloid::Actor[:listen_broadcaster].async.broadcast(message.payload)
+            registry[:broadcaster].async.broadcast(message.payload)
 
             # Invoke the original callback block
             @block.call(modified, added, removed) if @block
