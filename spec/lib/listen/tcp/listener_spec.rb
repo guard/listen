@@ -5,7 +5,7 @@ describe Listen::TCP::Listener do
   let(:host) { '10.0.0.0' }
   let(:port) { 4000 }
 
-  let(:listener) { Listen::TCP::Listener.new(port, :recipient, options) }
+  subject { described_class.new("#{host}:#{port}", :recipient, options) }
   let(:options) { {} }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
@@ -20,10 +20,6 @@ describe Listen::TCP::Listener do
   }
 
   describe '#initialize' do
-    subject {
-      described_class.new("#{host}:#{port}", :recipient)
-    }
-
     its(:mode) { should be :recipient }
     its(:host) { should eq host }
     its(:port) { should eq port }
@@ -42,9 +38,7 @@ describe Listen::TCP::Listener do
   end
 
   context 'when broadcaster' do
-    subject {
-      described_class.new(port, :broadcaster)
-    }
+    subject { described_class.new(port, :broadcaster) }
 
     it { should be_a_broadcaster }
     it { should_not be_a_recipient }
@@ -55,9 +49,7 @@ describe Listen::TCP::Listener do
   end
 
   context 'when recipient' do
-    subject {
-      described_class.new(port, :recipient)
-    }
+    subject { described_class.new(port, :recipient) }
 
     it { should_not be_a_broadcaster }
     it { should be_a_recipient }

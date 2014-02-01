@@ -5,9 +5,7 @@ describe Listen::TCP::Broadcaster do
   let(:host) { '127.0.0.1' }
   let(:port) { 4000 }
 
-  subject {
-    described_class.new host, port
-  }
+  subject { described_class.new(host, port) }
 
   after do
     subject.finalize if subject.alive?
