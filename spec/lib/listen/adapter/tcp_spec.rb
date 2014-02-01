@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::TCP do
 
-  let(:host) { '10.0.0.1' }
+  let(:host) { '10.0.0.2' }
   let(:port) { 4000 }
 
   subject { described_class.new(listener) }

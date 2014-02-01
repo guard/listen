@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::TCP::Broadcaster do
 
-  let(:host) { '127.0.0.1' }
+  let(:host) { '10.0.0.2' }
   let(:port) { 4000 }
 
   subject { described_class.new(host, port) }
