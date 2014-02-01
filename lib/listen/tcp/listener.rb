@@ -61,6 +61,12 @@ module Listen
 
       private
 
+      def _init_options(options = {})
+        options = super(options)
+        options[:force_tcp] = true if recipient?
+        options
+      end
+
       # Sets listener mode
       #
       # @param [Symbol] mode (either :broadcaster or :recipient)

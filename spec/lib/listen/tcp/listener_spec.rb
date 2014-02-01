@@ -49,6 +49,10 @@ describe Listen::TCP::Listener do
     it { should be_a_broadcaster }
     it { should_not be_a_recipient }
 
+    it 'does not force TCP adapter through options' do
+      expect(subject.options).not_to include(force_tcp: true)
+    end
+
     context 'when host is omitted' do
       its(:host) { should be_nil }
     end
@@ -56,6 +60,10 @@ describe Listen::TCP::Listener do
 
   context 'when recipient' do
     subject { described_class.new(port, :recipient) }
+
+    it 'forces TCP adapter through options' do
+      expect(subject.options).to include(force_tcp: true)
+    end
 
     it { should_not be_a_broadcaster }
     it { should be_a_recipient }
