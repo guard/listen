@@ -45,10 +45,15 @@ module Listen
       def handle_data(data)
         @buffer << data
         while message = Listen::TCP::Message.from_buffer(@buffer)
-          message.object.each do |change, paths|
-            paths.each do |path|
-              _notify_change(path, change: change)
-            end
+          handle_message(message)
+        end
+      end
+
+      # Handles incoming message by notifying of path changes
+      def handle_message(message)
+        message.object.each do |change, paths|
+          paths.each do |path|
+            _notify_change(path, change: change)
           end
         end
       end
