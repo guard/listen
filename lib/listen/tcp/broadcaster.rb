@@ -35,7 +35,7 @@ module Listen
         end
       end
 
-      # Broadcasts given payload to all connected recipients
+      # Broadcasts given payload to all connected sockets
       def broadcast(payload)
         @sockets.each do |socket|
           unicast(socket, payload)
