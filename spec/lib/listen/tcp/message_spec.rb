@@ -38,7 +38,7 @@ describe Listen::TCP::Message do
     its(:payload) { should be payload }
   end
 
-  describe '::from_buffer' do
+  describe '.from_buffer' do
 
     context 'when buffer is empty' do
       it 'returns nil and leaves buffer intact' do
