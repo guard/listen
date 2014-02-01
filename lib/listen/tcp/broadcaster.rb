@@ -19,6 +19,10 @@ module Listen
       def initialize(host, port)
         @server = TCPServer.new(host, port)
         @sockets = []
+      end
+
+      # Asynchronously start accepting connections
+      def start
         async.run
       end
 

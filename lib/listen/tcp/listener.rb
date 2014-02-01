@@ -36,6 +36,7 @@ module Listen
         super
         if broadcaster?
           supervisor.add(Broadcaster, as: :broadcaster, args: [host, port])
+          registry[:broadcaster].start
         end
       end
 
