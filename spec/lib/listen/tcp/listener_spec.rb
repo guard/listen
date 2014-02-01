@@ -56,6 +56,59 @@ describe Listen::TCP::Listener do
     context 'when host is omitted' do
       its(:host) { should be_nil }
     end
+
+    describe '#start' do
+      before do
+        adapter.stub_chain(:async, :start)
+        broadcaster.stub(:start)
+      end
+
+      it 'registers broadcaster' do
+        expect(supervisor).to receive(:add).with(Listen::TCP::Broadcaster, as: :broadcaster, args: [nil, port])
+        subject.start
+      end
+
+      it 'starts broadcaster' do
+        expect(broadcaster).to receive(:start)
+        subject.start
+      end
+    end
+
+    describe '#block' do
+      let(:async) { double('TCP broadcaster async', broadcast: true) }
+      let(:callback) { double(call: true) }
+      let(:changes) { {
+        modified: ['/foo'],
+        added: [],
+        removed: []
+      }}
+
+      before do
+        broadcaster.stub(:async).and_return async
+      end
+
+      after do
+        subject.block.call changes.values
+      end
+
+      context 'when paused' do
+        it 'honours paused state and does nothing' do
+          subject.pause
+          expect(broadcaster).not_to receive(:async)
+          expect(callback).not_to receive(:call)
+        end
+      end
+
+      it 'broadcasts changes asynchronously' do
+        message = Listen::TCP::Message.new changes
+        expect(async).to receive(:broadcast).with message.payload
+      end
+
+      it 'invokes original callback block' do
+        subject.block = callback
+        expect(callback).to receive(:call).with *changes.values
+      end
+    end
   end
 
   context 'when recipient' do
@@ -72,7 +125,5 @@ describe Listen::TCP::Listener do
       its(:host) { should eq described_class::DEFAULT_HOST }
     end
   end
-
-  # TODO: Spec all the things
 
 end
