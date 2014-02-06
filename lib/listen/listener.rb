@@ -6,7 +6,7 @@ require 'listen/silencer'
 
 module Listen
   class Listener
-    attr_accessor :options, :directories, :paused, :changes, :block, :thread
+    attr_accessor :options, :directories, :paused, :changes, :block, :thread, :stopping
     attr_accessor :registry, :supervisor
 
     RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
@@ -39,6 +39,7 @@ module Listen
       _signals_trap
       _init_actors
       unpause
+      @stopping = false
       registry[:adapter].async.start
       @thread = Thread.new { _wait_for_changes }
     end
@@ -71,12 +72,12 @@ module Listen
       @paused == true
     end
 
-    # Returns true if Listener is not paused
+    # Returns true if Listener is neither paused nor stopped
     #
     # @return [Boolean]
     #
     def listen?
-      @paused == false
+      @paused == false && @stopping == false
     end
 
     # Adds ignore patterns to the existing one (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
