@@ -168,17 +168,25 @@ describe Listen::Listener do
     end
   end
 
-  describe "#paused?" do
+  describe "#listen?" do
     it "returns true when not paused (false)" do
       listener.paused = false
+      listener.stopping = false
       expect(listener.listen?).to be_true
     end
     it "returns false when not paused (nil)" do
       listener.paused = nil
+      listener.stopping = false
       expect(listener.listen?).to be_false
     end
     it "returns false when paused" do
       listener.paused = true
+      listener.stopping = false
+      expect(listener.listen?).to be_false
+    end
+    it "returns false when stopped" do
+      listener.paused = false
+      listener.stopping = true
       expect(listener.listen?).to be_false
     end
   end
