@@ -12,5 +12,5 @@ matrix:
     - rvm: rbx-19mode
 notifications:
   recipients:
-    - thibaud@thibaud.me
+    - thibaud@thibaud.gg
     - remy@rymai.me

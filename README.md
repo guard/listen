@@ -219,7 +219,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 
 ## Author
 
-* [Thibaud Guillaume-Gentil (thibaudgg)][] ([@thibaudgg](http://twitter.com/thibaudgg))
+[Thibaud Guillaume-Gentil](https://github.com/thibaudgg) ([@thibaudgg](https://twitter.com/thibaudgg))
 
 ## Contributors
 
