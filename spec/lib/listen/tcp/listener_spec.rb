@@ -99,6 +99,19 @@ describe Listen::TCP::Listener do
         end
       end
 
+      context 'when stopped' do
+        let(:thread) { double(join: true) }
+        before do
+          subject.stub(:thread) { thread }
+        end
+
+        it 'honours stopped state and does nothing' do
+          subject.stop
+          expect(broadcaster).not_to receive(:async)
+          expect(callback).not_to receive(:call)
+        end
+      end
+
       it 'broadcasts changes asynchronously' do
         message = Listen::TCP::Message.new changes
         expect(async).to receive(:broadcast).with message.payload

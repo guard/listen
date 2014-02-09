@@ -45,8 +45,8 @@ module Listen
         if broadcaster?
           Proc.new { |modified, added, removed|
 
-            # Honour paused state
-            next if @paused
+            # Honour paused and stopped states
+            next if @paused || @stopping
 
             # Broadcast changes as a hash (see Listen::Adapter::TCP#handle_message)
             message = Message.new(modified: modified, added: added, removed: removed)
