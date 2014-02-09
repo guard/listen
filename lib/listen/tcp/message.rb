@@ -1,3 +1,5 @@
+require 'json'
+
 module Listen
   module TCP
     class Message
@@ -19,7 +21,7 @@ module Listen
       # Generates message size and payload for given object
       def object=(obj)
         @object = obj
-        @body = Marshal.dump(@object)
+        @body = JSON.generate(@object)
         @size = @body.bytesize
         @payload = [@size, @body].pack(PAYLOAD_FORMAT)
       end
@@ -28,7 +30,7 @@ module Listen
       def payload=(payload)
         @payload = payload
         @size, @body = @payload.unpack(PAYLOAD_FORMAT)
-        @object = Marshal.load(@body)
+        @object = JSON.parse(@body)
       end
 
       # Extracts a message from given buffer

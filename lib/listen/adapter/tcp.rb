@@ -53,7 +53,7 @@ module Listen
       def handle_message(message)
         message.object.each do |change, paths|
           paths.each do |path|
-            _notify_change(path, change: change)
+            _notify_change(path, change: change.to_sym)
           end
         end
       end

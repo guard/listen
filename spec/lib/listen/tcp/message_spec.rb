@@ -4,10 +4,10 @@ require 'spec_helper'
 
 describe Listen::TCP::Message do
 
-  let(:object)  { [1, 2, {foo: 'bar'}] }
-  let(:body)    { "\x04\b[\bi\x06i\a{\x06:\bfooI\"\bbar\x06:\x06ET" }
-  let(:size)    { 26 }
-  let(:payload) { "\x00\x00\x00\x1A\x04\b[\bi\x06i\a{\x06:\bfooI\"\bbar\x06:\x06ET" }
+  let(:object)  { [1, 2, {'foo' => 'bar'}] }
+  let(:body)    { '[1,2,{"foo":"bar"}]' }
+  let(:size)    { 19 }
+  let(:payload) { "\x00\x00\x00\x13[1,2,{\"foo\":\"bar\"}]" }
 
   describe '#initialize' do
     it 'initializes with an object' do

@@ -94,9 +94,9 @@ describe Listen::Adapter::TCP do
   describe '#handle_message' do
     it 'notifies listener of path changes' do
       message = Listen::TCP::Message.new(
-        modified: ['/foo', '/bar'],
-        added: ['/baz'],
-        removed: []
+        'modified' => ['/foo', '/bar'],
+        'added'    => ['/baz'],
+        'removed'  => []
       )
 
       expect(subject.wrapped_object).to receive(:_notify_change).with '/foo', change: :modified
