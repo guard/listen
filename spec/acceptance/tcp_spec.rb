@@ -19,29 +19,37 @@ describe Listen::TCP do
     broadcaster.start
   end
 
-  it 'still handles local changes' do
-    broadcaster.block = callback
+  context 'when broadcaster' do
+    before do
+      broadcaster.block = callback
+    end
 
-    expect(listen {
-      touch 'file.rb'
-    }).to eq(
-      modified: [],
-      added: ['file.rb'],
-      removed: []
-    )
+    it 'still handles local changes' do
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    ['file.rb'],
+        removed:  []
+      )
+    end
   end
 
-  it 'forwards changes over TCP' do
-    recipient.start
-    recipient.block = callback
+  context 'when recipient' do
+    before do
+      recipient.start
+      recipient.block = callback
+    end
 
-    expect(listen {
-      touch 'file.rb'
-    }).to eq(
-      modified: [],
-      added: ['file.rb'],
-      removed: []
-    )
+    it 'receives changes over TCP' do
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    ['file.rb'],
+        removed:  []
+      )
+    end
   end
 
 end
