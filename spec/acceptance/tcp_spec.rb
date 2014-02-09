@@ -33,6 +33,50 @@ describe Listen::TCP do
         removed:  []
       )
     end
+
+    it 'may be paused and unpaused' do
+      broadcaster.pause
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    [],
+        removed:  []
+      )
+
+      broadcaster.unpause
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: ['file.rb'],
+        added:    [],
+        removed:  []
+      )
+    end
+
+    it 'may be stopped and restarted' do
+      broadcaster.stop
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    [],
+        removed:  []
+      )
+
+      broadcaster.start
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: ['file.rb'],
+        added:    [],
+        removed:  []
+      )
+    end
   end
 
   context 'when recipient' do
@@ -47,6 +91,50 @@ describe Listen::TCP do
       }).to eq(
         modified: [],
         added:    ['file.rb'],
+        removed:  []
+      )
+    end
+
+    it 'may be paused and unpaused' do
+      recipient.pause
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    [],
+        removed:  []
+      )
+
+      recipient.unpause
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: ['file.rb'],
+        added:    [],
+        removed:  []
+      )
+    end
+
+    it 'may be stopped and restarted' do
+      recipient.stop
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: [],
+        added:    [],
+        removed:  []
+      )
+
+      recipient.start
+
+      expect(listen {
+        touch 'file.rb'
+      }).to eq(
+        modified: ['file.rb'],
+        added:    [],
         removed:  []
       )
     end
