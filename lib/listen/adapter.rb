@@ -3,6 +3,7 @@ require 'listen/adapter/bsd'
 require 'listen/adapter/darwin'
 require 'listen/adapter/linux'
 require 'listen/adapter/polling'
+require 'listen/adapter/tcp'
 require 'listen/adapter/windows'
 
 module Listen
@@ -11,6 +12,7 @@ module Listen
     POLLING_FALLBACK_MESSAGE = "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 
     def self.select(options = {})
+      return TCP if options[:force_tcp]
       return Polling if options[:force_polling]
       return _usable_adapter_class if _usable_adapter_class
 

@@ -7,6 +7,13 @@ describe Listen do
       described_class.to('/path')
     end
 
+    context 'when using :forward_to option' do
+      it 'initializes TCP-listener in broadcast-mode' do
+        expect(Listen::TCP::Listener).to receive(:new).with(4000, :broadcaster, '/path', {})
+        described_class.to('/path', forward_to: 4000)
+      end
+    end
+
     it "sets stopping at false" do
       allow(Listen::Listener).to receive(:new)
       Listen.to('/path')
@@ -18,6 +25,13 @@ describe Listen do
     it "stops all listeners" do
       Listen.stop
       expect(Listen.stopping).to be_true
+    end
+  end
+
+  describe '.on' do
+    it 'initializes TCP-listener in recipient-mode' do
+      expect(Listen::TCP::Listener).to receive(:new).with(4000, :recipient, '/path')
+      described_class.on(4000, '/path')
     end
   end
 end

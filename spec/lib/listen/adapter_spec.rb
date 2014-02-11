@@ -10,6 +10,11 @@ describe Listen::Adapter do
   }
 
   describe ".select" do
+    it 'returns TCP adapter when requested' do
+      klass = Listen::Adapter.select(force_tcp: true)
+      expect(klass).to eq Listen::Adapter::TCP
+    end
+
     it "returns Polling adapter if forced" do
       klass = Listen::Adapter.select(force_polling: true)
       expect(klass).to eq Listen::Adapter::Polling

@@ -11,6 +11,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * File content checksum comparison for modifications made under the same second (OS X only).
+* Forwarding file events over TCP, [more info](#forwarding-file-events-over-tcp) below.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
 Please note that:
@@ -191,6 +192,35 @@ Here are some things you could try to avoid forcing polling.
 * Increase latency.
 
 If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
+
+## Forwarding file events over TCP
+
+Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with [Vagrant](https://github.com/mitchellh/vagrant).
+
+To broadcast events over TCP, use the `forward_to` option with an address - just a port or a hostname/port combination:
+
+```ruby
+listener = Listen.to 'path/to/app', forward_to: '10.0.0.2:4000' do |modified, added, removed|
+  # After broadcasting the changes to any connected recipients,
+  # this block will still be called
+end
+listener.start
+sleep
+```
+
+To connect to a broadcasting listener as a recipient, specify its address using `Listen.on`:
+
+```ruby
+listener = Listen.on '10.0.0.2:4000' do |modified, added, removed|
+  # This block will be called
+end
+listener.start
+sleep
+```
+
+### Security considerations
+
+Since file events potentially expose sensitive information, care must be taken when specifying the broadcaster address. It is recommended to **always** specify a hostname and make sure it is as specific as possible to reduce any undesirable eavesdropping.
 
 ## Development
 
