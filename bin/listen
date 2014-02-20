@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'listen'
+require 'listen/cli'
+
+Listen::CLI.start
+

@@ -197,7 +197,7 @@ If your application keeps using the polling-adapter and you can't figure out why
 
 Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with [Vagrant](https://github.com/mitchellh/vagrant).
 
-To broadcast events over TCP, use the `forward_to` option with an address - just a port or a hostname/port combination:
+To broadcast events over TCP programmatically, use the `forward_to` option with an address - just a port or a hostname/port combination:
 
 ```ruby
 listener = Listen.to 'path/to/app', forward_to: '10.0.0.2:4000' do |modified, added, removed|
@@ -206,6 +206,13 @@ listener = Listen.to 'path/to/app', forward_to: '10.0.0.2:4000' do |modified, ad
 end
 listener.start
 sleep
+```
+
+As a convenience, the `listen` script is supplied which listens to a directory and forwards the events to a network address
+
+```bash
+listen -f "10.0.0.2:4000"
+listen -v -d "/projects/my_project" -f "10.0.0.2:4000"
 ```
 
 To connect to a broadcasting listener as a recipient, specify its address using `Listen.on`:

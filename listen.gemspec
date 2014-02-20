@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
   s.files        = `git ls-files`.split($/)
   s.test_files   = s.files.grep(%r{^spec/})
+  s.executable   = 'listen'
   s.require_path = 'lib'
 
   s.required_ruby_version = ">= 1.9.3"
