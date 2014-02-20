@@ -33,7 +33,7 @@ module Listen
   end
 
   class Forwarder
-    def initialize options
+    def initialize(options)
       @options = options
     end
 
@@ -49,18 +49,10 @@ module Listen
         end
       end
 
-      @listener = Listen.to directory, forward_to: address, &callback
-      @listener.start
+      listener = Listen.to directory, forward_to: address, &callback
+      listener.start
 
-      if Signal.list.keys.include?('INT')
-        Signal.trap('INT') do
-          puts "Stopping listen..."
-          @listener.stop
-          exit
-        end
-      end
-
-      while @listener.listen?
+      while listener.listen?
         sleep 0.5
       end
     end
