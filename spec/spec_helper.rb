@@ -25,7 +25,7 @@ end
 
 require 'rspec/retry'
 RSpec.configure do |config|
-  config.default_retry_count = ci? ? 3 : 1
+  config.default_retry_count = ci? ? 5 : 1
 end
 
 require 'celluloid/rspec'
