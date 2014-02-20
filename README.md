@@ -190,6 +190,7 @@ Here are some things you could try to avoid forcing polling.
 * Move or rename the listened directory.
 * Update/reboot your OS.
 * Increase latency.
+* If running Linux, check and see if you need package inotify-tools
 
 If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
 
