@@ -70,22 +70,18 @@ describe Listen::File do
             end
           end
 
-          context "different record path md5" do
-            let(:record_md5) { 'foo' }
-            let(:expected_data) {
-              if darwin?
-                { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) }
-              else
-                { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
-              end
-            }
+          if darwin?
+            context "different record path md5" do
+              let(:record_md5) { 'foo' }
+              let(:expected_data) { { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) } }
 
-            it "returns modified" do
-              expect(file.change).to eq :modified
-            end
-            it "sets path in record with expected data" do
-              expect(record.async).to receive(:set_path).with(file_path, expected_data)
-              file.change
+              it "returns modified" do
+                expect(file.change).to eq :modified
+              end
+              it "sets path in record with expected data" do
+                expect(record.async).to receive(:set_path).with(file_path, expected_data)
+                file.change
+              end
             end
           end
 
