@@ -1,6 +1,6 @@
 module Listen
   class File
-    attr_accessor :listener, :path, :data
+    attr_accessor :listener, :path, :data, :md5
 
     def initialize(listener, path)
       @listener = listener
@@ -51,10 +51,21 @@ module Listen
       _mode != _record_data[:mode]
     end
 
-    # Only useful on Darwin because of the file mtime second precision
+    # Only useful on Darwin because of the file mtime second precision.
+    # Only check if in the same seconds (mtime == current time).
+    # MD5 is eager loaded, so the first time it'll always return false.
     #
     def _content_modified?
-      _record_data[:md5] && _md5 != _record_data[:md5]
+      return false unless RbConfig::CONFIG['target_os'] =~ /darwin/i
+      return false unless _mtime.to_i == Time.now.to_i
+
+      _set_md5
+      if _record_data[:md5]
+        md5 != _record_data[:md5]
+      else
+        _set_record_data
+        false
+      end
     end
 
     def _set_record_data
@@ -66,11 +77,9 @@ module Listen
       _record.async.unset_path(path)
     end
 
-    # Only Darwin need md5 comparaison because of the file mtime second precision
-    #
     def _new_data
       data = { mtime: _mtime, mode: _mode }
-      data[:md5] = _md5 if RbConfig::CONFIG['target_os'] =~ /darwin/i
+      data[:md5] = md5 if md5
       data
     end
 
@@ -100,8 +109,8 @@ module Listen
       nil
     end
 
-    def _md5
-      @md5 ||= Digest::MD5.file(path).digest
+    def _set_md5
+      @md5 = Digest::MD5.file(path).digest
     rescue
       nil
     end

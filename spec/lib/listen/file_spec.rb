@@ -11,13 +11,7 @@ describe Listen::File do
   describe "#change" do
     let(:file_path) { path.join('file.rb') }
     let(:file) { Listen::File.new(listener, file_path) }
-    let(:expected_data) {
-      if darwin?
-        { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) }
-      else
-        { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
-      end
-    }
+    let(:expected_data) { { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) } }
 
     context "path present in record" do
       let(:record_mtime) { nil }
@@ -55,7 +49,6 @@ describe Listen::File do
         context "same record path mtime" do
           let(:record_mtime) { ::File.lstat(file_path).mtime.to_f }
           let(:record_mode)  { ::File.lstat(file_path).mode }
-          let(:record_md5)   { Digest::MD5.file(file_path).digest }
 
           context "same record path mode" do
             it "returns nil" do
@@ -79,6 +72,13 @@ describe Listen::File do
 
           context "different record path md5" do
             let(:record_md5) { 'foo' }
+            let(:expected_data) {
+              if darwin?
+                { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer), md5: kind_of(String) }
+              else
+                { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
+              end
+            }
 
             it "returns modified" do
               expect(file.change).to eq :modified
