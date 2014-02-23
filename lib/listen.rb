@@ -20,6 +20,7 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def to(*args, &block)
+      boot_celluloid
       @stopping = false
       options = args.last.is_a?(Hash) ? args.last : {}
       if target = options.delete(:forward_to)
@@ -33,6 +34,7 @@ module Listen
     #
     def stop
       @stopping = true
+      Celluloid.shutdown
     end
 
     # Listens to file system modifications broadcast over TCP.
@@ -48,6 +50,12 @@ module Listen
     #
     def on(target, *args, &block)
       TCP::Listener.new(target, :recipient, *args, &block)
+    end
+
+    private
+
+    def boot_celluloid
+      Celluloid.boot unless Celluloid.running?
     end
 
   end
