@@ -1,5 +1,5 @@
 require 'thor'
-require 'Listen'
+require 'listen'
 
 module Listen
   class CLI < Thor
