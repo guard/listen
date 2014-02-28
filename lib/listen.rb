@@ -57,7 +57,11 @@ module Listen
     def boot_celluloid
       Celluloid.boot unless Celluloid.running?
     end
-
   end
-
+  
+  unless defined?(JRUBY_VERSION)
+    if Signal.list.keys.include?('INT')
+      Signal.trap('INT') { Listen.stop }
+    end
+  end
 end

@@ -36,7 +36,6 @@ module Listen
     # for changes. The current thread is not blocked after starting.
     #
     def start
-      _signals_trap
       _init_actors
       unpause
       @stopping = false
@@ -133,13 +132,6 @@ module Listen
 
       adapter_class = Adapter.select(options)
       supervisor.add(adapter_class, as: :adapter, args: self)
-    end
-
-    def _signals_trap
-      return if defined?(JRUBY_VERSION)
-      if Signal.list.keys.include?('INT')
-        Signal.trap('INT') { stop }
-      end
     end
 
     def _wait_for_changes
