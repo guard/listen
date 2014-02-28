@@ -183,6 +183,10 @@ gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
 
 ### Issues
 
+Listen traps SIGINT signal to properly finalize listeners. If you plan
+on trapping this signal yourself - make sure to call `Listen.stop` in
+signal handler.
+
 Sometimes OS-specific adapters don't work. :'(
 Here are some things you could try to avoid forcing polling.
 
