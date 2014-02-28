@@ -63,11 +63,6 @@ describe Listen::Listener do
       adapter.stub_chain(:async, :start)
     }
 
-    it "traps INT signal" do
-      expect(Signal).to receive(:trap).with('INT')
-      listener.start
-    end
-
     it "registers silencer" do
       expect(supervisor).to receive(:add).with(Listen::Silencer, as: :silencer, args: listener)
       listener.start
