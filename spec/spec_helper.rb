@@ -34,6 +34,9 @@ Celluloid.logger.level = Logger::ERROR
 
 RSpec.configuration.before(:each) do
   Listen.stopping = false
-  Celluloid.shutdown
   Celluloid.boot
+end
+
+RSpec.configuration.after(:each) do
+  Celluloid.shutdown
 end
