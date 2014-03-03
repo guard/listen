@@ -145,6 +145,7 @@ module Listen
         sleep options[:wait_for_delay]
       end
 
+      p supervisor
       supervisor.finalize if supervisor.alive?
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
