@@ -26,6 +26,11 @@ describe Listen do
       Listen.stop
       expect(Listen.stopping).to be_true
     end
+
+    it "stops all listeners via SIGINT" do
+      Process.kill("INT", Process.pid)
+      expect(Listen.stopping).to be_true
+    end
   end
 
   describe '.on' do
