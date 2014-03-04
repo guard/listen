@@ -22,14 +22,9 @@ describe Listen do
   end
 
   describe '.stop' do
-    it "stops all listeners" do
+    it "stops all listeners & Celluloid" do
       Listen.stop
-      expect(Listen.stopping).to be_true
-    end
-
-    it "stops all listeners via SIGINT" do
-      Process.kill("INT", Process.pid)
-      expect(Listen.stopping).to be_true
+      expect(Celluloid.internal_pool.running?).to be_false
     end
   end
 

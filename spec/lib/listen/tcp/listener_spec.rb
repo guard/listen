@@ -8,7 +8,7 @@ describe Listen::TCP::Listener do
   subject { described_class.new("#{host}:#{port}", :recipient, options) }
   let(:options) { {} }
   let(:registry) { double(Celluloid::Registry, :[]= => true) }
-  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true, alive?: true) }
+  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true) }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
   let(:adapter) { double(Listen::Adapter::Base) }
@@ -100,12 +100,8 @@ describe Listen::TCP::Listener do
       end
 
       context 'when stopped' do
-        let(:thread) { double(join: true) }
-        before do
-          subject.stub(:thread) { thread }
-        end
-
         it 'honours stopped state and does nothing' do
+          allow(subject).to receive(:supervisor) { double('SupervisionGroup', terminate: true) }
           subject.stop
           expect(broadcaster).not_to receive(:async)
           expect(callback).not_to receive(:call)
