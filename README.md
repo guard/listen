@@ -30,7 +30,7 @@ Pull request or help is very welcome for these.
 The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ```ruby
-  gem 'listen', '~> 2.0'
+gem 'listen', '~> 2.0'
 ```
 
 ## Usage
@@ -75,7 +75,7 @@ listener.ignore /\.rb/   # ignore rb extension in addition of pkg.
 sleep
 ```
 
-  Note: Ignoring regexp patterns are evaluated against relative paths.
+Note: Ignoring regexp patterns are evaluated against relative paths.
 
 ### Only
 
@@ -88,7 +88,7 @@ listener.only /_spec\.rb$/ # overwrite all existing only patterns.
 sleep
 ```
 
-  Note: Only regexp patterns are evaluated only against relative **file** paths.
+Note: Only regexp patterns are evaluated only against relative **file** paths.
 
 ## Changes callback
 
