@@ -31,6 +31,7 @@ module Listen
     end
 
     # Stop all listeners & Celluloid
+    # Use it for testing purpose or when you are sure that Celluloid could be ended.
     #
     def stop
       Celluloid.shutdown
