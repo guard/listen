@@ -30,10 +30,11 @@ module Listen
       end
     end
 
-    # Stop all listeners
+    # Stop all listeners & Celluloid
+    # Use it for testing purpose or when you are sure that Celluloid could be ended.
     #
     def stop
-      @stopping = true
+      Celluloid.shutdown
     end
 
     # Listens to file system modifications broadcast over TCP.
@@ -55,12 +56,6 @@ module Listen
 
     def boot_celluloid
       Celluloid.boot unless Celluloid.running?
-    end
-  end
-
-  unless defined?(JRUBY_VERSION)
-    if Signal.list.keys.include?('INT')
-      Signal.trap('INT') { Listen.stop }
     end
   end
 end

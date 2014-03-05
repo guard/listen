@@ -61,6 +61,8 @@ listener.unpause # start listening to changes again
 listener.stop    # stop completely the listener
 ```
 
+  Note: You should keep track of all started listeners and stop them properly on finish.
+
 ### Ignore / ignore!
 
 Listen ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.

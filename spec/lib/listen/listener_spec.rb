@@ -4,7 +4,7 @@ describe Listen::Listener do
   let(:listener) { Listen::Listener.new(options) }
   let(:options) { {} }
   let(:registry) { double(Celluloid::Registry, :[]= => true) }
-  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true, alive?: true) }
+  let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true) }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
   let(:adapter) { double(Listen::Adapter::Base) }
@@ -119,11 +119,9 @@ describe Listen::Listener do
   end
 
   describe "#stop" do
-    let(:thread) { double(join: true) }
-    before { listener.stub(:thread) { thread } }
-
-    it "joins thread" do
-      expect(thread).to receive(:join)
+    it "terminates supervisor" do
+      listener.supervisor = supervisor
+      expect(supervisor).to receive(:terminate)
       listener.stop
     end
   end

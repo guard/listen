@@ -6,7 +6,7 @@ require 'listen/silencer'
 
 module Listen
   class Listener
-    attr_accessor :options, :directories, :paused, :changes, :block, :thread, :stopping
+    attr_accessor :options, :directories, :paused, :changes, :block, :stopping
     attr_accessor :registry, :supervisor
 
     RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
@@ -27,7 +27,6 @@ module Listen
       @changes     = []
       @block       = block
       @registry    = Celluloid::Registry.new
-      @supervisor  = Celluloid::SupervisionGroup.run!(@registry)
       _init_debug
     end
 
@@ -40,14 +39,14 @@ module Listen
       unpause
       @stopping = false
       registry[:adapter].async.start
-      @thread = Thread.new { _wait_for_changes }
+      Thread.new { _wait_for_changes }
     end
 
     # Terminates all Listen actors and kill the adapter.
     #
     def stop
       @stopping = true
-      thread.join
+      supervisor.terminate
     end
 
     # Pauses listening callback (adapter still running)
@@ -126,6 +125,7 @@ module Listen
     end
 
     def _init_actors
+      @supervisor = Celluloid::SupervisionGroup.run!(registry)
       supervisor.add(Silencer, as: :silencer, args: self)
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
@@ -136,7 +136,7 @@ module Listen
 
     def _wait_for_changes
       loop do
-        break if @stopping || Listen.stopping
+        break if @stopping
 
         changes = _pop_changes
         unless changes.all? { |_,v| v.empty? }
@@ -144,9 +144,6 @@ module Listen
         end
         sleep options[:wait_for_delay]
       end
-
-      p supervisor
-      supervisor.finalize if supervisor.alive?
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
