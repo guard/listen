@@ -3,5 +3,10 @@
 require 'listen'
 require 'listen/cli'
 
-Listen::CLI.start
+unless defined?(JRUBY_VERSION)
+  if Signal.list.keys.include?('INT')
+    Signal.trap('INT') { Listen.stop }
+  end
+end
 
+Listen::CLI.start
