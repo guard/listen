@@ -58,7 +58,7 @@ module Listen
     # Unpauses listening callback
     #
     def unpause
-      registry[:record].build
+      registry[:record].build(options[:silence_record_build])
       @paused = false
     end
 
@@ -113,7 +113,8 @@ module Listen
         latency: nil,
         wait_for_delay: 0.1,
         force_polling: false,
-        polling_fallback_message: nil }.merge(options)
+        polling_fallback_message: nil,
+        silence_record_build: true }.merge(options)
     end
 
     def _init_debug

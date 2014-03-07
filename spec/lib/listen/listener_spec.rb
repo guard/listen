@@ -44,17 +44,19 @@ describe Listen::Listener do
         latency: nil,
         wait_for_delay: 0.1,
         force_polling: false,
-        polling_fallback_message: nil })
+        polling_fallback_message: nil,
+        silence_record_build: true })
     end
 
     it "sets new options on initialize" do
-      listener = Listen::Listener.new('lib', latency: 1.234, wait_for_delay: 0.85)
+      listener = Listen::Listener.new('lib', latency: 1.234, wait_for_delay: 0.85, silence_record_build: false)
       expect(listener.options).to eq({
         debug: false,
         latency: 1.234,
         wait_for_delay: 0.85,
         force_polling: false,
-        polling_fallback_message: nil })
+        polling_fallback_message: nil,
+        silence_record_build: false })
     end
   end
 

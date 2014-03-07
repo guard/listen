@@ -146,6 +146,9 @@ polling_fallback_message: 'custom message'      # Set a custom polling fallback 
 
 debug: true                                     # Enable Celluloid logger
                                                 # default: false
+
+silence_record_build: false                     # Report records that exist as at initialisation as Add events 
+                                                # default: true
 ```
 
 ## Listen adapters

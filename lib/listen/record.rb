@@ -25,10 +25,10 @@ module Listen
       @paths[path.to_s]
     end
 
-    def build
+    def build(silence=true)
       @paths = _init_paths
       listener.directories.each do |path|
-        listener.registry[:change_pool].change(path, type: 'Dir', recursive: true, silence: true)
+        listener.registry[:change_pool].change(path, type: 'Dir', recursive: true, silence: silence)
       end
     end
 

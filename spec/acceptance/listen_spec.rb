@@ -185,6 +185,17 @@ describe "Listen" do
           end
         end
 
+        context "with silence_record_build option" do
+          around { |example| touch 'file.rb'; example.run }
+          let(:options) { { force_polling: polling, latency: 0.1, silence_record_build: false} }
+
+          it "treats existing file as an add" do
+            expect(listen { 
+              touch 'file.txt' 
+              }).to eq({ modified: [], added: ['file.rb', 'file.txt'], removed: [] })
+          end
+        end
+
         context "with only option" do
           let(:options) { { force_polling: polling, latency: 0.1, only: /\.rb$/ } }
 
