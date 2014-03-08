@@ -86,7 +86,7 @@ describe Listen::TCP do
     end
 
     it 'receives changes over TCP' do
-      expect(listen {
+      expect(listen(1) {
         touch 'file.rb'
       }).to eq(
         modified: [],
@@ -98,7 +98,7 @@ describe Listen::TCP do
     it 'may be paused and unpaused' do
       recipient.pause
 
-      expect(listen {
+      expect(listen(1) {
         touch 'file.rb'
       }).to eq(
         modified: [],
@@ -108,7 +108,7 @@ describe Listen::TCP do
 
       recipient.unpause
 
-      expect(listen {
+      expect(listen(1) {
         touch 'file.rb'
       }).to eq(
         modified: ['file.rb'],
@@ -120,7 +120,7 @@ describe Listen::TCP do
     it 'may be stopped and restarted' do
       recipient.stop
 
-      expect(listen {
+      expect(listen(1) {
         touch 'file.rb'
       }).to eq(
         modified: [],
@@ -130,7 +130,7 @@ describe Listen::TCP do
 
       recipient.start
 
-      expect(listen {
+      expect(listen(1) {
         touch 'file.rb'
       }).to eq(
         modified: ['file.rb'],

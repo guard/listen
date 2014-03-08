@@ -1,9 +1,9 @@
-def listen
-  sleep 0.5 # wait for changes
+def listen lag = 0.5
+  sleep lag # wait for changes
   sleep_until_next_second
   reset_changes
   yield
-  sleep 0.5 # wait for changes
+  sleep lag # wait for changes
   @changes
 end
 
