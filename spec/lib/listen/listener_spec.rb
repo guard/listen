@@ -269,23 +269,25 @@ describe Listen::Listener do
   end
 
   describe '_wait_for_changes' do
-    it 'works' do
+    it 'gets two changes and calls the block once' do
 
       fake_time = 0
       listener.stub(:sleep) { |sec| fake_time += sec; listener.stopping = true if fake_time > 1 }
 
-      modified = []
-      added = []
-      removed = []
-      listener.block = proc { |m,a,r| modified += m; added += a; removed += r; }
+      listener.block = proc { |modified, added, removed|
+        expect(modified).to eql(['foo.txt'])
+        expect(added).to eql(['bar.txt'])
+      }
 
       i = 0
       listener.stub(:_pop_changes) do
         i+=1
         case i
           when 1
-            [{modified: 'foo.txt'}]
+            []
           when 2
+            [{modified: 'foo.txt'}]
+          when 3
             [{added: 'bar.txt'}]
           else
             []
@@ -293,10 +295,6 @@ describe Listen::Listener do
       end
 
       listener.send :_wait_for_changes
-
-      expect(modified).to eql(['foo.txt'])
-      expect(added).to eql(['bar.txt'])
-
     end
   end
 
