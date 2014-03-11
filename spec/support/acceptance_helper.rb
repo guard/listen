@@ -1,4 +1,4 @@
-def listen lag = 0.5
+def listen(lag = 0.5)
   sleep lag # wait for changes
   sleep_until_next_second
   reset_changes

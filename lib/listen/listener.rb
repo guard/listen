@@ -145,7 +145,7 @@ module Listen
           changes += new_changes
         end until new_changes.empty?
         unless changes.empty?
-          hash = _smoosh_changes changes
+          hash = _smoosh_changes(changes)
           block.call(hash[:modified], hash[:added], hash[:removed])
         end
       end
@@ -160,7 +160,7 @@ module Listen
       popped
     end
 
-    def _smoosh_changes changes
+    def _smoosh_changes(changes)
       smooshed = { modified: [], added: [], removed: [] }
       changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
       smooshed.each { |_, v| v.uniq! }
