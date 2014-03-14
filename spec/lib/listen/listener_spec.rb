@@ -114,7 +114,7 @@ describe Listen::Listener do
       listener.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
       listener.start
-      sleep 0.01
+      sleep 0.25
     end
   end
 
@@ -265,6 +265,36 @@ describe Listen::Listener do
         listener.only([/foo/])
         expect(listener.options).to include(only: [/foo/])
       end
+    end
+  end
+
+  describe '_wait_for_changes' do
+    it 'gets two changes and calls the block once' do
+
+      fake_time = 0
+      listener.stub(:sleep) { |sec| fake_time += sec; listener.stopping = true if fake_time > 1 }
+
+      listener.block = proc { |modified, added, removed|
+        expect(modified).to eql(['foo.txt'])
+        expect(added).to eql(['bar.txt'])
+      }
+
+      i = 0
+      listener.stub(:_pop_changes) do
+        i+=1
+        case i
+          when 1
+            []
+          when 2
+            [{modified: 'foo.txt'}]
+          when 3
+            [{added: 'bar.txt'}]
+          else
+            []
+        end
+      end
+
+      listener.send :_wait_for_changes
     end
   end
 

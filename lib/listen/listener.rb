@@ -138,11 +138,16 @@ module Listen
       loop do
         break if @stopping
 
-        changes = _pop_changes
-        unless changes.all? { |_,v| v.empty? }
-          block.call(changes[:modified], changes[:added], changes[:removed])
+        changes = []
+        begin
+          sleep options[:wait_for_delay] # wait for changes to accumulate
+          new_changes = _pop_changes
+          changes += new_changes
+        end until new_changes.empty?
+        unless changes.empty?
+          hash = _smoosh_changes(changes)
+          block.call(hash[:modified], hash[:added], hash[:removed])
         end
-        sleep options[:wait_for_delay]
       end
     rescue => ex
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
@@ -150,12 +155,16 @@ module Listen
     end
 
     def _pop_changes
-      changes = { modified: [], added: [], removed: [] }
-      until @changes.empty?
-        change = @changes.pop
-        change.each { |k, v| changes[k] << v.to_s }
-      end
-      changes.each { |_, v| v.uniq! }
+      popped = []
+      popped << @changes.pop until @changes.empty?
+      popped
+    end
+
+    def _smoosh_changes(changes)
+      smooshed = { modified: [], added: [], removed: [] }
+      changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
+      smooshed.each { |_, v| v.uniq! }
+      smooshed
     end
   end
 end

@@ -27,7 +27,7 @@ describe Listen::Adapter::Polling do
     it "notifies change on every listener directories path" do
       expect(change_pool_async).to receive(:change).with('directory_path', type: 'Dir', recursive: true)
       t = Thread.new { adapter.start }
-      sleep 0.01
+      sleep 0.25
       t.kill
     end
   end
