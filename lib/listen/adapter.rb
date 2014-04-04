@@ -206,6 +206,8 @@ module Listen
       return true if @loaded
       require adapter_gem
       return @loaded = true
+    rescue LoadError
+      false
     end
 
     # Runs a tests to determine if the adapter can actually pick up

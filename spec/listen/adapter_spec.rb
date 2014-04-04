@@ -87,11 +87,22 @@ describe Listen::Adapter do
   end
 
   describe '.load_dependend_adapter' do
+    after(:each) { described_class.instance_variable_set('@loaded', nil) }
+
     it 'returns true (success) even if the adapter_gem has already been required' do
       described_class.stub(:adapter_gem => 'already_loaded_gem')
       described_class.stub(:require => false)
 
       described_class.load_dependent_adapter.should be_true
+    end
+
+    it 'returns false (failure) if the adapter_gem cannot be required' do
+      described_class.stub(:adapter_gem => 'unloadable_gem')
+      described_class.stub(:require) do
+        raise LoadError.new('no such file to load -- unloadable_gem')
+      end
+
+      described_class.load_dependent_adapter.should be_false
     end
   end
 
