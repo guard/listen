@@ -24,8 +24,9 @@ end
 
 def relative_path(changes)
   changes.map do |change|
-    [paths].flatten.each { |path| change.gsub!(%r{#{path.to_s}/}, '') }
-    change
+    unfrozen_copy = change.dup
+    [paths].flatten.each { |path| unfrozen_copy.gsub!(%r{#{path.to_s}/}, '') }
+    unfrozen_copy
   end
 end
 
