@@ -53,10 +53,12 @@ module Listen
         lambda do |event|
           next if _skip_event?(event)
 
+          path = _event_path(event)
+
           if _dir_event?(event)
-            _notify_change(_event_path(event), type: 'Dir')
+            _notify_change(path, type: 'Dir')
           else
-            _notify_change(_event_path(event), type: 'File', change: _change(event.flags))
+            _notify_change(path, type: 'File', change: _change(event.flags))
           end
         end
       end
@@ -72,7 +74,7 @@ module Listen
       end
 
       def _change(event_flags)
-        { modified: [:attrib],
+        { modified: [:attrib, :close_write],
           added:    [:moved_to, :create],
           removed:  [:moved_from, :delete] }.each do |change, flags|
           return change unless (flags & event_flags).empty?

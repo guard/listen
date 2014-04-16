@@ -156,15 +156,52 @@ module Listen
 
     def _pop_changes
       popped = []
-      popped << @changes.pop until @changes.empty?
+      popped << @changes.shift until @changes.empty?
       popped
     end
 
     def _smoosh_changes(changes)
-      smooshed = { modified: [], added: [], removed: [] }
-      changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
-      smooshed.each { |_, v| v.uniq! }
-      smooshed
+      if _local_fs?
+        _squash_changes(changes)
+      else
+        smooshed = { modified: [], added: [], removed: [] }
+        changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
+        smooshed.each { |_, v| v.uniq! }
+        smooshed
+      end
+    end
+
+    def _local_fs?
+      !registry[:adapter].is_a?(Adapter::TCP)
+    end
+
+    def _squash_changes(changes)
+      actions = {}
+      changes.map(&:first).each do |type, path|
+        (actions[path] ||= []) << type
+      end
+
+      squashed = { modified: [], added: [], removed: [] }
+      actions.each do |path, action_list|
+        action = _logical_action_for(path, action_list)
+        squashed[action] << path.to_s if action
+      end
+      squashed
+    end
+
+    def _logical_action_for(path, actions)
+      added = actions.count { |x| x == :added }
+      removed = actions.count { |x| x == :removed }
+      diff = added - removed
+
+      if path.exist?
+        # special case: treat [remove + add] as "touch"
+        return :modified if diff.zero? && added > 0
+
+        diff > 0 ? :added : actions.find { |x| x == :modified }
+      else
+        diff < 0 ? :removed : nil
+      end
     end
   end
 end
