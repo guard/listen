@@ -309,10 +309,10 @@ describe Listen::Listener do
         { modified: path },
         { removed: path },
         { added: path },
-        { modified: path },
+        { modified: path }
       ]
       smooshed = listener.send :_smoosh_changes, changes
-      expect(smooshed).to eq({modified: ['foo'], added: [], removed: []})
+      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
 
     it 'recognizes deleted temp file' do
@@ -321,10 +321,10 @@ describe Listen::Listener do
         { added: path },
         { modified: path },
         { removed: path },
-        { modified: path },
+        { modified: path }
       ]
       smooshed = listener.send :_smoosh_changes, changes
-      expect(smooshed).to eq({modified: [], added: [], removed: []})
+      expect(smooshed).to eq(modified: [], added: [], removed: [])
     end
 
     it 'recognizes double move as modification' do
@@ -332,10 +332,10 @@ describe Listen::Listener do
       path = double(Pathname, to_s: 'foo', exist?: true)
       changes = [
         { removed: path },
-        { added: path },
+        { added: path }
       ]
       smooshed = listener.send :_smoosh_changes, changes
-      expect(smooshed).to eq({modified: ['foo'], added: [], removed: []})
+      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
   end
 end

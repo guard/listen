@@ -172,48 +172,36 @@ module Listen
     end
 
     def _local_fs?
-      not registry[:adapter].is_a? Adapter::TCP
+      !registry[:adapter].is_a?(Adapter::TCP)
     end
 
     def _squash_changes(changes)
-      smooshed = { modified: [], added: [], removed: [] }
-
       actions = {}
-
-      # group by file for more readable code below
-      changes.each do |change|
-        type = change.keys.first
-        path = change[type]
-
-        actions[path] ||= []
-        actions[path] << type
+      changes.map(&:first).each do |type, path|
+        (actions[path] ||= []) << type
       end
 
+      squashed = { modified: [], added: [], removed: [] }
       actions.each do |path, action_list|
-        action = nil
-
-        # This is to distinquish e.g. 'touch' (a+m) from 'vim patchmode' ('m+r+a+m')
-        # (touch "adds" a file, while edit "modifies" a file)
-        added_count = action_list.count {|x| x == :added }
-        removed_count = action_list.count {|x| x == :removed }
-        diff = added_count - removed_count
-
-        if path.exist?
-
-          if diff > 0
-            action = action_list.detect {|x| x == :added }
-          elsif diff.zero? and added_count > 0
-            action = :modified
-          end
-
-          action ||= action_list.detect {|x| x == :modified }
-        elsif diff < 0
-          action = action_list.detect {|x| x == :removed }
-        end
-
-        smooshed[action] << path.to_s if action
+        action = _logical_action_for(path, action_list)
+        squashed[action] << path.to_s if action
       end
-      smooshed
+      squashed
+    end
+
+    def _logical_action_for(path, actions)
+      added = actions.count { |x| x == :added }
+      removed = actions.count { |x| x == :removed }
+      diff = added - removed
+
+      if path.exist?
+        # special case: treat [remove + add] as "touch"
+        return :modified if diff.zero? && added > 0
+
+        diff > 0 ? :added : actions.find { |x| x == :modified }
+      else
+        diff < 0 ? :removed : nil
+      end
     end
   end
 end
