@@ -17,6 +17,30 @@ describe Listen::Adapter::Linux do
         expect(defined?(INotify)).to be_true
       end
     end
+
+    describe '_worker_callback' do
+
+      let(:expect_change) {
+        ->(change) {
+          allow_any_instance_of(Listen::Adapter::Base).to receive(:_notify_change).with(Pathname.new('path/foo.txt'), type: 'File', change: change)
+        }
+      }
+
+      let(:event_callback) {
+        ->(flags) {
+          callback = adapter.send(:_worker_callback)
+          callback.call double(Pathname, name: 'foo.txt', flags: flags, absolute_name: 'path/foo.txt')
+        }
+      }
+
+      # use case: close_write is the only way to detect changes
+      # on ecryptfs
+      it 'recognizes close_write as modify' do
+        expect_change.(:modified)
+        event_callback.([:close_write])
+      end
+    end
+
   end
 
   if darwin?

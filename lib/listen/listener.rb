@@ -156,14 +156,60 @@ module Listen
 
     def _pop_changes
       popped = []
-      popped << @changes.pop until @changes.empty?
+      popped << @changes.shift until @changes.empty?
       popped
     end
 
     def _smoosh_changes(changes)
+      if _local_fs?
+        _squash_changes(changes)
+      else
+        smooshed = { modified: [], added: [], removed: [] }
+        changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
+        smooshed.each { |_, v| v.uniq! }
+        smooshed
+      end
+    end
+
+    def _local_fs?
+      not registry[:adapter].is_a? Adapter::TCP
+    end
+
+    def _squash_changes(changes)
       smooshed = { modified: [], added: [], removed: [] }
-      changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
-      smooshed.each { |_, v| v.uniq! }
+
+      actions = {}
+
+      # group by file for more readable code below
+      changes.each do |change|
+        type = change.keys.first
+        path = change[type]
+
+        actions[path] ||= []
+        actions[path] << type
+      end
+
+      actions.each do |path, action_list|
+        action = nil
+
+        # This is to distinquish e.g. 'touch' (a+m) from 'vim patchmode' ('m+r+a+m')
+        # (touch "adds" a file, while edit "modifies" a file)
+        added_count = action_list.count {|x| x == :added }
+        removed_count = action_list.count {|x| x == :removed }
+
+        if path.exist?
+
+          if added_count - removed_count > 0
+            action = action_list.detect {|x| x == :added }
+          end
+
+          action ||= action_list.detect {|x| x == :modified }
+        elsif removed_count - added_count > 0
+          action = action_list.detect {|x| x == :removed }
+        end
+
+        smooshed[action] << path.to_s if action
+      end
       smooshed
     end
   end

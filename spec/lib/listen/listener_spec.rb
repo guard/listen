@@ -109,7 +109,8 @@ describe Listen::Listener do
     end
 
     it "calls block on changes" do
-      listener.changes = [{ modified: 'foo' }]
+      foo = double(Pathname, to_s: 'foo', exist?: true)
+      listener.changes = [{ modified: foo }]
       block_stub = double('block')
       listener.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
@@ -279,6 +280,9 @@ describe Listen::Listener do
         expect(added).to eql(['bar.txt'])
       }
 
+      foo = double(Pathname, to_s: 'foo.txt', exist?: true)
+      bar = double(Pathname, to_s: 'bar.txt', exist?: true)
+
       i = 0
       listener.stub(:_pop_changes) do
         i+=1
@@ -286,9 +290,9 @@ describe Listen::Listener do
           when 1
             []
           when 2
-            [{modified: 'foo.txt'}]
+            [{modified: foo}]
           when 3
-            [{added: 'bar.txt'}]
+            [{added: bar}]
           else
             []
         end
@@ -298,4 +302,29 @@ describe Listen::Listener do
     end
   end
 
+  describe '_smoosh_changes' do
+    it 'recognizes rename from temp file' do
+      path = double(Pathname, to_s: 'foo', exist?: true)
+      changes = [
+        { modified: path },
+        { removed: path },
+        { added: path },
+        { modified: path },
+      ]
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq({modified: ['foo'], added: [], removed: []})
+    end
+
+    it 'recognizes deleted temp file' do
+      path = double(Pathname, to_s: 'foo', exist?: false)
+      changes = [
+        { added: path },
+        { modified: path },
+        { removed: path },
+        { modified: path },
+      ]
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq({modified: [], added: [], removed: []})
+    end
+  end
 end
