@@ -196,15 +196,18 @@ module Listen
         # (touch "adds" a file, while edit "modifies" a file)
         added_count = action_list.count {|x| x == :added }
         removed_count = action_list.count {|x| x == :removed }
+        diff = added_count - removed_count
 
         if path.exist?
 
-          if added_count - removed_count > 0
+          if diff > 0
             action = action_list.detect {|x| x == :added }
+          elsif diff.zero? and added_count > 0
+            action = :modified
           end
 
           action ||= action_list.detect {|x| x == :modified }
-        elsif removed_count - added_count > 0
+        elsif diff < 0
           action = action_list.detect {|x| x == :removed }
         end
 

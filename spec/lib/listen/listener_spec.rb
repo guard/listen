@@ -326,5 +326,16 @@ describe Listen::Listener do
       smooshed = listener.send :_smoosh_changes, changes
       expect(smooshed).to eq({modified: [], added: [], removed: []})
     end
+
+    it 'recognizes double move as modification' do
+      # e.g. "mv foo x && mv x foo" is like "touch foo"
+      path = double(Pathname, to_s: 'foo', exist?: true)
+      changes = [
+        { removed: path },
+        { added: path },
+      ]
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq({modified: ['foo'], added: [], removed: []})
+    end
   end
 end
