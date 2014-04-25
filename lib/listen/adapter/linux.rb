@@ -58,6 +58,8 @@ module Listen
           path = _event_path(event)
           cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
 
+          Celluloid.logger.info "listen: inotify event: #{event.flags.inspect}: #{event.name}"
+
           if _dir_event?(event)
             _notify_change(path, { type: 'Dir'}.merge(cookie_opts))
           else

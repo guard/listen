@@ -117,10 +117,10 @@ module Listen
     end
 
     def _init_debug
-      if options[:debug]
+      if options[:debug] || ENV['LISTEN_GEM_DEBUGGING'] =~ /true|1/i
         Celluloid.logger.level = Logger::INFO
       else
-        Celluloid.logger = nil
+        Celluloid.logger.level = Logger::FATAL
       end
     end
 
@@ -180,11 +180,13 @@ module Listen
       actions = changes.group_by(&:last).map do |path, action_list|
         [_logical_action_for(path, action_list.map(&:first)), path.to_s]
       end
+      Celluloid.logger.info "listen: raw changes: #{actions.inspect}"
 
       { modified: [], added: [], removed: [] }.tap do |squashed|
         actions.each do |type, path|
           squashed[type] << path unless type.nil?
         end
+        Celluloid.logger.info "listen: final changes: #{squashed.inspect}"
       end
     end
 
