@@ -14,7 +14,7 @@ module Listen
       # The message to show when the limit of inotify watchers is not enough
       #
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
-        Listen error: unable to monitor directories for changes.
+        FATAL: Listen error: unable to monitor directories for changes.
 
         Please head to https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
         for information on how to solve this issue.
@@ -33,6 +33,8 @@ module Listen
         worker = _init_worker
         Thread.new { worker.run }
       rescue Errno::ENOSPC
+        STDERR.puts INOTIFY_LIMIT_MESSAGE
+        STDERR.flush
         abort(INOTIFY_LIMIT_MESSAGE)
       end
 
