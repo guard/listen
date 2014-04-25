@@ -20,7 +20,7 @@ describe Listen::Adapter::Linux do
 
     # workaround: Celluloid ignores SystemExit exception messages
     describe "inotify limit message" do
-      let(:adapter) { described_class.new(listener) }
+      let!(:adapter) { described_class.new(listener) }
       let(:expected_message) { described_class.const_get('INOTIFY_LIMIT_MESSAGE') }
 
       before do
