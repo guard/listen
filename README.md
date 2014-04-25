@@ -148,6 +148,9 @@ debug: true                                     # Enable Celluloid logger
                                                 # default: false
 ```
 
+Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as `debug: true` above.
+
+
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
@@ -199,6 +202,8 @@ Here are some things you could try to avoid forcing polling.
 * If running Linux, check and see if you need package inotify-tools
 
 If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
+
+Also, if you have problems related to receiving the wrong events, too many events or none at all, be sure set the environment variable `LISTEN_GEM_DEBUGGING=1` and include the output when reporting a new issue.
 
 ## Forwarding file events over TCP
 

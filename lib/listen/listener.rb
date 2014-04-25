@@ -117,10 +117,10 @@ module Listen
     end
 
     def _init_debug
-      if options[:debug]
+      if options[:debug] || ENV['LISTEN_GEM_DEBUGGING'] =~ /true|1/i
         Celluloid.logger.level = Logger::INFO
       else
-        Celluloid.logger = nil
+        Celluloid.logger.level = Logger::FATAL
       end
     end
 
@@ -156,15 +156,97 @@ module Listen
 
     def _pop_changes
       popped = []
-      popped << @changes.pop until @changes.empty?
+      popped << @changes.shift until @changes.empty?
       popped
     end
 
     def _smoosh_changes(changes)
-      smooshed = { modified: [], added: [], removed: [] }
-      changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
-      smooshed.each { |_, v| v.uniq! }
-      smooshed
+      if _local_fs?
+        cookies = changes.group_by { |x| x[:cookie] }
+        _squash_changes(_reinterpret_related_changes(cookies))
+      else
+        smooshed = { modified: [], added: [], removed: [] }
+        changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
+        smooshed.each { |_, v| v.uniq! }
+        smooshed
+      end
+    end
+
+    def _local_fs?
+      !registry[:adapter].is_a?(Adapter::TCP)
+    end
+
+    def _squash_changes(changes)
+      actions = changes.group_by(&:last).map do |path, action_list|
+        [_logical_action_for(path, action_list.map(&:first)), path.to_s]
+      end
+      Celluloid.logger.info "listen: raw changes: #{actions.inspect}"
+
+      { modified: [], added: [], removed: [] }.tap do |squashed|
+        actions.each do |type, path|
+          squashed[type] << path unless type.nil?
+        end
+        Celluloid.logger.info "listen: final changes: #{squashed.inspect}"
+      end
+    end
+
+    def _logical_action_for(path, actions)
+      actions << :added if actions.delete(:moved_to)
+      actions << :removed if actions.delete(:moved_from)
+
+      modified = actions.find { |x| x == :modified }
+      _calculate_add_remove_difference(actions, path, modified)
+    end
+
+    def _calculate_add_remove_difference(actions, path, default_if_exists)
+      added = actions.count { |x| x == :added }
+      removed = actions.count { |x| x == :removed }
+      diff = added - removed
+
+      if path.exist?
+        if diff > 0
+          :added
+        elsif diff.zero? && added > 0
+          :modified
+        else
+          default_if_exists
+        end
+      else
+        diff < 0 ? :removed : nil
+      end
+    end
+
+    # remove extraneous rb-inotify events, keeping them only if it's a possible
+    # editor rename() call (e.g. Kate and Sublime)
+    def _reinterpret_related_changes(cookies)
+      table = { moved_to: :added, moved_from: :removed }
+      cookies.map do |cookie, changes|
+        file = _detect_possible_editor_save(changes)
+        if file
+          [[:modified, file]]
+        else
+          changes.map(&:first).reject do |type, path|
+            _silenced?(path)
+          end.map { |type, path| [table.fetch(type, type), path] }
+        end
+      end.flatten(1)
+    end
+
+    def _detect_possible_editor_save(changes)
+      return unless changes.size == 2
+
+      from, to = changes.sort { |x,y| x.keys.first <=> y.keys.first }
+      from, to = from[:moved_from], to[:moved_to]
+      return unless from and to
+
+      # Expect an ignored moved_from and non-ignored moved_to
+      # to qualify as an "editor modify"
+      _silenced?(from) && !_silenced?(to) ? to : nil
+    end
+
+    def _silenced?(path)
+      type = path.directory? ? 'Dir' : 'File'
+      registry[:silencer].silenced?(path, type)
     end
   end
 end
