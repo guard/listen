@@ -16,8 +16,8 @@ describe Listen::Change do
     context "file path" do
       context "with known change" do
         it "notifies change directly to listener" do
-          expect(listener_changes).to receive(:<<).with(modified: 'file_path')
-          change.change('file_path', type: 'File', change: :modified)
+          expect(listener_changes).to receive(:<<).with(modified: Pathname.new('file_path'))
+          change.change(Pathname.new('file_path'), type: 'File', change: :modified)
         end
 
         it "doesn't notify to listener if path is silenced" do
@@ -25,7 +25,7 @@ describe Listen::Change do
           expect(silencer).to receive(:silenced?).and_return(true)
           expect(listener_changes).to_not receive(:<<)
 
-          change.change('file_path', type: 'File', change: :modified)
+          change.change(Pathname.new('file_path'), type: 'File', change: :modified)
         end
       end
 
@@ -34,16 +34,16 @@ describe Listen::Change do
         before { Listen::File.stub(:new) { file } }
 
         it "calls Listen::File#change" do
-          expect(Listen::File).to receive(:new).with(listener, 'file_path') { file }
+          expect(Listen::File).to receive(:new).with(listener, Pathname.new('file_path')) { file }
           expect(file).to receive(:change)
-          change.change('file_path', type: 'File')
+          change.change(Pathname.new('file_path'), type: 'File')
         end
 
         it "doesn't call Listen::File#change if path is silenced" do
-          expect(silencer).to receive(:silenced?).with('file_path', 'File').and_return(true)
+          expect(silencer).to receive(:silenced?).with(Pathname.new('file_path'), 'File').and_return(true)
           expect(Listen::File).to_not receive(:new)
 
-          change.change('file_path', type: 'File')
+          change.change(Pathname.new('file_path'), type: 'File')
         end
 
         context "that returns a change" do
@@ -53,14 +53,15 @@ describe Listen::Change do
             before { listener.stub(:listen?) { true } }
 
             it "notifies change to listener" do
-              expect(listener_changes).to receive(:<<).with(modified: 'file_path')
-              change.change('file_path', type: 'File')
+              file_path = double(Pathname, to_s: 'file_path', exist?: true)
+              expect(listener_changes).to receive(:<<).with(modified: file_path)
+              change.change(file_path, type: 'File')
             end
 
             context "silence option" do
               it "notifies change to listener" do
                 expect(listener_changes).to_not receive(:<<)
-                change.change('file_path', type: 'File', silence: true)
+                change.change(Pathname.new('file_path'), type: 'File', silence: true)
               end
             end
           end
@@ -70,7 +71,7 @@ describe Listen::Change do
 
             it "notifies change to listener" do
               expect(listener_changes).to_not receive(:<<)
-              change.change('file_path', type: 'File')
+              change.change(Pathname.new('file_path'), type: 'File')
             end
           end
         end
@@ -80,7 +81,7 @@ describe Listen::Change do
 
           it "doesn't notifies no change" do
             expect(listener_changes).to_not receive(:<<)
-            change.change('file_path', type: 'File')
+            change.change(Pathname.new('file_path'), type: 'File')
           end
         end
       end
@@ -92,9 +93,9 @@ describe Listen::Change do
       before { Listen::Directory.stub(:new) { dir } }
 
       it "calls Listen::Directory#scan" do
-        expect(Listen::Directory).to receive(:new).with(listener, 'dir_path', dir_options) { dir }
+        expect(Listen::Directory).to receive(:new).with(listener, Pathname.new('dir_path'), dir_options) { dir }
         expect(dir).to receive(:scan)
-        change.change('dir_path', dir_options)
+        change.change(Pathname.new('dir_path'), dir_options)
       end
     end
   end

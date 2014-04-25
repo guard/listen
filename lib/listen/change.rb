@@ -12,10 +12,16 @@ module Listen
     end
 
     def change(path, options)
-      return if _silencer.silenced?(path, options[:type])
+      change = options[:change]
+      cookie = options[:cookie]
 
-      if change = options[:change]
-        _notify_listener(change, path)
+      unless cookie
+        #TODO: remove silencing here (it's done later)
+        return if _silencer.silenced?(path, options[:type])
+      end
+
+      if change
+        _notify_listener(change, path, cookie ? { cookie: cookie } : {})
       else
         send("_#{options[:type].downcase}_change", path, options)
       end
@@ -34,8 +40,8 @@ module Listen
       Directory.new(listener, path, options).scan
     end
 
-    def _notify_listener(change, path)
-      listener.changes << { change => path }
+    def _notify_listener(change, path, options = {})
+      listener.changes << { change => path }.merge(options)
     end
 
     def _silencer

@@ -61,6 +61,7 @@ describe Listen::Listener do
   describe "#start" do
     before {
       adapter.stub_chain(:async, :start)
+      silencer.stub(:silenced?) { false }
     }
 
     it "registers silencer" do
@@ -109,7 +110,8 @@ describe Listen::Listener do
     end
 
     it "calls block on changes" do
-      listener.changes = [{ modified: 'foo' }]
+      foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      listener.changes = [{ modified: foo }]
       block_stub = double('block')
       listener.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
@@ -270,6 +272,7 @@ describe Listen::Listener do
 
   describe '_wait_for_changes' do
     it 'gets two changes and calls the block once' do
+      silencer.stub(:silenced?) { false }
 
       fake_time = 0
       listener.stub(:sleep) { |sec| fake_time += sec; listener.stopping = true if fake_time > 1 }
@@ -279,6 +282,9 @@ describe Listen::Listener do
         expect(added).to eql(['bar.txt'])
       }
 
+      foo = double(Pathname, to_s: 'foo.txt', exist?: true, directory?: false)
+      bar = double(Pathname, to_s: 'bar.txt', exist?: true, directory?: false)
+
       i = 0
       listener.stub(:_pop_changes) do
         i+=1
@@ -286,9 +292,9 @@ describe Listen::Listener do
           when 1
             []
           when 2
-            [{modified: 'foo.txt'}]
+            [{modified: foo}]
           when 3
-            [{added: 'bar.txt'}]
+            [{added: bar}]
           else
             []
         end
@@ -298,4 +304,95 @@ describe Listen::Listener do
     end
   end
 
+  describe '_smoosh_changes' do
+    it 'recognizes rename from temp file' do
+      path = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      changes = [
+        { modified: path },
+        { removed: path },
+        { added: path },
+        { modified: path }
+      ]
+      silencer.stub(:silenced?) { false }
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
+    end
+
+    it 'recognizes deleted temp file' do
+      path = double(Pathname, to_s: 'foo', exist?: false, directory?: false)
+      changes = [
+        { added: path },
+        { modified: path },
+        { removed: path },
+        { modified: path }
+      ]
+      silencer.stub(:silenced?) { false }
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq(modified: [], added: [], removed: [])
+    end
+
+    it 'recognizes double move as modification' do
+      # e.g. "mv foo x && mv x foo" is like "touch foo"
+      path = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      changes = [
+        { removed: path },
+        { added: path }
+      ]
+      silencer.stub(:silenced?) { false }
+      smooshed = listener.send :_smoosh_changes, changes
+      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
+    end
+
+    context "with cookie" do
+
+      it 'recognizes single moved_to as add' do
+        foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        changes = [
+          { moved_to: foo , cookie: 4321 },
+        ]
+        expect(silencer).to receive(:silenced?).with(foo, 'File').and_return(false)
+        smooshed = listener.send :_smoosh_changes, changes
+        expect(smooshed).to eq(modified: [], added: ['foo'], removed: [])
+      end
+
+      it 'recognizes related moved_to as add' do
+        foo = double(:foo, to_s: 'foo', exist?: true, directory?: false)
+        bar = double(:bar, to_s: 'bar', exist?: true, directory?: false)
+        changes = [
+          { moved_from: foo , cookie: 4321 },
+          { moved_to: bar, cookie: 4321 },
+        ]
+        expect(silencer).to receive(:silenced?).twice.with(foo, 'File').and_return(false)
+        expect(silencer).to receive(:silenced?).with(bar, 'File').and_return(false)
+        smooshed = listener.send :_smoosh_changes, changes
+        expect(smooshed).to eq(modified: [], added: ['bar'], removed: [])
+      end
+
+      # Scenario with workaround for editors using rename()
+      it 'recognizes related moved_to with ignored moved_from as modify' do
+        ignored = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        changes = [
+          { moved_from: ignored, cookie: 4321 },
+          { moved_to: foo , cookie: 4321 },
+        ]
+        expect(silencer).to receive(:silenced?).with(ignored, 'File').and_return(true)
+        expect(silencer).to receive(:silenced?).with(foo, 'File').and_return(false)
+        smooshed = listener.send :_smoosh_changes, changes
+        expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
+      end
+    end
+
+    context "with no cookie" do
+      it 'recognizes properly ignores files' do
+        ignored = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        changes = [
+          { modified: ignored },
+        ]
+        expect(silencer).to receive(:silenced?).with(ignored, 'File') { true }
+        smooshed = listener.send :_smoosh_changes, changes
+        expect(smooshed).to eq(modified: [], added: [], removed: [])
+      end
+    end
+  end
 end

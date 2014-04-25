@@ -37,6 +37,40 @@ describe Listen::Adapter::Linux do
         expect{adapter.start}.to raise_error RuntimeError, expected_message
       end
     end
+
+    describe '_worker_callback' do
+
+      let(:expect_change) {
+        ->(change) {
+          allow_any_instance_of(Listen::Adapter::Base).to receive(:_notify_change).with(Pathname.new('path/foo.txt'), type: 'File', change: change, cookie: 123)
+        }
+      }
+
+      let(:event_callback) {
+        ->(flags) {
+          callback = adapter.send(:_worker_callback)
+          callback.call double(:event, name: 'foo.txt', flags: flags, absolute_name: 'path/foo.txt', cookie: 123)
+        }
+      }
+
+      # use case: close_write is the only way to detect changes
+      # on ecryptfs
+      it 'recognizes close_write as modify' do
+        expect_change.(:modified)
+        event_callback.([:close_write])
+      end
+
+      it 'recognizes moved_to as moved_to' do
+        expect_change.(:moved_to)
+        event_callback.([:moved_to])
+      end
+
+      it 'recognizes moved_from as moved_from' do
+        expect_change.(:moved_from)
+        event_callback.([:moved_from])
+      end
+    end
+
   end
 
   if darwin?
