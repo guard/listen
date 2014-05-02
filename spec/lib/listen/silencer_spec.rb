@@ -38,12 +38,18 @@ describe Listen::Silencer do
         end
       end
 
-      Listen::Silencer::DEFAULT_IGNORED_EXTENSIONS.each do |extension|
+      %w(.DS_Store foo.tmp foo~ foo.rbo54321.new).each do |path|
         describe do
-          let(:path) { pwd.join(extension) }
+          it "by default silences files like: #{path}" do
+            expect(silencer.silenced?(pwd.join(path))).to be_true
+          end
+        end
+      end
 
-          it "silences default ignored extension: #{extension}" do
-            expect(silencer.silenced?(path)).to be_true
+      %w(foo.tmpl file.new file54321.new).each do |path|
+        describe do
+          it "by default does not silence files like: #{path}" do
+            expect(silencer.silenced?(pwd.join(path))).to be_false
           end
         end
       end

@@ -6,7 +6,8 @@ module Listen
     DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby vendor/bundle]
 
     # The default list of files that get ignored.
-    DEFAULT_IGNORED_EXTENSIONS  = %w[.DS_Store .tmp]
+    KATE_TEMP_FILES = /\..*[a-z]\d+\.new/
+    DEFAULT_IGNORED_EXTENSIONS  = %w(.DS_Store .tmp ~) + [KATE_TEMP_FILES]
 
     attr_accessor :listener, :only_patterns, :ignore_patterns
 
@@ -52,7 +53,10 @@ module Listen
     end
 
     def _default_ignored_extensions_patterns
-      ignored_extensions = DEFAULT_IGNORED_EXTENSIONS.map { |e| Regexp.escape(e) }
+      ignored_extensions = DEFAULT_IGNORED_EXTENSIONS.map do
+        |e| e.is_a?(Regexp) ? e : Regexp.escape(e)
+      end
+
       %r{(?:#{ignored_extensions.join('|')})$}
     end
 
