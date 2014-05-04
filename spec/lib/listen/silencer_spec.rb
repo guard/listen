@@ -38,7 +38,7 @@ describe Listen::Silencer do
         end
       end
 
-      %w(.DS_Store foo.tmp foo~ foo.rbo54321.new).each do |path|
+      %w(.DS_Store foo.tmp foo~ foo.rbo54321.new foo.rbB22583.new).each do |path|
         describe do
           it "by default silences files like: #{path}" do
             expect(silencer.silenced?(pwd.join(path))).to be_true
