@@ -6,8 +6,8 @@ module Listen
     DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby vendor/bundle]
 
     # The default list of files that get ignored.
-    KATE_TEMP_FILES = /\..*\d+\.new/
-    DEFAULT_IGNORED_EXTENSIONS  = %w(.DS_Store .tmp ~) + [KATE_TEMP_FILES]
+    KATE_TEMP_FILES = [/\..*\d+\.new/, '.kate-swp']
+    DEFAULT_IGNORED_EXTENSIONS  = %w(.DS_Store .tmp ~) + KATE_TEMP_FILES
 
     attr_accessor :listener, :only_patterns, :ignore_patterns
 
