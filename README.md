@@ -7,7 +7,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 ## Features
 
 * Supports watching multiple directories from a single listener.
-* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, *BSD and Windows, [more info](#listen-adapters) below.
+* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, ~~\*BSD~~ and Windows, [more info](#listen-adapters) below.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
 * File content checksum comparison for modifications made under the same second (OS X only).
@@ -16,7 +16,9 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 Please note that:
 - Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
-- Windows and *BSD adapter aren't continuously and automaticaly tested.
+- Windows and \*BSD adapter aren't continuously and automaticaly tested.
+- \*BSD is broken and not supported any more, see: [#220](https://github.com/guard/listen/issues/220)
+
 
 ## Pending features
 
