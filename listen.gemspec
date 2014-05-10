@@ -21,11 +21,11 @@ Gem::Specification.new do |s|
   s.required_ruby_version = ">= 1.9.3"
 
   s.add_dependency 'celluloid',  '>= 0.15.2'
-  s.add_dependency 'celluloid-io', '>= 0.15.0'
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
   s.add_dependency 'rb-inotify', '>= 0.9'
 
   s.add_development_dependency 'bundler', '>= 1.3.5'
+  s.add_development_dependency 'celluloid-io', '>= 0.15.0'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec', '~> 2.14'
   s.add_development_dependency 'rspec-retry'

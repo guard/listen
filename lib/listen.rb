@@ -1,6 +1,5 @@
 require 'celluloid'
 require 'listen/listener'
-require 'listen/tcp/listener'
 
 module Listen
   class << self
@@ -24,6 +23,7 @@ module Listen
       @stopping = false
       options = args.last.is_a?(Hash) ? args.last : {}
       if target = options.delete(:forward_to)
+        require 'listen/tcp'
         TCP::Listener.new(target, :broadcaster, *args, &block)
       else
         Listener.new(*args, &block)
@@ -49,6 +49,7 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def on(target, *args, &block)
+      require 'listen/tcp'
       TCP::Listener.new(target, :recipient, *args, &block)
     end
 
