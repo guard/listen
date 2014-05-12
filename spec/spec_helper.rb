@@ -1,5 +1,7 @@
 require 'rubygems'
+
 require 'listen'
+require 'listen/tcp'
 
 def ci?; ENV['CI'] end
 

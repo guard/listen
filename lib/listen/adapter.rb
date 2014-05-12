@@ -3,7 +3,6 @@ require 'listen/adapter/bsd'
 require 'listen/adapter/darwin'
 require 'listen/adapter/linux'
 require 'listen/adapter/polling'
-require 'listen/adapter/tcp'
 require 'listen/adapter/windows'
 
 module Listen
