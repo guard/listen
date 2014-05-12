@@ -89,5 +89,10 @@ describe Listen::Record do
       expect(change_pool).to receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: true)
       record.build
     end
+
+    it "calls change with silence false"  do
+      expect(change_pool).to receive(:change).with('dir_path', type: 'Dir', recursive: true, silence: false)
+      record.build(false)
+    end
   end
 end

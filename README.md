@@ -148,6 +148,9 @@ polling_fallback_message: 'custom message'      # Set a custom polling fallback 
 
 debug: true                                     # Enable Celluloid logger
                                                 # default: false
+
+silence_record_build: false                     # Report records that exist as at initialisation as Add events 
+                                                # default: true
 ```
 
 Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as `debug: true` above.
