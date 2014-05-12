@@ -42,4 +42,7 @@ describe Listen::Adapter::Polling do
       expect(adapter.send(:_latency)).to eq 1234
     end
   end
+
+  specify { expect(described_class).to be_local_fs }
+
 end

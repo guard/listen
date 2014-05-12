@@ -161,7 +161,7 @@ module Listen
     end
 
     def _smoosh_changes(changes)
-      if _local_fs?
+      if registry[:adapter].class.local_fs?
         cookies = changes.group_by { |x| x[:cookie] }
         _squash_changes(_reinterpret_related_changes(cookies))
       else
@@ -170,10 +170,6 @@ module Listen
         smooshed.each { |_, v| v.uniq! }
         smooshed
       end
-    end
-
-    def _local_fs?
-      !registry[:adapter].is_a?(Adapter::TCP)
     end
 
     def _squash_changes(changes)

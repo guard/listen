@@ -107,4 +107,6 @@ describe Listen::Adapter::TCP do
     end
   end
 
+  specify { expect(described_class).to_not be_local_fs }
+
 end

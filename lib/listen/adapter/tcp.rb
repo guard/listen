@@ -58,6 +58,9 @@ module Listen
         end
       end
 
+      def self.local_fs?
+        false
+      end
     end
 
   end

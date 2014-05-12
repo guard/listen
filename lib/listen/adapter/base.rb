@@ -21,6 +21,10 @@ module Listen
         raise NotImplementedError
       end
 
+      def self.local_fs?
+        true
+      end
+
       private
 
       def _latency
