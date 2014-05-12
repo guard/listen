@@ -1,5 +1,6 @@
 require 'thor'
 require 'listen'
+require 'logger'
 
 module Listen
   class CLI < Thor
@@ -31,19 +32,23 @@ module Listen
   end
 
   class Forwarder
+    attr_reader :logger
     def initialize(options)
       @options = options
+      @logger = Logger.new(STDOUT)
+      @logger.level = Logger::INFO
+      @logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     end
 
     def start
-      puts 'Starting listen...'
+      logger.info 'Starting listen...'
       address = @options[:forward]
       directory = @options[:directory]
       callback = proc do |modified, added, removed|
         if @options[:verbose]
-          puts "+ #{added}" unless added.empty?
-          puts "- #{removed}" unless removed.empty?
-          puts "> #{modified}" unless modified.empty?
+          logger.info "+ #{added}" unless added.empty?
+          logger.info "- #{removed}" unless removed.empty?
+          logger.info "> #{modified}" unless modified.empty?
         end
       end
 
