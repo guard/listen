@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe Listen::TCP::Message do
 
-  let(:object)  { [1, 2, {'foo' => 'bar'}] }
+  let(:object)  { [1, 2, { 'foo' => 'bar' }] }
   let(:body)    { '[1,2,{"foo":"bar"}]' }
   let(:size)    { 19 }
   let(:payload) { "\x00\x00\x00\x13[1,2,{\"foo\":\"bar\"}]" }

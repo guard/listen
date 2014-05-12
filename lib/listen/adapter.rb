@@ -7,8 +7,9 @@ require 'listen/adapter/windows'
 
 module Listen
   module Adapter
-    OPTIMIZED_ADAPTERS = %w[Darwin Linux BSD Windows]
-    POLLING_FALLBACK_MESSAGE = "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
+    OPTIMIZED_ADAPTERS = %w(Darwin Linux BSD Windows)
+    POLLING_FALLBACK_MESSAGE = 'Listen will be polling for changes.'\
+      'Learn more at https://github.com/guard/listen#polling-fallback.'
 
     def self.select(options = {})
       return TCP if options[:force_tcp]
@@ -27,10 +28,8 @@ module Listen
     end
 
     def self._warn_polling_fallback(options)
-      return if options[:polling_fallback_message] == false
-
-      warning = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
-      Kernel.warn "[Listen warning]:\n  #{warning}"
+      msg = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
+      Kernel.warn "[Listen warning]:\n  #{msg}" if msg
     end
   end
 end

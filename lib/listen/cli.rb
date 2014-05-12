@@ -1,5 +1,6 @@
 require 'thor'
 require 'listen'
+require 'logger'
 
 module Listen
   class CLI < Thor
@@ -8,44 +9,46 @@ module Listen
     desc 'start', 'Starts Listen'
 
     class_option :verbose,
-                  type:    :boolean,
-                  default: false,
-                  aliases: '-v',
-                  banner:  'Verbose'
+                 type:    :boolean,
+                 default: false,
+                 aliases: '-v',
+                 banner:  'Verbose'
 
     class_option :forward,
-                  type:    :string,
-                  default: '127.0.0.1:4000',
-                  aliases: '-f',
-                  banner:  'The address to forward filesystem events'
+                 type:    :string,
+                 default: '127.0.0.1:4000',
+                 aliases: '-f',
+                 banner:  'The address to forward filesystem events'
 
     class_option :directory,
-                  type:    :string,
-                  default: '.',
-                  aliases: '-d',
-                  banner:  'The directory to listen to'
+                 type:    :string,
+                 default: '.',
+                 aliases: '-d',
+                 banner:  'The directory to listen to'
 
-
-  def start
-    Listen::Forwarder.new(options).start
-  end
-
+    def start
+      Listen::Forwarder.new(options).start
+    end
   end
 
   class Forwarder
+    attr_reader :logger
     def initialize(options)
       @options = options
+      @logger = Logger.new(STDOUT)
+      @logger.level = Logger::INFO
+      @logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     end
 
     def start
-      puts "Starting listen..."
+      logger.info 'Starting listen...'
       address = @options[:forward]
       directory = @options[:directory]
-      callback = Proc.new do |modified, added, removed|
+      callback = proc do |modified, added, removed|
         if @options[:verbose]
-          puts "+ #{added}" unless added.empty?
-          puts "- #{removed}" unless removed.empty?
-          puts "> #{modified}" unless modified.empty?
+          logger.info "+ #{added}" unless added.empty?
+          logger.info "- #{removed}" unless removed.empty?
+          logger.info "> #{modified}" unless modified.empty?
         end
       end
 

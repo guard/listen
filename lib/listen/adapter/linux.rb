@@ -1,22 +1,24 @@
 module Listen
   module Adapter
-
     # Listener implementation for Linux `inotify`.
     #
     class Linux < Base
       # Watched inotify events
       #
       # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
-      # @see https://github.com/nex3/rb-inotify/blob/master/lib/rb-inotify/notifier.rb#L99-L177
+      # @see https://github.com/nex3/rb-inotify
       #
       EVENTS = [:recursive, :attrib, :create, :delete, :move, :close_write]
 
       # The message to show when the limit of inotify watchers is not enough
       #
+      WIKI_URL = 'https://github.com/guard/listen'\
+        '/wiki/Increasing-the-amount-of-inotify-watchers'
+
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
         FATAL: Listen error: unable to monitor directories for changes.
 
-        Please head to https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
+        Please head to #{WIKI_URL}
         for information on how to solve this issue.
       EOS
 
@@ -47,7 +49,9 @@ module Listen
       #
       def _init_worker
         INotify::Notifier.new.tap do |worker|
-          _directories_path.each { |path| worker.watch(path, *EVENTS, &_worker_callback) }
+          _directories_path.each do |path|
+            worker.watch(path, *EVENTS, &_worker_callback)
+          end
         end
       end
 
@@ -58,24 +62,25 @@ module Listen
           path = _event_path(event)
           cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
 
-          Celluloid.logger.info "listen: inotify event: #{event.flags.inspect}: #{event.name}"
+          _log(event)
 
           if _dir_event?(event)
-            _notify_change(path, { type: 'Dir'}.merge(cookie_opts))
+            _notify_change(path, { type: 'Dir' }.merge(cookie_opts))
           else
-            _notify_change(path, { type: 'File', change: _change(event.flags)}.merge(cookie_opts))
+            options = { type: 'File', change: _change(event.flags) }
+            _notify_change(path, options.merge(cookie_opts))
           end
         end
       end
 
       def _skip_event?(event)
         # Event on root directory
-        return true if event.name == ""
+        return true if event.name == ''
         # INotify reports changes to files inside directories as events
         # on the directories themselves too.
         #
         # @see http://linux.die.net/man/7/inotify
-        return true if _dir_event?(event) && (event.flags & [:close, :modify]).any?
+        _dir_event?(event) && (event.flags & [:close, :modify]).any?
       end
 
       def _change(event_flags)
@@ -96,7 +101,12 @@ module Listen
       def _event_path(event)
         Pathname.new(event.absolute_name)
       end
-    end
 
+      def _log(event)
+        name = event.name
+        flags = event.flags.inspect
+        Celluloid.logger.info "inotify event: #{flags}: #{name}"
+      end
+    end
   end
 end

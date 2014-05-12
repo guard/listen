@@ -1,6 +1,5 @@
 module Listen
   module Adapter
-
     # Polling Adapter that works cross-platform and
     # has no dependencies. This is the adapter that
     # uses the most CPU processing power and has higher
@@ -44,6 +43,5 @@ module Listen
         sleep(nap_time) if nap_time > 0
       end
     end
-
   end
 end

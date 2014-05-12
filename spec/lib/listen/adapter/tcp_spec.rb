@@ -7,8 +7,16 @@ describe Listen::Adapter::TCP do
 
   subject { described_class.new(listener) }
   let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::TCP::Listener, registry: registry, options: {}, host: host, port: port) }
-  let(:socket)   { double(described_class::TCPSocket, close: true, recv: nil) }
+
+  let(:listener) do
+    double(Listen::TCP::Listener,
+           registry: registry,
+           options: {},
+           host: host,
+           port: port)
+  end
+
+  let(:socket) { double(described_class::TCPSocket, close: true, recv: nil) }
 
   before do
     described_class::TCPSocket.stub(:new).and_return socket
@@ -26,7 +34,10 @@ describe Listen::Adapter::TCP do
 
   describe '#start' do
     it 'initializes and exposes a socket with listener host and port' do
-      expect(described_class::TCPSocket).to receive(:new).with listener.host, listener.port
+      expect(described_class::TCPSocket).
+        to receive(:new).
+        with listener.host, listener.port
+
       subject.start
       expect(subject.socket).to be socket
     end
@@ -99,9 +110,14 @@ describe Listen::Adapter::TCP do
         'removed'  => []
       )
 
-      expect(subject.wrapped_object).to receive(:_notify_change).with '/foo', change: :modified
-      expect(subject.wrapped_object).to receive(:_notify_change).with '/bar', change: :modified
-      expect(subject.wrapped_object).to receive(:_notify_change).with '/baz', change: :added
+      expect(subject.wrapped_object).
+        to receive(:_notify_change).with '/foo', change: :modified
+
+      expect(subject.wrapped_object).
+        to receive(:_notify_change).with '/bar', change: :modified
+
+      expect(subject.wrapped_object).
+        to receive(:_notify_change).with '/baz', change: :added
 
       subject.handle_message message
     end

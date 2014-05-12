@@ -65,8 +65,6 @@ module Listen
       def handle_connection(socket)
         @sockets << socket
       end
-
     end
-
   end
 end

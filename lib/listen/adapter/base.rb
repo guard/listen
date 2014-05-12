@@ -1,6 +1,5 @@
 module Listen
   module Adapter
-
     class Base
       include Celluloid
 
@@ -14,11 +13,11 @@ module Listen
       end
 
       def self.usable?
-        raise NotImplementedError
+        fail NotImplementedError
       end
 
       def start
-        raise NotImplementedError
+        fail NotImplementedError
       end
 
       def self.local_fs?
@@ -37,9 +36,9 @@ module Listen
 
       def _notify_change(path, options)
         sleep 0.01 until listener.registry[:change_pool]
-        listener.registry[:change_pool].async.change(path, options) if listener.listen?
+        pool = listener.registry[:change_pool]
+        pool.async.change(path, options) if listener.listen?
       end
     end
-
   end
 end

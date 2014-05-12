@@ -1,16 +1,16 @@
 module Listen
   module Adapter
-
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Base
-
       # The message to show when wdm gem isn't available
       #
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
           require 'rbconfig'
-          gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
+          if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
+            gem 'wdm', '>= 0.1.0'
+          end
       EOS
 
       def self.usable?
@@ -37,13 +37,16 @@ module Listen
       #
       def _init_worker
         WDM::Monitor.new.tap do |worker|
-          _directories_path.each { |path| worker.watch_recursively(path, &_worker_callback) }
+          _directories_path.each do |path|
+            worker.watch_recursively(path, &_worker_callback)
+          end
         end
       end
 
       def _worker_callback
         lambda do |change|
-            _notify_change(_path(change.path), type: 'File', change: _change(change.type))
+          options = { type: 'File', change: _change(change.type) }
+          _notify_change(_path(change.path), options)
         end
       end
 
@@ -60,6 +63,5 @@ module Listen
         nil
       end
     end
-
   end
 end

@@ -5,9 +5,11 @@ module Listen
   class << self
     attr_accessor :stopping
 
-    # Listens to file system modifications on a either single directory or multiple directories.
+    # Listens to file system modifications on a either single directory or
+    # multiple directories.
     #
-    # When :forward_to is specified, this listener will broadcast modifications over TCP.
+    # When :forward_to is specified, this listener will broadcast modifications
+    # over TCP.
     #
     # @param (see Listen::Listener#new)
     #
@@ -31,7 +33,9 @@ module Listen
     end
 
     # Stop all listeners & Celluloid
-    # Use it for testing purpose or when you are sure that Celluloid could be ended.
+    #
+    # Use it for testing purpose or when you are sure that Celluloid could be
+    # ended.
     #
     def stop
       Celluloid.shutdown
