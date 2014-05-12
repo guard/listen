@@ -3,7 +3,6 @@ require 'json'
 module Listen
   module TCP
     class Message
-
       attr_reader :body, :object, :payload, :size
 
       HEADER_SIZE    = 4
@@ -46,7 +45,6 @@ module Listen
           end
         end
       end
-
     end
   end
 end

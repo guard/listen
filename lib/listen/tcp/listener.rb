@@ -4,7 +4,6 @@ require 'listen/tcp/message'
 module Listen
   module TCP
     class Listener < Listen::Listener
-
       DEFAULT_HOST = 'localhost'
 
       attr_reader :host, :mode, :port
@@ -43,18 +42,24 @@ module Listen
       # Hook to broadcast changes over TCP
       def block
         if broadcaster?
-          Proc.new { |modified, added, removed|
+          proc do |modified, added, removed|
 
             # Honour paused and stopped states
             next if @paused || @stopping
 
-            # Broadcast changes as a hash (see Listen::Adapter::TCP#handle_message)
-            message = Message.new(modified: modified, added: added, removed: removed)
+            # Broadcast changes as a hash
+            #
+            # @see Listen::Adapter::TCP#handle_message
+            message = Message.new(
+              modified: modified,
+              added: added,
+              removed: removed)
+
             registry[:broadcaster].async.broadcast(message.payload)
 
             # Invoke the original callback block
             @block.call(modified, added, removed) if @block
-          }
+          end
         else
           super
         end
@@ -74,7 +79,8 @@ module Listen
       #
       def mode=(mode)
         unless [:broadcaster, :recipient].include? mode
-          raise ArgumentError, 'TCP::Listener requires mode to be either :broadcaster or :recipient'
+          fail ArgumentError, 'TCP::Listener requires mode to be either'\
+            ' :broadcaster or :recipient'
         end
         @mode = mode
       end
@@ -85,7 +91,7 @@ module Listen
       #
       def target=(target)
         unless target
-          raise ArgumentError, 'TCP::Listener requires target to be given'
+          fail ArgumentError, 'TCP::Listener requires target to be given'
         end
 
         @host = DEFAULT_HOST if recipient?
@@ -97,7 +103,6 @@ module Listen
           @port = @port.to_i
         end
       end
-
     end
   end
 end

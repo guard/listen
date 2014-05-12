@@ -1,10 +1,8 @@
 module Listen
   module Adapter
-
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Base
-
       def self.usable?
         RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
       end
@@ -27,7 +25,8 @@ module Listen
       def _init_worker
         FSEvent.new.tap do |worker|
           worker.watch(_directories_path, latency: _latency) do |changes|
-            _changes_path(changes).each { |path| _notify_change(path, type: 'Dir') }
+            paths = _changes_path(changes)
+            paths.each { |path| _notify_change(path, type: 'Dir') }
           end
         end
       end
@@ -39,6 +38,5 @@ module Listen
         end
       end
     end
-
   end
 end

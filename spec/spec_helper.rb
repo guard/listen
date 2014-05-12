@@ -3,7 +3,9 @@ require 'rubygems'
 require 'listen'
 require 'listen/tcp'
 
-def ci?; ENV['CI'] end
+def ci?
+  ENV['CI']
+end
 
 if ci?
   require 'coveralls'

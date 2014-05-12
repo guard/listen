@@ -6,14 +6,16 @@ describe Listen::TCP do
 
   let(:broadcaster) { Listen.to(Dir.pwd, forward_to: port) }
   let(:recipient)  { Listen.on(port) }
-  let(:callback) { ->(modified, added, removed) {
-    add_changes(:modified, modified)
-    add_changes(:added, added)
-    add_changes(:removed, removed)
-  } }
+  let(:callback) do
+    lambda do |modified, added, removed|
+      add_changes(:modified, modified)
+      add_changes(:added, added)
+      add_changes(:removed, removed)
+    end
+  end
   let(:paths) { Pathname.new(Dir.pwd) }
 
-  around { |example| fixtures { |path| example.run } }
+  around { |example| fixtures { example.run } }
 
   before do
     broadcaster.start
@@ -25,9 +27,9 @@ describe Listen::TCP do
     end
 
     it 'still handles local changes' do
-      expect(listen {
+      expect(listen do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    ['file.rb'],
         removed:  []
@@ -37,9 +39,9 @@ describe Listen::TCP do
     it 'may be paused and unpaused' do
       broadcaster.pause
 
-      expect(listen {
+      expect(listen do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    [],
         removed:  []
@@ -47,9 +49,9 @@ describe Listen::TCP do
 
       broadcaster.unpause
 
-      expect(listen {
+      expect(listen do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: ['file.rb'],
         added:    [],
         removed:  []
@@ -59,9 +61,9 @@ describe Listen::TCP do
     it 'may be stopped and restarted' do
       broadcaster.stop
 
-      expect(listen {
+      expect(listen do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    [],
         removed:  []
@@ -69,9 +71,9 @@ describe Listen::TCP do
 
       broadcaster.start
 
-      expect(listen {
+      expect(listen do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: ['file.rb'],
         added:    [],
         removed:  []
@@ -86,9 +88,9 @@ describe Listen::TCP do
     end
 
     it 'receives changes over TCP' do
-      expect(listen(1) {
+      expect(listen(1) do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    ['file.rb'],
         removed:  []
@@ -98,9 +100,9 @@ describe Listen::TCP do
     it 'may be paused and unpaused' do
       recipient.pause
 
-      expect(listen(1) {
+      expect(listen(1) do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    [],
         removed:  []
@@ -108,9 +110,9 @@ describe Listen::TCP do
 
       recipient.unpause
 
-      expect(listen(1) {
+      expect(listen(1) do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: ['file.rb'],
         added:    [],
         removed:  []
@@ -120,9 +122,9 @@ describe Listen::TCP do
     it 'may be stopped and restarted' do
       recipient.stop
 
-      expect(listen(1) {
+      expect(listen(1) do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: [],
         added:    [],
         removed:  []
@@ -130,9 +132,9 @@ describe Listen::TCP do
 
       recipient.start
 
-      expect(listen(1) {
+      expect(listen(1) do
         touch 'file.rb'
-      }).to eq(
+      end).to eq(
         modified: ['file.rb'],
         added:    [],
         removed:  []

@@ -16,7 +16,7 @@ module Listen
       cookie = options[:cookie]
 
       unless cookie
-        #TODO: remove silencing here (it's done later)
+        # TODO: remove silencing here (it's done later)
         return if _silencer.silenced?(path, options[:type])
       end
 
@@ -47,6 +47,5 @@ module Listen
     def _silencer
       listener.registry[:silencer]
     end
-
   end
 end

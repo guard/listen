@@ -11,14 +11,15 @@ Gem::Specification.new do |s|
   s.email       = 'thibaud@thibaud.gg'
   s.homepage    = 'https://github.com/guard/listen'
   s.summary     = 'Listen to file modifications'
-  s.description = 'The Listen gem listens to file modifications and notifies you about the changes. Works everywhere!'
+  s.description = 'The Listen gem listens to file modifications and '\
+    'notifies you about the changes. Works everywhere!'
 
   s.files        = `git ls-files`.split($/)
   s.test_files   = s.files.grep(%r{^spec/})
   s.executable   = 'listen'
   s.require_path = 'lib'
 
-  s.required_ruby_version = ">= 1.9.3"
+  s.required_ruby_version = '>= 1.9.3'
 
   s.add_dependency 'celluloid',  '>= 0.15.2'
   s.add_dependency 'rb-fsevent', '>= 0.9.3'

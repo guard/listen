@@ -6,8 +6,8 @@ describe Listen::Adapter::BSD do
     let(:listener) { double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
-    describe ".usable?" do
-      it "returns always true" do
+    describe '.usable?' do
+      it 'returns always true' do
         expect(described_class).to be_usable
       end
 

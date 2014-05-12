@@ -25,7 +25,7 @@ end
 def relative_path(changes)
   changes.map do |change|
     unfrozen_copy = change.dup
-    [paths].flatten.each { |path| unfrozen_copy.gsub!(%r{#{path.to_s}/}, '') }
+    [paths].flatten.each { |path| unfrozen_copy.gsub!(/#{path.to_s}\//, '') }
     unfrozen_copy
   end
 end
@@ -33,8 +33,8 @@ end
 # Generates a small time difference before performing a time sensitive
 # task (like comparing mtimes of files).
 #
-# @note Modification time for files only includes the milliseconds on Linux with MRI > 1.9.2
-#   and platform that support it (OS X 10.8 not included),
+# @note Modification time for files only includes the milliseconds on Linux
+#   with MRI > 1.9.2 and platform that support it (OS X 10.8 not included),
 #   that's why we generate a difference that's greater than 1 second.
 #
 def sleep_until_next_second

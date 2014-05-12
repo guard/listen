@@ -3,13 +3,12 @@ require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
 require 'listen/silencer'
+require 'English'
 
 module Listen
   class Listener
     attr_accessor :options, :directories, :paused, :changes, :block, :stopping
     attr_accessor :registry, :supervisor
-
-    RELATIVE_PATHS_WITH_MULTIPLE_DIRECTORIES_WARNING_MESSAGE = "The relative_paths option doesn't work when listening to multiple diretories."
 
     # Initializes the directories listener.
     #
@@ -78,7 +77,10 @@ module Listen
       @paused == false && @stopping == false
     end
 
-    # Adds ignore patterns to the existing one (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
+    # Adds ignore patterns to the existing one
+    #
+    # @see DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in
+    #   Listen::Silencer)
     #
     # @param [Regexp, Array<Regexp>] new ignoring patterns.
     #
@@ -87,7 +89,10 @@ module Listen
       registry[:silencer] = Silencer.new(self)
     end
 
-    # Overwrites ignore patterns (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer)
+    # Overwrites ignore patterns
+    #
+    # @see DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in
+    #   Listen::Silencer)
     #
     # @param [Regexp, Array<Regexp>] new ignoring patterns.
     #
@@ -166,9 +171,8 @@ module Listen
         _squash_changes(_reinterpret_related_changes(cookies))
       else
         smooshed = { modified: [], added: [], removed: [] }
-        changes.each { |h| type = h.keys.first; smooshed[type] << h[type].to_s }
-        smooshed.each { |_, v| v.uniq! }
-        smooshed
+        changes.map(&:first).each { |type, path| smooshed[type] << path.to_s }
+        smooshed.tap { |s| s.each { |_, v| v.uniq! } }
       end
     end
 
@@ -190,7 +194,7 @@ module Listen
       actions << :added if actions.delete(:moved_to)
       actions << :removed if actions.delete(:moved_from)
 
-      modified = actions.find { |x| x == :modified }
+      modified = actions.detect { |x| x == :modified }
       _calculate_add_remove_difference(actions, path, modified)
     end
 
@@ -216,14 +220,15 @@ module Listen
     # editor rename() call (e.g. Kate and Sublime)
     def _reinterpret_related_changes(cookies)
       table = { moved_to: :added, moved_from: :removed }
-      cookies.map do |cookie, changes|
+      cookies.map do |_, changes|
         file = _detect_possible_editor_save(changes)
         if file
           [[:modified, file]]
         else
-          changes.map(&:first).reject do |type, path|
+          not_silenced = changes.map(&:first).reject do |_, path|
             _silenced?(path)
-          end.map { |type, path| [table.fetch(type, type), path] }
+          end
+          not_silenced.map { |type, path| [table.fetch(type, type), path] }
         end
       end.flatten(1)
     end
@@ -231,9 +236,9 @@ module Listen
     def _detect_possible_editor_save(changes)
       return unless changes.size == 2
 
-      from, to = changes.sort { |x,y| x.keys.first <=> y.keys.first }
+      from, to = changes.sort { |x, y| x.keys.first <=> y.keys.first }
       from, to = from[:moved_from], to[:moved_to]
-      return unless from and to
+      return unless from && to
 
       # Expect an ignored moved_from and non-ignored moved_to
       # to qualify as an "editor modify"

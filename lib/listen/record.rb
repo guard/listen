@@ -10,7 +10,8 @@ module Listen
     end
 
     def set_path(path, data)
-      @paths[::File.dirname(path)][::File.basename(path)] = file_data(path).merge(data)
+      new_data = file_data(path).merge(data)
+      @paths[::File.dirname(path)][::File.basename(path)] = new_data
     end
 
     def unset_path(path)
@@ -28,7 +29,8 @@ module Listen
     def build
       @paths = _init_paths
       listener.directories.each do |path|
-        listener.registry[:change_pool].change(path, type: 'Dir', recursive: true, silence: true)
+        options = { type: 'Dir', recursive: true, silence: true }
+        listener.registry[:change_pool].change(path, options)
       end
     end
 

@@ -6,12 +6,13 @@ describe Listen::TCP::Broadcaster do
   let(:port) { 4000 }
 
   subject { described_class.new(host, port) }
-  let(:server)  { double(described_class::TCPServer, close: true, accept: nil) }
+  let(:server) { double(described_class::TCPServer, close: true, accept: nil) }
   let(:socket)  { double(described_class::TCPSocket, write: true) }
   let(:payload) { Listen::TCP::Message.new.payload }
 
   before do
-    expect(described_class::TCPServer).to receive(:new).with(host, port).and_return server
+    expect(described_class::TCPServer).to receive(:new).
+      with(host, port).and_return server
   end
 
   after do

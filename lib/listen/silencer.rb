@@ -3,11 +3,30 @@ module Listen
     include Celluloid
 
     # The default list of directories that get ignored.
-    DEFAULT_IGNORED_DIRECTORIES = %w[.bundle .git .hg .rbx .svn bundle log tmp vendor/ruby vendor/bundle]
+    DEFAULT_IGNORED_DIRECTORIES = %r{^(?:
+      \.git
+      | \.svn
+      | \.hg
+      | \.rbx
+      | \.bundle
+      | bundle
+      | vendor/bundle
+      | log
+      | tmp
+      |vendor/ruby
+    )(/|$)}x
 
     # The default list of files that get ignored.
-    KATE_TEMP_FILES = [/\..*\d+\.new/, '.kate-swp']
-    DEFAULT_IGNORED_EXTENSIONS  = %w(.DS_Store .tmp ~) + KATE_TEMP_FILES
+    DEFAULT_IGNORED_EXTENSIONS  = %r{(?:
+      # Kate's tmp/swp files
+      \..*\d+\.new
+      | \.kate-swp
+
+      # other files
+      | \.DS_Store
+      | \.tmp
+      | ~
+    )$}x
 
     attr_accessor :listener, :only_patterns, :ignore_patterns
 
@@ -20,11 +39,18 @@ module Listen
     def silenced?(path, type = 'Unknown')
       silenced = false
 
+      relative_path = _relative_path(path)
+
       if only_patterns && type == 'File'
-        silenced = !only_patterns.any? { |pattern| _relative_path(path) =~ pattern }
+        silenced = !only_patterns.any? { |pattern| relative_path =~ pattern }
       end
 
-      silenced ||= ignore_patterns.any? { |pattern| _relative_path(path) =~ pattern }
+      silenced || ignore_patterns.any? { |pattern| relative_path =~ pattern }
+    end
+
+    def match(args)
+      path, type = args.first
+      silenced?(path, type)
     end
 
     private
@@ -36,33 +62,28 @@ module Listen
     end
 
     def _init_ignore_patterns
-      @ignore_patterns = []
-      @ignore_patterns << _default_ignore_patterns unless listener.options[:ignore!]
-      @ignore_patterns << listener.options[:ignore] << listener.options[:ignore!]
-      @ignore_patterns.compact!
-      @ignore_patterns.flatten!
-    end
+      options = listener.options
 
-    def _default_ignore_patterns
-      [_default_ignored_directories_patterns, _default_ignored_extensions_patterns]
-    end
-
-    def _default_ignored_directories_patterns
-      ignored_directories = DEFAULT_IGNORED_DIRECTORIES.map { |d| Regexp.escape(d) }
-      %r{^(?:#{ignored_directories.join('|')})(/|$)}
-    end
-
-    def _default_ignored_extensions_patterns
-      ignored_extensions = DEFAULT_IGNORED_EXTENSIONS.map do
-        |e| e.is_a?(Regexp) ? e : Regexp.escape(e)
+      patterns = []
+      unless options[:ignore!]
+        patterns << DEFAULT_IGNORED_DIRECTORIES
+        patterns << DEFAULT_IGNORED_EXTENSIONS
       end
 
-      %r{(?:#{ignored_extensions.join('|')})$}
+      patterns << options[:ignore]
+      patterns << options[:ignore!]
+
+      patterns.compact!
+      patterns.flatten!
+
+      @ignore_patterns = patterns
     end
 
     def _relative_path(path)
-      relative_paths = listener.directories.map { |dir| path.relative_path_from(dir).to_s }
-      relative_paths.detect { |path| !path.start_with?('../') }
+      relative_paths = listener.directories.map do |dir|
+        path.relative_path_from(dir).to_s
+      end
+      relative_paths.detect { |rel_path| !rel_path.start_with?('../') }
     end
   end
 end

@@ -2,7 +2,6 @@ require 'celluloid/io'
 
 module Listen
   module Adapter
-
     # Adapter to receive file system modifications over TCP
     class TCP < Base
       include Celluloid::IO
@@ -18,7 +17,7 @@ module Listen
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
         @socket = TCPSocket.new(listener.host, listener.port)
-        @buffer = String.new
+        @buffer = ''
         run
       end
 
@@ -36,7 +35,7 @@ module Listen
 
       # Continuously receive and asynchronously handle data
       def run
-        while data = @socket.recv(RECEIVE_WINDOW)
+        while (data = @socket.recv(RECEIVE_WINDOW))
           async.handle_data(data)
         end
       end
@@ -44,7 +43,7 @@ module Listen
       # Buffers incoming data and handles messages accordingly
       def handle_data(data)
         @buffer << data
-        while message = Listen::TCP::Message.from_buffer(@buffer)
+        while (message = Listen::TCP::Message.from_buffer(@buffer))
           handle_message(message)
         end
       end
@@ -62,6 +61,5 @@ module Listen
         false
       end
     end
-
   end
 end

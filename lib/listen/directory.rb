@@ -15,7 +15,9 @@ module Listen
         when 'File'
           _async_change(entry_path, options.merge(type: 'File'))
         when 'Dir'
-          _async_change(entry_path, options.merge(type: 'Dir')) if _recursive_scan?(entry_path)
+          if _recursive_scan?(entry_path)
+            _async_change(entry_path, options.merge(type: 'Dir'))
+          end
         end
       end
     end
@@ -23,8 +25,8 @@ module Listen
     private
 
     def _update_record
-      if ::Dir.exists?(path)
-        _record.async.set_path(path, { type: 'Dir'})
+      if ::Dir.exist?(path)
+        _record.async.set_path(path,  type: 'Dir')
       else
         _record.async.unset_path(path)
       end
@@ -35,9 +37,9 @@ module Listen
     end
 
     def _entries
-      return {} unless ::Dir.exists?(path)
+      return {} unless ::Dir.exist?(path)
 
-      entries = ::Dir.entries(path) - %w[. ..]
+      entries = ::Dir.entries(path) - %w(. ..)
       entries = entries.map { |entry| [entry, type: _entry_type(entry)] }
       Hash[*entries.flatten]
     end
@@ -65,7 +67,7 @@ module Listen
     end
 
     def _recursive_scan?(path)
-      !::Dir.exists?(path) || options[:recursive]
+      !::Dir.exist?(path) || options[:recursive]
     end
 
     def _async_change(entry_path, options)
