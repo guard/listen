@@ -36,4 +36,7 @@ describe Listen::Adapter::Darwin do
       expect(described_class).to_not be_usable
     end
   end
+
+  specify { expect(described_class).to be_local_fs }
+
 end

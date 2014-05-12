@@ -7,7 +7,8 @@ describe Listen::Listener do
   let(:supervisor) { double(Celluloid::SupervisionGroup, add: true, pool: true) }
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
-  let(:adapter) { double(Listen::Adapter::Base) }
+  let(:adapter_class) { double(:adapter_class, local_fs?: true) }
+  let(:adapter) { double(Listen::Adapter::Base, class: adapter_class) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before {
