@@ -84,7 +84,13 @@ module Listen
 
     def _relative_path(path)
       relative_paths = listener.directories.map do |dir|
-        path.relative_path_from(dir).to_s
+        begin
+          path.relative_path_from(dir).to_s
+        rescue ArgumentError
+          # Windows raises errors across drives, e.g. when 'C:/' and 'E:/dir'
+          # So, here's a Dirty hack to fool the detect() below..
+          '../'
+        end
       end
       relative_paths.detect { |rel_path| !rel_path.start_with?('../') }
     end
