@@ -25,7 +25,17 @@ describe Listen do
   describe '.stop' do
     it 'stops all listeners & Celluloid' do
       Listen.stop
-      expect(Celluloid.internal_pool.running?).to be_false
+
+      # TODO: running? returns internal_pool on 0.15.2
+      # (remove after Celluloid dependency is bumped)
+      buggy_method = if Celluloid.respond_to?(:internal_pool)
+                       Celluloid.running? == Celluloid.internal_pool
+                     else
+                       false
+                     end
+
+      pool = buggy_method ? Celluloid.internal_pool : Celluloid
+      expect(pool).to_not be_running
     end
   end
 
