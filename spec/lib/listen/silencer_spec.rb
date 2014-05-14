@@ -44,8 +44,9 @@ describe Listen::Silencer do
         end
       end
 
+      gedit_files = %w(.goutputstream-S3FBGX)
       kate_files = %w(foo.rbo54321.new foo.rbB22583.new foo.rb.kate-swp)
-      (%w(.DS_Store foo.tmp foo~) + kate_files).each do |path|
+      (%w(.DS_Store foo.tmp foo~) + kate_files + gedit_files).each do |path|
         describe do
           it "by default silences files like: #{path}" do
             expect(silencer.silenced?(pwd + path)).to be_true

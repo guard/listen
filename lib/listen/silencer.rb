@@ -22,6 +22,9 @@ module Listen
       \..*\d+\.new
       | \.kate-swp
 
+      # Gedit tmp files
+      | \.goutputstream-.{6}
+
       # other files
       | \.DS_Store
       | \.tmp
