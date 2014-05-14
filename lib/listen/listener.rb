@@ -123,7 +123,12 @@ module Listen
 
     def _init_debug
       if options[:debug] || ENV['LISTEN_GEM_DEBUGGING'] =~ /true|1/i
-        Celluloid.logger.level = Logger::INFO
+        if RbConfig::CONFIG['host_os'] =~ /bsd|dragonfly/
+          Celluloid.logger.level = Logger::INFO
+        else
+          # BSDs silently fail ;;(
+          Celluloid.logger.level = Logger::DEBUG
+        end
       else
         Celluloid.logger.level = Logger::FATAL
       end

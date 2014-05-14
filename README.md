@@ -156,7 +156,7 @@ Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
-There are 4 OS-specific adapters to support Darwin, Linux, *BSD and Windows.
+There are 4 OS-specific adapters to support Darwin, Linux, ~~*BSD~~ and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
 
 There is also a polling adapter which is a cross-platform adapter and it will
@@ -180,12 +180,23 @@ gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 
 ### On *BSD
 
+**NOTE: *BSD currently is BROKEN with no plans to fix it or support it (see: [#220](https://github.com/guard/listen/issues/220))**
+
 If your are on *BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
 Please add the following to your Gemfile:
 
 ```ruby
 require 'rbconfig'
-gem 'rb-kqueue', '>= 0.2' if RbConfig::CONFIG['target_os'] =~ /freebsd/i
+gem 'rb-kqueue', '>= 0.2'
+if RbConfig::CONFIG['target_os'] =~ /bsd|dragonfly/i
+  gem 'rb-kqueue', '>= 0.2'
+
+  # Base versions have known conflicts/bugs
+  # Even master branches may not work...
+  gem 'ffi', github: 'carpetsmoker/ffi', ref: 'ac63e07f7'
+  gem 'celluloid', github: 'celluloid/celluloid', ref: '7fdef04'
+end
+
 ```
 
 ### Issues
