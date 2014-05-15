@@ -156,7 +156,7 @@ Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
-There are 4 OS-specific adapters to support Darwin, Linux, ~~*BSD~~ and Windows.
+There are 4 OS-specific adapters to support Darwin, Linux, ~~\*BSD~~ and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
 
 There is also a polling adapter which is a cross-platform adapter and it will
@@ -178,11 +178,11 @@ require 'rbconfig'
 gem 'wdm', '>= 0.1.0' if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 ```
 
-### On *BSD
+### On \*BSD
 
-**NOTE: *BSD currently is BROKEN with no plans to fix it or support it (see: [#220](https://github.com/guard/listen/issues/220))**
+**NOTE: \*BSD currently is BROKEN with no plans to fix it or support it (see: [#220](https://github.com/guard/listen/issues/220))**
 
-If your are on *BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
+If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
 Please add the following to your Gemfile:
 
 ```ruby
@@ -199,13 +199,10 @@ end
 
 ```
 
-### Issues
-
-Listen traps SIGINT signal to properly finalize listeners. If you plan
-on trapping this signal yourself - make sure to call `Listen.stop` in
-signal handler.
+### Issues and troubleshooting
 
 Sometimes OS-specific adapters don't work. :'(
+
 Here are some things you could try to avoid forcing polling.
 
 * [Update your Dropbox client](http://www.dropbox.com/downloading), if you have Dropbox installed.
@@ -216,7 +213,18 @@ Here are some things you could try to avoid forcing polling.
 
 If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
 
-Also, if you have problems related to receiving the wrong events, too many events or none at all, be sure set the environment variable `LISTEN_GEM_DEBUGGING=1` and include the output when reporting a new issue.
+Also, if you have problems related to receiving the wrong events, too many
+events or none at all, be sure set the environment variable
+`LISTEN_GEM_DEBUGGING=1` and include the output when reporting a new issue.
+
+If the listener works and then stops listening at some point and no errors are
+shown with `LISTEN_GEM_DEBUGGING=1`, set `LISTEN_GEM_DEBUGGING=2` for full
+logging.
+
+Listen traps SIGINT signal to properly finalize listeners. If you plan
+on trapping this signal yourself - make sure to call `Listen.stop` in
+signal handler.
+
 
 ## Forwarding file events over TCP
 

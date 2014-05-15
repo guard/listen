@@ -26,7 +26,7 @@ module Listen
       @changes     = []
       @block       = block
       @registry    = Celluloid::Registry.new
-      _init_debug
+      Celluloid.logger.level = _debug_level
     end
 
     # Starts the listener by initializing the adapter and building
@@ -121,16 +121,19 @@ module Listen
         polling_fallback_message: nil }.merge(options)
     end
 
-    def _init_debug
-      if options[:debug] || ENV['LISTEN_GEM_DEBUGGING'] =~ /true|1/i
-        if RbConfig::CONFIG['host_os'] =~ /bsd|dragonfly/
-          Celluloid.logger.level = Logger::INFO
-        else
-          # BSDs silently fail ;;(
-          Celluloid.logger.level = Logger::DEBUG
-        end
+    def _debug_level
+      # TODO: remove? (since there are BSD warnings anyway)
+      bsd = RbConfig::CONFIG['host_os'] =~ /bsd|dragonfly/
+      return Logger::DEBUG if bsd
+
+      debugging = ENV['LISTEN_GEM_DEBUGGING'] || options[:debug]
+      case debugging.to_s
+      when /2/
+        Logger::DEBUG
+      when /true|yes|1/i
+        Logger::INFO
       else
-        Celluloid.logger.level = Logger::FATAL
+        Logger::FATAL
       end
     end
 
