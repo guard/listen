@@ -7,9 +7,9 @@ def linux?
 end
 
 def bsd?
-  RbConfig::CONFIG['target_os'] =~ /freebsd/i
+  RbConfig::CONFIG['target_os'] =~ /bsd|dragonfly/i
 end
 
 def windows?
-  RbConfig::CONFIG['target_os'] =~ /mswin|mingw/i
+  RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 end
