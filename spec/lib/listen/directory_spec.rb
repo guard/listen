@@ -8,14 +8,13 @@ describe Listen::Directory do
     double(Listen::Record, async: double(set_path: true, unset_path: true))
   end
 
-  let(:change_pool) { double(Listen::Change) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:change_pool_async) { double(Listen::Change) }
+  let(:actor) { double('ChangeProxy', async: change_pool_async) }
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { example.run } }
   before do
-    change_pool.stub(:async) { change_pool_async }
     registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { change_pool }
+    registry.stub(:[]).with(:change_pool) { actor }
   end
 
   describe '#scan' do

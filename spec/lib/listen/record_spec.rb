@@ -73,10 +73,11 @@ describe Listen::Record do
 
   describe '#build' do
     let(:directories) { ['dir_path'] }
-    let(:change_pool) { double(Listen::Change, terminate: true) }
+
+    let(:actor) { double(Listen::Change, change: nil, terminate: true) }
+
     before do
-      change_pool.stub(:change)
-      registry.stub(:[]).with(:change_pool) { change_pool }
+      registry.stub(:[]).with(:change_pool) { actor }
       listener.stub(:directories) { directories }
     end
 
@@ -87,7 +88,7 @@ describe Listen::Record do
     end
 
     it 'calls change asynchronously on all directories to build record'  do
-      expect(change_pool).to receive(:change).
+      expect(actor).to receive(:change).
         with('dir_path', type: 'Dir', recursive: true, silence: true)
 
       record.build
