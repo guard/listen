@@ -17,8 +17,10 @@ describe Listen::TCP::Message do
   end
 
   describe '#object=' do
-    before do
-      subject.object = object
+    subject do
+      described_class.new(object).tap do |message|
+        message.object = object
+      end
     end
 
     describe '#object' do
@@ -28,12 +30,12 @@ describe Listen::TCP::Message do
 
     describe '#body' do
       subject { super().body }
-      it    { is_expected.to eq body }
+      it { is_expected.to eq body }
     end
 
     describe '#size' do
       subject { super().size }
-      it    { is_expected.to eq size }
+      it { is_expected.to eq size }
     end
 
     describe '#payload' do
@@ -43,23 +45,25 @@ describe Listen::TCP::Message do
   end
 
   describe '#payload=' do
-    before do
-      subject.payload = payload
+    subject do
+      described_class.new(object).tap do |message|
+        message.payload = payload
+      end
     end
 
     describe '#object' do
       subject { super().object }
-      it  { is_expected.to eq object }
+      it { is_expected.to eq object }
     end
 
     describe '#body' do
       subject { super().body }
-      it    { is_expected.to eq body }
+      it { is_expected.to eq body }
     end
 
     describe '#size' do
       subject { super().size }
-      it    { is_expected.to eq size }
+      it { is_expected.to eq size }
     end
 
     describe '#payload' do

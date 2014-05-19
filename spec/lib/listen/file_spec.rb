@@ -33,7 +33,9 @@ describe Listen::File do
       end
 
       before do
-        allow(record).to receive_message_chain(:future, :file_data) { double(value: record_data) }
+        allow(record).to receive_message_chain(:future, :file_data) do
+          double(value: record_data)
+        end
       end
 
       context 'non-existing path' do
@@ -118,7 +120,11 @@ describe Listen::File do
     end
 
     context 'path not present in record' do
-      before { allow(record).to receive_message_chain(:future, :file_data) { double(value: {}) } }
+      before do
+        allow(record).to receive_message_chain(:future, :file_data) do
+          double(value: {})
+        end
+      end
 
       context 'existing path' do
         around do |example|

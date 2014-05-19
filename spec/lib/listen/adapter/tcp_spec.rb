@@ -93,7 +93,9 @@ describe Listen::Adapter::TCP do
     it 'handles messages accordingly' do
       message = Listen::TCP::Message.new
 
-      allow(Listen::TCP::Message).to receive(:from_buffer).and_return message, nil
+      allow(Listen::TCP::Message).to receive(:from_buffer).
+        and_return message, nil
+
       expect(Listen::TCP::Message).to receive(:from_buffer).with 'foo'
       expect(subject.wrapped_object).to receive(:handle_message).with message
 

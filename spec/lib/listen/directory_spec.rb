@@ -91,7 +91,9 @@ describe Listen::Directory do
 
       context 'dir paths not present in record' do
         before do
-          allow(record).to receive_message_chain(:future, :dir_entries) { double(value: {}) }
+          allow(record).to receive_message_chain(:future, :dir_entries) do
+            double(value: {})
+          end
         end
 
         context 'non-existing dir path' do
@@ -180,7 +182,9 @@ describe Listen::Directory do
 
       context 'dir paths not present in record' do
         before do
-          allow(record).to receive_message_chain(:future, :dir_entries) { double(value: {}) }
+          allow(record).to receive_message_chain(:future, :dir_entries) do
+            double(value: {})
+          end
         end
 
         context 'non-existing dir path' do
