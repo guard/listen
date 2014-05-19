@@ -27,6 +27,8 @@ module Listen
       @block       = block
       @registry    = Celluloid::Registry.new
       Celluloid.logger.level = _debug_level
+
+      _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
     end
 
     # Starts the listener by initializing the adapter and building
@@ -163,6 +165,7 @@ module Listen
         end
       end
     rescue => ex
+      _log :error, "waiting for changes failed: #{$!}:#{$@.join("\n")}"
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
     end
@@ -188,13 +191,13 @@ module Listen
       actions = changes.group_by(&:last).map do |path, action_list|
         [_logical_action_for(path, action_list.map(&:first)), path.to_s]
       end
-      Celluloid.logger.info "listen: raw changes: #{actions.inspect}"
+      _log :info, "listen: raw changes: #{actions.inspect}"
 
       { modified: [], added: [], removed: [] }.tap do |squashed|
         actions.each do |type, path|
           squashed[type] << path unless type.nil?
         end
-        Celluloid.logger.info "listen: final changes: #{squashed.inspect}"
+        _log :info, "listen: final changes: #{squashed.inspect}"
       end
     end
 
@@ -256,6 +259,10 @@ module Listen
     def _silenced?(path)
       type = path.directory? ? 'Dir' : 'File'
       registry[:silencer].silenced?(path, type)
+    end
+
+    def _log(type, message)
+      Celluloid.logger.send(type, message)
     end
   end
 end
