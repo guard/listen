@@ -69,7 +69,7 @@ describe 'Listen' do
 
             it 'listens to file.rb modification and wait' do
               expect(wrapper.listen do
-                open('file.rb', 'w') { |f| f.write('foo') }
+                open('file.rb', 'a') { |f| f.write('foo') }
                 sleep 0.5
               end).to eq(modified: ['file.rb'], added: [], removed: [])
             end
