@@ -19,13 +19,25 @@ module Listen
           true
         end
       rescue LoadError
+        _log :error, "wdm - load failed: #{$!}:#{$@.join("\n")}"
         Kernel.warn BUNDLER_DECLARE_GEM
         false
       end
 
       def start
+        _log :warn, 'wdm - starting...'
         worker = _init_worker
-        Thread.new { worker.run! }
+        Thread.new do
+          begin
+            _log :warn, 'wdm - running worker ...'
+            worker.run!
+          rescue LoadError
+            _log :error, "wdm - worker run failed: #{$!}:#{$@.join("\n")}"
+          end
+        end
+      rescue
+        _log :error, "wdm - start failed: #{$!}:#{$@.join("\n")}"
+        raise
       end
 
       private
@@ -38,6 +50,8 @@ module Listen
       def _init_worker
         WDM::Monitor.new.tap do |worker|
           _directories_path.each do |path|
+            _log :debug, "wdm - watching recursively: #{path.inspect}"
+
             worker.watch_recursively(path.to_s, :files,
                                      &_worker_file_callback)
 
@@ -54,6 +68,7 @@ module Listen
         lambda do |change|
           begin
             path = _path(change.path)
+            _log :debug, "wdm - FILE callback: #{change.inspect}"
             options = { type: 'File', change: _change(change.type) }
             _notify_change(path, options)
           rescue
@@ -69,6 +84,7 @@ module Listen
             path = _path(change.path)
             return if path.directory?
 
+            _log :debug, "wdm - ATTR callback: #{change.inspect}"
             options = { type: 'File', change: _change(change.type) }
             _notify_change(_path(change.path), options)
           rescue
@@ -82,6 +98,7 @@ module Listen
         lambda do |change|
           begin
             path = _path(change.path)
+            _log :debug, "wdm - DIR callback: #{change.inspect}"
             if change.type == :removed
               _notify_change(path.dirname, type: 'Dir')
             elsif change.type == :added
@@ -92,12 +109,16 @@ module Listen
               #   - added subdirs (handled above)
               #   - removed files (handled by _worker_file_callback)
               #   - added files (handled by _worker_file_callback)
+              # so what's left?
             end
           rescue
             _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
             raise
           end
         end
+      rescue
+        _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
+        raise
       end
 
       def _path(path)
