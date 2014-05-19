@@ -39,7 +39,7 @@ module Listen
       _init_actors
       unpause
       @stopping = false
-      registry[:adapter].async.start
+      _start_adapter
       Thread.new { _wait_for_changes }
     end
 
@@ -177,7 +177,9 @@ module Listen
     end
 
     def _smoosh_changes(changes)
-      if registry[:adapter].class.local_fs?
+      # TODO: adapter could be nil at this point (shutdown)
+      adapter = registry[:adapter]
+      if adapter && adapter.class.local_fs?
         cookies = changes.group_by { |x| x[:cookie] }
         _squash_changes(_reinterpret_related_changes(cookies))
       else
@@ -259,6 +261,10 @@ module Listen
     def _silenced?(path)
       type = path.directory? ? 'Dir' : 'File'
       registry[:silencer].silenced?(path, type)
+    end
+
+    def _start_adapter
+      registry[:adapter].async.start
     end
 
     def _log(type, message)

@@ -71,7 +71,7 @@ describe Listen::Listener do
 
   describe '#start' do
     before do
-      adapter.stub_chain(:async, :start)
+      allow(listener).to receive(:_start_adapter)
       silencer.stub(:silenced?) { false }
     end
 
@@ -114,17 +114,8 @@ describe Listen::Listener do
       expect(listener.paused).to be_false
     end
 
-    it 'starts adapter asynchronously' do
-      async_stub = double
-      expect(adapter).to receive(:async) { async_stub }
-      expect(async_stub).to receive(:start)
-      listener.start
-    end
-
-    it 'starts adapter asynchronously' do
-      async_stub = double
-      expect(adapter).to receive(:async) { async_stub }
-      expect(async_stub).to receive(:start)
+    it 'starts adapter' do
+      expect(listener).to receive(:_start_adapter)
       listener.start
     end
 

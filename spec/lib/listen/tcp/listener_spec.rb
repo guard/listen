@@ -63,7 +63,7 @@ describe Listen::TCP::Listener do
 
     describe '#start' do
       before do
-        adapter.stub_chain(:async, :start)
+        allow(subject).to receive(:_start_adapter)
         broadcaster.stub(:start)
       end
 
