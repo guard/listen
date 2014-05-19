@@ -3,142 +3,74 @@ require 'spec_helper'
 describe Listen::TCP do
 
   let(:port) { 4000 }
-
-  let(:broadcaster) { Listen.to(Dir.pwd, forward_to: port) }
-  let(:recipient)  { Listen.on(port) }
-  let(:callback) do
-    lambda do |modified, added, removed|
-      add_changes(:modified, modified)
-      add_changes(:added, added)
-      add_changes(:removed, removed)
-    end
-  end
+  let(:broadcast_options) { { forward_to: port } }
   let(:paths) { Pathname.new(Dir.pwd) }
 
   around { |example| fixtures { example.run } }
+  before { broadcaster.listener.start }
 
-  before do
-    broadcaster.start
-  end
+  let(:report_nothing) { Proc.new {} }
 
   context 'when broadcaster' do
-    before do
-      broadcaster.block = callback
-    end
+    let(:broadcaster) { setup_listener(broadcast_options) }
+    let(:recipient) { setup_recipient(port, report_nothing) }
 
     it 'still handles local changes' do
-      expect(listen do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    ['file.rb'],
-        removed:  []
-      )
+      expect(broadcaster).to detect_addition_of('file.rb')
     end
 
     it 'may be paused and unpaused' do
-      broadcaster.pause
+      broadcaster.listener.pause
+      expect(recipient).to_not detect_addition_of('file.rb')
+      expect(recipient).to_not detect_modification_of('file.rb')
 
-      expect(listen do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    [],
-        removed:  []
-      )
-
-      broadcaster.unpause
-
-      expect(listen do
-        touch 'file.rb'
-      end).to eq(
-        modified: ['file.rb'],
-        added:    [],
-        removed:  []
-      )
+      broadcaster.listener.unpause
+      expect(broadcaster).to detect_modification_of('file.rb')
     end
 
     it 'may be stopped and restarted' do
-      broadcaster.stop
+      broadcaster.listener.stop
+      expect(recipient).to_not detect_addition_of('file.rb')
+      expect(recipient).to_not detect_modification_of('file.rb')
 
-      expect(listen do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    [],
-        removed:  []
-      )
-
-      broadcaster.start
-
-      expect(listen do
-        touch 'file.rb'
-      end).to eq(
-        modified: ['file.rb'],
-        added:    [],
-        removed:  []
-      )
+      broadcaster.listener.start
+      expect(broadcaster).to detect_modification_of('file.rb')
     end
   end
 
-  context 'when recipient' do
-    before do
-      recipient.start
-      recipient.block = callback
-    end
+  # (Broken because it's looking for /etc/resolv.conf)
+  unless windows? && Celluloid::VERSION <= '0.15.2'
 
-    it 'receives changes over TCP' do
-      expect(listen(1) do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    ['file.rb'],
-        removed:  []
-      )
-    end
+    context 'when recipient' do
+      let(:broadcaster) { setup_listener(broadcast_options, report_nothing) }
+      let(:recipient) { setup_recipient(port) }
 
-    it 'may be paused and unpaused' do
-      recipient.pause
+      before do
+        broadcaster.lag = 1
+        recipient.listener.start
+      end
 
-      expect(listen(1) do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    [],
-        removed:  []
-      )
+      it 'receives changes over TCP' do
+        expect(recipient).to detect_addition_of('file.rb')
+      end
 
-      recipient.unpause
+      it 'may be paused and unpaused' do
+        recipient.listener.pause
+        expect(recipient).to_not detect_addition_of('file.rb')
+        expect(recipient).to_not detect_modification_of('file.rb')
 
-      expect(listen(1) do
-        touch 'file.rb'
-      end).to eq(
-        modified: ['file.rb'],
-        added:    [],
-        removed:  []
-      )
-    end
+        recipient.listener.unpause
+        expect(recipient).to detect_modification_of('file.rb')
+      end
 
-    it 'may be stopped and restarted' do
-      recipient.stop
+      it 'may be stopped and restarted' do
+        recipient.listener.stop
+        expect(recipient).to_not detect_addition_of('file.rb')
+        expect(recipient).to_not detect_modification_of('file.rb')
 
-      expect(listen(1) do
-        touch 'file.rb'
-      end).to eq(
-        modified: [],
-        added:    [],
-        removed:  []
-      )
-
-      recipient.start
-
-      expect(listen(1) do
-        touch 'file.rb'
-      end).to eq(
-        modified: ['file.rb'],
-        added:    [],
-        removed:  []
-      )
+        recipient.listener.start
+        expect(recipient).to detect_modification_of('file.rb')
+      end
     end
   end
 
