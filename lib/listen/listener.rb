@@ -179,7 +179,7 @@ module Listen
     def _smoosh_changes(changes)
       # TODO: adapter could be nil at this point (shutdown)
       adapter = registry[:adapter]
-      if adapter && adapter.class.local_fs?
+      if adapter && adapter.local_fs?
         cookies = changes.group_by { |x| x[:cookie] }
         _squash_changes(_reinterpret_related_changes(cookies))
       else

@@ -13,8 +13,7 @@ describe Listen::Listener do
 
   let(:record) { double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { double(Listen::Silencer, terminate: true) }
-  let(:adapter_class) { double(:adapter_class, local_fs?: true) }
-  let(:adapter) { double(Listen::Adapter::Base, class: adapter_class) }
+  let(:adapter) { double(Listen::Adapter::Base, local_fs?: true) }
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before do

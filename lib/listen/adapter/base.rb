@@ -24,6 +24,10 @@ module Listen
         true
       end
 
+      def local_fs?
+        self.class.local_fs?
+      end
+
       private
 
       def _latency
