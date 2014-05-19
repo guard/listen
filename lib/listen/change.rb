@@ -17,14 +17,23 @@ module Listen
 
       unless cookie
         # TODO: remove silencing here (it's done later)
-        return if _silencer.silenced?(path, options[:type])
+        if _silencer.silenced?(path, options[:type])
+          _log :debug, "(silenced): #{path.inspect}"
+          return
+        end
       end
+
+      _log :debug, "got change: #{[path, options].inspect}"
 
       if change
         _notify_listener(change, path, cookie ? { cookie: cookie } : {})
       else
         send("_#{options[:type].downcase}_change", path, options)
       end
+    rescue
+      _log :error, '................CHANGE CRASHED.................'
+      STDERR.puts ".. #{$!.inspect}:#{$@.join("\n")}"
+      raise
     end
 
     private
@@ -46,6 +55,10 @@ module Listen
 
     def _silencer
       listener.registry[:silencer]
+    end
+
+    def _log(type, message)
+      Celluloid.logger.send(type, message)
     end
   end
 end
