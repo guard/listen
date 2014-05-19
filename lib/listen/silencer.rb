@@ -25,6 +25,10 @@ module Listen
       # Gedit tmp files
       | \.goutputstream-.{6}
 
+      # Intellij files
+      | ___jb_bak___
+      | ___jb_old___
+
       # other files
       | \.DS_Store
       | \.tmp
