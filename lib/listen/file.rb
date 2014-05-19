@@ -40,7 +40,8 @@ module Listen
     end
 
     def _exist?
-      @exist ||= ::File.exist?(path)
+      return @exist unless @exist.nil?
+      @exist = (_lstat != :no_such_file)
     end
 
     def _modified?
@@ -104,7 +105,11 @@ module Listen
     end
 
     def _lstat
-      @lstat ||= ::File.lstat(path)
+      @lstat ||= begin
+                   ::File.lstat(path)
+                 rescue Errno::ENOENT
+                   :no_such_file
+                 end
     rescue
       nil
     end
