@@ -9,6 +9,7 @@ module Listen
     end
 
     def scan
+      _log :debug, "Scanning: #{@path.to_s.inspect}"
       _update_record
       _all_entries.each do |entry_path, data|
         case data[:type]
@@ -20,6 +21,9 @@ module Listen
           end
         end
       end
+    rescue
+      _log :warn, "scanning DIED: #{$!}:#{$@.join("\n")}"
+      raise
     end
 
     private
@@ -73,6 +77,10 @@ module Listen
     def _async_change(entry_path, options)
       entry_path = path.join(entry_path)
       _change_pool.async.change(entry_path, options)
+    end
+
+    def _log(type, message)
+      Celluloid.logger.send(type, message)
     end
   end
 end
