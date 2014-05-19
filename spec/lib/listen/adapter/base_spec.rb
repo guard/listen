@@ -12,7 +12,7 @@ describe Listen::Adapter::Base do
     end
 
     it 'returns latency from listener actor if present' do
-      listener.stub(:options) { { latency: 1234 } }
+      allow(listener).to receive(:options) { { latency: 1234 } }
       expect(adapter.send(:_latency)).to eq 1234
     end
   end
@@ -21,12 +21,12 @@ describe Listen::Adapter::Base do
     let(:change_pool) { double(Listen::Change) }
     let(:change_pool_async) { double('ChangePoolAsync') }
     before do
-      change_pool.stub(:async) { change_pool_async }
-      registry.stub(:[]).with(:change_pool) { change_pool }
+      allow(change_pool).to receive(:async) { change_pool_async }
+      allow(registry).to receive(:[]).with(:change_pool) { change_pool }
     end
 
     context 'listener listen' do
-      before { listener.stub(:listen?) { true } }
+      before { allow(listener).to receive(:listen?) { true } }
 
       it 'calls change on change_pool asynchronously' do
         expect(change_pool_async).to receive(:change).
@@ -36,7 +36,7 @@ describe Listen::Adapter::Base do
     end
 
     context "listener doesn't listen" do
-      before { listener.stub(:listen?) { false } }
+      before { allow(listener).to receive(:listen?) { false } }
 
       it 'calls change on change_pool asynchronously' do
         expect(change_pool_async).to_not receive(:change)

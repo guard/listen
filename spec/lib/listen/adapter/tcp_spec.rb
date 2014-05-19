@@ -19,7 +19,7 @@ describe Listen::Adapter::TCP do
   let(:socket) { double(described_class::TCPSocket, close: true, recv: nil) }
 
   before do
-    described_class::TCPSocket.stub(:new).and_return socket
+    allow(described_class::TCPSocket).to receive(:new).and_return socket
   end
 
   after do
@@ -72,8 +72,8 @@ describe Listen::Adapter::TCP do
     let(:async) { double('TCP-adapter async', handle_data: true) }
 
     it 'handles data from socket' do
-      socket.stub(:recv).and_return 'foo', 'bar', nil
-      subject.stub(:async).and_return async
+      allow(socket).to receive(:recv).and_return 'foo', 'bar', nil
+      allow(subject).to receive(:async).and_return async
 
       expect(async).to receive(:handle_data).with 'foo'
       expect(async).to receive(:handle_data).with 'bar'
@@ -93,7 +93,7 @@ describe Listen::Adapter::TCP do
     it 'handles messages accordingly' do
       message = Listen::TCP::Message.new
 
-      Listen::TCP::Message.stub(:from_buffer).and_return message, nil
+      allow(Listen::TCP::Message).to receive(:from_buffer).and_return message, nil
       expect(Listen::TCP::Message).to receive(:from_buffer).with 'foo'
       expect(subject.wrapped_object).to receive(:handle_message).with message
 

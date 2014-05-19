@@ -20,19 +20,30 @@ describe Listen::TCP::Listener do
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before do
-    Celluloid::Registry.stub(:new) { registry }
-    Celluloid::SupervisionGroup.stub(:run!) { supervisor }
-    registry.stub(:[]).with(:silencer) { silencer }
-    registry.stub(:[]).with(:adapter) { adapter }
-    registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { change_pool }
-    registry.stub(:[]).with(:broadcaster) { broadcaster }
+    allow(Celluloid::Registry).to receive(:new) { registry }
+    allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
+    allow(registry).to receive(:[]).with(:silencer) { silencer }
+    allow(registry).to receive(:[]).with(:adapter) { adapter }
+    allow(registry).to receive(:[]).with(:record) { record }
+    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
+    allow(registry).to receive(:[]).with(:broadcaster) { broadcaster }
   end
 
   describe '#initialize' do
-    its(:mode) { should be :recipient }
-    its(:host) { should eq host }
-    its(:port) { should eq port }
+    describe '#mode' do
+      subject { super().mode }
+      it { is_expected.to be :recipient }
+    end
+
+    describe '#host' do
+      subject { super().host }
+      it { is_expected.to eq host }
+    end
+
+    describe '#port' do
+      subject { super().port }
+      it { is_expected.to eq port }
+    end
 
     it 'raises on invalid mode' do
       expect do
@@ -50,21 +61,24 @@ describe Listen::TCP::Listener do
   context 'when broadcaster' do
     subject { described_class.new(port, :broadcaster) }
 
-    it { should be_a_broadcaster }
-    it { should_not be_a_recipient }
+    it { is_expected.to be_a_broadcaster }
+    it { is_expected.not_to be_a_recipient }
 
     it 'does not force TCP adapter through options' do
       expect(subject.options).not_to include(force_tcp: true)
     end
 
     context 'when host is omitted' do
-      its(:host) { should be_nil }
+      describe '#host' do
+        subject { super().host }
+        it { is_expected.to be_nil }
+      end
     end
 
     describe '#start' do
       before do
         allow(subject).to receive(:_start_adapter)
-        broadcaster.stub(:start)
+        allow(broadcaster).to receive(:start)
       end
 
       it 'registers broadcaster' do
@@ -87,7 +101,7 @@ describe Listen::TCP::Listener do
       end
 
       before do
-        broadcaster.stub(:async).and_return async
+        allow(broadcaster).to receive(:async).and_return async
       end
 
       after do
@@ -133,11 +147,14 @@ describe Listen::TCP::Listener do
       expect(subject.options).to include(force_tcp: true)
     end
 
-    it { should_not be_a_broadcaster }
-    it { should be_a_recipient }
+    it { is_expected.not_to be_a_broadcaster }
+    it { is_expected.to be_a_recipient }
 
     context 'when host is omitted' do
-      its(:host) { should eq described_class::DEFAULT_HOST }
+      describe '#host' do
+        subject { super().host }
+        it { is_expected.to eq described_class::DEFAULT_HOST }
+      end
     end
   end
 

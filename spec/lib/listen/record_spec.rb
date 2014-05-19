@@ -77,8 +77,8 @@ describe Listen::Record do
     let(:actor) { double(Listen::Change, change: nil, terminate: true) }
 
     before do
-      registry.stub(:[]).with(:change_pool) { actor }
-      listener.stub(:directories) { directories }
+      allow(registry).to receive(:[]).with(:change_pool) { actor }
+      allow(listener).to receive(:directories) { directories }
     end
 
     it 're-inits paths' do

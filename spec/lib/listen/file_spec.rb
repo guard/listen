@@ -10,7 +10,7 @@ describe Listen::File do
 
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { example.run } }
-  before { registry.stub(:[]).with(:record) { record } }
+  before { allow(registry).to receive(:[]).with(:record) { record } }
 
   describe '#change' do
     let(:file_path) { path.join('file.rb') }
@@ -33,7 +33,7 @@ describe Listen::File do
       end
 
       before do
-        record.stub_chain(:future, :file_data) { double(value: record_data) }
+        allow(record).to receive_message_chain(:future, :file_data) { double(value: record_data) }
       end
 
       context 'non-existing path' do
@@ -118,7 +118,7 @@ describe Listen::File do
     end
 
     context 'path not present in record' do
-      before { record.stub_chain(:future, :file_data) { double(value: {}) } }
+      before { allow(record).to receive_message_chain(:future, :file_data) { double(value: {}) } }
 
       context 'existing path' do
         around do |example|

@@ -10,12 +10,12 @@
       actual.changes[type].include? expected
     end
 
-    failure_message_for_should do |actual|
+    failure_message do |actual|
       result = actual.changes.inspect
       "expected #{result} to include #{description} of #{expected}"
     end
 
-    failure_message_for_should_not do |actual|
+    failure_message_when_negated do |actual|
       result = actual.changes.inspect
       "expected #{result} to not include #{description} of #{expected}"
     end

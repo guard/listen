@@ -6,12 +6,12 @@ describe Listen::Change do
   let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
   let(:listener_changes) { double('listener_changes') }
   before do
-    listener.stub(:changes) { listener_changes }
+    allow(listener).to receive(:changes) { listener_changes }
   end
 
   describe '#change' do
     let(:silencer) { double('Listen::Silencer', silenced?: false) }
-    before { registry.stub(:[]).with(:silencer) { silencer } }
+    before { allow(registry).to receive(:[]).with(:silencer) { silencer } }
 
     context 'file path' do
       context 'with known change' do
@@ -34,7 +34,7 @@ describe Listen::Change do
 
       context 'with unknown change' do
         let(:file) { double('Listen::File') }
-        before { Listen::File.stub(:new) { file } }
+        before { allow(Listen::File).to receive(:new) { file } }
 
         it 'calls Listen::File#change' do
           expect(Listen::File).to receive(:new).
@@ -54,10 +54,10 @@ describe Listen::Change do
         end
 
         context 'that returns a change' do
-          before { file.stub(:change) { :modified } }
+          before { allow(file).to receive(:change) { :modified } }
 
           context 'listener listen' do
-            before { listener.stub(:listen?) { true } }
+            before { allow(listener).to receive(:listen?) { true } }
 
             it 'notifies change to listener' do
               file_path = double(Pathname, to_s: 'file_path', exist?: true)
@@ -75,7 +75,7 @@ describe Listen::Change do
           end
 
           context "listener doesn't listen" do
-            before { listener.stub(:listen?) { false } }
+            before { allow(listener).to receive(:listen?) { false } }
 
             it 'notifies change to listener' do
               expect(listener_changes).to_not receive(:<<)
@@ -85,7 +85,7 @@ describe Listen::Change do
         end
 
         context 'that returns no change' do
-          before { file.stub(:change) { nil } }
+          before { allow(file).to receive(:change) { nil } }
 
           it "doesn't notifies no change" do
             expect(listener_changes).to_not receive(:<<)
@@ -98,7 +98,7 @@ describe Listen::Change do
     context 'directory path' do
       let(:dir) { double(Listen::Directory) }
       let(:dir_options) { { type: 'Dir', recursive: true } }
-      before { Listen::Directory.stub(:new) { dir } }
+      before { allow(Listen::Directory).to receive(:new) { dir } }
 
       it 'calls Listen::Directory#scan' do
         expect(Listen::Directory).to receive(:new).

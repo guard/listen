@@ -13,8 +13,8 @@ describe Listen::Directory do
   let(:path) { Pathname.new(Dir.pwd) }
   around { |example| fixtures { example.run } }
   before do
-    registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { actor }
+    allow(registry).to receive(:[]).with(:record) { record }
+    allow(registry).to receive(:[]).with(:change_pool) { actor }
   end
 
   describe '#scan' do
@@ -37,11 +37,11 @@ describe Listen::Directory do
         end
 
         before do
-          record.stub_chain(:future, :dir_entries) do
+          allow(record).to receive_message_chain(:future, :dir_entries) do
             double(value: record_dir_entries)
           end
 
-          change_pool_async.stub(:change)
+          allow(change_pool_async).to receive(:change)
         end
 
         context 'empty dir' do
@@ -91,7 +91,7 @@ describe Listen::Directory do
 
       context 'dir paths not present in record' do
         before do
-          record.stub_chain(:future, :dir_entries) { double(value: {}) }
+          allow(record).to receive_message_chain(:future, :dir_entries) { double(value: {}) }
         end
 
         context 'non-existing dir path' do
@@ -139,7 +139,7 @@ describe Listen::Directory do
         end
 
         before do
-          record.stub_chain(:future, :dir_entries) do
+          allow(record).to receive_message_chain(:future, :dir_entries) do
             double(value: record_dir_entries)
           end
         end
@@ -180,7 +180,7 @@ describe Listen::Directory do
 
       context 'dir paths not present in record' do
         before do
-          record.stub_chain(:future, :dir_entries) { double(value: {}) }
+          allow(record).to receive_message_chain(:future, :dir_entries) { double(value: {}) }
         end
 
         context 'non-existing dir path' do

@@ -4,10 +4,10 @@ describe Listen::Adapter do
 
   let(:listener) { double(Listen::Listener, options: {}) }
   before do
-    Listen::Adapter::BSD.stub(:usable?) { false }
-    Listen::Adapter::Darwin.stub(:usable?) { false }
-    Listen::Adapter::Linux.stub(:usable?) { false }
-    Listen::Adapter::Windows.stub(:usable?) { false }
+    allow(Listen::Adapter::BSD).to receive(:usable?) { false }
+    allow(Listen::Adapter::Darwin).to receive(:usable?) { false }
+    allow(Listen::Adapter::Linux).to receive(:usable?) { false }
+    allow(Listen::Adapter::Windows).to receive(:usable?) { false }
   end
 
   describe '.select' do
@@ -22,31 +22,31 @@ describe Listen::Adapter do
     end
 
     it 'returns BSD adapter when usable' do
-      Listen::Adapter::BSD.stub(:usable?) { true }
+      allow(Listen::Adapter::BSD).to receive(:usable?) { true }
       klass = Listen::Adapter.select
       expect(klass).to eq Listen::Adapter::BSD
     end
 
     it 'returns Darwin adapter when usable' do
-      Listen::Adapter::Darwin.stub(:usable?) { true }
+      allow(Listen::Adapter::Darwin).to receive(:usable?) { true }
       klass = Listen::Adapter.select
       expect(klass).to eq Listen::Adapter::Darwin
     end
 
     it 'returns Linux adapter when usable' do
-      Listen::Adapter::Linux.stub(:usable?) { true }
+      allow(Listen::Adapter::Linux).to receive(:usable?) { true }
       klass = Listen::Adapter.select
       expect(klass).to eq Listen::Adapter::Linux
     end
 
     it 'returns Windows adapter when usable' do
-      Listen::Adapter::Windows.stub(:usable?) { true }
+      allow(Listen::Adapter::Windows).to receive(:usable?) { true }
       klass = Listen::Adapter.select
       expect(klass).to eq Listen::Adapter::Windows
     end
 
     context 'no usable adapters' do
-      before { Kernel.stub(:warn) }
+      before { allow(Kernel).to receive(:warn) }
 
       it 'returns Polling adapter' do
         klass = Listen::Adapter.select(force_polling: true)

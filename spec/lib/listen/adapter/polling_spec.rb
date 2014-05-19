@@ -14,8 +14,8 @@ describe Listen::Adapter::Polling do
   let(:change_pool_async) { double('ChangePoolAsync') }
 
   before do
-    change_pool.stub(:async) { change_pool_async }
-    registry.stub(:[]).with(:change_pool) { change_pool }
+    allow(change_pool).to receive(:async) { change_pool_async }
+    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
   end
 
   describe '.usable?' do
@@ -27,8 +27,8 @@ describe Listen::Adapter::Polling do
   describe '#start' do
     let(:directories) { ['directory_path'] }
     before do
-      listener.stub(:options) { {} }
-      listener.stub(:directories) { directories }
+      allow(listener).to receive(:options) { {} }
+      allow(listener).to receive(:directories) { directories }
     end
 
     it 'notifies change on every listener directories path' do
@@ -50,7 +50,7 @@ describe Listen::Adapter::Polling do
     end
 
     it 'returns latency from listener actor if present' do
-      listener.stub(:options) { { latency: 1234 } }
+      allow(listener).to receive(:options) { { latency: 1234 } }
       expect(adapter.send(:_latency)).to eq 1234
     end
   end

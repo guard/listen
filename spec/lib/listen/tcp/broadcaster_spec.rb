@@ -33,7 +33,7 @@ describe Listen::TCP::Broadcaster do
     let(:async) { double('TCP-listener async') }
 
     it 'invokes run loop asynchronously' do
-      subject.stub(:async).and_return async
+      allow(subject).to receive(:async).and_return async
       expect(async).to receive(:run)
       subject.start
     end
@@ -67,31 +67,31 @@ describe Listen::TCP::Broadcaster do
 
     context 'when succesful' do
       it 'returns true and leaves socket untouched' do
-        expect(subject.unicast(socket, payload)).to be_true
+        expect(subject.unicast(socket, payload)).to be_truthy
         expect(subject.sockets).to include socket
       end
     end
 
     context 'on IO errors' do
       it 'returns false and removes socket from list' do
-        socket.stub(:write).and_raise IOError
-        expect(subject.unicast(socket, payload)).to be_false
+        allow(socket).to receive(:write).and_raise IOError
+        expect(subject.unicast(socket, payload)).to be_falsey
         expect(subject.sockets).not_to include socket
       end
     end
 
     context 'on connection reset by peer' do
       it 'returns false and removes socket from list' do
-        socket.stub(:write).and_raise Errno::ECONNRESET
-        expect(subject.unicast(socket, payload)).to be_false
+        allow(socket).to receive(:write).and_raise Errno::ECONNRESET
+        expect(subject.unicast(socket, payload)).to be_falsey
         expect(subject.sockets).not_to include socket
       end
     end
 
     context 'on broken pipe' do
       it 'returns false and removes socket from list' do
-        socket.stub(:write).and_raise Errno::EPIPE
-        expect(subject.unicast(socket, payload)).to be_false
+        allow(socket).to receive(:write).and_raise Errno::EPIPE
+        expect(subject.unicast(socket, payload)).to be_falsey
         expect(subject.sockets).not_to include socket
       end
     end
@@ -99,7 +99,7 @@ describe Listen::TCP::Broadcaster do
 
   describe '#run' do
     it 'handles incoming connections' do
-      server.stub(:accept).and_return socket, nil
+      allow(server).to receive(:accept).and_return socket, nil
       expect(subject.wrapped_object).to receive(:handle_connection).with socket
       subject.run
     end

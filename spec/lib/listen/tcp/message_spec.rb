@@ -21,10 +21,25 @@ describe Listen::TCP::Message do
       subject.object = object
     end
 
-    its(:object)  { should be object }
-    its(:body)    { should eq body }
-    its(:size)    { should eq size }
-    its(:payload) { should eq payload }
+    describe '#object' do
+      subject { super().object }
+      it  { is_expected.to be object }
+    end
+
+    describe '#body' do
+      subject { super().body }
+      it    { is_expected.to eq body }
+    end
+
+    describe '#size' do
+      subject { super().size }
+      it    { is_expected.to eq size }
+    end
+
+    describe '#payload' do
+      subject { super().payload }
+      it { is_expected.to eq payload }
+    end
   end
 
   describe '#payload=' do
@@ -32,10 +47,25 @@ describe Listen::TCP::Message do
       subject.payload = payload
     end
 
-    its(:object)  { should eq object }
-    its(:body)    { should eq body }
-    its(:size)    { should eq size }
-    its(:payload) { should be payload }
+    describe '#object' do
+      subject { super().object }
+      it  { is_expected.to eq object }
+    end
+
+    describe '#body' do
+      subject { super().body }
+      it    { is_expected.to eq body }
+    end
+
+    describe '#size' do
+      subject { super().size }
+      it    { is_expected.to eq size }
+    end
+
+    describe '#payload' do
+      subject { super().payload }
+      it { is_expected.to be payload }
+    end
   end
 
   describe '.from_buffer' do

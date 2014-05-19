@@ -18,7 +18,7 @@ describe Listen do
     it 'sets stopping at false' do
       allow(Listen::Listener).to receive(:new)
       Listen.to('/path')
-      expect(Listen.stopping).to be_false
+      expect(Listen.stopping).to be_falsey
     end
   end
 

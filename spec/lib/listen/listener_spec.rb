@@ -18,12 +18,12 @@ describe Listen::Listener do
   let(:change_pool) { double(Listen::Change, terminate: true) }
   let(:change_pool_async) { double('ChangePoolAsync') }
   before do
-    Celluloid::Registry.stub(:new) { registry }
-    Celluloid::SupervisionGroup.stub(:run!) { supervisor }
-    registry.stub(:[]).with(:silencer) { silencer }
-    registry.stub(:[]).with(:adapter) { adapter }
-    registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { change_pool }
+    allow(Celluloid::Registry).to receive(:new) { registry }
+    allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
+    allow(registry).to receive(:[]).with(:silencer) { silencer }
+    allow(registry).to receive(:[]).with(:adapter) { adapter }
+    allow(registry).to receive(:[]).with(:record) { record }
+    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
 
   end
 
@@ -72,7 +72,7 @@ describe Listen::Listener do
   describe '#start' do
     before do
       allow(listener).to receive(:_start_adapter)
-      silencer.stub(:silenced?) { false }
+      allow(silencer).to receive(:silenced?) { false }
     end
 
     it 'registers silencer' do
@@ -90,7 +90,7 @@ describe Listen::Listener do
     end
 
     it 'supervises adaper' do
-      Listen::Adapter.stub(:select) { Listen::Adapter::Polling }
+      allow(Listen::Adapter).to receive(:select) { Listen::Adapter::Polling }
       expect(supervisor).to receive(:add).
         with(Listen::Adapter::Polling, as: :adapter, args: listener)
 
@@ -111,7 +111,7 @@ describe Listen::Listener do
 
     it 'sets paused to false' do
       listener.start
-      expect(listener.paused).to be_false
+      expect(listener.paused).to be_falsey
     end
 
     it 'starts adapter' do
@@ -141,7 +141,7 @@ describe Listen::Listener do
   describe '#pause' do
     it 'sets paused to true' do
       listener.pause
-      expect(listener.paused).to be_true
+      expect(listener.paused).to be_truthy
     end
   end
 
@@ -152,9 +152,9 @@ describe Listen::Listener do
     end
 
     it 'sets paused to false' do
-      record.stub(:build)
+      allow(record).to receive(:build)
       listener.unpause
-      expect(listener.paused).to be_false
+      expect(listener.paused).to be_falsey
     end
   end
 
@@ -177,28 +177,28 @@ describe Listen::Listener do
     it 'returns true when not paused (false)' do
       listener.paused = false
       listener.stopping = false
-      expect(listener.listen?).to be_true
+      expect(listener.listen?).to be_truthy
     end
     it 'returns false when not paused (nil)' do
       listener.paused = nil
       listener.stopping = false
-      expect(listener.listen?).to be_false
+      expect(listener.listen?).to be_falsey
     end
     it 'returns false when paused' do
       listener.paused = true
       listener.stopping = false
-      expect(listener.listen?).to be_false
+      expect(listener.listen?).to be_falsey
     end
     it 'returns false when stopped' do
       listener.paused = false
       listener.stopping = true
-      expect(listener.listen?).to be_false
+      expect(listener.listen?).to be_falsey
     end
   end
 
   describe '#ignore' do
     let(:new_silencer) { double(Listen::Silencer) }
-    before { Celluloid::Actor.stub(:[]=) }
+    before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
@@ -229,7 +229,7 @@ describe Listen::Listener do
 
   describe '#ignore!' do
     let(:new_silencer) { double(Listen::Silencer) }
-    before { Celluloid::Actor.stub(:[]=) }
+    before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
@@ -261,7 +261,7 @@ describe Listen::Listener do
 
   describe '#only' do
     let(:new_silencer) { double(Listen::Silencer) }
-    before { Celluloid::Actor.stub(:[]=) }
+    before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
       expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
@@ -282,10 +282,10 @@ describe Listen::Listener do
 
   describe '_wait_for_changes' do
     it 'gets two changes and calls the block once' do
-      silencer.stub(:silenced?) { false }
+      allow(silencer).to receive(:silenced?) { false }
 
       fake_time = 0
-      listener.stub(:sleep) do |sec|
+      allow(listener).to receive(:sleep) do |sec|
         fake_time += sec
         listener.stopping = true if fake_time > 1
       end
@@ -299,7 +299,7 @@ describe Listen::Listener do
       bar = double(Pathname, to_s: 'bar.txt', exist?: true, directory?: false)
 
       i = 0
-      listener.stub(:_pop_changes) do
+      allow(listener).to receive(:_pop_changes) do
         i += 1
         case i
         when 1
@@ -326,7 +326,7 @@ describe Listen::Listener do
         { added: path },
         { modified: path }
       ]
-      silencer.stub(:silenced?) { false }
+      allow(silencer).to receive(:silenced?) { false }
       smooshed = listener.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
@@ -339,7 +339,7 @@ describe Listen::Listener do
         { removed: path },
         { modified: path }
       ]
-      silencer.stub(:silenced?) { false }
+      allow(silencer).to receive(:silenced?) { false }
       smooshed = listener.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: [], added: [], removed: [])
     end
@@ -351,7 +351,7 @@ describe Listen::Listener do
         { removed: path },
         { added: path }
       ]
-      silencer.stub(:silenced?) { false }
+      allow(silencer).to receive(:silenced?) { false }
       smooshed = listener.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
