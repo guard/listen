@@ -20,28 +20,16 @@ describe Listen::Silencer do
       hidden_dirs = %w(.git .svn .hg .rbx .bundle)
       other_dirs = %w(bundle vendor/bundle log tmp vendor/ruby)
       (hidden_dirs + other_dirs).each do |dir|
-        describe do
-          let(:path) { pwd + dir }
+        it "silences #{dir}" do
+          expect(silencer.silenced?(pwd + dir)).to be_truthy
+        end
 
-          it "silences default ignored directory: #{dir}" do
-            expect(silencer.silenced?(path)).to be_truthy
-          end
+        it "doesn't silence #{dir}foo" do
+          expect(silencer.silenced?(pwd + "#{dir}foo")).to be_falsey
+        end
 
-          context 'with a directory beginning with the same name' do
-            let(:path) { pwd + "#{dir}foo" }
-
-            it "doesn't silences default ignored directory: #{dir}foo" do
-              expect(silencer.silenced?(path)).to be_falsey
-            end
-          end
-
-          context 'with a directory ending with the same name' do
-            let(:path) { pwd + "foo#{dir}" }
-
-            it "doesn't silences default ignored directory: foo#{dir}" do
-              expect(silencer.silenced?(path)).to be_falsey
-            end
-          end
+        it "doesn't silence foo#{dir}" do
+          expect(silencer.silenced?(pwd + "foo#{dir}")).to be_falsey
         end
       end
 
@@ -57,18 +45,14 @@ describe Listen::Silencer do
       all_files += %w(foo.rb___jb_bak___ foo.rb___jb_old___)
 
       all_files.each do |path|
-        describe do
-          it "by default silences files like: #{path}" do
-            expect(silencer.silenced?(pwd + path)).to be_truthy
-          end
+        it "silences #{path}" do
+          expect(silencer.silenced?(pwd + path)).to be_truthy
         end
       end
 
       %w(foo.tmpl file.new file54321.new).each do |path|
-        describe do
-          it "by default does not silence files like: #{path}" do
-            expect(silencer.silenced?(pwd + path)).to be_falsey
-          end
+        it "does not silence #{path}" do
+          expect(silencer.silenced?(pwd + path)).to be_falsey
         end
       end
     end
