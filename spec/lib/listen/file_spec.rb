@@ -119,7 +119,7 @@ describe Listen::File do
                 expect(file.change).to eq :modified
               end
               it 'sets path in record with expected data' do
-                expect(record.async).to receive(:set_path).
+                expect(async_record).to receive(:set_path).
                   with(file_path, expected_data)
 
                 file.change
