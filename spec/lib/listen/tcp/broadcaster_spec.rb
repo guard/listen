@@ -33,11 +33,8 @@ describe Listen::TCP::Broadcaster do
   end
 
   describe '#start' do
-    let(:async) { instance_double(Listen::TCP::Broadcaster) }
-
     it 'invokes run loop asynchronously' do
-      allow(subject).to receive(:async).and_return async
-      expect(async).to receive(:run)
+      expect_any_instance_of(described_class).to receive(:run)
       subject.start
     end
   end

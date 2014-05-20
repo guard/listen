@@ -72,14 +72,14 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#run' do
-    let(:async) { instance_double(described_class, handle_data: true) }
-
     it 'handles data from socket' do
       allow(socket).to receive(:recv).and_return 'foo', 'bar', nil
-      allow(subject).to receive(:async).and_return async
 
-      expect(async).to receive(:handle_data).with 'foo'
-      expect(async).to receive(:handle_data).with 'bar'
+      expect_any_instance_of(described_class).
+        to receive(:handle_data).with('foo')
+
+      expect_any_instance_of(described_class).
+        to receive(:handle_data).with('bar')
 
       subject.start
     end
