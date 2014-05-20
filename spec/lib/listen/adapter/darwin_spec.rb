@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Darwin do
   if darwin?
-    let(:listener) { double(Listen::Listener) }
+    let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe '.usable?' do

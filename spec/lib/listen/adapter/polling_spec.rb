@@ -1,21 +1,22 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:registry) { double(Celluloid::Registry) }
+  let(:registry) { instance_double(Celluloid::Registry) }
   let(:listener) do
-    double(Listen::Listener,
-           registry: registry,
-           options: {},
-           listen?: true)
+    instance_double(
+      Listen::Listener,
+      registry: registry,
+      options: {},
+      listen?: true)
   end
 
   let(:adapter) { described_class.new(listener) }
-  let(:change_pool) { double(Listen::Change, terminate: true) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
+  let(:change_pool_async) { instance_double(Listen::Change) }
 
   before do
-    allow(change_pool).to receive(:async) { change_pool_async }
-    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
+    allow(proxy).to receive(:async) { change_pool_async }
+    allow(registry).to receive(:[]).with(:change_pool) { proxy }
   end
 
   describe '.usable?' do

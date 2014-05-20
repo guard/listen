@@ -1,19 +1,37 @@
 require 'spec_helper'
 
 describe Listen::File do
-  let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
-  let(:record) do
-    double(Listen::Record, async: double(set_path: true, unset_path: true))
+  let(:listener) do
+    instance_double(Listen::Listener, registry: registry, options: {})
   end
 
-  let(:path) { Pathname.new(Dir.pwd) }
+  let(:async_record) do
+    instance_double(
+      Listen::Record,
+      set_path: true,
+      unset_path: true,
+      file_data: instance_double(Celluloid::Future, value: record_data)
+    )
+
+  end
+
+  let(:path) { Pathname.pwd }
   around { |example| fixtures { example.run } }
-  before { allow(registry).to receive(:[]).with(:record) { record } }
+
+  before do
+    allow(registry).to receive(:[]).with(:record) do
+      instance_double(
+        Celluloid::ActorProxy,
+        async: async_record,
+        future: async_record
+      )
+    end
+  end
 
   describe '#change' do
-    let(:file_path) { path.join('file.rb') }
+    let(:file_path) { path + 'file.rb' }
     let(:file) { Listen::File.new(listener, file_path) }
 
     let(:expected_data) do
@@ -32,18 +50,12 @@ describe Listen::File do
           mode: record_mode }
       end
 
-      before do
-        allow(record).to receive_message_chain(:future, :file_data) do
-          double(value: record_data)
-        end
-      end
-
       context 'non-existing path' do
         it 'returns added' do
           expect(file.change).to eq :removed
         end
         it 'sets path in record' do
-          expect(record.async).to receive(:unset_path).with(file_path)
+          expect(async_record).to receive(:unset_path).with(file_path)
           file.change
         end
       end
@@ -62,7 +74,7 @@ describe Listen::File do
           end
 
           it 'sets path in record with expected data' do
-            expect(record.async).to receive(:set_path).
+            expect(async_record).to receive(:set_path).
               with(file_path, expected_data)
 
             file.change
@@ -120,11 +132,7 @@ describe Listen::File do
     end
 
     context 'path not present in record' do
-      before do
-        allow(record).to receive_message_chain(:future, :file_data) do
-          double(value: {})
-        end
-      end
+      let(:record_data) { {} }
 
       context 'existing path' do
         around do |example|
@@ -137,7 +145,7 @@ describe Listen::File do
         end
 
         it 'sets path in record with expected data' do
-          expect(record.async).to receive(:set_path).
+          expect(async_record).to receive(:set_path).
             with(file_path, expected_data)
 
           file.change

@@ -6,17 +6,20 @@ describe Listen::Adapter::TCP do
   let(:port) { 4000 }
 
   subject { described_class.new(listener) }
-  let(:registry) { double(Celluloid::Registry) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:listener) do
-    double(Listen::TCP::Listener,
-           registry: registry,
-           options: {},
-           host: host,
-           port: port)
+    instance_double(
+      Listen::TCP::Listener,
+      registry: registry,
+      options: {},
+      host: host,
+      port: port)
   end
 
-  let(:socket) { double(described_class::TCPSocket, close: true, recv: nil) }
+  let(:socket) do
+    instance_double(described_class::TCPSocket, close: true, recv: nil)
+  end
 
   before do
     allow(described_class::TCPSocket).to receive(:new).and_return socket
@@ -69,7 +72,7 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#run' do
-    let(:async) { double('TCP-adapter async', handle_data: true) }
+    let(:async) { instance_double(described_class, handle_data: true) }
 
     it 'handles data from socket' do
       allow(socket).to receive(:recv).and_return 'foo', 'bar', nil

@@ -4,10 +4,11 @@ describe Listen::Silencer do
   let(:options) { {} }
 
   let(:listener) do
-    double(Listen::Listener,
-           directories: [Pathname.pwd, Pathname.new('/Users/Shared/')],
-           options: options
-          )
+    instance_double(
+      Listen::Listener,
+      directories: [Pathname.pwd, Pathname.new('/Users/Shared/')],
+      options: options
+    )
   end
 
   let(:silencer) { Listen::Silencer.new(listener) }
@@ -20,14 +21,14 @@ describe Listen::Silencer do
       other_dirs = %w(bundle vendor/bundle log tmp vendor/ruby)
       (hidden_dirs + other_dirs).each do |dir|
         describe do
-          let(:path) { pwd.join(dir) }
+          let(:path) { pwd + dir }
 
           it "silences default ignored directory: #{dir}" do
             expect(silencer.silenced?(path)).to be_truthy
           end
 
           context 'with a directory beginning with the same name' do
-            let(:path) { pwd.join("#{dir}foo") }
+            let(:path) { pwd + "#{dir}foo" }
 
             it "doesn't silences default ignored directory: #{dir}foo" do
               expect(silencer.silenced?(path)).to be_falsey
@@ -35,7 +36,7 @@ describe Listen::Silencer do
           end
 
           context 'with a directory ending with the same name' do
-            let(:path) { pwd.join("foo#{dir}") }
+            let(:path) { pwd + "foo#{dir}" }
 
             it "doesn't silences default ignored directory: foo#{dir}" do
               expect(silencer.silenced?(path)).to be_falsey

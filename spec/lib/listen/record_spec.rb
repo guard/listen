@@ -1,8 +1,12 @@
 require 'spec_helper'
 
 describe Listen::Record do
-  let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
+  let(:registry) { instance_double(Celluloid::Registry) }
+
+  let(:listener) do
+    instance_double(Listen::Listener, registry: registry, options: {})
+  end
+
   let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
   let(:data) { { type: 'File' } }
@@ -74,7 +78,9 @@ describe Listen::Record do
   describe '#build' do
     let(:directories) { ['dir_path'] }
 
-    let(:actor) { double(Listen::Change, change: nil, terminate: true) }
+    let(:actor) do
+      instance_double(Listen::Change, change: nil, terminate: true)
+    end
 
     before do
       allow(registry).to receive(:[]).with(:change_pool) { actor }

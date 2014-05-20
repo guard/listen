@@ -3,26 +3,24 @@ require 'spec_helper'
 describe Listen::Listener do
   let(:listener) { Listen::Listener.new(options) }
   let(:options) { {} }
-  let(:registry) { double(Celluloid::Registry, :[]= => true) }
+  let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
 
   let(:supervisor) do
-    double(Celluloid::SupervisionGroup,
-           add: true,
-           pool: true)
+    instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
-  let(:record) { double(Listen::Record, terminate: true, build: true) }
-  let(:silencer) { double(Listen::Silencer, terminate: true) }
-  let(:adapter) { double(Listen::Adapter::Base, local_fs?: true) }
-  let(:change_pool) { double(Listen::Change, terminate: true) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
+  let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
+  let(:adapter) { instance_double(Listen::Adapter::Base, local_fs?: true) }
+  let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
+  let(:change_pool_async) { instance_double(Listen::Change) }
   before do
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
     allow(registry).to receive(:[]).with(:silencer) { silencer }
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
-    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
+    allow(registry).to receive(:[]).with(:change_pool) { proxy }
 
   end
 
@@ -119,7 +117,12 @@ describe Listen::Listener do
     end
 
     it 'calls block on changes' do
-      foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      foo = instance_double(
+        Pathname,
+        to_s: 'foo',
+        exist?: true,
+        directory?: false)
+
       listener.changes = [{ modified: foo }]
       block_stub = double('block')
       listener.block = block_stub
@@ -196,7 +199,7 @@ describe Listen::Listener do
   end
 
   describe '#ignore' do
-    let(:new_silencer) { double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Listen::Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
@@ -227,7 +230,7 @@ describe Listen::Listener do
   end
 
   describe '#ignore!' do
-    let(:new_silencer) { double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Listen::Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
@@ -259,7 +262,7 @@ describe Listen::Listener do
   end
 
   describe '#only' do
-    let(:new_silencer) { double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Listen::Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
@@ -294,8 +297,17 @@ describe Listen::Listener do
         expect(added).to eql(['bar.txt'])
       end
 
-      foo = double(Pathname, to_s: 'foo.txt', exist?: true, directory?: false)
-      bar = double(Pathname, to_s: 'bar.txt', exist?: true, directory?: false)
+      foo = instance_double(
+        Pathname,
+        to_s: 'foo.txt',
+        exist?: true,
+        directory?: false)
+
+      bar = instance_double(
+        Pathname,
+        to_s: 'bar.txt',
+        exist?: true,
+        directory?: false)
 
       i = 0
       allow(listener).to receive(:_pop_changes) do
@@ -318,7 +330,12 @@ describe Listen::Listener do
 
   describe '_smoosh_changes' do
     it 'recognizes rename from temp file' do
-      path = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      path = instance_double(
+        Pathname,
+        to_s: 'foo',
+        exist?: true,
+        directory?: false)
+
       changes = [
         { modified: path },
         { removed: path },
@@ -331,7 +348,12 @@ describe Listen::Listener do
     end
 
     it 'recognizes deleted temp file' do
-      path = double(Pathname, to_s: 'foo', exist?: false, directory?: false)
+      path = instance_double(
+        Pathname,
+        to_s: 'foo',
+        exist?: false,
+        directory?: false)
+
       changes = [
         { added: path },
         { modified: path },
@@ -345,7 +367,12 @@ describe Listen::Listener do
 
     it 'recognizes double move as modification' do
       # e.g. "mv foo x && mv x foo" is like "touch foo"
-      path = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+      path = instance_double(
+        Pathname,
+        to_s: 'foo',
+        exist?: true,
+        directory?: false)
+
       changes = [
         { removed: path },
         { added: path }
@@ -358,7 +385,12 @@ describe Listen::Listener do
     context 'with cookie' do
 
       it 'recognizes single moved_to as add' do
-        foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        foo = instance_double(
+          Pathname,
+          to_s: 'foo',
+          exist?: true,
+          directory?: false)
+
         changes = [{ moved_to: foo , cookie: 4321 }]
         expect(silencer).to receive(:silenced?).with(foo, 'File') { false }
         smooshed = listener.send :_smoosh_changes, changes
@@ -366,8 +398,18 @@ describe Listen::Listener do
       end
 
       it 'recognizes related moved_to as add' do
-        foo = double(:foo, to_s: 'foo', exist?: true, directory?: false)
-        bar = double(:bar, to_s: 'bar', exist?: true, directory?: false)
+        foo = instance_double(
+          Pathname,
+          to_s: 'foo',
+          exist?: true,
+          directory?: false)
+
+        bar = instance_double(
+          Pathname,
+          to_s: 'bar',
+          exist?: true,
+          directory?: false)
+
         changes = [
           { moved_from: foo , cookie: 4321 },
           { moved_to: bar, cookie: 4321 }
@@ -384,12 +426,18 @@ describe Listen::Listener do
       # Scenario with workaround for editors using rename()
       it 'recognizes related moved_to with ignored moved_from as modify' do
 
-        ignored = double(Pathname,
-                         to_s: 'foo',
-                         exist?: true,
-                         directory?: false)
+        ignored = instance_double(
+          Pathname,
+          to_s: 'foo',
+          exist?: true,
+          directory?: false)
 
-        foo = double(Pathname, to_s: 'foo', exist?: true, directory?: false)
+        foo = instance_double(
+          Pathname,
+          to_s: 'foo',
+          exist?: true,
+          directory?: false)
+
         changes = [
           { moved_from: ignored, cookie: 4321 },
           { moved_to: foo , cookie: 4321 }
@@ -403,10 +451,11 @@ describe Listen::Listener do
 
     context 'with no cookie' do
       it 'recognizes properly ignores files' do
-        ignored = double(Pathname,
-                         to_s: 'foo',
-                         exist?: true,
-                         directory?: false)
+        ignored = instance_double(
+          Pathname,
+          to_s: 'foo',
+          exist?: true,
+          directory?: false)
 
         changes = [{ modified: ignored }]
         expect(silencer).to receive(:silenced?).with(ignored, 'File') { true }

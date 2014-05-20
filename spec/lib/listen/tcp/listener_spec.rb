@@ -7,18 +7,18 @@ describe Listen::TCP::Listener do
 
   subject { described_class.new("#{host}:#{port}", :recipient, options) }
   let(:options) { {} }
-  let(:registry) { double(Celluloid::Registry, :[]= => true) }
+  let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
 
   let(:supervisor) do
-    double(Celluloid::SupervisionGroup, add: true, pool: true)
+    instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
-  let(:record) { double(Listen::Record, terminate: true, build: true) }
-  let(:silencer) { double(Listen::Silencer, terminate: true) }
-  let(:adapter) { double(Listen::Adapter::Base) }
-  let(:broadcaster) { double(Listen::TCP::Broadcaster) }
-  let(:change_pool) { double(Listen::Change, terminate: true) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
+  let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
+  let(:adapter) { instance_double(Listen::Adapter::Base) }
+  let(:broadcaster) { instance_double(Listen::TCP::Broadcaster) }
+  let(:change_pool) { instance_double(Listen::Change, terminate: true) }
+  let(:change_pool_async) { instance_double('ChangePoolAsync') }
   before do
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
@@ -94,8 +94,8 @@ describe Listen::TCP::Listener do
     end
 
     describe '#block' do
-      let(:async) { double('TCP broadcaster async', broadcast: true) }
-      let(:callback) { double(call: true) }
+      let(:async) { instance_double(Listen::TCP::Broadcaster, broadcast: true) }
+      let(:callback) { instance_double(Proc, call: true) }
       let(:changes) do
         { modified: ['/foo'], added: [], removed: [] }
       end
@@ -119,7 +119,7 @@ describe Listen::TCP::Listener do
       context 'when stopped' do
         it 'honours stopped state and does nothing' do
           allow(subject).to receive(:supervisor) do
-            double('SupervisionGroup', terminate: true)
+            instance_double(Celluloid::SupervisionGroup, terminate: true)
           end
 
           subject.stop

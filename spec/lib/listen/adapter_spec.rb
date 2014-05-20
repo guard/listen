@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter do
 
-  let(:listener) { double(Listen::Listener, options: {}) }
+  let(:listener) { instance_double(Listen::Listener, options: {}) }
   before do
     allow(Listen::Adapter::BSD).to receive(:usable?) { false }
     allow(Listen::Adapter::Darwin).to receive(:usable?) { false }

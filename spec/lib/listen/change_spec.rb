@@ -2,15 +2,20 @@ require 'spec_helper'
 
 describe Listen::Change do
   let(:change) { Listen::Change.new(listener) }
-  let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
-  let(:listener_changes) { double('listener_changes') }
+  let(:registry) { instance_double(Celluloid::Registry) }
+
+  let(:listener) do
+    instance_double(Listen::Listener, registry: registry, options: {})
+  end
+
+  let(:listener_changes) { instance_double(Array) }
+
   before do
     allow(listener).to receive(:changes) { listener_changes }
   end
 
   describe '#change' do
-    let(:silencer) { double('Listen::Silencer', silenced?: false) }
+    let(:silencer) { instance_double(Listen::Silencer, silenced?: false) }
     before { allow(registry).to receive(:[]).with(:silencer) { silencer } }
 
     context 'file path' do
@@ -33,7 +38,7 @@ describe Listen::Change do
       end
 
       context 'with unknown change' do
-        let(:file) { double('Listen::File') }
+        let(:file) { instance_double(Listen::File) }
         before { allow(Listen::File).to receive(:new) { file } }
 
         it 'calls Listen::File#change' do
@@ -60,7 +65,10 @@ describe Listen::Change do
             before { allow(listener).to receive(:listen?) { true } }
 
             it 'notifies change to listener' do
-              file_path = double(Pathname, to_s: 'file_path', exist?: true)
+              file_path = instance_double(Pathname,
+                                          to_s: 'file_path',
+                                          exist?: true)
+
               expect(listener_changes).to receive(:<<).with(modified: file_path)
               change.change(file_path, type: 'File')
             end
@@ -96,7 +104,7 @@ describe Listen::Change do
     end
 
     context 'directory path' do
-      let(:dir) { double(Listen::Directory) }
+      let(:dir) { instance_double(Listen::Directory) }
       let(:dir_options) { { type: 'Dir', recursive: true } }
       before { allow(Listen::Directory).to receive(:new) { dir } }
 

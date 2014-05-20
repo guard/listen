@@ -6,8 +6,11 @@ describe Listen::TCP::Broadcaster do
   let(:port) { 4000 }
 
   subject { described_class.new(host, port) }
-  let(:server) { double(described_class::TCPServer, close: true, accept: nil) }
-  let(:socket)  { double(described_class::TCPSocket, write: true) }
+  let(:server) do
+    instance_double(described_class::TCPServer, close: true, accept: nil)
+  end
+
+  let(:socket)  { instance_double(described_class::TCPSocket, write: true) }
   let(:payload) { Listen::TCP::Message.new.payload }
 
   before do
@@ -30,7 +33,7 @@ describe Listen::TCP::Broadcaster do
   end
 
   describe '#start' do
-    let(:async) { double('TCP-listener async') }
+    let(:async) { instance_double(Listen::TCP::Broadcaster) }
 
     it 'invokes run loop asynchronously' do
       allow(subject).to receive(:async).and_return async
