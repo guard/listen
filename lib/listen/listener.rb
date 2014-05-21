@@ -145,8 +145,7 @@ module Listen
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
 
-      adapter_class = Adapter.select(options)
-      supervisor.add(adapter_class, as: :adapter, args: self)
+      supervisor.add(_adapter_class, as: :adapter, args: self)
     end
 
     def _wait_for_changes
@@ -178,8 +177,7 @@ module Listen
 
     def _smoosh_changes(changes)
       # TODO: adapter could be nil at this point (shutdown)
-      adapter = registry[:adapter]
-      if adapter && adapter.local_fs?
+      if _adapter_class.local_fs?
         cookies = changes.group_by { |x| x[:cookie] }
         _squash_changes(_reinterpret_related_changes(cookies))
       else
@@ -269,6 +267,10 @@ module Listen
 
     def _log(type, message)
       Celluloid.logger.send(type, message)
+    end
+
+    def _adapter_class
+      @adapter_class ||= Adapter.select(options)
     end
   end
 end
