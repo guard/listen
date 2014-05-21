@@ -49,12 +49,18 @@ class ListenerWrapper
   attr_accessor :lag
 
   def initialize(callback, paths, *args)
-    @lag = 0.5
+    @lag = 0.6
     @paths = paths
     reset_changes
 
     if callback
-      @listener = Listen.send(*args, &callback)
+      @listener = Listen.send(*args) do  |modified, added, removed|
+        # Add changes to trigger frozen Hash error, making sure lag is enough
+        _add_changes(:modified, modified, @changes)
+        _add_changes(:added, added, @changes)
+        _add_changes(:removed, removed, @changes)
+        callback.call(modified, added, removed)
+      end
     else
       @listener = Listen.send(*args) do |modified, added, removed|
         _add_changes(:modified, modified, @changes)
@@ -68,10 +74,12 @@ class ListenerWrapper
     sleep lag # wait for changes
     _sleep_until_next_second
     reset_changes
+    @yield_time = Time.now.to_f
     yield
     sleep lag # wait for changes
     @changes.freeze
-    changes
+    @freeze_time = Time.now.to_f
+    @changes
   end
 
   def reset_changes
@@ -84,6 +92,14 @@ class ListenerWrapper
     dst[type] += _relative_path(changes)
     dst[type].uniq!
     dst[type].sort!
+  rescue RuntimeError => e
+    raise unless e.message == "can't modify frozen Hash"
+
+    change_offset = (Time.now.to_f - @yield_time).inspect.to_s
+    freeze_offset = (@freeze_time - @yield_time).inspect
+
+    msg = "Changes took #{change_offset}s (allowed lag: #{freeze_offset})s"
+    raise msg
   end
 
   def _relative_path(changes)
