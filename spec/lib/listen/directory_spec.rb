@@ -1,30 +1,52 @@
 require 'spec_helper'
 
 describe Listen::Directory do
-  let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
-  let(:record) do
-    double(Listen::Record, async: double(set_path: true, unset_path: true))
+  let(:listener) do
+    instance_double(Listen::Listener, registry: registry, options: {})
   end
 
-  let(:change_pool) { double(Listen::Change) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
-  let(:path) { Pathname.new(Dir.pwd) }
+  let(:path) { Pathname.pwd }
   around { |example| fixtures { example.run } }
-  before do
-    change_pool.stub(:async) { change_pool_async }
-    registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { change_pool }
-  end
 
   describe '#scan' do
-    let(:dir_path) { path.join('dir') }
-    let(:file_path) { dir_path.join('file.rb') }
-    let(:other_file_path) { dir_path.join('other_file.rb') }
-    let(:inside_dir_path) { dir_path.join('inside_dir') }
-    let(:other_inside_dir_path) { dir_path.join('other_inside_dir') }
+    let(:dir_path) { path + 'dir' }
+    let(:file_path) { dir_path + 'file.rb' }
+    let(:other_file_path) { dir_path + 'other_file.rb' }
+    let(:inside_dir_path) { dir_path + 'inside_dir' }
+    let(:other_inside_dir_path) { dir_path + 'other_inside_dir' }
     let(:dir) { Listen::Directory.new(listener, dir_path, options) }
+
+    let(:change_pool_async) { instance_double(Listen::Change, change: nil) }
+
+    let(:async_record) do
+      instance_double(
+        Listen::Record,
+        set_path: true,
+        unset_path: true,
+        dir_entries: instance_double(
+          Celluloid::Future,
+          value: record_dir_entries
+        )
+      )
+    end
+
+    before do
+      allow(registry).to receive(:[]).with(:record) do
+        instance_double(
+          Celluloid::ActorProxy,
+          async: async_record,
+          future: async_record)
+      end
+
+      allow(registry).to receive(:[]).with(:change_pool) do
+        instance_double(
+          Celluloid::ActorProxy,
+          async: change_pool_async
+        )
+      end
+    end
 
     context 'with recursive off' do
       let(:options) { { recursive: false } }
@@ -37,14 +59,6 @@ describe Listen::Directory do
           }
         end
 
-        before do
-          record.stub_chain(:future, :dir_entries) do
-            double(value: record_dir_entries)
-          end
-
-          change_pool_async.stub(:change)
-        end
-
         context 'empty dir' do
           around do |example|
             mkdir dir_path
@@ -52,7 +66,7 @@ describe Listen::Directory do
           end
 
           it 'sets record dir path' do
-            expect(record.async).to receive(:set_path).
+            expect(async_record).to receive(:set_path).
               with(dir_path, type: 'Dir')
             dir.scan
           end
@@ -91,9 +105,7 @@ describe Listen::Directory do
       end
 
       context 'dir paths not present in record' do
-        before do
-          record.stub_chain(:future, :dir_entries) { double(value: {}) }
-        end
+        let(:record_dir_entries) { {} }
 
         context 'non-existing dir path' do
           it 'calls change only for file path' do
@@ -102,7 +114,7 @@ describe Listen::Directory do
           end
 
           it 'unsets record dir path' do
-            expect(record.async).to receive(:unset_path).with(dir_path)
+            expect(async_record).to receive(:unset_path).with(dir_path)
             dir.scan
           end
         end
@@ -137,12 +149,6 @@ describe Listen::Directory do
         let(:record_dir_entries) do {
           'file.rb' => { type: 'File' },
           'inside_dir' => { type: 'Dir' } }
-        end
-
-        before do
-          record.stub_chain(:future, :dir_entries) do
-            double(value: record_dir_entries)
-          end
         end
 
         context 'empty dir' do
@@ -180,9 +186,7 @@ describe Listen::Directory do
       end
 
       context 'dir paths not present in record' do
-        before do
-          record.stub_chain(:future, :dir_entries) { double(value: {}) }
-        end
+        let(:record_dir_entries) { {} }
 
         context 'non-existing dir path' do
           it 'calls change only for file path' do

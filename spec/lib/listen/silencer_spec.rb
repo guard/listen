@@ -4,10 +4,11 @@ describe Listen::Silencer do
   let(:options) { {} }
 
   let(:listener) do
-    double(Listen::Listener,
-           directories: [Pathname.pwd, Pathname.new('/Users/Shared/')],
-           options: options
-          )
+    instance_double(
+      Listen::Listener,
+      directories: [Pathname.pwd, Pathname.new('/Users/Shared/')],
+      options: options
+    )
   end
 
   let(:silencer) { Listen::Silencer.new(listener) }
@@ -19,28 +20,16 @@ describe Listen::Silencer do
       hidden_dirs = %w(.git .svn .hg .rbx .bundle)
       other_dirs = %w(bundle vendor/bundle log tmp vendor/ruby)
       (hidden_dirs + other_dirs).each do |dir|
-        describe do
-          let(:path) { pwd.join(dir) }
+        it "silences #{dir}" do
+          expect(silencer.silenced?(pwd + dir)).to be_truthy
+        end
 
-          it "silences default ignored directory: #{dir}" do
-            expect(silencer.silenced?(path)).to be_true
-          end
+        it "doesn't silence #{dir}foo" do
+          expect(silencer.silenced?(pwd + "#{dir}foo")).to be_falsey
+        end
 
-          context 'with a directory beginning with the same name' do
-            let(:path) { pwd.join("#{dir}foo") }
-
-            it "doesn't silences default ignored directory: #{dir}foo" do
-              expect(silencer.silenced?(path)).to be_false
-            end
-          end
-
-          context 'with a directory ending with the same name' do
-            let(:path) { pwd.join("foo#{dir}") }
-
-            it "doesn't silences default ignored directory: foo#{dir}" do
-              expect(silencer.silenced?(path)).to be_false
-            end
-          end
+        it "doesn't silence foo#{dir}" do
+          expect(silencer.silenced?(pwd + "foo#{dir}")).to be_falsey
         end
       end
 
@@ -56,18 +45,14 @@ describe Listen::Silencer do
       all_files += %w(foo.rb___jb_bak___ foo.rb___jb_old___)
 
       all_files.each do |path|
-        describe do
-          it "by default silences files like: #{path}" do
-            expect(silencer.silenced?(pwd + path)).to be_true
-          end
+        it "silences #{path}" do
+          expect(silencer.silenced?(pwd + path)).to be_truthy
         end
       end
 
       %w(foo.tmpl file.new file54321.new).each do |path|
-        describe do
-          it "by default does not silence files like: #{path}" do
-            expect(silencer.silenced?(pwd + path)).to be_false
-          end
+        it "does not silence #{path}" do
+          expect(silencer.silenced?(pwd + path)).to be_falsey
         end
       end
     end
@@ -76,7 +61,7 @@ describe Listen::Silencer do
       let(:options) { { ignore: /\.pid$/ } }
 
       it 'silences path matching custom ignore regex' do
-        expect(silencer.silenced?(pwd + 'foo.pid')).to be_true
+        expect(silencer.silenced?(pwd + 'foo.pid')).to be_truthy
       end
     end
 
@@ -84,8 +69,8 @@ describe Listen::Silencer do
       let(:options) { { ignore: [%r{^foo/bar}, /\.pid$/] } }
 
       it 'silences paths matching custom ignore regexes' do
-        expect(silencer.silenced?(pwd + 'foo/bar/baz')).to be_true
-        expect(silencer.silenced?(pwd + 'foo.pid')).to be_true
+        expect(silencer.silenced?(pwd + 'foo/bar/baz')).to be_truthy
+        expect(silencer.silenced?(pwd + 'foo.pid')).to be_truthy
       end
     end
 
@@ -93,11 +78,11 @@ describe Listen::Silencer do
       let(:options) { { ignore!: /\.pid$/ } }
 
       it 'silences custom ignored directory' do
-        expect(silencer.silenced?(pwd + 'foo.pid')).to be_true
+        expect(silencer.silenced?(pwd + 'foo.pid')).to be_truthy
       end
 
       it "doesn't silence default ignored directory" do
-        expect(silencer.silenced?(pwd + '.git')).to be_false
+        expect(silencer.silenced?(pwd + '.git')).to be_falsey
       end
     end
 
@@ -105,15 +90,15 @@ describe Listen::Silencer do
       let(:options) { { only: %r{foo} } }
 
       it 'do not take only regex in account if type is Unknown' do
-        expect(silencer.silenced?(pwd + 'baz')).to be_false
+        expect(silencer.silenced?(pwd + 'baz')).to be_falsey
       end
 
       it 'do not silence path matches only regex if type is File' do
-        expect(silencer.silenced?(pwd + 'foo', 'File')).to be_false
+        expect(silencer.silenced?(pwd + 'foo', 'File')).to be_falsey
       end
 
       it 'silences other directory' do
-        expect(silencer.silenced?(pwd + 'bar', 'File')).to be_true
+        expect(silencer.silenced?(pwd + 'bar', 'File')).to be_truthy
       end
     end
 
@@ -121,23 +106,23 @@ describe Listen::Silencer do
       let(:options) { { only: [%r{^foo/}, %r{\.txt$}] } }
 
       it 'do not take only regex in account if type is Unknown' do
-        expect(silencer.silenced?(pwd + 'baz')).to be_false
+        expect(silencer.silenced?(pwd + 'baz')).to be_falsey
       end
 
       it "doesn't silence good directory" do
-        expect(silencer.silenced?(pwd + 'foo/bar.rb', 'File')).to be_false
+        expect(silencer.silenced?(pwd + 'foo/bar.rb', 'File')).to be_falsey
       end
 
       it "doesn't silence good file" do
-        expect(silencer.silenced?(pwd + 'bar.txt', 'File')).to be_false
+        expect(silencer.silenced?(pwd + 'bar.txt', 'File')).to be_falsey
       end
 
       it 'silences other directory' do
-        expect(silencer.silenced?(pwd + 'bar/baz.rb', 'File')).to be_true
+        expect(silencer.silenced?(pwd + 'bar/baz.rb', 'File')).to be_truthy
       end
 
       it 'silences other file' do
-        expect(silencer.silenced?(pwd + 'bar.rb', 'File')).to be_true
+        expect(silencer.silenced?(pwd + 'bar.rb', 'File')).to be_truthy
       end
     end
 
@@ -148,13 +133,13 @@ describe Listen::Silencer do
         context 'when not matching :only' do
           context 'when not matching :ignore' do
             it 'does not silence' do
-              expect(silencer.silenced?(pwd + 'baz')).to be_false
+              expect(silencer.silenced?(pwd + 'baz')).to be_falsey
             end
           end
 
           context 'when matching :ignore' do
             it 'silences' do
-              expect(silencer.silenced?(pwd + 'bar')).to be_true
+              expect(silencer.silenced?(pwd + 'bar')).to be_truthy
             end
           end
         end
@@ -163,20 +148,20 @@ describe Listen::Silencer do
       context 'with File type' do
         context 'when not matching :only' do
           it 'silences' do
-            expect(silencer.silenced?(pwd + 'foo.rb', 'File')).to be_true
+            expect(silencer.silenced?(pwd + 'foo.rb', 'File')).to be_truthy
           end
         end
 
         context 'when matching :only' do
           context 'when matching :ignore' do
             it 'silences' do
-              expect(silencer.silenced?(pwd + 'bar.pid', 'File')).to be_true
+              expect(silencer.silenced?(pwd + 'bar.pid', 'File')).to be_truthy
             end
           end
 
           context 'when not matching :ignore' do
             it 'does not silence' do
-              expect(silencer.silenced?(pwd + 'foo.pid', 'File')).to be_false
+              expect(silencer.silenced?(pwd + 'foo.pid', 'File')).to be_falsey
             end
           end
         end
@@ -185,7 +170,7 @@ describe Listen::Silencer do
 
     it "doesn't silence normal path" do
       path = pwd + 'some_dir' + 'some_file.rb'
-      expect(silencer.silenced?(path)).to be_false
+      expect(silencer.silenced?(path)).to be_falsey
     end
   end
 

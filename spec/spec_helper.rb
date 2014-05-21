@@ -16,14 +16,17 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
-  config.color_enabled = true
   config.order = :random
   config.filter_run focus: true
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
-  config.fail_fast = !ci?
+  # config.fail_fast = !ci?
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.mock_with :rspec do |mocks|
+    mocks.verify_doubled_constant_names = true
+    mocks.verify_partial_doubles = true
   end
 end
 

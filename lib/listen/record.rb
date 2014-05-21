@@ -32,6 +32,9 @@ module Listen
         options = { type: 'Dir', recursive: true, silence: true }
         listener.registry[:change_pool].change(path, options)
       end
+    rescue
+      Celluloid.logger.warn "build crashed: #{$!.inspect}"
+      raise
     end
 
     private

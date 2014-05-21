@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Windows do
   if windows?
-    let(:listener) { double(Listen::Listener) }
+    let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe '.usable?' do
@@ -12,7 +12,7 @@ describe Listen::Adapter::Windows do
 
       it 'requires wdm gem' do
         described_class.usable?
-        expect(defined?(WDM)).to be_true
+        expect(defined?(WDM)).to be_truthy
       end
     end
   end

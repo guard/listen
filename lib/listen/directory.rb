@@ -9,6 +9,7 @@ module Listen
     end
 
     def scan
+      _log :debug, "Scanning: #{@path.to_s.inspect}"
       _update_record
       _all_entries.each do |entry_path, data|
         case data[:type]
@@ -20,15 +21,21 @@ module Listen
           end
         end
       end
+    rescue
+      _log :warn, "scanning DIED: #{$!}:#{$@.join("\n")}"
+      raise
     end
 
     private
 
     def _update_record
+      return unless (record = _record)
+      return unless (proxy = record.async)
+
       if ::Dir.exist?(path)
-        _record.async.set_path(path,  type: 'Dir')
+        proxy.set_path(path,  type: 'Dir')
       else
-        _record.async.unset_path(path)
+        proxy.unset_path(path)
       end
     end
 
@@ -72,7 +79,16 @@ module Listen
 
     def _async_change(entry_path, options)
       entry_path = path.join(entry_path)
-      _change_pool.async.change(entry_path, options)
+      proxy = _change_pool
+
+      # When terminated, proxy can be nil
+      return unless proxy
+
+      proxy.async.change(entry_path, options)
+    end
+
+    def _log(type, message)
+      Celluloid.logger.send(type, message)
     end
   end
 end

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Listen::Adapter::BSD do
 
   if bsd?
-    let(:listener) { double(Listen::Listener) }
+    let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe '.usable?' do
@@ -13,8 +13,8 @@ describe Listen::Adapter::BSD do
 
       it 'requires rb-kqueue and find gem' do
         described_class.usable?
-        expect(defined?(KQueue)).to be_true
-        expect(defined?(Find)).to be_true
+        expect(defined?(KQueue)).to be_truthy
+        expect(defined?(Find)).to be_truthy
       end
     end
   end

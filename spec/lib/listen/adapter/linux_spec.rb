@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Linux do
   if linux?
-    let(:listener) { double(Listen::Listener) }
+    let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe '.usable?' do
@@ -57,11 +57,12 @@ describe Listen::Adapter::Linux do
       let(:event_callback) do
         lambda do |flags|
           callback = adapter.send(:_worker_callback)
-          callback.call double(:event,
-                               name: 'foo.txt',
-                               flags: flags,
-                               absolute_name: 'path/foo.txt',
-                               cookie: 123)
+          callback.call instance_double(
+            INotify::Event,
+            name: 'foo.txt',
+            flags: flags,
+            absolute_name: 'path/foo.txt',
+            cookie: 123)
         end
       end
 

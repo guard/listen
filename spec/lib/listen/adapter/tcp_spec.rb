@@ -6,20 +6,23 @@ describe Listen::Adapter::TCP do
   let(:port) { 4000 }
 
   subject { described_class.new(listener) }
-  let(:registry) { double(Celluloid::Registry) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:listener) do
-    double(Listen::TCP::Listener,
-           registry: registry,
-           options: {},
-           host: host,
-           port: port)
+    instance_double(
+      Listen::TCP::Listener,
+      registry: registry,
+      options: {},
+      host: host,
+      port: port)
   end
 
-  let(:socket) { double(described_class::TCPSocket, close: true, recv: nil) }
+  let(:socket) do
+    instance_double(described_class::TCPSocket, close: true, recv: nil)
+  end
 
   before do
-    described_class::TCPSocket.stub(:new).and_return socket
+    allow(described_class::TCPSocket).to receive(:new).and_return socket
   end
 
   after do
@@ -69,14 +72,14 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#run' do
-    let(:async) { double('TCP-adapter async', handle_data: true) }
-
     it 'handles data from socket' do
-      socket.stub(:recv).and_return 'foo', 'bar', nil
-      subject.stub(:async).and_return async
+      allow(socket).to receive(:recv).and_return 'foo', 'bar', nil
 
-      expect(async).to receive(:handle_data).with 'foo'
-      expect(async).to receive(:handle_data).with 'bar'
+      expect_any_instance_of(described_class).
+        to receive(:handle_data).with('foo')
+
+      expect_any_instance_of(described_class).
+        to receive(:handle_data).with('bar')
 
       subject.start
     end
@@ -93,7 +96,9 @@ describe Listen::Adapter::TCP do
     it 'handles messages accordingly' do
       message = Listen::TCP::Message.new
 
-      Listen::TCP::Message.stub(:from_buffer).and_return message, nil
+      allow(Listen::TCP::Message).to receive(:from_buffer).
+        and_return message, nil
+
       expect(Listen::TCP::Message).to receive(:from_buffer).with 'foo'
       expect(subject.wrapped_object).to receive(:handle_message).with message
 

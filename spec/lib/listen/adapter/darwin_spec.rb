@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Listen::Adapter::Darwin do
   if darwin?
-    let(:listener) { double(Listen::Listener) }
+    let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
 
     describe '.usable?' do
@@ -14,7 +14,7 @@ describe Listen::Adapter::Darwin do
     describe '#initialize' do
       it 'requires rb-fsevent gem' do
         described_class.new(listener)
-        expect(defined?(FSEvent)).to be_true
+        expect(defined?(FSEvent)).to be_truthy
       end
     end
   end

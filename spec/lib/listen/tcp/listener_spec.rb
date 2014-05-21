@@ -7,32 +7,43 @@ describe Listen::TCP::Listener do
 
   subject { described_class.new("#{host}:#{port}", :recipient, options) }
   let(:options) { {} }
-  let(:registry) { double(Celluloid::Registry, :[]= => true) }
+  let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
 
   let(:supervisor) do
-    double(Celluloid::SupervisionGroup, add: true, pool: true)
+    instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
-  let(:record) { double(Listen::Record, terminate: true, build: true) }
-  let(:silencer) { double(Listen::Silencer, terminate: true) }
-  let(:adapter) { double(Listen::Adapter::Base) }
-  let(:broadcaster) { double(Listen::TCP::Broadcaster) }
-  let(:change_pool) { double(Listen::Change, terminate: true) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
+  let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
+  let(:adapter) { instance_double(Listen::Adapter::Base) }
+  let(:broadcaster) { instance_double(Listen::TCP::Broadcaster) }
+  let(:change_pool) { instance_double(Listen::Change, terminate: true) }
+  let(:change_pool_async) { instance_double('ChangePoolAsync') }
   before do
-    Celluloid::Registry.stub(:new) { registry }
-    Celluloid::SupervisionGroup.stub(:run!) { supervisor }
-    registry.stub(:[]).with(:silencer) { silencer }
-    registry.stub(:[]).with(:adapter) { adapter }
-    registry.stub(:[]).with(:record) { record }
-    registry.stub(:[]).with(:change_pool) { change_pool }
-    registry.stub(:[]).with(:broadcaster) { broadcaster }
+    allow(Celluloid::Registry).to receive(:new) { registry }
+    allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
+    allow(registry).to receive(:[]).with(:silencer) { silencer }
+    allow(registry).to receive(:[]).with(:adapter) { adapter }
+    allow(registry).to receive(:[]).with(:record) { record }
+    allow(registry).to receive(:[]).with(:change_pool) { change_pool }
+    allow(registry).to receive(:[]).with(:broadcaster) { broadcaster }
   end
 
   describe '#initialize' do
-    its(:mode) { should be :recipient }
-    its(:host) { should eq host }
-    its(:port) { should eq port }
+    describe '#mode' do
+      subject { super().mode }
+      it { is_expected.to be :recipient }
+    end
+
+    describe '#host' do
+      subject { super().host }
+      it { is_expected.to eq host }
+    end
+
+    describe '#port' do
+      subject { super().port }
+      it { is_expected.to eq port }
+    end
 
     it 'raises on invalid mode' do
       expect do
@@ -50,21 +61,24 @@ describe Listen::TCP::Listener do
   context 'when broadcaster' do
     subject { described_class.new(port, :broadcaster) }
 
-    it { should be_a_broadcaster }
-    it { should_not be_a_recipient }
+    it { is_expected.to be_a_broadcaster }
+    it { is_expected.not_to be_a_recipient }
 
     it 'does not force TCP adapter through options' do
       expect(subject.options).not_to include(force_tcp: true)
     end
 
     context 'when host is omitted' do
-      its(:host) { should be_nil }
+      describe '#host' do
+        subject { super().host }
+        it { is_expected.to be_nil }
+      end
     end
 
     describe '#start' do
       before do
-        adapter.stub_chain(:async, :start)
-        broadcaster.stub(:start)
+        allow(subject).to receive(:_start_adapter)
+        allow(broadcaster).to receive(:start)
       end
 
       it 'registers broadcaster' do
@@ -80,14 +94,14 @@ describe Listen::TCP::Listener do
     end
 
     describe '#block' do
-      let(:async) { double('TCP broadcaster async', broadcast: true) }
-      let(:callback) { double(call: true) }
+      let(:async) { instance_double(Listen::TCP::Broadcaster, broadcast: true) }
+      let(:callback) { instance_double(Proc, call: true) }
       let(:changes) do
         { modified: ['/foo'], added: [], removed: [] }
       end
 
       before do
-        broadcaster.stub(:async).and_return async
+        allow(broadcaster).to receive(:async).and_return async
       end
 
       after do
@@ -105,7 +119,7 @@ describe Listen::TCP::Listener do
       context 'when stopped' do
         it 'honours stopped state and does nothing' do
           allow(subject).to receive(:supervisor) do
-            double('SupervisionGroup', terminate: true)
+            instance_double(Celluloid::SupervisionGroup, terminate: true)
           end
 
           subject.stop
@@ -133,11 +147,14 @@ describe Listen::TCP::Listener do
       expect(subject.options).to include(force_tcp: true)
     end
 
-    it { should_not be_a_broadcaster }
-    it { should be_a_recipient }
+    it { is_expected.not_to be_a_broadcaster }
+    it { is_expected.to be_a_recipient }
 
     context 'when host is omitted' do
-      its(:host) { should eq described_class::DEFAULT_HOST }
+      describe '#host' do
+        subject { super().host }
+        it { is_expected.to eq described_class::DEFAULT_HOST }
+      end
     end
   end
 

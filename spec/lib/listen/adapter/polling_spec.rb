@@ -1,21 +1,22 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:registry) { double(Celluloid::Registry) }
+  let(:registry) { instance_double(Celluloid::Registry) }
   let(:listener) do
-    double(Listen::Listener,
-           registry: registry,
-           options: {},
-           listen?: true)
+    instance_double(
+      Listen::Listener,
+      registry: registry,
+      options: {},
+      listen?: true)
   end
 
   let(:adapter) { described_class.new(listener) }
-  let(:change_pool) { double(Listen::Change, terminate: true) }
-  let(:change_pool_async) { double('ChangePoolAsync') }
+  let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
+  let(:change_pool_async) { instance_double(Listen::Change) }
 
   before do
-    change_pool.stub(:async) { change_pool_async }
-    registry.stub(:[]).with(:change_pool) { change_pool }
+    allow(proxy).to receive(:async) { change_pool_async }
+    allow(registry).to receive(:[]).with(:change_pool) { proxy }
   end
 
   describe '.usable?' do
@@ -27,8 +28,8 @@ describe Listen::Adapter::Polling do
   describe '#start' do
     let(:directories) { ['directory_path'] }
     before do
-      listener.stub(:options) { {} }
-      listener.stub(:directories) { directories }
+      allow(listener).to receive(:options) { {} }
+      allow(listener).to receive(:directories) { directories }
     end
 
     it 'notifies change on every listener directories path' do
@@ -50,7 +51,7 @@ describe Listen::Adapter::Polling do
     end
 
     it 'returns latency from listener actor if present' do
-      listener.stub(:options) { { latency: 1234 } }
+      allow(listener).to receive(:options) { { latency: 1234 } }
       expect(adapter.send(:_latency)).to eq 1234
     end
   end

@@ -1,8 +1,12 @@
 require 'spec_helper'
 
 describe Listen::Record do
-  let(:registry) { double(Celluloid::Registry) }
-  let(:listener) { double(Listen::Listener, registry: registry, options: {}) }
+  let(:registry) { instance_double(Celluloid::Registry) }
+
+  let(:listener) do
+    instance_double(Listen::Listener, registry: registry, options: {})
+  end
+
   let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
   let(:data) { { type: 'File' } }
@@ -73,11 +77,14 @@ describe Listen::Record do
 
   describe '#build' do
     let(:directories) { ['dir_path'] }
-    let(:change_pool) { double(Listen::Change, terminate: true) }
+
+    let(:actor) do
+      instance_double(Listen::Change, change: nil, terminate: true)
+    end
+
     before do
-      change_pool.stub(:change)
-      registry.stub(:[]).with(:change_pool) { change_pool }
-      listener.stub(:directories) { directories }
+      allow(registry).to receive(:[]).with(:change_pool) { actor }
+      allow(listener).to receive(:directories) { directories }
     end
 
     it 're-inits paths' do
@@ -87,7 +94,7 @@ describe Listen::Record do
     end
 
     it 'calls change asynchronously on all directories to build record'  do
-      expect(change_pool).to receive(:change).
+      expect(actor).to receive(:change).
         with('dir_path', type: 'Dir', recursive: true, silence: true)
 
       record.build
