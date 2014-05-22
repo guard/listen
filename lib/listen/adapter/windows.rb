@@ -19,20 +19,22 @@ module Listen
           true
         end
       rescue LoadError
-        _log :error, "wdm - load failed: #{$!}:#{$@.join("\n")}"
+        _log :debug, "wdm - load failed: #{$!}:#{$@.join("\n")}"
         Kernel.warn BUNDLER_DECLARE_GEM
         false
       end
 
       def start
-        _log :warn, 'wdm - starting...'
+        _log :debug, 'wdm - starting...'
         worker = _init_worker
+        _log :debug, 'wdm - starting worker thread ...'
         Thread.new do
           begin
-            _log :warn, 'wdm - running worker ...'
+            _log :debug, 'wdm - running worker ...'
             worker.run!
-          rescue LoadError
+          rescue
             _log :error, "wdm - worker run failed: #{$!}:#{$@.join("\n")}"
+            raise
           end
         end
       rescue
