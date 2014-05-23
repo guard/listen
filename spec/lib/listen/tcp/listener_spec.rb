@@ -16,7 +16,8 @@ describe Listen::TCP::Listener do
   let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
   let(:adapter) { instance_double(Listen::Adapter::Base) }
-  let(:broadcaster) { instance_double(Listen::TCP::Broadcaster) }
+  let(:async) { instance_double(Listen::TCP::Broadcaster, broadcast: true) }
+  let(:broadcaster) { instance_double(Listen::TCP::Broadcaster, async: async) }
   let(:change_pool) { instance_double(Listen::Change, terminate: true) }
   let(:change_pool_async) { instance_double('ChangePoolAsync') }
   before do
@@ -94,7 +95,6 @@ describe Listen::TCP::Listener do
     end
 
     describe '#block' do
-      let(:async) { instance_double(Listen::TCP::Broadcaster, broadcast: true) }
       let(:callback) { instance_double(Proc, call: true) }
       let(:changes) do
         { modified: ['/foo'], added: [], removed: [] }
