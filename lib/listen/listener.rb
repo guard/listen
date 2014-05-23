@@ -158,10 +158,11 @@ module Listen
           new_changes = _pop_changes
           changes += new_changes
         end until new_changes.empty?
-        unless changes.empty?
-          hash = _smoosh_changes(changes)
-          block.call(hash[:modified], hash[:added], hash[:removed])
-        end
+
+        next if changes.empty?
+
+        hash = _smoosh_changes(changes)
+        block.call(hash[:modified], hash[:added], hash[:removed])
       end
     rescue => ex
       _log :error, "waiting for changes failed: #{$!}:#{$@.join("\n")}"

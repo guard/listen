@@ -28,11 +28,11 @@ module Listen
 
       # Cleans up sockets and server
       def finalize
-        if @server
-          @sockets.clear
-          @server.close
-          @server = nil
-        end
+        return unless @server
+
+        @sockets.clear
+        @server.close
+        @server = nil
       end
 
       # Broadcasts given payload to all connected sockets

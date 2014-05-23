@@ -33,10 +33,10 @@ module Listen
       # Initializes and starts TCP broadcaster
       def start
         super
-        if broadcaster?
-          supervisor.add(Broadcaster, as: :broadcaster, args: [host, port])
-          registry[:broadcaster].start
-        end
+        return unless broadcaster?
+
+        supervisor.add(Broadcaster, as: :broadcaster, args: [host, port])
+        registry[:broadcaster].start
       end
 
       # Hook to broadcast changes over TCP

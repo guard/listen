@@ -40,9 +40,9 @@ module Listen
 
     def _file_change(path, options)
       change = File.new(listener, path).change
-      if change && listener.listen? && !options[:silence]
-        _notify_listener(change, path)
-      end
+      return if !change || !listener.listen? || options[:silence]
+
+      _notify_listener(change, path)
     end
 
     def _dir_change(path, options)

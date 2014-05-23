@@ -63,9 +63,9 @@ module Listen
     private
 
     def _init_only_patterns
-      if listener.options[:only]
-        @only_patterns = Array(listener.options[:only])
-      end
+      return unless listener.options[:only]
+
+      @only_patterns = Array(listener.options[:only])
     end
 
     def _init_ignore_patterns

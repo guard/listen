@@ -24,10 +24,10 @@ module Listen
       # Cleans up buffer and socket
       def finalize
         @buffer = nil
-        if @socket
-          @socket.close
-          @socket = nil
-        end
+        return unless @socket
+
+        @socket.close
+        @socket = nil
       end
 
       # Number of bytes to receive at a time
