@@ -162,7 +162,9 @@ module Listen
         next if changes.empty?
 
         hash = _smoosh_changes(changes)
-        block.call(hash[:modified], hash[:added], hash[:removed])
+        result = [hash[:modified], hash[:added], hash[:removed]]
+        # TODO: condition not tested, but too complex to test
+        block.call(*result) unless result.all?(&:empty?)
       end
     rescue => ex
       _log :error, "waiting for changes failed: #{$!}:#{$@.join("\n")}"
