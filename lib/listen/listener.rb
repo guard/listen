@@ -166,10 +166,9 @@ module Listen
         # TODO: condition not tested, but too complex to test
         block.call(*result) unless result.all?(&:empty?)
       end
-    rescue => ex
-      _log :error, "waiting for changes failed: #{$!}:#{$@.join("\n")}"
+    rescue RuntimeError
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
-      Kernel.warn "Backtrace:\n\t#{ex.backtrace.join("\n\t")}"
+      Kernel.warn "Backtrace:\n\t#{$@.join("\n\t")}"
     end
 
     def _pop_changes
