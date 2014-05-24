@@ -30,9 +30,10 @@ module Listen
       else
         send("_#{options[:type].downcase}_change", path, options)
       end
-    rescue
-      _log :error, '................CHANGE CRASHED.................'
-      STDERR.puts ".. #{$!.inspect}:#{$@.join("\n")}"
+    rescue Celluloid::Task::TerminatedError
+      raise
+    rescue RuntimeError
+      _log :error, "Change#change crashed #{$!.inspect}:#{$@.join("\n")}"
       raise
     end
 
