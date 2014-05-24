@@ -107,11 +107,9 @@ module Listen
     def _lstat
       @lstat ||= begin
                    ::File.lstat(path)
-                 rescue Errno::ENOENT
+                 rescue SystemCallError
                    :no_such_file
                  end
-    rescue
-      nil
     end
 
     def _set_md5
