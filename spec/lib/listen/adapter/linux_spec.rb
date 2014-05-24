@@ -26,13 +26,16 @@ describe Listen::Adapter::Linux do
       let!(:adapter) { described_class.new(listener) }
 
       before do
-        allow_any_instance_of(INotify::Notifier).to receive(:watch).
-          and_raise(Errno::ENOSPC)
-
+        require 'rb-inotify'
         allow(listener).to receive(:directories) { ['foo/dir'] }
+        fake_worker = double(:fake_worker)
+        allow(fake_worker).to receive(:watch).and_raise(Errno::ENOSPC)
+
+        fake_notifier = double(:fake_notifier, new: fake_worker)
+        stub_const('INotify::Notifier', fake_notifier)
       end
 
-      it 'should be show before calling abort' do
+      it 'should be shown before calling abort' do
         expected_message = described_class.const_get('INOTIFY_LIMIT_MESSAGE')
         expect(STDERR).to receive(:puts).with(expected_message)
 
@@ -63,8 +66,8 @@ describe Listen::Adapter::Linux do
       let(:event_callback) do
         lambda do |flags|
           callback = adapter.send(:_worker_callback)
-          callback.call instance_double(
-            INotify::Event,
+          callback.call double(
+            :inotify_event,
             name: 'foo.txt',
             flags: flags,
             absolute_name: 'path/foo.txt',
