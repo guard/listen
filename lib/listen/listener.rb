@@ -135,7 +135,7 @@ module Listen
       when /true|yes|1/i
         Logger::INFO
       else
-        Logger::FATAL
+        Logger::ERROR
       end
     end
 
