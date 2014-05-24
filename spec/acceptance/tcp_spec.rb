@@ -46,7 +46,7 @@ describe Listen::TCP do
       let(:recipient) { setup_recipient(port) }
 
       before do
-        broadcaster.lag = 1
+        broadcaster.lag = 2
         recipient.listener.start
       end
 
