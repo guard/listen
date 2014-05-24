@@ -3,39 +3,23 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Base
-      def self.usable?
-        RbConfig::CONFIG['target_os'] =~ /darwin(1.+)?$/i
-      end
-
-      def initialize(listener)
-        require 'rb-fsevent'
-        super
-      end
-
-      def start
-        worker = _init_worker
-        Thread.new { worker.run }
-      end
+      OS_REGEXP = /darwin(1.+)?$/i
 
       private
 
-      # Initializes a FSEvent worker and adds a watcher for
-      # each directory listened.
-      #
-      def _init_worker
-        FSEvent.new.tap do |worker|
-          worker.watch(_directories_path, latency: _latency) do |changes|
-            paths = _changes_path(changes)
-            paths.each { |path| _notify_change(path, type: 'Dir') }
+      def _configure
+        require 'rb-fsevent'
+        @worker = FSEvent.new
+        @worker.watch(_directories.map(&:to_s), latency: _latency) do |changes|
+          changes.each do |path|
+            new_path = Pathname.new(path.sub(/\/$/, ''))
+            _notify_change(new_path, type: 'Dir')
           end
         end
       end
 
-      def _changes_path(changes)
-        changes.map do |path|
-          path.sub!(/\/$/, '')
-          Pathname.new(path)
-        end
+      def _run
+        @worker.run
       end
     end
   end

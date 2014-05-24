@@ -12,8 +12,11 @@ describe Listen::Adapter::Linux do
     end
 
     describe '#initialize' do
+      before do
+        allow(listener).to receive(:directories) { [] }
+      end
       it 'requires rb-inotify gem' do
-        described_class.new(listener)
+        adapter.send(:_configure)
         expect(defined?(INotify)).to be
       end
     end
@@ -41,6 +44,9 @@ describe Listen::Adapter::Linux do
     end
 
     describe '_worker_callback' do
+      before do
+        allow(listener).to receive(:directories) { [] }
+      end
 
       let(:expect_change) do
         lambda do |change|

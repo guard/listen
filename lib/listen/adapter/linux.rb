@@ -1,17 +1,13 @@
 module Listen
   module Adapter
     # Listener implementation for Linux `inotify`.
+    # @see https://github.com/nex3/rb-inotify
     #
     class Linux < Base
-      # Watched inotify events
-      #
-      # @see http://www.tin.org/bin/man.cgi?section=7&topic=inotify
-      # @see https://github.com/nex3/rb-inotify
-      #
+      OS_REGEXP = /linux/i
+
       EVENTS = [:recursive, :attrib, :create, :delete, :move, :close_write]
 
-      # The message to show when the limit of inotify watchers is not enough
-      #
       WIKI_URL = 'https://github.com/guard/listen'\
         '/wiki/Increasing-the-amount-of-inotify-watchers'
 
@@ -22,47 +18,32 @@ module Listen
         for information on how to solve this issue.
       EOS
 
-      def self.usable?
-        RbConfig::CONFIG['target_os'] =~ /linux/i
-      end
+      private
 
-      def initialize(listener)
+      def _configure
         require 'rb-inotify'
-        super
-      end
-
-      def start
-        worker = _init_worker
-        Thread.new { worker.run }
+        @worker = INotify::Notifier.new
+        _directories.each do |path|
+          @worker.watch(path.to_s, *EVENTS, &_worker_callback)
+        end
       rescue Errno::ENOSPC
         STDERR.puts INOTIFY_LIMIT_MESSAGE
         STDERR.flush
         abort(INOTIFY_LIMIT_MESSAGE)
       end
 
-      private
-
-      # Initializes a INotify worker and adds a watcher for
-      # each directory passed to the adapter.
-      #
-      # @return [INotify::Notifier] initialized worker
-      #
-      def _init_worker
-        INotify::Notifier.new.tap do |worker|
-          _directories_path.each do |path|
-            worker.watch(path, *EVENTS, &_worker_callback)
-          end
-        end
+      def _run
+        @worker.run
       end
 
       def _worker_callback
         lambda do |event|
           next if _skip_event?(event)
 
-          path = _event_path(event)
+          path = Pathname.new(event.absolute_name)
           cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
 
-          _log(event)
+          _log :debug, "inotify: #{event.name}: #{event.flags.inspect}"
 
           if _dir_event?(event)
             _notify_change(path, { type: 'Dir' }.merge(cookie_opts))
@@ -96,16 +77,6 @@ module Listen
 
       def _dir_event?(event)
         event.flags.include?(:isdir)
-      end
-
-      def _event_path(event)
-        Pathname.new(event.absolute_name)
-      end
-
-      def _log(event)
-        name = event.name
-        flags = event.flags.inspect
-        Celluloid.logger.info "inotify event: #{flags}: #{name}"
       end
     end
   end

@@ -4,15 +4,13 @@ module Listen
   module Adapter
     # Adapter to receive file system modifications over TCP
     class TCP < Base
+      OS_REGEXP = // # match any
+
       include Celluloid::IO
 
       finalizer :finalize
 
       attr_reader :buffer, :socket
-
-      def self.usable?
-        true
-      end
 
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start

@@ -3,8 +3,8 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Base
-      # The message to show when wdm gem isn't available
-      #
+      OS_REGEXP = /mswin|mingw|cygwin/i
+
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
           require 'rbconfig'
@@ -14,59 +14,33 @@ module Listen
       EOS
 
       def self.usable?
-        if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
-          require 'wdm'
-          true
-        end
+        return false unless super
+        require 'wdm'
+        true
       rescue LoadError
         _log :debug, "wdm - load failed: #{$!}:#{$@.join("\n")}"
         Kernel.warn BUNDLER_DECLARE_GEM
         false
       end
 
-      def start
-        _log :debug, 'wdm - starting...'
-        worker = _init_worker
-        _log :debug, 'wdm - starting worker thread ...'
-        Thread.new do
-          begin
-            _log :debug, 'wdm - running worker ...'
-            worker.run!
-          rescue
-            _log :error, "wdm - worker run failed: #{$!}:#{$@.join("\n")}"
-            raise
-          end
-        end
-      rescue
-        _log :error, "wdm - start failed: #{$!}:#{$@.join("\n")}"
-        raise
-      end
-
       private
 
-      # Initializes a WDM monitor and adds a watcher for
-      # each directory passed to the adapter.
-      #
-      # @return [WDM::Monitor] initialized worker
-      #
-      def _init_worker
-        WDM::Monitor.new.tap do |worker|
-          _directories_path.each do |path|
-            _log :debug, "wdm - watching recursively: #{path.inspect}"
-
-            worker.watch_recursively(path.to_s, :files,
-                                     &_worker_file_callback)
-
-            worker.watch_recursively(path.to_s, :directories,
-                                     &_worker_dir_callback)
-
-            worker.watch_recursively(path.to_s, :attributes, :last_write,
-                                     &_worker_attr_callback)
-          end
+      def _configure
+        _log :debug, 'wdm - starting...'
+        worker = WDM::Monitor.new
+        _directories.each do |path|
+          worker.watch_recursively(path.to_s, :files, &_file_callback)
+          worker.watch_recursively(path.to_s, :directories, &_dir_callback)
+          worker.watch_recursively(path.to_s, :attributes, :last_write,
+                                   &_attr_callback)
         end
       end
 
-      def _worker_file_callback
+      def _run
+        worker.run!
+      end
+
+      def _file_callback
         lambda do |change|
           begin
             path = _path(change.path)
@@ -80,7 +54,7 @@ module Listen
         end
       end
 
-      def _worker_attr_callback
+      def _attr_callback
         lambda do |change|
           begin
             path = _path(change.path)
@@ -96,7 +70,7 @@ module Listen
         end
       end
 
-      def _worker_dir_callback
+      def _dir_callback
         lambda do |change|
           begin
             path = _path(change.path)
@@ -109,8 +83,8 @@ module Listen
               # do nothing - changed directory means either:
               #   - removed subdirs (handled above)
               #   - added subdirs (handled above)
-              #   - removed files (handled by _worker_file_callback)
-              #   - added files (handled by _worker_file_callback)
+              #   - removed files (handled by _file_callback)
+              #   - added files (handled by _file_callback)
               # so what's left?
             end
           rescue
@@ -118,9 +92,6 @@ module Listen
             raise
           end
         end
-      rescue
-        _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
-        raise
       end
 
       def _path(path)
@@ -134,10 +105,6 @@ module Listen
           return change if types.include?(type)
         end
         nil
-      end
-
-      def _log(type, message)
-        Celluloid.logger.send(type, message)
       end
     end
   end

@@ -6,15 +6,9 @@ module Listen
     # file IO than the other implementations.
     #
     class Polling < Base
+      OS_REGEXP = // # match any
+
       DEFAULT_POLLING_LATENCY = 1.0
-
-      def self.usable?
-        true
-      end
-
-      def start
-        Thread.new { _poll_directories }
-      end
 
       private
 
@@ -22,25 +16,15 @@ module Listen
         listener.options[:latency] || DEFAULT_POLLING_LATENCY
       end
 
-      def _poll_directories
-        _napped_loop do
-          listener.directories.each do |path|
+      def _run
+        loop do
+          start = Time.now.to_f
+          _directories.each do |path|
             _notify_change(path, type: 'Dir', recursive: true)
+            nap_time = _latency - (Time.now.to_f - start)
+            sleep(nap_time) if nap_time > 0
           end
         end
-      end
-
-      def _napped_loop
-        loop do
-          _nap_time { yield }
-        end
-      end
-
-      def _nap_time
-        start = Time.now.to_f
-        yield
-        nap_time = _latency - (Time.now.to_f - start)
-        sleep(nap_time) if nap_time > 0
       end
     end
   end
