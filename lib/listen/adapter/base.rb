@@ -49,9 +49,20 @@ module Listen
       end
 
       def _notify_change(path, options)
-        sleep 0.01 until listener.registry[:change_pool]
-        pool = listener.registry[:change_pool]
-        pool.async.change(path, options) if listener.listen?
+        unless listener.listen?
+          _log :warn, 'Listener not listening anymore'
+          return
+        end
+
+        unless (worker = listener.registry[:change_pool])
+          _log :error, 'Failed to allocate from change pool'
+          return
+        end
+
+        worker.async.change(path, options)
+      rescue RuntimeError
+        _log :error, "_notify_change crashed: #{$!}:#{$@.join("\n")}"
+        raise
       end
 
       def _log(type, message)
