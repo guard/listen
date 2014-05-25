@@ -105,7 +105,10 @@ class ListenerWrapper
   def _relative_path(changes)
     changes.map do |change|
       unfrozen_copy = change.dup
-      [@paths].flatten.each { |path| unfrozen_copy.gsub!(/#{path.to_s}\//, '') }
+      [@paths].flatten.each do |path|
+        sub = path.sub(/\/$/, '').to_s
+        unfrozen_copy.gsub!(/^#{sub}\//, '')
+      end
       unfrozen_copy
     end
   end
