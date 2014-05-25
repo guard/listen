@@ -99,7 +99,7 @@ module Listen
       end
 
       def _change(type)
-        { modified: [:modified],
+        { modified: [:modified, :attrib], # TODO: is attrib really passed?
           added:    [:added, :renamed_new_file],
           removed:  [:removed, :renamed_old_file] }.each do |change, types|
           return change if types.include?(type)

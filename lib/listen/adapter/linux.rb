@@ -24,9 +24,10 @@ module Listen
         require 'rb-inotify'
         @worker = INotify::Notifier.new
         _directories.each do |path|
-          @worker.watch(path.to_s, *EVENTS, &_worker_callback)
+          @worker.watch(path.to_s, *EVENTS, &_callback)
         end
       rescue Errno::ENOSPC
+        # workaround - Celluloid catches abort and prints nothing
         STDERR.puts INOTIFY_LIMIT_MESSAGE
         STDERR.flush
         abort(INOTIFY_LIMIT_MESSAGE)
@@ -36,11 +37,15 @@ module Listen
         @worker.run
       end
 
-      def _worker_callback
+      def _callback
         lambda do |event|
           next if _skip_event?(event)
 
-          path = Pathname.new(event.absolute_name)
+          # NOTE: avoid using event.absolute_name since new API
+          # will need to have a custom recursion implemented
+          # to properly match events to configured directories
+          path = Pathname.new(event.watcher.path) + event.name
+
           cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
 
           _log :debug, "inotify: #{event.name}: #{event.flags.inspect}"

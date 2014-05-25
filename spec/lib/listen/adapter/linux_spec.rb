@@ -46,7 +46,7 @@ describe Listen::Adapter::Linux do
       end
     end
 
-    describe '_worker_callback' do
+    describe '_callback' do
       before do
         allow(listener).to receive(:directories) { [] }
       end
@@ -65,12 +65,12 @@ describe Listen::Adapter::Linux do
 
       let(:event_callback) do
         lambda do |flags|
-          callback = adapter.send(:_worker_callback)
+          callback = adapter.send(:_callback)
           callback.call double(
             :inotify_event,
             name: 'foo.txt',
+            watcher: double(:watcher, path: 'path'),
             flags: flags,
-            absolute_name: 'path/foo.txt',
             cookie: 123)
         end
       end
