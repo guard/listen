@@ -28,6 +28,7 @@ describe Listen::File do
         future: async_record
       )
     end
+    allow(::File).to receive(:lstat) { fail 'Not stubbed!' }
   end
 
   describe '#change' do
@@ -51,6 +52,10 @@ describe Listen::File do
       end
 
       context 'non-existing path' do
+        before do
+          allow(::File).to receive(:lstat) { fail Errno::ENOENT }
+        end
+
         it 'returns added' do
           expect(file.change).to eq :removed
         end
@@ -60,14 +65,22 @@ describe Listen::File do
         end
       end
 
-      context 'existing path' do
-        around do |example|
-          touch file_path
-          example.run
-        end
+      context 'with file modified just now' do
 
-        context 'old record path mtime' do
+        context 'with old record path mtime earlier than now' do
           let(:record_mtime) { (Time.now - 1).to_f }
+
+          let(:stat) do
+            instance_double(
+              File::Stat,
+              mtime: record_mtime + 1,
+              mode: 0640
+            )
+          end
+
+          before do
+            allow(File).to receive(:lstat) { stat }
+          end
 
           it 'returns modified' do
             expect(file.change).to eq :modified
@@ -81,17 +94,29 @@ describe Listen::File do
           end
         end
 
-        context 'same record path mtime' do
-          let(:record_mtime) { ::File.lstat(file_path).mtime.to_f }
-          let(:record_mode)  { ::File.lstat(file_path).mode }
+        context 'with same record path mtime' do
+          let(:record_mtime) { 230498230.234 }
+          let(:record_mode)  { 0644 }
 
-          context 'same record path mode' do
+          let(:stat) do
+            instance_double(
+              File::Stat,
+              mtime: 230498230.234,
+              mode: 0644
+            )
+          end
+
+          before do
+            allow(File).to receive(:lstat) { stat }
+          end
+
+          context 'with same record path mode' do
             it 'returns nil' do
               expect(file.change).to be_nil
             end
           end
 
-          context 'diferent record path mode' do
+          context 'with different record path mode' do
             let(:record_mode) { 'foo' }
 
             it 'returns modified' do
@@ -131,13 +156,20 @@ describe Listen::File do
       end
     end
 
-    context 'path not present in record' do
+    context 'with empty record' do
       let(:record_data) { {} }
 
-      context 'existing path' do
-        around do |example|
-          touch file_path
-          example.run
+      context 'with existing path' do
+        let(:stat) do
+          instance_double(
+            File::Stat,
+            mtime: 1234,
+            mode: 0645
+          )
+        end
+
+        before do
+          allow(::File).to receive(:lstat) { stat }
         end
 
         it 'returns added' do
