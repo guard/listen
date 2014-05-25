@@ -106,10 +106,13 @@ module Listen
 
     def _lstat
       @lstat ||= begin
-                   ::File.lstat(path)
+                   path.lstat
                  rescue SystemCallError
                    :no_such_file
                  end
+    rescue
+      Celluloid::Logger.debug "lstat failed for: #{path} (#{$!})"
+      raise
     end
 
     def _set_md5
