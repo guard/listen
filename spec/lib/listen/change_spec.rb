@@ -1,65 +1,58 @@
 require 'spec_helper'
 
 describe Listen::Change do
-  let(:change) { Listen::Change.new(listener) }
-  let(:registry) { instance_double(Celluloid::Registry) }
-
-  let(:listener) do
-    instance_double(Listen::Listener, registry: registry, options: {})
-  end
-
-  let(:listener_changes) { instance_double(Array) }
+  let(:subject) { Listen::Change.new(listener) }
+  let(:listener) { instance_double(Listen::Listener, options: {}) }
+  let(:record) { double(Listen::Record) }
+  let(:file_path) { Pathname.new('file_path') }
 
   before do
-    allow(listener).to receive(:changes) { listener_changes }
+    allow(listener).to receive(:sync).with(:record) { record }
+    allow(listener).to receive(:async).with(:change_pool) { subject }
   end
 
   describe '#change' do
     let(:silencer) { instance_double(Listen::Silencer, silenced?: false) }
-    before { allow(registry).to receive(:[]).with(:silencer) { silencer } }
+    before { allow(listener).to receive(:silencer) { silencer } }
 
-    context 'file path' do
+    context 'file' do
       context 'with known change' do
+        let(:file_path) { Pathname('file_path') }
         it 'notifies change directly to listener' do
-          expect(listener_changes).to receive(:<<).
-            with(modified: Pathname.new('file_path'))
+          expect(listener).to receive(:queue).with(:modified, file_path, {})
 
           options = { type: 'File', change: :modified }
-          change.change(Pathname.new('file_path'), options)
+          subject.change(file_path, options)
         end
 
         it "doesn't notify to listener if path is silenced" do
           expect(silencer).to receive(:silenced?).and_return(true)
-          expect(listener_changes).to_not receive(:<<)
+          expect(listener).to_not receive(:queue)
 
           options = { type: 'File', change: :modified }
-          change.change(Pathname.new('file_path'), options)
+          subject.change(file_path, options)
         end
       end
 
       context 'with unknown change' do
-        let(:file) { instance_double(Listen::File) }
-        before { allow(Listen::File).to receive(:new) { file } }
 
         it 'calls Listen::File#change' do
-          expect(Listen::File).to receive(:new).
-            with(listener, Pathname.new('file_path')) { file }
+          expect(Listen::File).to receive(:change).with(record, file_path)
 
-          expect(file).to receive(:change)
-          change.change(Pathname.new('file_path'), type: 'File')
+          subject.change(file_path, type: 'File')
         end
 
         it "doesn't call Listen::File#change if path is silenced" do
           expect(silencer).to receive(:silenced?).
-            with(Pathname.new('file_path'), 'File').and_return(true)
+            with(file_path, 'File').and_return(true)
 
-          expect(Listen::File).to_not receive(:new)
+          expect(Listen::File).to_not receive(:change)
 
-          change.change(Pathname.new('file_path'), type: 'File')
+          subject.change(file_path, type: 'File')
         end
 
         context 'that returns a change' do
-          before { allow(file).to receive(:change) { :modified } }
+          before { allow(Listen::File).to receive(:change) { :modified } }
 
           context 'listener listen' do
             before { allow(listener).to receive(:listen?) { true } }
@@ -69,15 +62,15 @@ describe Listen::Change do
                                           to_s: 'file_path',
                                           exist?: true)
 
-              expect(listener_changes).to receive(:<<).with(modified: file_path)
-              change.change(file_path, type: 'File')
+              expect(listener).to receive(:queue).with(:modified, file_path)
+              subject.change(file_path, type: 'File')
             end
 
             context 'silence option' do
               it 'notifies change to listener' do
-                expect(listener_changes).to_not receive(:<<)
+                expect(listener).to_not receive(:queue)
                 options = { type: 'File', silence: true }
-                change.change(Pathname.new('file_path'), options)
+                subject.change(file_path, options)
               end
             end
           end
@@ -86,34 +79,32 @@ describe Listen::Change do
             before { allow(listener).to receive(:listen?) { false } }
 
             it 'notifies change to listener' do
-              expect(listener_changes).to_not receive(:<<)
-              change.change(Pathname.new('file_path'), type: 'File')
+              expect(listener).to_not receive(:queue)
+              subject.change(file_path, type: 'File')
             end
           end
         end
 
         context 'that returns no change' do
-          before { allow(file).to receive(:change) { nil } }
+          before { allow(Listen::File).to receive(:change) { nil } }
 
           it "doesn't notifies no change" do
-            expect(listener_changes).to_not receive(:<<)
-            change.change(Pathname.new('file_path'), type: 'File')
+            expect(listener).to_not receive(:queue)
+            subject.change(file_path, type: 'File')
           end
         end
       end
     end
 
-    context 'directory path' do
-      let(:dir) { instance_double(Listen::Directory) }
+    context 'directory' do
       let(:dir_options) { { type: 'Dir', recursive: true } }
-      before { allow(Listen::Directory).to receive(:new) { dir } }
+      let(:dir_path) { Pathname.new('dir_path') }
 
-      it 'calls Listen::Directory#scan' do
-        expect(Listen::Directory).to receive(:new).
-          with(listener, Pathname.new('dir_path'), dir_options) { dir }
+      it 'calls Listen::Directory#new' do
+        expect(Listen::Directory).to receive(:scan).
+          with(subject, record, dir_path, dir_options)
 
-        expect(dir).to receive(:scan)
-        change.change(Pathname.new('dir_path'), dir_options)
+        subject.change(dir_path, dir_options)
       end
     end
   end

@@ -1,216 +1,162 @@
 require 'spec_helper'
 
-describe Listen::Directory do
-  let(:registry) { instance_double(Celluloid::Registry) }
+include Listen
 
-  let(:listener) do
-    instance_double(Listen::Listener, registry: registry, options: {})
-  end
-
+describe Directory do
   let(:path) { Pathname.pwd }
-  around { |example| fixtures { example.run } }
+  let(:dir) { path + 'dir' }
+  let(:file) { dir + 'file.rb' }
+  let(:file2) { dir + 'file2.rb' }
+  let(:subdir) { dir + 'subdir' }
+  let(:subdir2) { instance_double(Pathname, directory?: true) }
 
-  describe '#scan' do
-    let(:dir_path) { path + 'dir' }
-    let(:file_path) { dir_path + 'file.rb' }
-    let(:other_file_path) { dir_path + 'other_file.rb' }
-    let(:inside_dir_path) { dir_path + 'inside_dir' }
-    let(:other_inside_dir_path) { dir_path + 'other_inside_dir' }
-    let(:dir) { Listen::Directory.new(listener, dir_path, options) }
+  let(:queue) { instance_double(Change, change: nil) }
 
-    let(:change_pool_async) { instance_double(Listen::Change, change: nil) }
+  let(:async_record) do
+    instance_double(Record, set_path: true, unset_path: true)
+  end
 
-    let(:async_record) do
-      instance_double(
-        Listen::Record,
-        set_path: true,
-        unset_path: true,
-        dir_entries: instance_double(
-          Celluloid::Future,
-          value: record_dir_entries
-        )
-      )
-    end
+  let(:record) do
+    instance_double(Record, async: async_record, dir_entries: record_entries)
+  end
 
-    before do
-      allow(registry).to receive(:[]).with(:record) do
-        instance_double(
-          Celluloid::ActorProxy,
-          async: async_record,
-          future: async_record)
+  context '#scan with recursive off' do
+    let(:options) { { recursive: false } }
+
+    context 'with file & subdir in record' do
+      let(:record_entries) do
+        { 'file.rb' => { type: 'File' }, 'subdir' => { type: 'Dir' } }
       end
 
-      allow(registry).to receive(:[]).with(:change_pool) do
-        instance_double(
-          Celluloid::ActorProxy,
-          async: change_pool_async
-        )
-      end
-    end
+      context 'with empty dir' do
+        before { allow(dir).to receive(:children) { [] } }
 
-    context 'with recursive off' do
-      let(:options) { { recursive: false } }
-
-      context 'file & inside_dir paths present in record' do
-        let(:record_dir_entries) do
-          {
-            'file.rb' => { type: 'File' },
-            'inside_dir' => { type: 'Dir' }
-          }
+        it 'sets record dir path' do
+          expect(async_record).to receive(:set_path).with(dir, type: 'Dir')
+          described_class.scan(queue, record, dir, options)
         end
 
-        context 'empty dir' do
-          around do |example|
-            mkdir dir_path
-            example.run
-          end
+        it "queues changes for file path and dir that doesn't exist" do
+          expect(queue).to receive(:change).with(file, type: 'File')
 
-          it 'sets record dir path' do
-            expect(async_record).to receive(:set_path).
-              with(dir_path, type: 'Dir')
-            dir.scan
-          end
+          expect(queue).to receive(:change).
+            with(subdir, type: 'Dir', recursive: false)
 
-          it "calls change for file path and dir that doesn't exist" do
-            expect(change_pool_async).to receive(:change).
-              with(file_path, type: 'File', recursive: false)
-
-            expect(change_pool_async).to receive(:change).
-              with(inside_dir_path, type: 'Dir', recursive: false)
-
-            dir.scan
-          end
-        end
-
-        context 'other file path present in dir' do
-          around do |example|
-            mkdir dir_path
-            touch other_file_path
-            example.run
-          end
-
-          it 'notices file & other_file and no longer existing dir' do
-            expect(change_pool_async).to receive(:change).
-              with(file_path, type: 'File', recursive: false)
-
-            expect(change_pool_async).to receive(:change).
-              with(other_file_path, type: 'File', recursive: false)
-
-            expect(change_pool_async).to receive(:change).
-              with(inside_dir_path, type: 'Dir', recursive: false)
-
-            dir.scan
-          end
+          described_class.scan(queue, record, dir, options)
         end
       end
 
-      context 'dir paths not present in record' do
-        let(:record_dir_entries) { {} }
+      context 'with file2.rb in dir' do
+        before { allow(dir).to receive(:children) { [file2] } }
 
-        context 'non-existing dir path' do
-          it 'calls change only for file path' do
-            expect(change_pool_async).to_not receive(:change)
-            dir.scan
-          end
+        it 'notices file & file2 and no longer existing dir' do
+          expect(queue).to receive(:change).with(file, type: 'File')
+          expect(queue).to receive(:change).with(file2, type: 'File')
 
-          it 'unsets record dir path' do
-            expect(async_record).to receive(:unset_path).with(dir_path)
-            dir.scan
-          end
-        end
+          expect(queue).to receive(:change).
+            with(subdir, type: 'Dir', recursive: false)
 
-        context 'other file path present in dir' do
-          around do |example|
-            mkdir dir_path
-            touch file_path
-            example.run
-          end
-
-          it 'calls change for file & other_file paths' do
-            expect(change_pool_async).to receive(:change).
-              with(file_path, type: 'File', recursive: false)
-
-            expect(change_pool_async).to_not receive(:change).
-              with(other_file_path, type: 'File', recursive: false)
-
-            expect(change_pool_async).to_not receive(:change).
-              with(inside_dir_path, type: 'Dir', recursive: false)
-
-            dir.scan
-          end
+          described_class.scan(queue, record, dir, options)
         end
       end
     end
 
-    context 'with recursive on' do
-      let(:options) { { recursive: true } }
+    context 'with empty record' do
+      let(:record_entries) { {} }
 
-      context 'file & inside_dir paths present in record' do
-        let(:record_dir_entries) do {
-          'file.rb' => { type: 'File' },
-          'inside_dir' => { type: 'Dir' } }
+      context 'with non-existing dir path' do
+        before { allow(dir).to receive(:children) { fail Errno::ENOENT } }
+
+        it 'reports no changes' do
+          expect(queue).to_not receive(:change)
+          described_class.scan(queue, record, dir, options)
         end
 
-        context 'empty dir' do
-          it 'calls change for file & inside_dir path' do
-            expect(change_pool_async).to receive(:change).
-              with(file_path, type: 'File', recursive: true)
-
-            expect(change_pool_async).to receive(:change).
-              with(inside_dir_path, type: 'Dir', recursive: true)
-
-            dir.scan
-          end
-        end
-
-        context 'other inside_dir path present in dir' do
-          around do |example|
-            mkdir dir_path
-            mkdir other_inside_dir_path
-            example.run
-          end
-
-          it 'calls change for file, other_file & inside_dir paths' do
-            expect(change_pool_async).to receive(:change).
-              with(file_path, type: 'File', recursive: true)
-
-            expect(change_pool_async).to receive(:change).
-              with(inside_dir_path, type: 'Dir', recursive: true)
-
-            expect(change_pool_async).to receive(:change).
-              with(other_inside_dir_path, type: 'Dir', recursive: true)
-
-            dir.scan
-          end
+        it 'unsets record dir path' do
+          expect(async_record).to receive(:unset_path).with(dir)
+          described_class.scan(queue, record, dir, options)
         end
       end
 
-      context 'dir paths not present in record' do
-        let(:record_dir_entries) { {} }
+      context 'with file.rb in dir' do
+        before { allow(dir).to receive(:children) { [file] } }
 
-        context 'non-existing dir path' do
-          it 'calls change only for file path' do
-            expect(change_pool_async).to_not receive(:change)
-            dir.scan
-          end
-        end
+        it 'queues changes for file & file2 paths' do
+          expect(queue).to receive(:change).with(file, type: 'File')
+          expect(queue).to_not receive(:change).with(file2, type: 'File')
 
-        context 'other file path present in dir' do
-          around do |example|
-            mkdir dir_path
-            mkdir other_inside_dir_path
-            example.run
-          end
+          expect(queue).to_not receive(:change).
+            with(subdir, type: 'Dir', recursive: false)
 
-          it 'calls change for file & other_file paths' do
-            expect(change_pool_async).to receive(:change).
-              with(other_inside_dir_path, type: 'Dir', recursive: true)
-
-            dir.scan
-          end
+          described_class.scan(queue, record, dir, options)
         end
       end
     end
   end
 
+  context '#scan with recursive on' do
+    let(:options) { { recursive: true } }
+
+    context 'with file.rb & subdir in record' do
+      let(:record_entries) do
+        { 'file.rb' => { type: 'File' }, 'subdir' => { type: 'Dir' } }
+      end
+
+      context 'with empty dir' do
+        before { allow(dir).to receive(:children) { [] } }
+
+        it 'queues changes for file & subdir path' do
+          expect(queue).to receive(:change).with(file, type: 'File')
+
+          expect(queue).to receive(:change).
+            with(subdir, type: 'Dir', recursive: true)
+
+          described_class.scan(queue, record, dir, options)
+        end
+      end
+
+      context 'with subdir2 path present in dir' do
+        before do
+          allow(path).to receive(:children) { [dir] }
+          allow(dir).to receive(:children) { [subdir2] }
+        end
+
+        it 'queues changes for file, file2 & subdir paths' do
+          expect(queue).to receive(:change).with(file, type: 'File')
+
+          expect(queue).to receive(:change).
+            with(subdir, type: 'Dir', recursive: true)
+
+          expect(queue).to receive(:change).
+            with(subdir2, type: 'Dir', recursive: true)
+
+          described_class.scan(queue, record, dir, options)
+        end
+      end
+    end
+
+    context 'with empty record' do
+      let(:record_entries) { {} }
+
+      context 'with non-existing dir' do
+        before { allow(dir).to receive(:children) { fail Errno::ENOENT } }
+
+        it 'reports no changes' do
+          expect(queue).to_not receive(:change)
+          described_class.scan(queue, record, dir, options)
+        end
+      end
+
+      context 'with subdir2 present in dir' do
+        before { allow(dir).to receive(:children) { [subdir2] } }
+
+        it 'queues changes for file & file2 paths' do
+          expect(queue).to receive(:change).
+            with(subdir2, type: 'Dir', recursive: true)
+
+          described_class.scan(queue, record, dir, options)
+        end
+      end
+    end
+  end
 end

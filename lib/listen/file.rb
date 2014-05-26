@@ -1,124 +1,45 @@
 module Listen
   class File
-    attr_accessor :listener, :path, :data, :md5
+    def self.change(record, path)
+      lstat = path.lstat
 
-    def initialize(listener, path)
-      @listener = listener
-      @path = path
-      @data = { type: 'File' }
-    end
+      data = { type: 'File', mtime: lstat.mtime.to_f, mode: lstat.mode }
 
-    def change
-      if _existing_path? && _modified?
-        _set_record_data
-        :modified
-      elsif _new_path?
-        _set_record_data
-        :added
-      elsif _removed_path?
-        _unset_record_data
-        :removed
+      record_data = record.file_data(path)
+
+      if record_data.empty?
+        record.async.set_path(path, data)
+        return :added
       end
-    end
 
-    private
-
-    def _new_path?
-      _exist? && !_record_data?
-    end
-
-    def _existing_path?
-      _exist? && _record_data?
-    end
-
-    def _removed_path?
-      !_exist?
-    end
-
-    def _record_data?
-      !_record_data.empty?
-    end
-
-    def _exist?
-      return @exist unless @exist.nil?
-      @exist = (_lstat != :no_such_file)
-    end
-
-    def _modified?
-      _mtime > _record_data[:mtime] || _mode_modified? || _content_modified?
-    end
-
-    def _mode_modified?
-      _mode != _record_data[:mode]
-    end
-
-    # Only useful on Darwin because of the file mtime second precision.
-    # Only check if in the same seconds (mtime == current time).
-    # MD5 is eager loaded, so the first time it'll always return false.
-    #
-    def _content_modified?
-      return false unless RbConfig::CONFIG['target_os'] =~ /darwin/i
-      return false unless _mtime.to_i == Time.now.to_i
-
-      _set_md5
-      if _record_data[:md5]
-        md5 != _record_data[:md5]
-      else
-        _set_record_data
-        false
+      if data[:mode] != record_data[:mode]
+        record.async.set_path(path, data)
+        return :modified
       end
-    end
 
-    def _set_record_data
-      @data.merge!(_new_data)
-      _record.async.set_path(path, data)
-    end
+      if data[:mtime] > record_data[:mtime]
+        record.async.set_path(path, data)
+        return :modified
+      end
 
-    def _unset_record_data
-      _record.async.unset_path(path)
-    end
-
-    def _new_data
-      data = { mtime: _mtime, mode: _mode }
-      data[:md5] = md5 if md5
-      data
-    end
-
-    def _record_data
-      @_record_data ||= _record.future.file_data(path).value
-    end
-
-    def _record
-      listener.registry[:record]
-    end
-
-    def _mtime
-      @mtime ||= _lstat.mtime.to_f
-    rescue
-      0.0
-    end
-
-    def _mode
-      @mode ||= _lstat.mode
-    rescue
-      nil
-    end
-
-    def _lstat
-      @lstat ||= begin
-                   path.lstat
-                 rescue SystemCallError
-                   :no_such_file
-                 end
+      unless /1|true/ =~ ENV['LISTEN_GEM_DISABLE_HASHING']
+        # On Darwin comparing mtime because of the file mtime second precision.
+        if RbConfig::CONFIG['target_os'] =~ /darwin/i
+          if data[:mtime].to_i == Time.now.to_i
+            md5 = Digest::MD5.file(path).digest
+            if md5 != record_data[:md5]
+              record.async.set_path(path, data.merge(md5: md5))
+              :modified
+            end
+          end
+        end
+      end
+    rescue SystemCallError
+      record.async.unset_path(path)
+      :removed
     rescue
       Celluloid::Logger.debug "lstat failed for: #{path} (#{$!})"
       raise
-    end
-
-    def _set_md5
-      @md5 = Digest::MD5.file(path).digest
-    rescue
-      nil
     end
   end
 end

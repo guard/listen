@@ -1,93 +1,58 @@
+require 'set'
+
 module Listen
   class Directory
-    attr_accessor :listener, :path, :options
+    def self.scan(queue, sync_record, path, options = {})
+      return unless (record = sync_record.async)
 
-    def initialize(listener, path, options = {})
-      @listener    = listener
-      @path    = path
-      @options = options
-    end
+      _log :debug, "Scanning: #{path.to_s.inspect}"
 
-    def scan
-      _log :debug, "Scanning: #{@path.to_s.inspect}"
-      _update_record
-      _all_entries.each do |entry_path, data|
-        case data[:type]
-        when 'File'
-          _async_change(entry_path, options.merge(type: 'File'))
-        when 'Dir'
-          if _recursive_scan?(entry_path)
-            _async_change(entry_path, options.merge(type: 'Dir'))
+      previous = sync_record.dir_entries(path)
+
+      record.set_path(path, type: 'Dir')
+      current = Set.new(path.children)
+      current.each do |full_path|
+        if full_path.directory?
+          if options[:recursive]
+            _change(queue, full_path, options.merge(type: 'Dir'))
           end
+        else
+          _change(queue, full_path, options.merge(type: 'File'))
         end
       end
+
+      previous.reject! { |entry, _| current.include? entry }
+      _async_changes(path, queue, previous, options)
+
+    rescue Errno::ENOENT
+      record.unset_path(path)
+      _async_changes(path, queue, previous, options)
+
+    rescue Errno::ENOTDIR
+      # TODO: path not tested
+      record.unset_path(path)
+      _async_changes(path, queue, previous, options)
+      _change(queue, path, options.merge(type: 'File'))
+
     rescue
       _log :warn, "scanning DIED: #{$!}:#{$@.join("\n")}"
       raise
     end
 
-    private
-
-    def _update_record
-      return unless (record = _record)
-      return unless (proxy = record.async)
-
-      if ::Dir.exist?(path)
-        proxy.set_path(path,  type: 'Dir')
-      else
-        proxy.unset_path(path)
+    def self._async_changes(path, queue, previous, options)
+      previous.each do |entry, data|
+        _change(queue, path + entry, options.merge(type: data[:type]))
       end
     end
 
-    def _all_entries
-      _record_entries.merge(_entries)
+    def self._change(queue, full_path, options)
+      return queue.change(full_path, options) if options[:type] == 'Dir'
+      opts = options.dup
+      opts.delete(:recursive)
+      queue.change(full_path, opts)
     end
 
-    def _entries
-      return {} unless ::Dir.exist?(path)
-
-      entries = ::Dir.entries(path) - %w(. ..)
-      entries = entries.map { |entry| [entry, type: _entry_type(entry)] }
-      Hash[*entries.flatten]
-    end
-
-    def _entry_type(entry_path)
-      entry_path = path.join(entry_path)
-      if entry_path.file?
-        'File'
-      elsif entry_path.directory?
-        'Dir'
-      end
-    end
-
-    def _record_entries
-      future = _record.future.dir_entries(path)
-      future.value
-    end
-
-    def _record
-      listener.registry[:record]
-    end
-
-    def _change_pool
-      listener.registry[:change_pool]
-    end
-
-    def _recursive_scan?(path)
-      !::Dir.exist?(path) || options[:recursive]
-    end
-
-    def _async_change(entry_path, options)
-      entry_path = path.join(entry_path)
-      proxy = _change_pool
-
-      # When terminated, proxy can be nil
-      return unless proxy
-
-      proxy.async.change(entry_path, options)
-    end
-
-    def _log(type, message)
+    def self._log(type, message)
       Celluloid.logger.send(type, message)
     end
   end

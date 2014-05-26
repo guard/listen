@@ -113,6 +113,23 @@ module Listen
       registry[:silencer] = Silencer.new(self)
     end
 
+    def async(type)
+      proxy = sync(type)
+      proxy ? proxy.async : nil
+    end
+
+    def sync(type)
+      @registry[type]
+    end
+
+    def queue(change, path, options = {})
+      @changes << { change => path }.merge(options)
+    end
+
+    def silencer
+      @registry[:silencer]
+    end
+
     private
 
     def _init_options(options = {})

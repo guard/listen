@@ -1,40 +1,31 @@
 require 'spec_helper'
 
 describe Listen::File do
-  let(:registry) { instance_double(Celluloid::Registry) }
-
-  let(:listener) do
-    instance_double(Listen::Listener, registry: registry, options: {})
-  end
-
   let(:async_record) do
     instance_double(
       Listen::Record,
       set_path: true,
       unset_path: true,
-      file_data: instance_double(Celluloid::Future, value: record_data)
     )
+  end
 
+  let(:record) do
+    instance_double(
+      Listen::Record,
+      async: async_record,
+      file_data: record_data
+    )
   end
 
   let(:path) { Pathname.pwd }
+  let(:file_path) { path + 'file.rb' }
+  let(:subject) { described_class.change(record, file_path) }
+
   around { |example| fixtures { example.run } }
 
-  before do
-    allow(registry).to receive(:[]).with(:record) do
-      instance_double(
-        Celluloid::ActorProxy,
-        async: async_record,
-        future: async_record
-      )
-    end
-    allow(::File).to receive(:lstat) { fail 'Not stubbed!' }
-  end
+  before { allow(::File).to receive(:lstat) { fail 'Not stubbed!' } }
 
   describe '#change' do
-    let(:file_path) { path + 'file.rb' }
-    let(:file) { Listen::File.new(listener, file_path) }
-
     let(:expected_data) do
       { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
     end
@@ -57,11 +48,11 @@ describe Listen::File do
         end
 
         it 'returns added' do
-          expect(file.change).to eq :removed
+          expect(subject).to eq :removed
         end
         it 'sets path in record' do
           expect(async_record).to receive(:unset_path).with(file_path)
-          file.change
+          subject
         end
       end
 
@@ -83,14 +74,14 @@ describe Listen::File do
           end
 
           it 'returns modified' do
-            expect(file.change).to eq :modified
+            expect(subject).to eq :modified
           end
 
           it 'sets path in record with expected data' do
             expect(async_record).to receive(:set_path).
               with(file_path, expected_data)
 
-            file.change
+            subject
           end
         end
 
@@ -112,7 +103,7 @@ describe Listen::File do
 
           context 'with same record path mode' do
             it 'returns nil' do
-              expect(file.change).to be_nil
+              expect(subject).to be_nil
             end
           end
 
@@ -120,13 +111,13 @@ describe Listen::File do
             let(:record_mode) { 'foo' }
 
             it 'returns modified' do
-              expect(file.change).to eq :modified
+              expect(subject).to eq :modified
             end
           end
 
           context 'same record path md5' do
             it 'returns nil' do
-              expect(file.change).to be_nil
+              expect(subject).to be_nil
             end
           end
 
@@ -141,17 +132,17 @@ describe Listen::File do
               end
 
               it 'returns modified' do
-                expect(file.change).to eq :modified
+                expect(subject).to eq :modified
               end
+
               it 'sets path in record with expected data' do
                 expect(async_record).to receive(:set_path).
                   with(file_path, expected_data)
 
-                file.change
+                subject
               end
             end
           end
-
         end
       end
     end
@@ -173,14 +164,14 @@ describe Listen::File do
         end
 
         it 'returns added' do
-          expect(file.change).to eq :added
+          expect(subject).to eq :added
         end
 
         it 'sets path in record with expected data' do
           expect(async_record).to receive(:set_path).
             with(file_path, expected_data)
 
-          file.change
+          subject
         end
       end
     end
