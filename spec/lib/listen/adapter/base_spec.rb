@@ -33,8 +33,8 @@ describe Listen::Adapter::Base do
 
       it 'calls change on change_pool asynchronously' do
         expect(change_pool_async).to receive(:change).
-          with('path', type: 'Dir', recurcise: true)
-        adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
+          with('path', type: 'Dir', recursive: true)
+        adapter.send(:_notify_change, 'path', type: 'Dir', recursive: true)
       end
     end
 
@@ -43,7 +43,7 @@ describe Listen::Adapter::Base do
 
       it 'calls change on change_pool asynchronously' do
         expect(change_pool_async).to_not receive(:change)
-        adapter.send(:_notify_change, 'path', type: 'Dir', recurcise: true)
+        adapter.send(:_notify_change, 'path', type: 'Dir', recursive: true)
       end
     end
   end
