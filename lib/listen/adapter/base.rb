@@ -48,7 +48,7 @@ module Listen
         listener.directories
       end
 
-      def _notify_change(path, options)
+      def _notify_change(type, path, options = {})
         unless listener.listen?
           _log :warn, 'Listener not listening anymore'
           return
@@ -59,7 +59,7 @@ module Listen
           return
         end
 
-        worker.async.change(path, options)
+        worker.async.change(type, path, options)
       rescue RuntimeError
         _log :error, "_notify_change crashed: #{$!}:#{$@.join("\n")}"
         raise

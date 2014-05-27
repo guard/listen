@@ -27,7 +27,7 @@ describe Listen::File do
 
   describe '#change' do
     let(:expected_data) do
-      { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
+      { mtime: kind_of(Float), mode: kind_of(Integer) }
     end
 
     context 'path present in record' do
@@ -36,7 +36,7 @@ describe Listen::File do
       let(:record_mode) { nil }
 
       let(:record_data) do
-        { type: 'File',
+        { type: :file,
           mtime: record_mtime,
           md5: record_md5,
           mode: record_mode }
@@ -79,7 +79,7 @@ describe Listen::File do
 
           it 'sets path in record with expected data' do
             expect(async_record).to receive(:set_path).
-              with(file_path, expected_data)
+              with(:file, file_path, expected_data)
 
             subject
           end
@@ -125,7 +125,7 @@ describe Listen::File do
             context 'different record path md5' do
               let(:record_md5) { 'foo' }
               let(:expected_data) do
-                { type: 'File',
+                {
                   mtime: kind_of(Float),
                   mode: kind_of(Integer),
                   md5: kind_of(String) }
@@ -137,7 +137,7 @@ describe Listen::File do
 
               it 'sets path in record with expected data' do
                 expect(async_record).to receive(:set_path).
-                  with(file_path, expected_data)
+                  with(:file, file_path, expected_data)
 
                 subject
               end
@@ -169,7 +169,7 @@ describe Listen::File do
 
         it 'sets path in record with expected data' do
           expect(async_record).to receive(:set_path).
-            with(file_path, expected_data)
+            with(:file, file_path, expected_data)
 
           subject
         end

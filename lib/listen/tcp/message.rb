@@ -13,8 +13,8 @@ module Listen
       #
       # @param [Object] object to initialize message with
       #
-      def initialize(object = nil)
-        self.object = object if object
+      def initialize(*args)
+        self.object = args
       end
 
       # Generates message size and payload for given object

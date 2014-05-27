@@ -6,4 +6,3 @@ rescue LoadError
 end
 
 require 'listen/adapter/tcp'
-require 'listen/tcp/listener'

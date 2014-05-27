@@ -11,8 +11,8 @@ describe Listen::TCP::Message do
 
   describe '#initialize' do
     it 'initializes with an object' do
-      message = described_class.new(object)
-      expect(message.object).to be object
+      message = described_class.new(1, 2, 3)
+      expect(message.object).to eq [1, 2, 3]
     end
   end
 

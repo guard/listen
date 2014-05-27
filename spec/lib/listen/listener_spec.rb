@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Listen::Listener do
-  let(:listener) { Listen::Listener.new(options) }
+  subject { described_class.new(options) }
   let(:options) { {} }
   let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
 
@@ -25,176 +25,182 @@ describe Listen::Listener do
   end
 
   describe 'initialize' do
-    it 'sets paused to false' do
-      expect(listener).not_to be_paused
+    it { should_not be_paused }
+
+    context 'with a block' do
+      describe 'block' do
+        subject { described_class.new('lib', &(proc {})) }
+        specify { expect(subject.block).to_not be_nil }
+      end
     end
 
-    it 'sets block' do
-      block = proc {}
-      listener = Listen::Listener.new('lib', &block)
-      expect(listener.block).not_to be_nil
-    end
-
-    it 'sets directories with realpath' do
-      listener = Listen::Listener.new('lib', 'spec')
-      expected = %w(lib spec).map { |dir| Pathname.pwd.join(dir) }
-      expect(listener.directories).to eq expected
+    context 'with directories' do
+      describe 'directories' do
+        subject { described_class.new('lib', 'spec') }
+        expected = %w(lib spec).map { |dir| Pathname.pwd + dir }
+        specify { expect(subject.directories).to eq expected }
+      end
     end
   end
 
   describe 'options' do
-    it 'sets default options' do
-      expect(listener.options).to eq(
-                                       debug: false,
-                                       latency: nil,
-                                       wait_for_delay: 0.1,
-                                       force_polling: false,
-                                       polling_fallback_message: nil)
+    context 'default options' do
+      it 'sets default options' do
+        expect(subject.options).
+          to eq(
+            debug: false,
+            latency: nil,
+            wait_for_delay: 0.1,
+            force_polling: false,
+            polling_fallback_message: nil)
+      end
     end
 
-    it 'sets new options on initialize' do
-      listener = Listen::Listener.new('lib',
-                                      latency: 1.234,
-                                      wait_for_delay: 0.85)
+    context 'custom options' do
+      subject do
+        described_class.new('lib', latency: 1.234, wait_for_delay: 0.85)
+      end
 
-      expect(listener.options).to eq(
-                                       debug: false,
-                                       latency: 1.234,
-                                       wait_for_delay: 0.85,
-                                       force_polling: false,
-                                       polling_fallback_message: nil)
+      it 'sets new options on initialize' do
+        expect(subject.options).
+          to eq(
+            debug: false,
+            latency: 1.234,
+            wait_for_delay: 0.85,
+            force_polling: false,
+            polling_fallback_message: nil)
+      end
     end
   end
 
   describe '#start' do
     before do
-      allow(listener).to receive(:_start_adapter)
+      allow(subject).to receive(:_start_adapter)
       allow(silencer).to receive(:silenced?) { false }
     end
 
     it 'registers silencer' do
       expect(supervisor).to receive(:add).
-        with(Listen::Silencer, as: :silencer, args: listener)
+        with(Listen::Silencer, as: :silencer, args: subject)
 
-      listener.start
+      subject.start
     end
 
     it 'supervises change_pool' do
       expect(supervisor).to receive(:pool).
-        with(Listen::Change, as: :change_pool, args: listener)
+        with(Listen::Change, as: :change_pool, args: subject)
 
-      listener.start
+      subject.start
     end
 
     it 'supervises adaper' do
       allow(Listen::Adapter).to receive(:select) { Listen::Adapter::Polling }
       expect(supervisor).to receive(:add).
-        with(Listen::Adapter::Polling, as: :adapter, args: listener)
+        with(Listen::Adapter::Polling, as: :adapter, args: subject)
 
-      listener.start
+      subject.start
     end
 
     it 'supervises record' do
       expect(supervisor).to receive(:add).
-        with(Listen::Record, as: :record, args: listener)
+        with(Listen::Record, as: :record, args: subject)
 
-      listener.start
+      subject.start
     end
 
     it 'builds record' do
       expect(record).to receive(:build)
-      listener.start
+      subject.start
     end
 
     it 'sets paused to false' do
-      listener.start
-      expect(listener.paused).to be_falsey
+      subject.start
+      expect(subject.paused).to be_falsey
     end
 
     it 'starts adapter' do
-      expect(listener).to receive(:_start_adapter)
-      listener.start
+      expect(subject).to receive(:_start_adapter)
+      subject.start
     end
 
     it 'calls block on changes' do
-      foo = instance_double(
-        Pathname,
-        to_s: 'foo',
-        exist?: true,
-        directory?: false)
+      foo = instance_double(Pathname, to_s: 'foo', exist?: true)
 
-      listener.changes = [{ modified: foo }]
-      block_stub = double('block')
-      listener.block = block_stub
+      subject.queue(:file, :modified, foo)
+      block_stub = instance_double(Proc)
+      subject.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
-      listener.start
+      subject.start
       sleep 0.25
     end
   end
 
   describe '#stop' do
     it 'terminates supervisor' do
-      listener.supervisor = supervisor
+      subject.supervisor = supervisor
       expect(supervisor).to receive(:terminate)
-      listener.stop
+      subject.stop
     end
   end
 
   describe '#pause' do
     it 'sets paused to true' do
-      listener.pause
-      expect(listener.paused).to be_truthy
+      subject.pause
+      expect(subject.paused).to be_truthy
     end
   end
 
   describe '#unpause' do
     it 'builds record' do
       expect(record).to receive(:build)
-      listener.unpause
+      subject.unpause
     end
 
     it 'sets paused to false' do
       allow(record).to receive(:build)
-      listener.unpause
-      expect(listener.paused).to be_falsey
+      subject.unpause
+      expect(subject.paused).to be_falsey
     end
   end
 
   describe '#paused?' do
     it 'returns true when paused' do
-      listener.paused = true
-      expect(listener).to be_paused
+      subject.paused = true
+      expect(subject).to be_paused
     end
     it 'returns false when not paused (nil)' do
-      listener.paused = nil
-      expect(listener).not_to be_paused
+      subject.paused = nil
+      expect(subject).not_to be_paused
     end
     it 'returns false when not paused (false)' do
-      listener.paused = false
-      expect(listener).not_to be_paused
+      subject.paused = false
+      expect(subject).not_to be_paused
     end
   end
 
   describe '#listen?' do
     it 'returns true when not paused (false)' do
-      listener.paused = false
-      listener.stopping = false
-      expect(listener.listen?).to be_truthy
+      subject.paused = false
+      subject.stopping = false
+      expect(subject.listen?).to be_truthy
     end
+
     it 'returns false when not paused (nil)' do
-      listener.paused = nil
-      listener.stopping = false
-      expect(listener.listen?).to be_falsey
+      subject.paused = nil
+      subject.stopping = false
+      expect(subject.listen?).to be_falsey
     end
+
     it 'returns false when paused' do
-      listener.paused = true
-      listener.stopping = false
-      expect(listener.listen?).to be_falsey
+      subject.paused = true
+      subject.stopping = false
+      expect(subject.listen?).to be_falsey
     end
+
     it 'returns false when stopped' do
-      listener.paused = false
-      listener.stopping = true
-      expect(listener.listen?).to be_falsey
+      subject.paused = false
+      subject.stopping = true
+      expect(subject.listen?).to be_falsey
     end
   end
 
@@ -203,18 +209,18 @@ describe Listen::Listener do
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
+      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      listener.ignore(/foo/)
+      subject.ignore(/foo/)
     end
 
     context 'with existing ignore options' do
       let(:options) { { ignore: /bar/ } }
 
       it 'adds up to existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(listener)
-        listener.ignore(/foo/)
-        expect(listener.options).to include(ignore: [/bar/, /foo/])
+        expect(Listen::Silencer).to receive(:new).with(subject)
+        subject.ignore(/foo/)
+        expect(subject.options).to include(ignore: [/bar/, /foo/])
       end
     end
 
@@ -222,9 +228,9 @@ describe Listen::Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it 'adds up to existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(listener)
-        listener.ignore(/foo/)
-        expect(listener.options).to include(ignore: [[/bar/], /foo/])
+        expect(Listen::Silencer).to receive(:new).with(subject)
+        subject.ignore(/foo/)
+        expect(subject.options).to include(ignore: [[/bar/], /foo/])
       end
     end
   end
@@ -234,19 +240,19 @@ describe Listen::Listener do
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
+      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      listener.ignore!(/foo/)
-      expect(listener.options).to include(ignore!: /foo/)
+      subject.ignore!(/foo/)
+      expect(subject.options).to include(ignore!: /foo/)
     end
 
     context 'with existing ignore! options' do
       let(:options) { { ignore!: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(listener)
-        listener.ignore!([/foo/])
-        expect(listener.options).to include(ignore!: [/foo/])
+        expect(Listen::Silencer).to receive(:new).with(subject)
+        subject.ignore!([/foo/])
+        expect(subject.options).to include(ignore!: [/foo/])
       end
     end
 
@@ -254,9 +260,9 @@ describe Listen::Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'deletes ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(listener)
-        listener.ignore!([/foo/])
-        expect(listener.options).to_not include(ignore: /bar/)
+        expect(Listen::Silencer).to receive(:new).with(subject)
+        subject.ignore!([/foo/])
+        expect(subject.options).to_not include(ignore: /bar/)
       end
     end
   end
@@ -266,18 +272,18 @@ describe Listen::Listener do
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(listener) { new_silencer }
+      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      listener.only(/foo/)
+      subject.only(/foo/)
     end
 
     context 'with existing only options' do
       let(:options) { { only: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(listener)
-        listener.only([/foo/])
-        expect(listener.options).to include(only: [/foo/])
+        expect(Listen::Silencer).to receive(:new).with(subject)
+        subject.only([/foo/])
+        expect(subject.options).to include(only: [/foo/])
       end
     end
   end
@@ -287,12 +293,12 @@ describe Listen::Listener do
       allow(silencer).to receive(:silenced?) { false }
 
       fake_time = 0
-      allow(listener).to receive(:sleep) do |sec|
+      allow(subject).to receive(:sleep) do |sec|
         fake_time += sec
-        listener.stopping = true if fake_time > 1
+        subject.stopping = true if fake_time > 1
       end
 
-      listener.block = proc do |modified, added, _|
+      subject.block = proc do |modified, added, _|
         expect(modified).to eql(['foo.txt'])
         expect(added).to eql(['bar.txt'])
       end
@@ -309,22 +315,10 @@ describe Listen::Listener do
         exist?: true,
         directory?: false)
 
-      i = 0
-      allow(listener).to receive(:_pop_changes) do
-        i += 1
-        case i
-        when 1
-          []
-        when 2
-          [{ modified: foo }]
-        when 3
-          [{ added: bar }]
-        else
-          []
-        end
-      end
+      subject.queue(:file, :modified, foo, {})
+      subject.queue(:file, :added, bar, {})
 
-      listener.send :_wait_for_changes
+      subject.send :_wait_for_changes
     end
   end
 
@@ -337,13 +331,13 @@ describe Listen::Listener do
         directory?: false)
 
       changes = [
-        { modified: path },
-        { removed: path },
-        { added: path },
-        { modified: path }
+        [:file, :modified, path],
+        [:file, :removed, path],
+        [:file, :added, path],
+        [:file, :modified, path]
       ]
       allow(silencer).to receive(:silenced?) { false }
-      smooshed = listener.send :_smoosh_changes, changes
+      smooshed = subject.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
 
@@ -355,13 +349,13 @@ describe Listen::Listener do
         directory?: false)
 
       changes = [
-        { added: path },
-        { modified: path },
-        { removed: path },
-        { modified: path }
+        [:file, :added, path],
+        [:file, :modified, path],
+        [:file, :removed, path],
+        [:file, :modified, path]
       ]
       allow(silencer).to receive(:silenced?) { false }
-      smooshed = listener.send :_smoosh_changes, changes
+      smooshed = subject.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: [], added: [], removed: [])
     end
 
@@ -374,11 +368,11 @@ describe Listen::Listener do
         directory?: false)
 
       changes = [
-        { removed: path },
-        { added: path }
+        [:file, :removed, path],
+        [:file, :added, path]
       ]
       allow(silencer).to receive(:silenced?) { false }
-      smooshed = listener.send :_smoosh_changes, changes
+      smooshed = subject.send :_smoosh_changes, changes
       expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
     end
 
@@ -391,9 +385,9 @@ describe Listen::Listener do
           exist?: true,
           directory?: false)
 
-        changes = [{ moved_to: foo , cookie: 4321 }]
-        expect(silencer).to receive(:silenced?).with(foo, 'File') { false }
-        smooshed = listener.send :_smoosh_changes, changes
+        changes = [[:file, :moved_to, foo, cookie: 4321]]
+        expect(silencer).to receive(:silenced?).with(foo, :file) { false }
+        smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: [], added: ['foo'], removed: [])
       end
 
@@ -411,15 +405,15 @@ describe Listen::Listener do
           directory?: false)
 
         changes = [
-          { moved_from: foo , cookie: 4321 },
-          { moved_to: bar, cookie: 4321 }
+          [:file, :moved_from, foo , cookie: 4321],
+          [:file, :moved_to, bar, cookie: 4321]
         ]
 
         expect(silencer).to receive(:silenced?).
-          twice.with(foo, 'File') { false }
+          twice.with(foo, :file) { false }
 
-        expect(silencer).to receive(:silenced?).with(bar, 'File') { false }
-        smooshed = listener.send :_smoosh_changes, changes
+        expect(silencer).to receive(:silenced?).with(bar, :file) { false }
+        smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: [], added: ['bar'], removed: [])
       end
 
@@ -439,27 +433,23 @@ describe Listen::Listener do
           directory?: false)
 
         changes = [
-          { moved_from: ignored, cookie: 4321 },
-          { moved_to: foo , cookie: 4321 }
+          [:file, :moved_from, ignored, cookie: 4321],
+          [:file, :moved_to, foo , cookie: 4321]
         ]
-        expect(silencer).to receive(:silenced?).with(ignored, 'File') { true }
-        expect(silencer).to receive(:silenced?).with(foo, 'File') { false }
-        smooshed = listener.send :_smoosh_changes, changes
+        expect(silencer).to receive(:silenced?).with(ignored, :file) { true }
+        expect(silencer).to receive(:silenced?).with(foo, :file) { false }
+        smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
       end
     end
 
     context 'with no cookie' do
       it 'recognizes properly ignores files' do
-        ignored = instance_double(
-          Pathname,
-          to_s: 'foo',
-          exist?: true,
-          directory?: false)
+        ignored = instance_double(Pathname, to_s: 'foo', exist?: true)
 
-        changes = [{ modified: ignored }]
-        expect(silencer).to receive(:silenced?).with(ignored, 'File') { true }
-        smooshed = listener.send :_smoosh_changes, changes
+        changes = [[:file, :modified, ignored]]
+        expect(silencer).to receive(:silenced?).with(ignored, :file) { true }
+        smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: [], added: [], removed: [])
       end
     end

@@ -25,8 +25,7 @@ module Listen
       @stopping = false
       options = args.last.is_a?(Hash) ? args.last : {}
       if target = options.delete(:forward_to)
-        require 'listen/tcp'
-        TCP::Listener.new(target, :broadcaster, *args, &block)
+        Listener.new(target, :broadcaster, *args, &block)
       else
         Listener.new(*args, &block)
       end
@@ -53,8 +52,7 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def on(target, *args, &block)
-      require 'listen/tcp'
-      TCP::Listener.new(target, :recipient, *args, &block)
+      Listener.new(target, :recipient, *args, &block)
     end
 
     private

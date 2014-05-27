@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'listen/tcp/broadcaster'
+
 describe Listen::TCP::Broadcaster do
 
   let(:host) { '10.0.0.2' }

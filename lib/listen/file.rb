@@ -3,22 +3,22 @@ module Listen
     def self.change(record, path)
       lstat = path.lstat
 
-      data = { type: 'File', mtime: lstat.mtime.to_f, mode: lstat.mode }
+      data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
 
       record_data = record.file_data(path)
 
       if record_data.empty?
-        record.async.set_path(path, data)
+        record.async.set_path(:file, path, data)
         return :added
       end
 
       if data[:mode] != record_data[:mode]
-        record.async.set_path(path, data)
+        record.async.set_path(:file, path, data)
         return :modified
       end
 
       if data[:mtime] > record_data[:mtime]
-        record.async.set_path(path, data)
+        record.async.set_path(:file, path, data)
         return :modified
       end
 
@@ -28,7 +28,7 @@ module Listen
           if data[:mtime].to_i == Time.now.to_i
             md5 = Digest::MD5.file(path).digest
             if md5 != record_data[:md5]
-              record.async.set_path(path, data.merge(md5: md5))
+              record.async.set_path(:file, path, data.merge(md5: md5))
               :modified
             end
           end

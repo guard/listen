@@ -56,8 +56,8 @@ describe Listen::Adapter::Linux do
           allow_any_instance_of(Listen::Adapter::Base).
             to receive(:_notify_change).
             with(
+              :file,
               Pathname.new('path/foo.txt'),
-              type: 'File',
               change: change,
               cookie: 123)
         end

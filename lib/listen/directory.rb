@@ -9,15 +9,15 @@ module Listen
 
       previous = sync_record.dir_entries(path)
 
-      record.set_path(path, type: 'Dir')
+      record.set_path(:dir, path)
       current = Set.new(path.children)
       current.each do |full_path|
         if full_path.directory?
           if options[:recursive]
-            _change(queue, full_path, options.merge(type: 'Dir'))
+            _change(queue, :dir, full_path, options)
           end
         else
-          _change(queue, full_path, options.merge(type: 'File'))
+          _change(queue, :file, full_path, options)
         end
       end
 
@@ -32,8 +32,7 @@ module Listen
       # TODO: path not tested
       record.unset_path(path)
       _async_changes(path, queue, previous, options)
-      _change(queue, path, options.merge(type: 'File'))
-
+      _change(queue, :file, path, options)
     rescue
       _log :warn, "scanning DIED: #{$!}:#{$@.join("\n")}"
       raise
@@ -41,15 +40,19 @@ module Listen
 
     def self._async_changes(path, queue, previous, options)
       previous.each do |entry, data|
-        _change(queue, path + entry, options.merge(type: data[:type]))
+        _change(queue, data[:type], path + entry, options)
       end
     end
 
-    def self._change(queue, full_path, options)
-      return queue.change(full_path, options) if options[:type] == 'Dir'
+    def self._change(queue, type, full_path, options)
+      return queue.change(type, full_path, options) if type == :dir
       opts = options.dup
       opts.delete(:recursive)
-      queue.change(full_path, opts)
+      if opts.empty?
+        queue.change(type, full_path)
+      else
+        queue.change(type, full_path, opts)
+      end
     end
 
     def self._log(type, message)

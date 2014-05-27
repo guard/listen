@@ -20,7 +20,7 @@ module Listen
         loop do
           start = Time.now.to_f
           _directories.each do |path|
-            _notify_change(path, type: 'Dir', recursive: true)
+            _notify_change(:dir, path, recursive: true)
             nap_time = _latency - (Time.now.to_f - start)
             sleep(nap_time) if nap_time > 0
           end

@@ -9,8 +9,8 @@ module Listen
       @paths    = _init_paths
     end
 
-    def set_path(path, data)
-      new_data = file_data(path).merge(data)
+    def set_path(type, path, data = {})
+      new_data = file_data(path).merge(data).merge(type: type)
       @paths[::File.dirname(path)][::File.basename(path)] = new_data
     end
 
@@ -29,8 +29,8 @@ module Listen
     def build
       @paths = _init_paths
       listener.directories.each do |path|
-        options = { type: 'Dir', recursive: true, silence: true }
-        listener.registry[:change_pool].change(path, options)
+        options = { recursive: true, silence: true }
+        listener.registry[:change_pool].change(:dir, path, options)
       end
     rescue
       Celluloid.logger.warn "build crashed: #{$!.inspect}"

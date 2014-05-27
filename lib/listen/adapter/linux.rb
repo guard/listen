@@ -51,10 +51,10 @@ module Listen
           _log :debug, "inotify: #{event.name}: #{event.flags.inspect}"
 
           if _dir_event?(event)
-            _notify_change(path, { type: 'Dir' }.merge(cookie_opts))
+            _notify_change(:dir, path, cookie_opts)
           else
-            options = { type: 'File', change: _change(event.flags) }
-            _notify_change(path, options.merge(cookie_opts))
+            options = { change: _change(event.flags) }
+            _notify_change(:file, path, options.merge(cookie_opts))
           end
         end
       end

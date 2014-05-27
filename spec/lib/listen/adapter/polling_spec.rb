@@ -34,8 +34,8 @@ describe Listen::Adapter::Polling do
 
     it 'notifies change on every listener directories path' do
       expect(change_pool_async).to receive(:change).with(
+        :dir,
         'directory_path',
-        type: 'Dir',
         recursive: true)
 
       t = Thread.new { adapter.start }

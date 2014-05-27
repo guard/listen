@@ -1,6 +1,9 @@
 require 'spec_helper'
 
-describe Listen::TCP::Listener do
+require 'listen/tcp/message'
+require 'listen/tcp/broadcaster'
+
+describe Listen::Listener do
 
   let(:host) { '10.0.0.2' }
   let(:port) { 4000 }
@@ -31,27 +34,6 @@ describe Listen::TCP::Listener do
   end
 
   describe '#initialize' do
-    describe '#mode' do
-      subject { super().mode }
-      it { is_expected.to be :recipient }
-    end
-
-    describe '#host' do
-      subject { super().host }
-      it { is_expected.to eq host }
-    end
-
-    describe '#port' do
-      subject { super().port }
-      it { is_expected.to eq port }
-    end
-
-    it 'raises on invalid mode' do
-      expect do
-        described_class.new(port, :foo)
-      end.to raise_error ArgumentError
-    end
-
     it 'raises on omitted target' do
       expect do
         described_class.new(nil, :recipient)
@@ -62,18 +44,8 @@ describe Listen::TCP::Listener do
   context 'when broadcaster' do
     subject { described_class.new(port, :broadcaster) }
 
-    it { is_expected.to be_a_broadcaster }
-    it { is_expected.not_to be_a_recipient }
-
     it 'does not force TCP adapter through options' do
       expect(subject.options).not_to include(force_tcp: true)
-    end
-
-    context 'when host is omitted' do
-      describe '#host' do
-        subject { super().host }
-        it { is_expected.to be_nil }
-      end
     end
 
     describe '#start' do
@@ -94,26 +66,9 @@ describe Listen::TCP::Listener do
       end
     end
 
-    describe '#block' do
-      let(:callback) { instance_double(Proc, call: true) }
-      let(:changes) do
-        { modified: ['/foo'], added: [], removed: [] }
-      end
-
+    describe 'queue' do
       before do
         allow(broadcaster).to receive(:async).and_return async
-      end
-
-      after do
-        subject.block.call changes.values
-      end
-
-      context 'when paused' do
-        it 'honours paused state and does nothing' do
-          subject.pause
-          expect(broadcaster).not_to receive(:async)
-          expect(callback).not_to receive(:call)
-        end
       end
 
       context 'when stopped' do
@@ -123,19 +78,15 @@ describe Listen::TCP::Listener do
           end
 
           subject.stop
+          subject.queue(:file, :modified, 'foo')
           expect(broadcaster).not_to receive(:async)
-          expect(callback).not_to receive(:call)
         end
       end
 
       it 'broadcasts changes asynchronously' do
-        message = Listen::TCP::Message.new changes
+        message = Listen::TCP::Message.new(:file, :modified, 'foo', {})
         expect(async).to receive(:broadcast).with message.payload
-      end
-
-      it 'invokes original callback block' do
-        subject.block = callback
-        expect(callback).to receive(:call).with(*changes.values)
+        subject.queue(:file, :modified, 'foo')
       end
     end
   end
@@ -146,16 +97,5 @@ describe Listen::TCP::Listener do
     it 'forces TCP adapter through options' do
       expect(subject.options).to include(force_tcp: true)
     end
-
-    it { is_expected.not_to be_a_broadcaster }
-    it { is_expected.to be_a_recipient }
-
-    context 'when host is omitted' do
-      describe '#host' do
-        subject { super().host }
-        it { is_expected.to eq described_class::DEFAULT_HOST }
-      end
-    end
   end
-
 end
