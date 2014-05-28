@@ -44,7 +44,7 @@ module Listen
           # to properly match events to configured directories
           path = Pathname.new(event.watcher.path) + event.name
 
-          _log :debug, "inotify: #{event.name} (#{path}): #{event.flags.inspect}"
+          _log :debug, "inotify: #{event.name} #{path} (#{event.flags.inspect})"
 
           if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
             if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
