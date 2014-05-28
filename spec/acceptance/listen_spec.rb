@@ -81,9 +81,25 @@ describe 'Listen' do
             end
 
             it 'listens to file mode change' do
-              expect(wrapper.listen do
-                windows? ? `attrib +r file.rb` : chmod(0777, 'file.rb')
-              end).to eq(modified: ['file.rb'], added: [], removed: [])
+              prev_mode = File.stat('file.rb').mode
+
+              result = wrapper.listen do
+                windows? ? `attrib +r file.rb` : chmod(0444, 'file.rb')
+              end
+
+              new_mode = File.stat('file.rb').mode
+              no_event = result[:modified].empty? && prev_mode == new_mode
+
+              # Check if chmod actually works or an attrib event happens,
+              # or expect nothing otherwise
+              #
+              # (e.g. fails for polling+vfat on Linux, but works with
+              # INotify+vfat because you get an event regardless if mode
+              # actually changes)
+              #
+              files = no_event ? [] : ['file.rb']
+
+              expect(result).to eq(modified: files, added: [], removed: [])
             end
           end
 
