@@ -44,7 +44,7 @@ module Listen
         lambda do |change|
           begin
             path = _path(change.path)
-            _log :info, "wdm - FILE callback: #{change.inspect}"
+            _log :debug, "wdm - FILE callback: #{change.inspect}"
             options = { change: _change(change.type) }
             _notify_change(:file, path, options)
           rescue

@@ -45,7 +45,7 @@ describe Listen::File do
       context 'with non-existing file' do
         before { allow(::File).to receive(:lstat) { fail Errno::ENOENT } }
 
-        it { should eq :removed }
+        it { should be :removed }
 
         it 'sets path in record' do
           expect(async_record).to receive(:unset_path).with(file_path)
