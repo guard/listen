@@ -256,6 +256,8 @@ module Listen
       removed = actions.count { |x| x == :removed }
       diff = added - removed
 
+      # TODO: avoid checking if path exists and instead assume the events are
+      # in order (if last is :removed, it doesn't exist, etc.)
       if path.exist?
         if diff > 0
           :added

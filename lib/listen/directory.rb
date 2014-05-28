@@ -5,23 +5,28 @@ module Listen
     def self.scan(queue, sync_record, path, options = {})
       return unless (record = sync_record.async)
 
-      _log :debug, "Scanning: #{path.to_s.inspect}"
-
       previous = sync_record.dir_entries(path)
 
       record.set_path(:dir, path)
       current = Set.new(path.children)
+
+      if options[:silence]
+        _log :debug, "Recording: #{path}: #{options.inspect}"\
+          " [#{previous.inspect}] -> (#{current.inspect})"
+      else
+        _log :debug, "Scanning: #{path}: #{options.inspect}"\
+          " [#{previous.inspect}] -> (#{current.inspect})"
+      end
+
       current.each do |full_path|
         if full_path.directory?
-          if options[:recursive]
-            _change(queue, :dir, full_path, options)
-          end
+          _change(queue, :dir, full_path, options)
         else
           _change(queue, :file, full_path, options)
         end
       end
 
-      previous.reject! { |entry, _| current.include? entry }
+      previous.reject! { |entry, _| current.include? path + entry }
       _async_changes(path, queue, previous, options)
 
     rescue Errno::ENOENT

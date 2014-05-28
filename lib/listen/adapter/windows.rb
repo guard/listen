@@ -44,8 +44,8 @@ module Listen
         lambda do |change|
           begin
             path = _path(change.path)
-            _log :debug, "wdm - FILE callback: #{change.inspect}"
-            options = { type: :file, change: _change(change.type) }
+            _log :info, "wdm - FILE callback: #{change.inspect}"
+            options = { change: _change(change.type) }
             _notify_change(:file, path, options)
           rescue
             _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"

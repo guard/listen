@@ -13,6 +13,7 @@ module Listen
         @worker.watch(_directories.map(&:to_s), latency: _latency) do |changes|
           changes.each do |path|
             new_path = Pathname.new(path.sub(/\/$/, ''))
+            _log :debug, "fsevent: #{new_path}"
             _notify_change(:dir, new_path)
           end
         end

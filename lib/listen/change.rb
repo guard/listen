@@ -20,7 +20,15 @@ module Listen
         return
       end
 
-      _log :debug, "got change: #{[path, options].inspect}"
+      if options[:silence]
+        _log :debug, "recording: #{type}:#{path} (#{options.inspect})"
+      else
+        if change
+          _log :debug, "#{change}: #{type}:#{path} (#{options.inspect})"
+        else
+          _log :debug, "unknown: #{type}:#{path} (#{options.inspect})"
+        end
+      end
 
       if change
         listener.queue(type, change, path, cookie ? { cookie: cookie } : {})
