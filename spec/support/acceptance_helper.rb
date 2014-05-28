@@ -121,7 +121,9 @@ class ListenerWrapper
   #   that's why we generate a difference that's greater than 1 second.
   #
   def _sleep_until_next_second
-    return unless darwin? || windows?
+    return unless [@paths].flatten.any? do |path|
+      Listen::File.inaccurate_mac_time?(path)
+    end
 
     t = Time.now
     diff = t.to_f - t.to_i
