@@ -23,7 +23,7 @@ module Listen
     end
 
     def dir_entries(path)
-      @paths[path.to_s]
+      @paths[path.to_s].dup
     end
 
     def build
