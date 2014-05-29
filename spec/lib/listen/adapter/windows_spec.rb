@@ -1,40 +1,14 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Windows do
-  if windows?
-    let(:listener) { instance_double(Listen::Listener) }
-    let(:adapter) { described_class.new(listener) }
+  describe 'class' do
+    subject { described_class }
+    it { should be_local_fs }
 
-    describe '.usable?' do
-      it 'returns always true' do
-        expect(described_class).to be_usable
-      end
-
-      it 'requires wdm gem' do
-        described_class.usable?
-        expect(defined?(WDM)).to be_truthy
-      end
+    if windows?
+      it { should be_usable }
+    else
+      it { should_not be_usable }
     end
   end
-
-  if darwin?
-    it "isn't usable on Darwin" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if linux?
-    it "isn't usable on Linux" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if bsd?
-    it "isn't usable on BSD" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  specify { expect(described_class).to be_local_fs }
-
 end

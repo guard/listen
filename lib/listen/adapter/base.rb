@@ -3,9 +3,6 @@ module Listen
     class Base
       include Celluloid
 
-      # The default delay between checking for changes.
-      DEFAULT_LATENCY = 0.1
-
       attr_accessor :listener
 
       def initialize(listener)
@@ -13,10 +10,6 @@ module Listen
       rescue
         _log :error, "adapter config failed: #{$!}:#{$@.join("\n")}"
         raise
-      end
-
-      def self.usable?
-        const_get('OS_REGEXP') =~ RbConfig::CONFIG['target_os']
       end
 
       def start
@@ -35,13 +28,13 @@ module Listen
         true
       end
 
+      def self.usable?
+        const_get('OS_REGEXP') =~ RbConfig::CONFIG['target_os']
+      end
+
       private
 
       def _configure
-      end
-
-      def _latency
-        listener.options[:latency] || DEFAULT_LATENCY
       end
 
       def _directories
@@ -49,17 +42,12 @@ module Listen
       end
 
       def _notify_change(type, path, options = {})
-        unless listener.listen?
-          _log :warn, 'Listener not listening anymore'
+        unless (worker = listener.async(:change_pool))
+          _log :warn, 'Failed to allocate worker from change pool'
           return
         end
 
-        unless (worker = listener.registry[:change_pool])
-          _log :error, 'Failed to allocate from change pool'
-          return
-        end
-
-        worker.async.change(type, path, options)
+        worker.change(type, path, options)
       rescue RuntimeError
         _log :error, "_notify_change crashed: #{$!}:#{$@.join("\n")}"
         raise

@@ -5,6 +5,9 @@ module Listen
     class Darwin < Base
       OS_REGEXP = /darwin(1.+)?$/i
 
+      # The default delay between checking for changes.
+      DEFAULT_LATENCY = 0.1
+
       private
 
       def _configure
@@ -21,6 +24,10 @@ module Listen
 
       def _run
         @worker.run
+      end
+
+      def _latency
+        listener.options[:latency] || DEFAULT_LATENCY
       end
     end
   end

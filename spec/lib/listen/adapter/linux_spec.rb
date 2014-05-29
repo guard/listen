@@ -1,15 +1,20 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Linux do
+  describe 'class' do
+    subject { described_class }
+    it { should be_local_fs }
+
+    if linux?
+      it { should be_usable }
+    else
+      it { should_not be_usable }
+    end
+  end
+
   if linux?
     let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
-
-    describe '.usable?' do
-      it 'returns always true' do
-        expect(described_class).to be_usable
-      end
-    end
 
     describe '#initialize' do
       before do
@@ -93,27 +98,5 @@ describe Listen::Adapter::Linux do
         end
       end
     end
-
   end
-
-  if darwin?
-    it "isn't usable on Darwin" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if windows?
-    it "isn't usable on Windows" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if bsd?
-    it "isn't usable on BSD" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  specify { expect(described_class).to be_local_fs }
-
 end

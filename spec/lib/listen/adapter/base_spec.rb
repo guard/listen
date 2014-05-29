@@ -1,49 +1,29 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Base do
-  let(:adapter) { described_class.new(listener) }
-  let(:registry) { instance_double(Celluloid::Registry) }
+  subject { described_class.new(listener) }
 
-  let(:listener) do
-    instance_double(Listen::Listener, registry: registry, options: {})
-  end
+  let(:listener) { instance_double(Listen::Listener) }
 
-  describe '#_latency' do
-    it 'returns default_latency with listener actor latency not present' do
-      latency = Listen::Adapter::Base::DEFAULT_LATENCY
-      expect(adapter.send(:_latency)).to eq latency
-    end
-
-    it 'returns latency from listener actor if present' do
-      allow(listener).to receive(:options) { { latency: 1234 } }
-      expect(adapter.send(:_latency)).to eq 1234
-    end
-  end
+  before { allow(listener).to receive(:async).with(:change_pool) { worker } }
 
   describe '#_notify_change' do
-    let(:proxy) { instance_double(Celluloid::ActorProxy) }
-    let(:change_pool_async) { instance_double(Listen::Change) }
-    before do
-      allow(proxy).to receive(:async) { change_pool_async }
-      allow(registry).to receive(:[]).with(:change_pool) { proxy }
-    end
-
-    context 'listener listen' do
-      before { allow(listener).to receive(:listen?) { true } }
+    context 'listener is listening or paused' do
+      let(:worker) { instance_double(Listen::Change) }
 
       it 'calls change on change_pool asynchronously' do
-        expect(change_pool_async).to receive(:change).
+        expect(worker).to receive(:change).
           with(:dir, 'path', recursive: true)
-        adapter.send(:_notify_change, :dir, 'path', recursive: true)
+        subject.send(:_notify_change, :dir, 'path', recursive: true)
       end
     end
 
-    context "listener doesn't listen" do
-      before { allow(listener).to receive(:listen?) { false } }
+    context 'listener is stopped' do
+      let(:worker) { nil }
 
-      it 'calls change on change_pool asynchronously' do
-        expect(change_pool_async).to_not receive(:change)
-        adapter.send(:_notify_change, :dir, 'path', recursive: true)
+      it 'does not fail when no worker is available' do
+        expect(worker).to_not receive(:change)
+        subject.send(:_notify_change, :dir, 'path', recursive: true)
       end
     end
   end
