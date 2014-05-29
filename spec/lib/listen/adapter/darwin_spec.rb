@@ -13,7 +13,7 @@ describe Listen::Adapter::Darwin do
 
     describe '#initialize' do
       it 'requires rb-fsevent gem' do
-        described_class.new(listener)
+        described_class.new(listener).start
         expect(defined?(FSEvent)).to be_truthy
       end
     end
