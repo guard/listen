@@ -82,6 +82,9 @@ describe Listen::Adapter::TCP do
         to receive(:handle_data).with('bar')
 
       subject.start
+
+      # quick workaround because run is called asynchronously
+      sleep 0.5
     end
   end
 
