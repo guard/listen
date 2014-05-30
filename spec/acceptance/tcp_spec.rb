@@ -7,71 +7,128 @@ describe Listen::Listener do
   let(:paths) { Pathname.new(Dir.pwd) }
 
   around { |example| fixtures { example.run } }
-  before { broadcaster.listener.start }
 
-  let(:report_nothing) { Proc.new {} }
-
-  context 'when broadcaster' do
-    let(:broadcaster) { setup_listener(broadcast_options) }
-    let(:recipient) { setup_recipient(port, report_nothing) }
-
-    it 'still handles local changes' do
-      expect(broadcaster).to detect_addition_of('file.rb')
-    end
-
-    it 'may be paused and unpaused' do
-      broadcaster.listener.pause
-      expect(recipient).to_not detect_addition_of('file.rb')
-      expect(recipient).to_not detect_modification_of('file.rb')
-
-      broadcaster.listener.unpause
-      expect(broadcaster).to detect_modification_of('file.rb')
-    end
-
-    it 'may be stopped and restarted' do
-      broadcaster.listener.stop
-      expect(recipient).to_not detect_addition_of('file.rb')
-      expect(recipient).to_not detect_modification_of('file.rb')
-
-      broadcaster.listener.start
-      expect(broadcaster).to detect_modification_of('file.rb')
-    end
+  modes = unless windows? && Celluloid::VERSION <= '0.15.2'
+    [:recipient, :broadcaster]
+  else
+    [:broadcaster]
   end
 
-  # (Broken because it's looking for /etc/resolv.conf)
-  unless windows? && Celluloid::VERSION <= '0.15.2'
+  modes.each do |mode|
+    context "when #{mode}" do
+      if mode == :broadcaster
+        subject { setup_listener(broadcast_options, :track_changes) }
+        before { subject.listener.start }
+        after { subject.listener.stop }
+      else
+        subject { setup_recipient(port, :track_changes) }
+        let(:broadcaster) { setup_listener(broadcast_options) }
 
-    context 'when recipient' do
-      let(:broadcaster) { setup_listener(broadcast_options, report_nothing) }
-      let(:recipient) { setup_recipient(port) }
-
-      before do
-        broadcaster.lag = 2
-        recipient.listener.start
+        before do
+          broadcaster.listener.start
+          subject.listener.start
+        end
+        after do
+          broadcaster.listener.stop
+          subject.listener.stop
+        end
       end
 
-      it 'receives changes over TCP' do
-        expect(recipient).to detect_addition_of('file.rb')
+      it { should process_addition_of('file.rb') }
+
+      context 'when paused' do
+        before { subject.listener.pause }
+
+        context 'with no queued changes' do
+          it { should_not process_addition_of('file.rb') }
+
+          context 'when unpaused' do
+            before { subject.listener.unpause }
+            it { should process_addition_of('file.rb') }
+          end
+        end
+
+        context 'with queued addition' do
+          before { change_fs(:added, 'file.rb') }
+          it { should_not process_modification_of('file.rb') }
+
+          context 'when unpaused' do
+            before { subject.listener.unpause }
+            it { should process_queued_addition_of('file.rb') }
+            it { should process_modification_of('file.rb') }
+          end
+        end
+
+        context 'with queued modification' do
+          before do
+            change_fs(:added, 'file.rb')
+            change_fs(:modified, 'file.rb')
+          end
+
+          it { should_not process_queued_addition_of('file.rb') }
+          it { should_not process_queued_modification_of('file.rb') }
+
+          context 'when unpaused' do
+            before { subject.listener.unpause }
+            it { should process_queued_addition_of('file.rb') }
+
+            # NOTE: when adapter is 'local_fs?', the change optimizer
+            # (_squash_changes) reduces the "add+mod" into a single "add"
+            unless mode == :broadcaster
+              # "optimizing" on local fs (broadcaster) will remove
+              # :modified from queue
+              it { should process_queued_modification_of('file.rb') }
+            else
+              # optimization skipped, because it's TCP, so we'll have both
+              # :modified and :added events for same file
+              it { should_not process_queued_modification_of('file.rb') }
+            end
+
+            it { should process_modification_of('file.rb') }
+          end
+        end
       end
 
-      it 'may be paused and unpaused' do
-        recipient.listener.pause
-        expect(recipient).to_not detect_addition_of('file.rb')
-        expect(recipient).to_not detect_modification_of('file.rb')
+      context 'when stopped' do
+        before { subject.listener.stop }
 
-        recipient.listener.unpause
-        expect(recipient).to detect_modification_of('file.rb')
-      end
+        context 'with no queued changes' do
+          it { should_not process_addition_of('file.rb') }
 
-      it 'may be stopped and restarted' do
-        recipient.listener.stop
-        expect(recipient).to_not detect_addition_of('file.rb')
-        expect(recipient).to_not detect_modification_of('file.rb')
+          context 'when started' do
+            before { subject.listener.start }
+            it { should process_addition_of('file.rb') }
+          end
+        end
 
-        recipient.listener.start
-        expect(recipient).to detect_modification_of('file.rb')
+        context 'with queued addition' do
+          before { change_fs(:added, 'file.rb') }
+          it { should_not process_modification_of('file.rb') }
+
+          context 'when started' do
+            before { subject.listener.start }
+            it { should_not process_queued_addition_of('file.rb') }
+            it { should process_modification_of('file.rb') }
+          end
+        end
+
+        context 'with queued modification' do
+          before do
+            change_fs(:added, 'file.rb')
+            change_fs(:modified, 'file.rb')
+          end
+
+          it { should_not process_queued_addition_of('file.rb') }
+          it { should_not process_queued_modification_of('file.rb') }
+
+          context 'when started' do
+            before { subject.listener.start }
+            it { should_not process_queued_addition_of('file.rb') }
+            it { should_not process_queued_modification_of('file.rb') }
+            it { should process_modification_of('file.rb') }
+          end
+        end
       end
     end
   end
-
 end

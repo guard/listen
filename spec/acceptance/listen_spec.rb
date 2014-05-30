@@ -7,7 +7,7 @@ describe 'Listen' do
   let(:options) { {} }
   let(:all_options) { base_options.merge(polling_options).merge(options) }
 
-  let(:wrapper) { setup_listener(all_options) }
+  let(:wrapper) { setup_listener(all_options, :track_changes) }
   before { wrapper.listener.start }
   after { wrapper.listener.stop }
 
@@ -36,8 +36,8 @@ describe 'Listen' do
         context 'with default ignore options' do
           context 'with nothing in listen dir' do
 
-            it { is_expected.to detect_addition_of('file.rb') }
-            it { is_expected.to detect_addition_of('.hidden') }
+            it { is_expected.to process_addition_of('file.rb') }
+            it { is_expected.to process_addition_of('.hidden') }
 
             it 'listens to multiple files addition' do
               result = wrapper.listen do
@@ -64,8 +64,8 @@ describe 'Listen' do
               example.run
             end
 
-            it { is_expected.to detect_modification_of('file.rb') }
-            it { is_expected.to detect_removal_of('file.rb') }
+            it { is_expected.to process_modification_of('file.rb') }
+            it { is_expected.to process_removal_of('file.rb') }
 
             it 'listens to file.rb modification and wait' do
               expect(wrapper.listen do
@@ -109,7 +109,7 @@ describe 'Listen' do
               example.run
             end
 
-            it { is_expected.to detect_modification_of('.hidden') }
+            it { is_expected.to process_modification_of('.hidden') }
           end
 
           context 'dir in listen dir' do
@@ -118,7 +118,7 @@ describe 'Listen' do
               example.run
             end
 
-            it { is_expected.to detect_addition_of('dir/file.rb') }
+            it { is_expected.to process_addition_of('dir/file.rb') }
           end
 
           context 'dir with file in listen dir' do
@@ -179,7 +179,7 @@ describe 'Listen' do
               example.run
             end
 
-            it { is_expected.not_to detect_addition_of('.bundle/file.rb') }
+            it { is_expected.not_to process_addition_of('.bundle/file.rb') }
           end
         end
 
@@ -192,43 +192,43 @@ describe 'Listen' do
               example.run
             end
 
-            it { is_expected.not_to detect_addition_of('ignored_dir/file.rb') }
+            it { is_expected.not_to process_addition_of('ignored_dir/file.rb') }
           end
 
           context 'when :only is *.rb' do
             let(:options) { { only: /\.rb$/ } }
 
-            it { is_expected.to detect_addition_of('file.rb') }
-            it { is_expected.not_to detect_addition_of('file.txt') }
+            it { is_expected.to process_addition_of('file.rb') }
+            it { is_expected.not_to process_addition_of('file.txt') }
           end
 
           context 'when :ignore is bar.rb' do
             context 'when :only is *.rb' do
               let(:options) { { ignore: /bar\.rb$/, only: /\.rb$/ } }
 
-              it { is_expected.to detect_addition_of('file.rb') }
-              it { is_expected.not_to detect_addition_of('file.txt') }
-              it { is_expected.not_to detect_addition_of('bar.rb') }
+              it { is_expected.to process_addition_of('file.rb') }
+              it { is_expected.not_to process_addition_of('file.txt') }
+              it { is_expected.not_to process_addition_of('bar.rb') }
             end
           end
 
           context 'when default ignore is *.rb' do
             let(:options) { { ignore: /\.rb$/ } }
 
-            it { is_expected.not_to detect_addition_of('file.rb') }
+            it { is_expected.not_to process_addition_of('file.rb') }
 
             context 'with #ignore on *.txt mask' do
               before { wrapper.listener.ignore(/\.txt/) }
 
-              it { is_expected.not_to detect_addition_of('file.rb') }
-              it { is_expected.not_to detect_addition_of('file.txt') }
+              it { is_expected.not_to process_addition_of('file.rb') }
+              it { is_expected.not_to process_addition_of('file.txt') }
             end
 
             context 'with #ignore! on *.txt mask' do
               before { wrapper.listener.ignore!(/\.txt/) }
 
-              it { is_expected.to detect_addition_of('file.rb') }
-              it { is_expected.not_to detect_addition_of('file.txt') }
+              it { is_expected.to process_addition_of('file.rb') }
+              it { is_expected.not_to process_addition_of('file.txt') }
             end
           end
         end
