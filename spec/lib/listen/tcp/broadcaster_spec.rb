@@ -8,30 +8,29 @@ describe Listen::TCP::Broadcaster do
   let(:port) { 4000 }
 
   subject { described_class.new(host, port) }
+
   let(:server) do
     instance_double(described_class::TCPServer, close: true, accept: nil)
   end
 
-  let(:socket)  { instance_double(described_class::TCPSocket, write: true) }
+  let(:socket) do
+    instance_double(described_class::TCPSocket, close: true, write: true)
+  end
+
+  let(:socket2) do
+    instance_double(described_class::TCPSocket, close: true, write: true)
+  end
+
   let(:payload) { Listen::TCP::Message.new.payload }
 
   before do
     expect(described_class::TCPServer).to receive(:new).
       with(host, port).and_return server
+    allow(server).to receive(:accept).and_raise('stub called')
   end
 
   after do
     subject.terminate
-  end
-
-  describe '#initialize' do
-    it 'initializes and exposes a server' do
-      expect(subject.server).to be server
-    end
-
-    it 'initializes and exposes a list of sockets' do
-      expect(subject.sockets).to eq []
-    end
   end
 
   describe '#start' do
@@ -42,76 +41,84 @@ describe Listen::TCP::Broadcaster do
   end
 
   describe '#finalize' do
-    it 'clears sockets' do
-      expect(subject.sockets).to receive(:clear)
-      subject.finalize
-    end
+    before { allow(server).to receive(:accept).and_return nil }
 
     it 'closes server' do
-      expect(subject.server).to receive(:close)
+      expect(server).to receive(:close)
       subject.finalize
-      expect(subject.server).to be_nil
     end
   end
 
   describe '#broadcast' do
-    it 'unicasts to connected sockets' do
-      subject.handle_connection socket
-      expect(subject.wrapped_object).to receive(:unicast).with socket, payload
-      subject.broadcast payload
-    end
-  end
+    context 'with active socket' do
+      before { allow(server).to receive(:accept).and_return socket, nil }
 
-  describe '#unicast' do
-    before do
-      subject.handle_connection socket
-    end
+      it 'should broadcast payload' do
+        expect(socket).to receive(:write).with(payload)
+        subject.run
+        subject.broadcast payload
+      end
 
-    context 'when succesful' do
-      it 'returns true and leaves socket untouched' do
-        expect(subject.unicast(socket, payload)).to be_truthy
-        expect(subject.sockets).to include socket
+      it 'should keep socket' do
+        expect(socket).to receive(:write).twice.with(payload)
+        subject.run
+        2.times { subject.broadcast payload }
+      end
+
+      context 'with IOError' do
+        it 'should remove socket from list' do
+          allow(socket).to receive(:write).once.and_raise IOError
+          subject.run
+          2.times { subject.broadcast payload }
+        end
+      end
+
+      context 'when reset by peer' do
+        it 'should remove socket from list' do
+          allow(socket).to receive(:write).once.and_raise Errno::ECONNRESET
+          subject.run
+          2.times { subject.broadcast payload }
+        end
+      end
+
+      context 'when broken pipe' do
+        it 'should remove socket from list' do
+          allow(socket).to receive(:write).once.and_raise Errno::EPIPE
+          subject.run
+          2.times { subject.broadcast payload }
+        end
+      end
+
+      context 'with another active socket' do
+        before do
+          allow(server).to receive(:accept).and_return socket, socket2, nil
+        end
+
+        it 'should broadcast payload to both' do
+          expect(socket).to receive(:write).with(payload)
+          expect(socket2).to receive(:write).with(payload)
+          subject.run
+          subject.broadcast payload
+        end
+
+        context 'with a failure in first socket' do
+          before do
+            allow(socket).to receive(:write).once.and_raise Errno::EPIPE
+          end
+
+          it 'should still broadcast to remaining socket' do
+            expect(socket2).to receive(:write).with(payload)
+            subject.run
+            subject.broadcast payload
+          end
+
+          it 'should broadcast to only remaining socket' do
+            expect(socket2).to receive(:write).twice.with(payload)
+            subject.run
+            2.times { subject.broadcast payload }
+          end
+        end
       end
     end
-
-    context 'on IO errors' do
-      it 'returns false and removes socket from list' do
-        allow(socket).to receive(:write).and_raise IOError
-        expect(subject.unicast(socket, payload)).to be_falsey
-        expect(subject.sockets).not_to include socket
-      end
-    end
-
-    context 'on connection reset by peer' do
-      it 'returns false and removes socket from list' do
-        allow(socket).to receive(:write).and_raise Errno::ECONNRESET
-        expect(subject.unicast(socket, payload)).to be_falsey
-        expect(subject.sockets).not_to include socket
-      end
-    end
-
-    context 'on broken pipe' do
-      it 'returns false and removes socket from list' do
-        allow(socket).to receive(:write).and_raise Errno::EPIPE
-        expect(subject.unicast(socket, payload)).to be_falsey
-        expect(subject.sockets).not_to include socket
-      end
-    end
   end
-
-  describe '#run' do
-    it 'handles incoming connections' do
-      allow(server).to receive(:accept).and_return socket, nil
-      expect(subject.wrapped_object).to receive(:handle_connection).with socket
-      subject.run
-    end
-  end
-
-  describe '#handle_connection' do
-    it 'adds socket to list' do
-      subject.handle_connection socket
-      expect(subject.sockets).to include socket
-    end
-  end
-
 end
