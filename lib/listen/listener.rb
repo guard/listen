@@ -230,10 +230,6 @@ module Listen
 
         # wait for changes to accumulate
         sleep options[:wait_for_delay]
-
-        # let changes accumulate
-        next if @paused
-
         _process_changes
       end
     rescue RuntimeError
@@ -359,7 +355,8 @@ module Listen
 
     # for easier testing without sleep loop
     def _process_changes
-      return if @queue.empty?
+      return if @paused or @queue.empty?
+
       changes = []
       while !@queue.empty?
         changes << @queue.pop
