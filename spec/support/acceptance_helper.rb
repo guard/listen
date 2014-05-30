@@ -41,20 +41,18 @@ def change_fs(type, path)
       fail "Bad test: cannot modify #{path.inspect} (it doesn't exist)"
     end
 
-    # Without this, modification immediately following creation won't get
-    # detected
-    if Listen::File.inaccurate_mac_time?(File.lstat(path))
-      t = Time.now
-      diff = t.to_f - t.to_i
-      sleep(1.05 - diff)
-    end
-
     open(path, 'a') { |f| f.write('foo') }
+
+    # separate it from upcoming modifications"
+    _sleep_to_separate_events
   when :added
     if File.exist?(path)
       fail "Bad test: cannot add #{path.inspect} (it already exists)"
     end
     open(path, 'w') { |f| f.write('foo') }
+
+    # separate it from upcoming modifications"
+    _sleep_to_separate_events
   when :removed
     unless File.exist?(path)
       fail "Bad test: cannot remove #{path.inspect} (it doesn't exist)"
@@ -149,10 +147,6 @@ class ListenerWrapper
       # give events time to be received, queued and processed
       sleep lag
 
-      # Make sure FS changes happen in the next second, or they
-      # may not be detected (mtime)
-      _sleep_until_next_second if reset_queue
-
       yield
 
       sleep lag # wait for changes
@@ -197,26 +191,6 @@ class ListenerWrapper
       unfrozen_copy
     end
   end
-
-  # Generates a small time difference before performing a time sensitive
-  # task (like comparing mtimes of files).
-  #
-  # @note Modification time for files only includes the milliseconds on Linux
-  #   with MRI > 1.9.2 and platform that support it (OS X 10.8 not included),
-  #   that's why we generate a difference that's greater than 1 second.
-  #
-  def _sleep_until_next_second
-    # If any of the paths are on a mounted FS with a sec-precision MAC times
-    # (short for Modified/Access/Created), give the tests more time
-    return unless [@paths].flatten.any? do |path|
-      Listen::File.inaccurate_mac_time?(path)
-    end
-
-    t = Time.now
-    diff = t.to_f - t.to_i
-
-    sleep(1.05 - diff)
-  end
 end
 
 def setup_listener(options, callback = nil)
@@ -225,4 +199,25 @@ end
 
 def setup_recipient(port, callback = nil)
   ListenerWrapper.new(callback, paths, :on, port)
+end
+
+def _sleep_to_separate_events
+  # separate the events or Darwin and Polling
+  # will detect only the :added event
+  #
+  # (This is because both use directory scanning
+  # through Celluloid tasks, which may not kick in
+  # time before the next filesystem change)
+  #
+  # The minimum for this is the time it takes between a syscall
+  # changing the filesystem ... and ... an async
+  # Listen::File.scan to finish comparing the file with the
+  # Record
+  #
+  # This necessary for:
+  # - Darwin Adapter
+  # - Polling Adapter
+  # - Linux Adapter in FSEvent emulation mode
+  # - maybe Windows adapter (probably not)
+  sleep 0.5
 end

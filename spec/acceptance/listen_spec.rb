@@ -41,8 +41,8 @@ describe 'Listen' do
 
             it 'listens to multiple files addition' do
               result = wrapper.listen do
-                touch 'file1.rb'
-                touch 'file2.rb'
+                change_fs(:added, 'file1.rb')
+                change_fs(:added, 'file2.rb')
               end
 
               expect(result).to eq(modified: [],
@@ -60,19 +60,12 @@ describe 'Listen' do
 
           context 'existing file.rb in listen dir' do
             around do |example|
-              touch 'file.rb'
+              change_fs(:added, 'file.rb')
               example.run
             end
 
             it { is_expected.to process_modification_of('file.rb') }
             it { is_expected.to process_removal_of('file.rb') }
-
-            it 'listens to file.rb modification and wait' do
-              expect(wrapper.listen do
-                open('file.rb', 'a') { |f| f.write('foo') }
-                sleep 0.5
-              end).to eq(modified: ['file.rb'], added: [], removed: [])
-            end
 
             it 'listens to file.rb moved out' do
               expect(wrapper.listen do
@@ -105,7 +98,7 @@ describe 'Listen' do
 
           context 'hidden file in listen dir' do
             around do |example|
-              touch '.hidden'
+              change_fs(:added, '.hidden')
               example.run
             end
 
