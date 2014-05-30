@@ -224,8 +224,12 @@ module Listen
       loop do
         break if @stopping
 
+
         # wait for changes to accumulate
         sleep options[:wait_for_delay]
+
+        # let changes accumulate
+        next if @paused
 
         _process_changes
       end
