@@ -13,7 +13,6 @@ matrix:
 notifications:
   recipients:
     - thibaud@thibaud.gg
-    - remy@rymai.me
 os:
   - linux
   - osx
