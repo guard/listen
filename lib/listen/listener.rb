@@ -52,6 +52,7 @@ module Listen
       Celluloid.logger.level = _debug_level
 
       _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+      @stopping = true
     end
 
     # Starts the listener by initializing the adapter and building
@@ -59,17 +60,36 @@ module Listen
     # for changes. The current thread is not blocked after starting.
     #
     def start
+      unless @stopping
+        _log :error, 'Cannot start because not stopped'
+        return
+      end
+
+      if @wait_thread
+        _log :error, 'Wait thread already running'
+        return
+      end
+
       _init_actors
       unpause
-      @stopping = false
+      registry[:record].build
       _start_adapter
-      Thread.new { _wait_for_changes }
+
+      @stopping = false
+      @wait_thread = Thread.new { _wait_for_changes }
     end
 
     # Terminates all Listen actors and kill the adapter.
     #
     def stop
+      return if @stopping
+
       @stopping = true
+      if @wait_thread
+        @wait_thread.join
+        @wait_thread = nil
+      end
+
       supervisor.terminate
     end
 
@@ -82,7 +102,6 @@ module Listen
     # Unpauses listening callback
     #
     def unpause
-      registry[:record].build
       @paused = false
     end
 
