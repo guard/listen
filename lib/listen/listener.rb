@@ -365,6 +365,8 @@ module Listen
         changes << @queue.pop
       end
 
+      return if block.nil?
+
       hash = _smoosh_changes(changes)
       result = [hash[:modified], hash[:added], hash[:removed]]
 
