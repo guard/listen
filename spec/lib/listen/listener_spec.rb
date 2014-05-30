@@ -151,15 +151,9 @@ describe Listen::Listener do
   end
 
   describe '#unpause' do
-    it 'builds record' do
-      expect(record).to receive(:build)
-      subject.unpause
-    end
-
     it 'sets paused to false' do
-      allow(record).to receive(:build)
       subject.unpause
-      expect(subject.paused).to be_falsey
+      expect(subject).to_not be_paused
     end
   end
 

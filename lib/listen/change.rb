@@ -40,7 +40,7 @@ module Listen
           Directory.scan(change_queue, record, path, options)
         else
           change = File.change(record, path)
-          return if !change || !listener.listen? || options[:silence]
+          return if !change || options[:silence]
           listener.queue(:file, change, path)
         end
       end

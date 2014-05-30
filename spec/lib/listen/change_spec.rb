@@ -51,8 +51,6 @@ describe Listen::Change do
           before { allow(Listen::File).to receive(:change) { :modified } }
 
           context 'listener listen' do
-            before { allow(listener).to receive(:listen?) { true } }
-
             it 'notifies change to listener' do
               file_path = instance_double(Pathname,
                                           to_s: 'file_path',
@@ -69,15 +67,6 @@ describe Listen::Change do
                 expect(listener).to_not receive(:queue)
                 subject.change(:file, file_path, silence: true)
               end
-            end
-          end
-
-          context "listener doesn't listen" do
-            before { allow(listener).to receive(:listen?) { false } }
-
-            it 'notifies change to listener' do
-              expect(listener).to_not receive(:queue)
-              subject.change(:file, file_path)
             end
           end
         end
