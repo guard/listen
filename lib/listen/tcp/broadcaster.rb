@@ -17,7 +17,8 @@ module Listen
       # Note: Listens on all addresses when host is nil
       #
       def initialize(host, port)
-        @server = TCPServer.new(host, port)
+        params = [host, port].compact
+        @server = ::Celluloid::IO::TCPServer.new(*params)
         @sockets = []
       rescue
         _log :error, "Broadcaster.initialize: #{$!.inspect}:#{$@.join("\n")}"
