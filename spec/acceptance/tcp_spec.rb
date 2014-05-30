@@ -8,11 +8,11 @@ describe Listen::Listener do
 
   around { |example| fixtures { example.run } }
 
-  modes = unless windows? && Celluloid::VERSION <= '0.15.2'
-    [:recipient, :broadcaster]
-  else
-    [:broadcaster]
-  end
+  modes = if !windows? || Celluloid::VERSION > '0.15.2'
+            [:recipient, :broadcaster]
+          else
+            [:broadcaster]
+          end
 
   modes.each do |mode|
     context "when #{mode}" do
@@ -74,14 +74,14 @@ describe Listen::Listener do
 
             # NOTE: when adapter is 'local_fs?', the change optimizer
             # (_squash_changes) reduces the "add+mod" into a single "add"
-            unless mode == :broadcaster
+            if mode == :broadcaster
               # "optimizing" on local fs (broadcaster) will remove
               # :modified from queue
-              it { should process_queued_modification_of('file.rb') }
+              it { should_not process_queued_modification_of('file.rb') }
             else
               # optimization skipped, because it's TCP, so we'll have both
               # :modified and :added events for same file
-              it { should_not process_queued_modification_of('file.rb') }
+              it { should process_queued_modification_of('file.rb') }
             end
 
             it { should process_modification_of('file.rb') }
