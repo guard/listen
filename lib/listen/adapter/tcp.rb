@@ -16,9 +16,22 @@ module Listen
 
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
+        attempts = 3
         @socket = TCPSocket.new(listener.host, listener.port)
         @buffer = ''
-        run
+        async.run
+      rescue Celluloid::Task::TerminatedError
+        _log :debug, "TCP adapter was terminated: #{$!.inspect}"
+      rescue Errno::ECONNREFUSED
+        sleep 1
+        attempts -= 1
+        _log :warn, "TCP.start: #{$!.inspect}"
+        retry if retries > 0
+        _log :error, "TCP.start: #{$!.inspect}:#{$@.join("\n")}"
+        raise
+      rescue
+        _log :error, "TCP.start: #{$!.inspect}:#{$@.join("\n")}"
+        raise
       end
 
       # Cleans up buffer and socket
