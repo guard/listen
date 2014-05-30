@@ -11,7 +11,7 @@ describe Listen::Listener do
 
   let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
-  let(:adapter) { instance_double(Listen::Adapter::Base, local_fs?: true) }
+  let(:adapter) { instance_double(Listen::Adapter::Base, start: nil) }
   let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
   let(:change_pool_async) { instance_double(Listen::Change) }
   before do
@@ -136,6 +136,7 @@ describe Listen::Listener do
   end
 
   describe '#stop' do
+    before { subject.start }
     it 'terminates supervisor' do
       subject.supervisor = supervisor
       expect(supervisor).to receive(:terminate)

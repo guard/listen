@@ -214,6 +214,10 @@ module Listen
       if @tcp_mode == :broadcaster
         require 'listen/tcp/broadcaster'
         supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
+
+        # TODO: should be auto started, because if it crashes
+        # a new instance is spawned by supervisor, but it's 'start' isn't
+        # called
         registry[:broadcaster].start
       end
 
