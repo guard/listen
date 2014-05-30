@@ -136,6 +136,7 @@ class ListenerWrapper
 
   def listen(reset_queue = true)
     @timed_changes.allow_changes(reset_queue) do
+      Celluloid.logger.debug "Time change start"
 
       # give events time to be received, queued and processed
       sleep lag
@@ -147,6 +148,7 @@ class ListenerWrapper
       yield
 
       sleep lag # wait for changes
+      Celluloid.logger.debug "Time change end"
     end
 
     # Keep this to detect a lag too small (changes during this sleep

@@ -67,6 +67,7 @@ module Listen
       # Handles incoming message by notifying of path changes
       def handle_message(message)
         type, modification, path, _ = message.object
+        _log :debug, "TCP: #{[type,modification,path].inspect}"
         _notify_change(type.to_sym, path, change: modification.to_sym)
       end
 

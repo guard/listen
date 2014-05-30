@@ -165,6 +165,7 @@ module Listen
     end
 
     def queue(type, change, path, options = {})
+      _log :debug, "#{@tcp_mode}: QUEUE: #{type}:#{change}:#{path}"
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
       @queue << [type, change, path, options]
@@ -365,10 +366,14 @@ module Listen
         changes << @queue.pop
       end
 
+      _log :debug, "#{@tcp_mode}: NON EMPTY QUEUE: #{changes.inspect}"
+
       return if block.nil?
 
       hash = _smoosh_changes(changes)
       result = [hash[:modified], hash[:added], hash[:removed]]
+
+      _log :debug, "#{@tcp_mode}: NON EMPTY QUEUE RESULT: #{result.inspect}"
 
       # TODO: condition not tested, but too complex to test ATM
       block.call(*result) unless result.all?(&:empty?)

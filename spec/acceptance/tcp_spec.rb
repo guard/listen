@@ -6,7 +6,15 @@ describe Listen::Listener do
   let(:broadcast_options) { { forward_to: port } }
   let(:paths) { Pathname.new(Dir.pwd) }
 
-  around { |example| fixtures { example.run } }
+  around do |example|
+    previous = Celluloid.logger.level
+    debugging = ENV['LISTEN_GEM_DEBUGGING']
+    ENV['LISTEN_GEM_DEBUGGING'] = '2'
+    Celluloid.logger.level = Logger::DEBUG
+    fixtures { example.run }
+    ENV['LISTEN_GEM_DEBUGGING'] = debugging
+    Celluloid.logger.level = previous
+  end
 
   modes = if !windows? || Celluloid::VERSION > '0.15.2'
             [:recipient, :broadcaster]
