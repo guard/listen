@@ -19,6 +19,9 @@ module Listen
       def initialize(host, port)
         @server = TCPServer.new(host, port)
         @sockets = []
+      rescue
+        _log :error, "Broadcaster.initialize: #{$!.inspect}:#{$@.join("\n")}"
+        raise
       end
 
       # Asynchronously start accepting connections
@@ -59,11 +62,20 @@ module Listen
         while socket = @server.accept
           handle_connection(socket)
         end
+      rescue Celluloid::Task::TerminatedError
+        _log :debug, "TCP adapter was terminated: #{$!.inspect}"
+      rescue
+        _log :error, "Broadcaster.run: #{$!.inspect}:#{$@.join("\n")}"
+        raise
       end
 
       # Handles incoming socket connection
       def handle_connection(socket)
         @sockets << socket
+      end
+
+      def _log(type, message)
+        Celluloid.logger.send(type, message)
       end
     end
   end
