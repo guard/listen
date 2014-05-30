@@ -25,22 +25,22 @@ describe Directory do
 
     context 'with file & subdir in record' do
       let(:record_entries) do
-        { 'file.rb' => { type: 'File' }, 'subdir' => { type: 'Dir' } }
+        { 'file.rb' => { type: :file }, 'subdir' => { type: :dir } }
       end
 
       context 'with empty dir' do
         before { allow(dir).to receive(:children) { [] } }
 
         it 'sets record dir path' do
-          expect(async_record).to receive(:set_path).with(dir, type: 'Dir')
+          expect(async_record).to receive(:set_path).with(:dir, dir)
           described_class.scan(queue, record, dir, options)
         end
 
         it "queues changes for file path and dir that doesn't exist" do
-          expect(queue).to receive(:change).with(file, type: 'File')
+          expect(queue).to receive(:change).with(:file, file)
 
           expect(queue).to receive(:change).
-            with(subdir, type: 'Dir', recursive: false)
+            with(:dir, subdir, recursive: false)
 
           described_class.scan(queue, record, dir, options)
         end
@@ -50,11 +50,11 @@ describe Directory do
         before { allow(dir).to receive(:children) { [file2] } }
 
         it 'notices file & file2 and no longer existing dir' do
-          expect(queue).to receive(:change).with(file, type: 'File')
-          expect(queue).to receive(:change).with(file2, type: 'File')
+          expect(queue).to receive(:change).with(:file, file)
+          expect(queue).to receive(:change).with(:file, file2)
 
           expect(queue).to receive(:change).
-            with(subdir, type: 'Dir', recursive: false)
+            with(:dir, subdir, recursive: false)
 
           described_class.scan(queue, record, dir, options)
         end
@@ -82,11 +82,11 @@ describe Directory do
         before { allow(dir).to receive(:children) { [file] } }
 
         it 'queues changes for file & file2 paths' do
-          expect(queue).to receive(:change).with(file, type: 'File')
-          expect(queue).to_not receive(:change).with(file2, type: 'File')
+          expect(queue).to receive(:change).with(:file, file)
+          expect(queue).to_not receive(:change).with(:file, file2)
 
           expect(queue).to_not receive(:change).
-            with(subdir, type: 'Dir', recursive: false)
+            with(:dir, subdir, recursive: false)
 
           described_class.scan(queue, record, dir, options)
         end
@@ -99,17 +99,17 @@ describe Directory do
 
     context 'with file.rb & subdir in record' do
       let(:record_entries) do
-        { 'file.rb' => { type: 'File' }, 'subdir' => { type: 'Dir' } }
+        { 'file.rb' => { type: :file }, 'subdir' => { type: :dir } }
       end
 
       context 'with empty dir' do
         before { allow(dir).to receive(:children) { [] } }
 
         it 'queues changes for file & subdir path' do
-          expect(queue).to receive(:change).with(file, type: 'File')
+          expect(queue).to receive(:change).with(:file, file)
 
           expect(queue).to receive(:change).
-            with(subdir, type: 'Dir', recursive: true)
+            with(:dir, subdir, recursive: true)
 
           described_class.scan(queue, record, dir, options)
         end
@@ -122,13 +122,13 @@ describe Directory do
         end
 
         it 'queues changes for file, file2 & subdir paths' do
-          expect(queue).to receive(:change).with(file, type: 'File')
+          expect(queue).to receive(:change).with(:file, file)
 
           expect(queue).to receive(:change).
-            with(subdir, type: 'Dir', recursive: true)
+            with(:dir, subdir, recursive: true)
 
           expect(queue).to receive(:change).
-            with(subdir2, type: 'Dir', recursive: true)
+            with(:dir, subdir2, recursive: true)
 
           described_class.scan(queue, record, dir, options)
         end
@@ -152,7 +152,7 @@ describe Directory do
 
         it 'queues changes for file & file2 paths' do
           expect(queue).to receive(:change).
-            with(subdir2, type: 'Dir', recursive: true)
+            with(:dir, subdir2, recursive: true)
 
           described_class.scan(queue, record, dir, options)
         end

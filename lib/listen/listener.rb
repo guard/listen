@@ -10,6 +10,8 @@ module Listen
     attr_accessor :options, :directories, :paused, :changes, :block, :stopping
     attr_accessor :registry, :supervisor
 
+    attr_reader :host, :port
+
     # Initializes the directories listener.
     #
     # @param [String] directory the directories to listen to
@@ -22,13 +24,35 @@ module Listen
     #
     def initialize(*args, &block)
       @options     = _init_options(args.last.is_a?(Hash) ? args.pop : {})
+
+      # Handle TCP options here
+      @tcp_mode = nil
+      if [:recipient, :broadcaster].include? args[1]
+        require 'listen/tcp'
+        target = args.shift
+        unless target
+          fail ArgumentError, 'TCP::Listener requires target to be given'
+        end
+        @tcp_mode = args.shift
+        @host = 'localhost' if @tcp_mode == :recipient
+        if target.is_a? Fixnum
+          @port = target
+        else
+          @host, @port = target.split(':')
+          @port = @port.to_i
+        end
+
+        @options[:force_tcp] = true if @tcp_mode == :recipient
+      end
+
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
-      @changes     = []
+      @queue = Queue.new
       @block       = block
       @registry    = Celluloid::Registry.new
       Celluloid.logger.level = _debug_level
 
       _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+      @stopping = true
     end
 
     # Starts the listener by initializing the adapter and building
@@ -36,17 +60,36 @@ module Listen
     # for changes. The current thread is not blocked after starting.
     #
     def start
+      unless @stopping
+        _log :error, 'Cannot start because not stopped'
+        return
+      end
+
+      if @wait_thread
+        _log :error, 'Wait thread already running'
+        return
+      end
+
       _init_actors
       unpause
-      @stopping = false
+      registry[:record].build
       _start_adapter
-      Thread.new { _wait_for_changes }
+
+      @stopping = false
+      @wait_thread = Thread.new { _wait_for_changes }
     end
 
     # Terminates all Listen actors and kill the adapter.
     #
     def stop
+      return if @stopping
+
       @stopping = true
+      if @wait_thread
+        @wait_thread.join
+        @wait_thread = nil
+      end
+
       supervisor.terminate
     end
 
@@ -59,7 +102,6 @@ module Listen
     # Unpauses listening callback
     #
     def unpause
-      registry[:record].build
       @paused = false
     end
 
@@ -122,8 +164,16 @@ module Listen
       @registry[type]
     end
 
-    def queue(change, path, options = {})
-      @changes << { change => path }.merge(options)
+    def queue(type, change, path, options = {})
+      _log :debug, "#{@tcp_mode}: QUEUE: #{type}:#{change}:#{path}"
+      fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
+      fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
+      @queue << [type, change, path, options]
+
+      return unless @tcp_mode == :broadcaster
+
+      message = TCP::Message.new(type, change, path, options)
+      registry[:broadcaster].async.broadcast(message.payload)
     end
 
     def silencer
@@ -162,6 +212,16 @@ module Listen
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
 
+      if @tcp_mode == :broadcaster
+        require 'listen/tcp/broadcaster'
+        supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
+
+        # TODO: should be auto started, because if it crashes
+        # a new instance is spawned by supervisor, but it's 'start' isn't
+        # called
+        registry[:broadcaster].start
+      end
+
       supervisor.add(_adapter_class, as: :adapter, args: self)
     end
 
@@ -169,39 +229,29 @@ module Listen
       loop do
         break if @stopping
 
-        changes = []
-        begin
-          sleep options[:wait_for_delay] # wait for changes to accumulate
-          new_changes = _pop_changes
-          changes += new_changes
-        end until new_changes.empty?
+        # wait for changes to accumulate
+        sleep options[:wait_for_delay]
 
-        next if changes.empty?
+        # let changes accumulate
+        next if @paused
 
-        hash = _smoosh_changes(changes)
-        result = [hash[:modified], hash[:added], hash[:removed]]
-        # TODO: condition not tested, but too complex to test
-        block.call(*result) unless result.all?(&:empty?)
+        _process_changes
       end
     rescue RuntimeError
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
       Kernel.warn "Backtrace:\n\t#{$@.join("\n\t")}"
     end
 
-    def _pop_changes
-      popped = []
-      popped << @changes.shift until @changes.empty?
-      popped
-    end
-
     def _smoosh_changes(changes)
       # TODO: adapter could be nil at this point (shutdown)
       if _adapter_class.local_fs?
-        cookies = changes.group_by { |x| x[:cookie] }
+        cookies = changes.group_by do |_, _, _, options|
+          (options || {})[:cookie]
+        end
         _squash_changes(_reinterpret_related_changes(cookies))
       else
         smooshed = { modified: [], added: [], removed: [] }
-        changes.map(&:first).each { |type, path| smooshed[type] << path.to_s }
+        changes.each { |_, change, path, _| smooshed[change] << path.to_s }
         smooshed.tap { |s| s.each { |_, v| v.uniq! } }
       end
     end
@@ -233,6 +283,8 @@ module Listen
       removed = actions.count { |x| x == :removed }
       diff = added - removed
 
+      # TODO: avoid checking if path exists and instead assume the events are
+      # in order (if last is :removed, it doesn't exist, etc.)
       if path.exist?
         if diff > 0
           :added
@@ -255,10 +307,12 @@ module Listen
         if file
           [[:modified, file]]
         else
-          not_silenced = changes.map(&:first).reject do |_, path|
-            _silenced?(path)
+          not_silenced = changes.reject do |type, _, path, _|
+            _silenced?(path, type)
           end
-          not_silenced.map { |type, path| [table.fetch(type, type), path] }
+          not_silenced.map do |_, change, path, _|
+            [table.fetch(change, change), path]
+          end
         end
       end.flatten(1)
     end
@@ -266,22 +320,34 @@ module Listen
     def _detect_possible_editor_save(changes)
       return unless changes.size == 2
 
-      from, to = changes.sort { |x, y| x.keys.first <=> y.keys.first }
-      from, to = from[:moved_from], to[:moved_to]
+      from_type = from_change = from = nil
+      to_type = to_change = to = nil
+
+      changes.each do |data|
+        case data[1]
+        when :moved_from
+          from_type, from_change, from, _ = data
+        when :moved_to
+          to_type, to_change, to, _ = data
+        else
+          return nil
+        end
+      end
+
       return unless from && to
 
       # Expect an ignored moved_from and non-ignored moved_to
       # to qualify as an "editor modify"
-      _silenced?(from) && !_silenced?(to) ? to : nil
+      _silenced?(from, from_type) && !_silenced?(to, to_type) ? to : nil
     end
 
-    def _silenced?(path)
-      type = path.directory? ? 'Dir' : 'File'
+    def _silenced?(path, type)
       registry[:silencer].silenced?(path, type)
     end
 
     def _start_adapter
-      registry[:adapter].async.start
+      # Don't run async, because configuration has to finish first
+      registry[:adapter].start
     end
 
     def _log(type, message)
@@ -290,6 +356,27 @@ module Listen
 
     def _adapter_class
       @adapter_class ||= Adapter.select(options)
+    end
+
+    # for easier testing without sleep loop
+    def _process_changes
+      return if @queue.empty?
+      changes = []
+      while !@queue.empty?
+        changes << @queue.pop
+      end
+
+      _log :debug, "#{@tcp_mode}: NON EMPTY QUEUE: #{changes.inspect}"
+
+      return if block.nil?
+
+      hash = _smoosh_changes(changes)
+      result = [hash[:modified], hash[:added], hash[:removed]]
+
+      _log :debug, "#{@tcp_mode}: NON EMPTY QUEUE RESULT: #{result.inspect}"
+
+      # TODO: condition not tested, but too complex to test ATM
+      block.call(*result) unless result.all?(&:empty?)
     end
   end
 end

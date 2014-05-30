@@ -66,9 +66,9 @@ module Listen
           if path.directory?
             # Force dir content tracking to kick in, or we won't have
             # names of added files
-            _notify_change(path, type: 'Dir', recursive: true)
+            _notify_change(:dir, path, recursive: true)
           else
-            _notify_change(path, type: 'File', change: _change(event.flags))
+            _notify_change(:file, path, change: _change(event.flags))
           end
 
           # If it is a directory, and it has a write flag, it means a

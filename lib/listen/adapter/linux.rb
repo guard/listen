@@ -39,22 +39,28 @@ module Listen
 
       def _callback
         lambda do |event|
-          next if _skip_event?(event)
-
           # NOTE: avoid using event.absolute_name since new API
           # will need to have a custom recursion implemented
           # to properly match events to configured directories
           path = Pathname.new(event.watcher.path) + event.name
 
-          cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
+          _log :debug, "inotify: #{event.name} #{path} (#{event.flags.inspect})"
 
-          _log :debug, "inotify: #{event.name}: #{event.flags.inspect}"
-
-          if _dir_event?(event)
-            _notify_change(path, { type: 'Dir' }.merge(cookie_opts))
+          if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
+            if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
+              _notify_change(:dir, path.dirname)
+            else
+              _notify_change(:dir, path)
+            end
           else
-            options = { type: 'File', change: _change(event.flags) }
-            _notify_change(path, options.merge(cookie_opts))
+            next if _skip_event?(event)
+            cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
+            if _dir_event?(event)
+              _notify_change(:dir, path, cookie_opts)
+            else
+              options = { change: _change(event.flags) }
+              _notify_change(:file, path, options.merge(cookie_opts))
+            end
           end
         end
       end

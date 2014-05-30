@@ -43,21 +43,16 @@ module Listen
       _init_ignore_patterns
     end
 
-    def silenced?(path, type = 'Unknown')
+    def silenced?(path, type)
       silenced = false
 
       relative_path = _relative_path(path)
 
-      if only_patterns && type == 'File'
+      if only_patterns && type == :file
         silenced = !only_patterns.any? { |pattern| relative_path =~ pattern }
       end
 
       silenced || ignore_patterns.any? { |pattern| relative_path =~ pattern }
-    end
-
-    def match(args)
-      path, type = args.first
-      silenced?(path, type)
     end
 
     private

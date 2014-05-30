@@ -1,42 +1,30 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Darwin do
-  if darwin?
-    let(:listener) { instance_double(Listen::Listener) }
-    let(:adapter) { described_class.new(listener) }
+  describe 'class' do
+    subject { described_class }
+    it { should be_local_fs }
 
-    describe '.usable?' do
-      it 'returns always true' do
-        expect(described_class).to be_usable
-      end
-    end
-
-    describe '#initialize' do
-      it 'requires rb-fsevent gem' do
-        described_class.new(listener)
-        expect(defined?(FSEvent)).to be_truthy
-      end
+    if darwin?
+      it { should be_usable }
+    else
+      it { should_not be_usable }
     end
   end
 
-  if windows?
-    it "isn't usable on Windows" do
-      expect(described_class).to_not be_usable
+  let(:options) { {} }
+  let(:listener) { instance_double(Listen::Listener, options: options) }
+
+  describe '#_latency' do
+    subject { described_class.new(listener).send(:_latency) }
+
+    context 'with no overriding option' do
+      it { should eq described_class.const_get('DEFAULT_LATENCY') }
+    end
+
+    context 'with custom latency overriding' do
+      let(:options) { { latency: 1234 } }
+      it { should eq 1234 }
     end
   end
-
-  if linux?
-    it "isn't usable on Linux" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if bsd?
-    it "isn't usable on BSD" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  specify { expect(described_class).to be_local_fs }
-
 end

@@ -27,17 +27,17 @@ module Listen
 
       def _configure
         _log :debug, 'wdm - starting...'
-        worker = WDM::Monitor.new
+        @worker = WDM::Monitor.new
         _directories.each do |path|
-          worker.watch_recursively(path.to_s, :files, &_file_callback)
-          worker.watch_recursively(path.to_s, :directories, &_dir_callback)
-          worker.watch_recursively(path.to_s, :attributes, :last_write,
-                                   &_attr_callback)
+          @worker.watch_recursively(path.to_s, :files, &_file_callback)
+          @worker.watch_recursively(path.to_s, :directories, &_dir_callback)
+          @worker.watch_recursively(path.to_s, :attributes, :last_write,
+                                    &_attr_callback)
         end
       end
 
       def _run
-        worker.run!
+        @worker.run!
       end
 
       def _file_callback
@@ -45,8 +45,8 @@ module Listen
           begin
             path = _path(change.path)
             _log :debug, "wdm - FILE callback: #{change.inspect}"
-            options = { type: 'File', change: _change(change.type) }
-            _notify_change(path, options)
+            options = { change: _change(change.type) }
+            _notify_change(:file, path, options)
           rescue
             _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
             raise
@@ -61,8 +61,8 @@ module Listen
             return if path.directory?
 
             _log :debug, "wdm - ATTR callback: #{change.inspect}"
-            options = { type: 'File', change: _change(change.type) }
-            _notify_change(_path(change.path), options)
+            options = { change: _change(change.type) }
+            _notify_change(:file, _path(change.path), options)
           rescue
             _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
             raise
@@ -76,9 +76,9 @@ module Listen
             path = _path(change.path)
             _log :debug, "wdm - DIR callback: #{change.inspect}"
             if change.type == :removed
-              _notify_change(path.dirname, type: 'Dir')
+              _notify_change(:dir, path.dirname)
             elsif change.type == :added
-              _notify_change(path, type: 'Dir')
+              _notify_change(:dir, path)
             else
               # do nothing - changed directory means either:
               #   - removed subdirs (handled above)
