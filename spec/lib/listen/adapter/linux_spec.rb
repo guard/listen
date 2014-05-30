@@ -1,15 +1,20 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Linux do
+  describe 'class' do
+    subject { described_class }
+    it { should be_local_fs }
+
+    if linux?
+      it { should be_usable }
+    else
+      it { should_not be_usable }
+    end
+  end
+
   if linux?
     let(:listener) { instance_double(Listen::Listener) }
     let(:adapter) { described_class.new(listener) }
-
-    describe '.usable?' do
-      it 'returns always true' do
-        expect(described_class).to be_usable
-      end
-    end
 
     describe '#initialize' do
       before do
@@ -56,8 +61,8 @@ describe Listen::Adapter::Linux do
           allow_any_instance_of(Listen::Adapter::Base).
             to receive(:_notify_change).
             with(
+              :file,
               Pathname.new('path/foo.txt'),
-              type: 'File',
               change: change,
               cookie: 123)
         end
@@ -75,44 +80,23 @@ describe Listen::Adapter::Linux do
         end
       end
 
-      # use case: close_write is the only way to detect changes
-      # on ecryptfs
-      it 'recognizes close_write as modify' do
-        expect_change.call(:modified)
-        event_callback.call([:close_write])
+      # TODO: get fsevent adapter working like INotify
+      unless /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
+        it 'recognizes close_write as modify' do
+          expect_change.call(:modified)
+          event_callback.call([:close_write])
+        end
+
+        it 'recognizes moved_to as moved_to' do
+          expect_change.call(:moved_to)
+          event_callback.call([:moved_to])
+        end
+
+        it 'recognizes moved_from as moved_from' do
+          expect_change.call(:moved_from)
+          event_callback.call([:moved_from])
+        end
       end
-
-      it 'recognizes moved_to as moved_to' do
-        expect_change.call(:moved_to)
-        event_callback.call([:moved_to])
-      end
-
-      it 'recognizes moved_from as moved_from' do
-        expect_change.call(:moved_from)
-        event_callback.call([:moved_from])
-      end
-    end
-
-  end
-
-  if darwin?
-    it "isn't usable on Darwin" do
-      expect(described_class).to_not be_usable
     end
   end
-
-  if windows?
-    it "isn't usable on Windows" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  if bsd?
-    it "isn't usable on BSD" do
-      expect(described_class).to_not be_usable
-    end
-  end
-
-  specify { expect(described_class).to be_local_fs }
-
 end

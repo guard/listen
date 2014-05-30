@@ -10,7 +10,7 @@ describe Listen::Adapter::TCP do
 
   let(:listener) do
     instance_double(
-      Listen::TCP::Listener,
+      Listen::Listener,
       registry: registry,
       options: {},
       host: host,
@@ -82,6 +82,9 @@ describe Listen::Adapter::TCP do
         to receive(:handle_data).with('bar')
 
       subject.start
+
+      # quick workaround because run is called asynchronously
+      sleep 0.5
     end
   end
 
@@ -109,20 +112,10 @@ describe Listen::Adapter::TCP do
 
   describe '#handle_message' do
     it 'notifies listener of path changes' do
-      message = Listen::TCP::Message.new(
-        'modified' => ['/foo', '/bar'],
-        'added'    => ['/baz'],
-        'removed'  => []
-      )
+      message = Listen::TCP::Message.new('file', 'modified', '/foo', {})
 
       expect(subject.wrapped_object).
-        to receive(:_notify_change).with '/foo', change: :modified
-
-      expect(subject.wrapped_object).
-        to receive(:_notify_change).with '/bar', change: :modified
-
-      expect(subject.wrapped_object).
-        to receive(:_notify_change).with '/baz', change: :added
+        to receive(:_notify_change).with :file, '/foo', change: :modified
 
       subject.handle_message message
     end

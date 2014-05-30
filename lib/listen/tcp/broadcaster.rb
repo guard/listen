@@ -7,8 +7,6 @@ module Listen
 
       finalizer :finalize
 
-      attr_reader :server, :sockets
-
       # Initializes a Celluloid::IO-powered TCP-broadcaster
       #
       # @param [String] host to broadcast on
@@ -17,8 +15,11 @@ module Listen
       # Note: Listens on all addresses when host is nil
       #
       def initialize(host, port)
-        @server = TCPServer.new(host, port)
         @sockets = []
+        @server = TCPServer.new(host, port)
+      rescue
+        _log :error, "Broadcaster.initialize: #{$!.inspect}:#{$@.join("\n")}"
+        raise
       end
 
       # Asynchronously start accepting connections
@@ -28,42 +29,46 @@ module Listen
 
       # Cleans up sockets and server
       def finalize
-        return unless @server
+        @sockets.map(&:close) if @sockets
+        @sockets = nil
 
-        @sockets.clear
+        return unless @server
         @server.close
         @server = nil
       end
 
       # Broadcasts given payload to all connected sockets
       def broadcast(payload)
-        @sockets.each do |socket|
-          unicast(socket, payload)
+        active_sockets = @sockets.select do |socket|
+          _unicast(socket, payload)
         end
-      end
-
-      # Unicasts payload to given socket
-      #
-      # @return [Boolean] whether writing to socket was succesful
-      #
-      def unicast(socket, payload)
-        socket.write(payload)
-        true
-      rescue IOError, Errno::ECONNRESET, Errno::EPIPE
-        @sockets.delete(socket)
-        false
+        @sockets.replace(active_sockets)
       end
 
       # Continuously accept and handle incoming connections
       def run
         while socket = @server.accept
-          handle_connection(socket)
+          @sockets << socket
         end
+      rescue Celluloid::Task::TerminatedError
+        _log :debug, "TCP adapter was terminated: #{$!.inspect}"
+      rescue
+        _log :error, "Broadcaster.run: #{$!.inspect}:#{$@.join("\n")}"
+        raise
       end
 
-      # Handles incoming socket connection
-      def handle_connection(socket)
-        @sockets << socket
+      private
+
+      def _log(type, message)
+        Celluloid.logger.send(type, message)
+      end
+
+      def _unicast(socket, payload)
+        socket.write(payload)
+        true
+      rescue IOError, Errno::ECONNRESET, Errno::EPIPE
+        _log :debug, "Broadcaster failed: #{socket.inspect}"
+        false
       end
     end
   end

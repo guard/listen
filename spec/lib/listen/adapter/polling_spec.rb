@@ -1,61 +1,45 @@
 require 'spec_helper'
 
 describe Listen::Adapter::Polling do
-  let(:registry) { instance_double(Celluloid::Registry) }
-  let(:listener) do
-    instance_double(
-      Listen::Listener,
-      registry: registry,
-      options: {},
-      listen?: true)
+  describe 'class' do
+    subject { described_class }
+    it { should be_local_fs }
+    it { should be_usable }
   end
 
-  let(:adapter) { described_class.new(listener) }
-  let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
-  let(:change_pool_async) { instance_double(Listen::Change) }
+  subject { described_class.new(listener) }
 
-  before do
-    allow(proxy).to receive(:async) { change_pool_async }
-    allow(registry).to receive(:[]).with(:change_pool) { proxy }
-  end
+  let(:options) { {} }
+  let(:listener) { instance_double(Listen::Listener, options: options) }
+  let(:worker) { instance_double(Listen::Change) }
 
-  describe '.usable?' do
-    it 'returns always true' do
-      expect(described_class).to be_usable
-    end
-  end
+  before { allow(listener).to receive(:async).with(:change_pool) { worker } }
 
   describe '#start' do
-    let(:directories) { ['directory_path'] }
-    before do
-      allow(listener).to receive(:options) { {} }
-      allow(listener).to receive(:directories) { directories }
-    end
+    before { allow(listener).to receive(:directories) { ['directory_path'] } }
 
     it 'notifies change on every listener directories path' do
-      expect(change_pool_async).to receive(:change).with(
+      expect(worker).to receive(:change).with(
+        :dir,
         'directory_path',
-        type: 'Dir',
         recursive: true)
 
-      t = Thread.new { adapter.start }
+      t = Thread.new { subject.start }
       sleep 0.25
       t.kill
     end
   end
 
   describe '#_latency' do
-    it 'returns default_latency with listener actor latency not present' do
-      expected_latency =  Listen::Adapter::Polling::DEFAULT_POLLING_LATENCY
-      expect(adapter.send(:_latency)).to eq expected_latency
+    subject { described_class.new(listener).send(:_latency) }
+
+    context 'with no overriding option' do
+      it { should eq described_class.const_get('DEFAULT_POLLING_LATENCY') }
     end
 
-    it 'returns latency from listener actor if present' do
-      allow(listener).to receive(:options) { { latency: 1234 } }
-      expect(adapter.send(:_latency)).to eq 1234
+    context 'with custom latency overriding' do
+      let(:options) { { latency: 1234 } }
+      it { should eq 1234 }
     end
   end
-
-  specify { expect(described_class).to be_local_fs }
-
 end

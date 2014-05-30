@@ -9,25 +9,24 @@ describe Listen::Record do
 
   let(:record) { Listen::Record.new(listener) }
   let(:path) { '/dir/path/file.rb' }
-  let(:data) { { type: 'File' } }
 
   describe '#set_path' do
-    it 'sets path by spliting direname and basename' do
-      record.set_path(path, data)
-      expect(record.paths).to eq('/dir/path' => { 'file.rb' => data })
+    it 'sets path by spliting dirname and basename' do
+      record.set_path(:file, path)
+      expect(record.paths['/dir/path']).to eq('file.rb' => { type: :file })
     end
 
     it 'sets path and keeps old data not overwritten' do
-      record.set_path(path, data.merge(foo: 1, bar: 2))
-      record.set_path(path, data.merge(foo: 3))
-      expected = { '/dir/path' => { 'file.rb' => data.merge(foo: 3, bar: 2) } }
-      expect(record.paths).to eq(expected)
+      record.set_path(:file, path, foo: 1, bar: 2)
+      record.set_path(:file, path, foo: 3)
+      file_data = record.paths['/dir/path']['file.rb']
+      expect(file_data).to eq(foo: 3, bar: 2, type: :file)
     end
   end
 
   describe '#unset_path' do
     context 'path is present' do
-      before { record.set_path(path, data) }
+      before { record.set_path(:file, path) }
 
       it 'unsets path' do
         record.unset_path(path)
@@ -45,10 +44,10 @@ describe Listen::Record do
 
   describe '#file_data' do
     context 'path is present' do
-      before { record.set_path(path, data) }
+      before { record.set_path(:file, path) }
 
       it 'returns file data' do
-        expect(record.file_data(path)).to eq data
+        expect(record.file_data(path)).to eq(type: :file)
       end
     end
 
@@ -61,10 +60,11 @@ describe Listen::Record do
 
   describe '#dir_entries' do
     context 'path is present' do
-      before { record.set_path(path, data) }
+      before { record.set_path(:file, path) }
 
       it 'returns file path' do
-        expect(record.dir_entries('/dir/path')).to eq('file.rb' => data)
+        entries = record.dir_entries('/dir/path')
+        expect(entries).to eq('file.rb' => { type: :file })
       end
     end
 
@@ -88,14 +88,14 @@ describe Listen::Record do
     end
 
     it 're-inits paths' do
-      record.set_path(path, data)
+      record.set_path(:file, path)
       record.build
       expect(record.file_data(path)).to be_empty
     end
 
     it 'calls change asynchronously on all directories to build record'  do
       expect(actor).to receive(:change).
-        with('dir_path', type: 'Dir', recursive: true, silence: true)
+        with(:dir, 'dir_path', recursive: true, silence: true)
 
       record.build
     end

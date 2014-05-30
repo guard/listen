@@ -27,119 +27,156 @@ describe Listen::File do
 
   describe '#change' do
     let(:expected_data) do
-      { type: 'File', mtime: kind_of(Float), mode: kind_of(Integer) }
+      { mtime: kind_of(Float), mode: kind_of(Integer) }
     end
 
-    context 'path present in record' do
+    context 'with file in record' do
       let(:record_mtime) { nil }
       let(:record_md5) { nil }
       let(:record_mode) { nil }
 
       let(:record_data) do
-        { type: 'File',
+        { type: :file,
           mtime: record_mtime,
           md5: record_md5,
           mode: record_mode }
       end
 
-      context 'non-existing path' do
-        before do
-          allow(::File).to receive(:lstat) { fail Errno::ENOENT }
-        end
+      context 'with non-existing file' do
+        before { allow(::File).to receive(:lstat) { fail Errno::ENOENT } }
 
-        it 'returns added' do
-          expect(subject).to eq :removed
-        end
+        it { should be :removed }
+
         it 'sets path in record' do
           expect(async_record).to receive(:unset_path).with(file_path)
           subject
         end
       end
 
-      context 'with file modified just now' do
+      context 'with existing file' do
+        let(:stat_mtime) { Time.now.to_f - 1234.567 }
+        let(:stat_ctime) { Time.now.to_f - 1234.567 }
+        let(:stat_atime) { Time.now.to_f - 1234.567 }
+        let(:stat_mode) { 0640 }
+        let(:md5) { fail 'stub me (md5)' }
 
-        context 'with old record path mtime earlier than now' do
-          let(:record_mtime) { (Time.now - 1).to_f }
+        let(:stat) do
+          instance_double(
+            File::Stat,
+            mtime: stat_mtime,
+            atime: stat_atime,
+            ctime: stat_ctime,
+            mode: stat_mode
+          )
+        end
 
-          let(:stat) do
-            instance_double(
-              File::Stat,
-              mtime: record_mtime + 1,
-              mode: 0640
-            )
-          end
+        before do
+          allow(::File).to receive(:lstat) { stat }
+          allow(Digest::MD5).to receive(:file) { double(:md5, digest: md5) }
+        end
 
-          before do
-            allow(File).to receive(:lstat) { stat }
-          end
+        context 'with different mode in record' do
+          let(:record_mode) { 0722 }
 
-          it 'returns modified' do
-            expect(subject).to eq :modified
-          end
+          it { should be :modified }
 
           it 'sets path in record with expected data' do
             expect(async_record).to receive(:set_path).
-              with(file_path, expected_data)
-
+              with(:file, file_path, expected_data)
             subject
           end
         end
 
-        context 'with same record path mtime' do
-          let(:record_mtime) { 230498230.234 }
-          let(:record_mode)  { 0644 }
+        context 'with same mode in record' do
+          let(:record_mode) { stat_mode }
 
-          let(:stat) do
-            instance_double(
-              File::Stat,
-              mtime: 230498230.234,
-              mode: 0644
-            )
-          end
+          # e.g. file was overwritten by earlier copy
+          context 'with earlier mtime than in record' do
+            let(:record_mtime) { stat_mtime.to_f - 123.45 }
 
-          before do
-            allow(File).to receive(:lstat) { stat }
-          end
+            it { should be :modified }
 
-          context 'with same record path mode' do
-            it 'returns nil' do
-              expect(subject).to be_nil
+            it 'sets path in record with expected data' do
+              expect(async_record).to receive(:set_path).
+                with(:file, file_path, expected_data)
+              subject
             end
           end
 
-          context 'with different record path mode' do
-            let(:record_mode) { 'foo' }
+          context 'with later mtime than in record' do
+            let(:record_mtime) { stat_mtime.to_f + 123.45 }
 
-            it 'returns modified' do
-              expect(subject).to eq :modified
+            it { should be :modified }
+
+            it 'sets path in record with expected data' do
+              expect(async_record).to receive(:set_path).
+                with(:file, file_path, expected_data)
+              subject
             end
           end
 
-          context 'same record path md5' do
-            it 'returns nil' do
-              expect(subject).to be_nil
+          context 'with indentical mtime in record' do
+            let(:record_mtime) { stat_mtime.to_f }
+
+            context 'with accurate stat times' do
+              let(:stat_mtime) { Time.at(1401235714.123) }
+              let(:stat_atime) { Time.at(1401235714.123) }
+              let(:stat_ctime) { Time.at(1401235714.123) }
+              let(:record_mtime) { stat_mtime.to_f }
+              it { should be_nil }
             end
-          end
 
-          if darwin?
-            context 'different record path md5' do
-              let(:record_md5) { 'foo' }
-              let(:expected_data) do
-                { type: 'File',
-                  mtime: kind_of(Float),
-                  mode: kind_of(Integer),
-                  md5: kind_of(String) }
-              end
+            context 'with inaccurate stat times' do
+              let(:stat_mtime) { Time.at(1401235714.0) }
+              let(:stat_atime) { Time.at(1401235714.0) }
+              let(:stat_ctime) { Time.at(1401235714.0) }
 
-              it 'returns modified' do
-                expect(subject).to eq :modified
-              end
+              let(:record_mtime) { stat_mtime.to_f }
 
-              it 'sets path in record with expected data' do
-                expect(async_record).to receive(:set_path).
-                  with(file_path, expected_data)
+              context 'with mtime within current second' do
+                let(:now) { Time.at(1401235714.99) }
 
-                subject
+                before do
+                  allow(Time).to receive(:now) { now }
+                end
+
+                context 'without available md5' do
+                  let(:md5) { fail Errno::ENOENT }
+
+                  # Treat is as an ignored file, because chances are ...  ...
+                  # whatever is listening for changes won't be able to deal
+                  # with the file either (e.g. because of permissions)
+                  it { should be nil }
+
+                  it 'should not unset record' do
+                    expect(async_record).to_not receive(:unset_path)
+                  end
+                end
+
+                context 'with available md5' do
+                  let(:md5) { 'd41d8cd98f00b204e9800998ecf8427e' }
+
+                  context 'with same md5 in record' do
+                    let(:record_md5) { md5 }
+                    it { should be_nil }
+                  end
+
+                  context 'with no md5 in record' do
+                    let(:record_md5) { nil }
+                    it { should be_nil }
+                  end
+
+                  context 'with different md5 in record' do
+                    let(:record_md5) { 'foo' }
+                    it { should be :modified }
+
+                    it 'sets path in record with expected data' do
+                      expect(async_record).to receive(:set_path).
+                        with(:file, file_path, expected_data. merge(md5: md5))
+                      subject
+                    end
+                  end
+                end
               end
             end
           end
@@ -169,7 +206,7 @@ describe Listen::File do
 
         it 'sets path in record with expected data' do
           expect(async_record).to receive(:set_path).
-            with(file_path, expected_data)
+            with(:file, file_path, expected_data)
 
           subject
         end
@@ -177,4 +214,32 @@ describe Listen::File do
     end
   end
 
+  describe '#inaccurate_mac_time?' do
+    let(:stat) do
+      instance_double(File::Stat, mtime: mtime, atime: atime, ctime: ctime)
+    end
+
+    subject { Listen::File.inaccurate_mac_time?(stat) }
+
+    context 'with no accurate times' do
+      let(:mtime) { Time.at(1234567.0) }
+      let(:atime) { Time.at(1234567.0) }
+      let(:ctime) { Time.at(1234567.0) }
+      it { should be_truthy }
+    end
+
+    context 'with all accurate times' do
+      let(:mtime) { Time.at(1234567.89) }
+      let(:atime) { Time.at(1234567.89) }
+      let(:ctime) { Time.at(1234567.89) }
+      it { should be_falsey }
+    end
+
+    context 'with one accurate time' do
+      let(:mtime) { Time.at(1234567.0) }
+      let(:atime) { Time.at(1234567.89) }
+      let(:ctime) { Time.at(1234567.0) }
+      it { should be_falsey }
+    end
+  end
 end

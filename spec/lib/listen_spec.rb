@@ -9,7 +9,7 @@ describe Listen do
 
     context 'when using :forward_to option' do
       it 'initializes TCP-listener in broadcast-mode' do
-        expect(Listen::TCP::Listener).to receive(:new).
+        expect(Listen::Listener).to receive(:new).
           with(4000, :broadcaster, '/path', {})
         described_class.to('/path', forward_to: 4000)
       end
@@ -41,7 +41,7 @@ describe Listen do
 
   describe '.on' do
     it 'initializes TCP-listener in recipient-mode' do
-      expect(Listen::TCP::Listener).to receive(:new).
+      expect(Listen::Listener).to receive(:new).
         with(4000, :recipient, '/path')
       described_class.on(4000, '/path')
     end
