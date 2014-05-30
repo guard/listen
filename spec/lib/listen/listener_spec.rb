@@ -125,11 +125,11 @@ describe Listen::Listener do
     it 'calls block on changes' do
       foo = instance_double(Pathname, to_s: 'foo', exist?: true)
 
-      subject.queue(:file, :modified, foo)
       block_stub = instance_double(Proc)
       subject.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
       subject.start
+      subject.queue(:file, :modified, foo)
       sleep 0.25
     end
   end
@@ -145,13 +145,17 @@ describe Listen::Listener do
 
   describe '#pause' do
     it 'sets paused to true' do
+      subject.start
       subject.pause
-      expect(subject.paused).to be_truthy
+      expect(subject).to be_paused
     end
   end
 
   describe '#unpause' do
-    before { subject.paused = true }
+    before do
+      subject.start
+      subject.pause
+    end
 
     it 'sets paused to false' do
       subject.unpause
@@ -160,6 +164,7 @@ describe Listen::Listener do
   end
 
   describe '#paused?' do
+    before { subject.start }
     it 'returns true when paused' do
       subject.paused = true
       expect(subject).to be_paused
@@ -175,28 +180,21 @@ describe Listen::Listener do
   end
 
   describe '#listen?' do
-    it 'returns true when not paused (false)' do
-      subject.paused = false
-      subject.stopping = false
-      expect(subject.listen?).to be_truthy
+    context 'when processing' do
+      before { subject.start }
+      it { should be_processing }
     end
 
-    it 'returns false when not paused (nil)' do
-      subject.paused = nil
-      subject.stopping = false
-      expect(subject.listen?).to be_falsey
+    context 'when stopped' do
+      it { should_not be_processing }
     end
 
-    it 'returns false when paused' do
-      subject.paused = true
-      subject.stopping = false
-      expect(subject.listen?).to be_falsey
-    end
-
-    it 'returns false when stopped' do
-      subject.paused = false
-      subject.stopping = true
-      expect(subject.listen?).to be_falsey
+    context 'when paused' do
+      before do
+        subject.start
+        subject.pause
+      end
+      it { should_not be_processing }
     end
   end
 
@@ -288,12 +286,6 @@ describe Listen::Listener do
     it 'gets two changes and calls the block once' do
       allow(silencer).to receive(:silenced?) { false }
 
-      fake_time = 0
-      allow(subject).to receive(:sleep) do |sec|
-        fake_time += sec
-        subject.stopping = true if fake_time > 1
-      end
-
       subject.block = proc do |modified, added, _|
         expect(modified).to eql(['foo.txt'])
         expect(added).to eql(['bar.txt'])
@@ -311,10 +303,10 @@ describe Listen::Listener do
         exist?: true,
         directory?: false)
 
+      subject.start
       subject.queue(:file, :modified, foo, {})
       subject.queue(:file, :added, bar, {})
-
-      subject.send :_wait_for_changes
+      sleep 0.25
     end
   end
 

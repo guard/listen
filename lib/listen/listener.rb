@@ -7,6 +7,9 @@ require 'English'
 
 module Listen
   class Listener
+
+    include Celluloid::FSM
+
     attr_accessor :options, :directories, :paused, :changes, :block, :stopping
     attr_accessor :registry, :supervisor
 
@@ -23,6 +26,7 @@ module Listen
     # @yieldparam [Array<String>] removed the list of removed files
     #
     def initialize(*args, &block)
+      transition :initializing
       @options     = _init_options(args.last.is_a?(Hash) ? args.pop : {})
 
       # Handle TCP options here
@@ -52,77 +56,86 @@ module Listen
       Celluloid.logger.level = _debug_level
 
       _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
-      @stopping = true
+      transition :stopped
     end
 
-    # Starts the listener by initializing the adapter and building
-    # the directory record concurrently, then it starts the adapter to watch
-    # for changes. The current thread is not blocked after starting.
-    #
-    def start
-      unless @stopping
-        _log :error, 'Cannot start because not stopped'
-        return
-      end
+    default_state :initializing
 
-      if @wait_thread
-        _log :error, 'Wait thread already running'
-        return
-      end
+    state :initializing, to: :stopped
+    state :paused, to: [:processing, :stopped]
 
-      _init_actors
-      unpause
-
-      # Note: make sure building is finished before starting adapter (for
-      # consistent results both in specs and normal usage)
-      registry[:record].build
-
-      _start_adapter
-
-      @stopping = false
-      @wait_thread = Thread.new { _wait_for_changes }
-    end
-
-    # Terminates all Listen actors and kill the adapter.
-    #
-    def stop
-      return if @stopping
-
-      @stopping = true
-      if @wait_thread
-        @wait_thread.join
+    state :stopped, to: [:processing] do
+      if wait_thread
+        if wait_thread.alive?
+          wait_thread.wakeup
+          wait_thread.join
+        end
         @wait_thread = nil
       end
 
-      supervisor.terminate
+      if @supervisor
+        @supervisor.terminate
+        @supervisor = nil
+      end
     end
 
-    # Pauses listening callback (adapter still running)
-    #
+    state :processing, to: [:paused, :stopped] do
+      if wait_thread
+        # resume if paused
+        wait_thread.wakeup if wait_thread.alive?
+      else
+        @last_queue_event_time = nil
+        @wait_thread = Thread.new { _wait_for_changes }
+
+        _init_actors
+
+        # Note: make sure building is finished before starting adapter (for
+        # consistent results both in specs and normal usage)
+        registry[:record].build
+
+        _start_adapter
+      end
+    end
+
+    # Starts processing events and starts adapters
+    def start
+      transition :processing
+    end
+
+    # Stops processing and terminates all actors
+    def stop
+      transition :stopped
+    end
+
+    # Stops invoking callbacks (messages pile up)
     def pause
-      @paused = true
+      transition :paused
     end
 
-    # Unpauses listening callback
-    #
+    def paused=(value)
+      if value
+        transition :paused unless state == :paused
+      else
+        transition :processing unless state == :processing
+      end
+    end
+
+    # Resumes invoking callbacks
     def unpause
-      @paused = false
+      transition :processing
     end
 
-    # Returns true if Listener is paused
-    #
-    # @return [Boolean]
-    #
     def paused?
-      @paused == true
+      state == :paused
     end
 
-    # Returns true if Listener is neither paused nor stopped
-    #
-    # @return [Boolean]
-    #
+    # TODO: deprecate and alias to processing?
     def listen?
-      @paused == false && @stopping == false
+      state == :processing
+    end
+
+    def processing?
+      state == :processing
     end
 
     # Adds ignore patterns to the existing one
@@ -172,6 +185,12 @@ module Listen
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
       @queue << [type, change, path, options]
+
+      @last_queue_event_time = Time.now.to_f
+
+      unless state == :paused
+        wait_thread.wakeup if wait_thread && wait_thread.alive?
+      end
 
       return unless @tcp_mode == :broadcaster
 
@@ -229,12 +248,26 @@ module Listen
     end
 
     def _wait_for_changes
-      loop do
-        break if @stopping
+      latency = options[:wait_for_delay]
 
-        # wait for changes to accumulate
-        sleep options[:wait_for_delay]
-        _process_changes
+      loop do
+        break if state == :stopped
+
+        if state == :paused or @queue.empty?
+          sleep
+          break if state == :stopped
+        end
+
+        # Assure there's at least latency between callbacks to allow
+        # for accumulating changes
+        now = Time.now.to_f
+        diff = latency + (@last_queue_event_time || now) - now
+        if diff > 0
+          sleep diff
+          next
+        end
+
+        _process_changes unless state == :paused
       end
     rescue RuntimeError
       Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
@@ -359,7 +392,9 @@ module Listen
 
     # for easier testing without sleep loop
     def _process_changes
-      return if @paused || @queue.empty?
+      return if @queue.empty?
+
+      @last_queue_event_time = nil
 
       changes = []
       while !@queue.empty?
@@ -374,5 +409,7 @@ module Listen
       # TODO: condition not tested, but too complex to test ATM
       block.call(*result) unless result.all?(&:empty?)
     end
+
+    attr_reader :wait_thread
   end
 end

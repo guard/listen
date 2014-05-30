@@ -68,6 +68,12 @@ end
 class TimedChanges
   attr_reader :changes
 
+  def initialize
+    # Set to non-nil, because changes can immediately come after unpausing
+    # listener in an Rspec 'before()' block
+    @changes = { modified: [], added: [], removed: [] }
+  end
+
   def change_offset
     Time.now.to_f - @yield_time
   end
