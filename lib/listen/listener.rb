@@ -338,7 +338,8 @@ module Listen
     end
 
     def _start_adapter
-      registry[:adapter].async.start
+      # Don't run async, because configuration has to finish first
+      registry[:adapter].start
     end
 
     def _log(type, message)
