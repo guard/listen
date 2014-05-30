@@ -59,6 +59,9 @@ module Listen
         while (message = Listen::TCP::Message.from_buffer(@buffer))
           handle_message(message)
         end
+      rescue
+        _log :error, "TCP.handle_data crashed: #{$!}:#{$@.join("\n")}"
+        raise
       end
 
       # Handles incoming message by notifying of path changes
