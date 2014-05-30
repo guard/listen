@@ -40,6 +40,15 @@ def change_fs(type, path)
     unless File.exist?(path)
       fail "Bad test: cannot modify #{path.inspect} (it doesn't exist)"
     end
+
+    # Without this, modification immediately following creation won't get
+    # detected
+    if Listen::File.inaccurate_mac_time?(File.lstat(path))
+      t = Time.now
+      diff = t.to_f - t.to_i
+      sleep(1.05 - diff)
+    end
+
     open(path, 'a') { |f| f.write('foo') }
   when :added
     if File.exist?(path)
