@@ -26,6 +26,8 @@ describe Listen::Listener do
 
         before do
           broadcaster.listener.start
+          # Travis on OSX is too slow
+          subject.lag = 1.2
           subject.listener.start
         end
         after do
