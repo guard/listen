@@ -27,14 +27,20 @@ module Listen
     end
 
     def build
+      @last_build_at = Time.now
       @paths = _init_paths
       listener.directories.each do |path|
-        options = { recursive: true, silence: true }
-        listener.registry[:change_pool].change(:dir, path, options)
+        options = { recursive: true, silence: true, build: true }
+        listener.sync(:change_pool).change(:dir, path, options)
       end
+      sleep 0.01 until @last_build_at + 0.1 < Time.now
     rescue
       Celluloid.logger.warn "build crashed: #{$!.inspect}"
       raise
+    end
+
+    def still_building!
+      @last_build_at = Time.now
     end
 
     private
