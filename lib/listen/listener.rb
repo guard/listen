@@ -359,7 +359,7 @@ module Listen
 
     # for easier testing without sleep loop
     def _process_changes
-      return if @paused or @queue.empty?
+      return if @paused || @queue.empty?
 
       changes = []
       while !@queue.empty?

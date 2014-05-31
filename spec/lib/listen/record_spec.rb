@@ -84,7 +84,7 @@ describe Listen::Record do
 
     before do
       allow(listener).to receive(:directories) { directories }
-      allow(listener).to receive(:sync).with(:change_pool) { actor}
+      allow(listener).to receive(:sync).with(:change_pool) { actor }
     end
 
     it 're-inits paths' do
@@ -109,14 +109,17 @@ describe Listen::Record do
 
     before do
       allow(listener).to receive(:directories) { directories }
-      allow(listener).to receive(:sync).with(:change_pool) { actor}
+      allow(listener).to receive(:sync).with(:change_pool) { actor }
     end
 
     it 'keeps the build blocking longer' do
       record # To avoid initializing record in thread
 
       th = Thread.new do
-        10.times { sleep 0.05; record.still_building! }
+        10.times do
+          sleep 0.05
+          record.still_building!
+        end
       end
 
       started = Time.now
