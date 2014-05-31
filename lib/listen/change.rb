@@ -34,6 +34,7 @@ module Listen
         listener.queue(type, change, path, cookie ? { cookie: cookie } : {})
       else
         return unless (record = listener.sync(:record))
+        record.async.still_building! if options[:build]
 
         if type == :dir
           return unless (change_queue = listener.async(:change_pool))

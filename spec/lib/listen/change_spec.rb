@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Listen::Change do
   let(:subject) { Listen::Change.new(listener) }
   let(:listener) { instance_double(Listen::Listener, options: {}) }
-  let(:record) { double(Listen::Record) }
+  let(:record) { instance_double(Listen::Record) }
   let(:file_path) { Pathname.new('file_path') }
 
   before do
@@ -14,6 +14,19 @@ describe Listen::Change do
   describe '#change' do
     let(:silencer) { instance_double(Listen::Silencer, silenced?: false) }
     before { allow(listener).to receive(:silencer) { silencer } }
+
+    context 'with build options' do
+      let(:async_record) do
+        instance_double(Listen::Record, still_building!: nil)
+      end
+
+      it 'calls update_last_build_time on record' do
+        allow(listener).to receive(:queue)
+        allow(record).to receive(:async) { async_record }
+        expect(async_record).to receive(:unset_path)
+        subject.change(:file, file_path, build: true)
+      end
+    end
 
     context 'file' do
       context 'with known change' do
