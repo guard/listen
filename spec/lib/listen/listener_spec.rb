@@ -21,7 +21,6 @@ describe Listen::Listener do
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
     allow(registry).to receive(:[]).with(:change_pool) { proxy }
-
   end
 
   describe 'initialize' do
@@ -152,6 +151,8 @@ describe Listen::Listener do
   end
 
   describe '#unpause' do
+    before { subject.paused = true }
+
     it 'sets paused to false' do
       subject.unpause
       expect(subject).to_not be_paused
