@@ -41,6 +41,10 @@ def change_fs(type, path)
       fail "Bad test: cannot modify #{path.inspect} (it doesn't exist)"
     end
 
+    # wait until full second, because this might be followed by a modification
+    # event (which otherwise may not be detected every time)
+    _sleep_until_next_second(Pathname.pwd)
+
     open(path, 'a') { |f| f.write('foo') }
 
     # separate it from upcoming modifications"
@@ -49,6 +53,11 @@ def change_fs(type, path)
     if File.exist?(path)
       fail "Bad test: cannot add #{path.inspect} (it already exists)"
     end
+
+    # wait until full second, because this might be followed by a modification
+    # event (which otherwise may not be detected every time)
+    _sleep_until_next_second(Pathname.pwd)
+
     open(path, 'w') { |f| f.write('foo') }
 
     # separate it from upcoming modifications"
@@ -62,6 +71,35 @@ def change_fs(type, path)
     fail "bad test: unknown type: #{type.inspect}"
   end
 end
+
+# Used by change_fs() above so that the FS change (e.g. file created) happens
+# as close to the start of a new second (time) as possible.
+#
+# E.g. if file is created at 1234567.999 (unix time), it's mtime on some
+# filesystems is rounded, so it becomes 1234567.0, but if the change
+# notification happens a little while later, e.g. at 1234568.111, now the file
+# mtime and the current time in seconds are different (1234567 vs 1234568), and
+# so the MD5 test won't kick in (see file.rb) - the file will not be considered
+# for content checking (md5), so File.change will consider the file unmodified.
+#
+# This means, that if a file is added at 1234567.888 (and updated in Record),
+# and then its content is modified at 1234567.999, and checking for changes
+# happens at 1234568.111, the modification won't be detected.
+# (because Record mtime is 1234567.0, current FS mtime from stat() is the
+# same, and the checking happens in another second - 1234568).
+#
+# So basically, adding a file and detecting its later modification should all
+# happen within 1 second (which makes testing and debugging difficult).
+#
+def _sleep_until_next_second(path)
+  Listen::File.inaccurate_mac_time?(path)
+
+  t = Time.now
+  diff = t.to_f - t.to_i
+
+  sleep(1.05 - diff)
+end
+
 
 # Special class to only allow changes within a specific time window
 
@@ -225,5 +263,5 @@ def _sleep_to_separate_events
   # - Polling Adapter
   # - Linux Adapter in FSEvent emulation mode
   # - maybe Windows adapter (probably not)
-  sleep 0.5
+  sleep 0.4
 end
