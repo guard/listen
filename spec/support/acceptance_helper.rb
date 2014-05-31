@@ -100,7 +100,6 @@ def _sleep_until_next_second(path)
   sleep(1.05 - diff)
 end
 
-
 # Special class to only allow changes within a specific time window
 
 class TimedChanges

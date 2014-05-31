@@ -7,7 +7,6 @@ require 'English'
 
 module Listen
   class Listener
-
     include Celluloid::FSM
 
     attr_accessor :options, :directories, :paused, :changes, :block, :stopping
@@ -253,7 +252,7 @@ module Listen
       loop do
         break if state == :stopped
 
-        if state == :paused or @queue.empty?
+        if state == :paused || @queue.empty?
           sleep
           break if state == :stopped
         end
