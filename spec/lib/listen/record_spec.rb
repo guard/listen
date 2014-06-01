@@ -83,8 +83,8 @@ describe Listen::Record do
     end
 
     before do
-      allow(registry).to receive(:[]).with(:change_pool) { actor }
       allow(listener).to receive(:directories) { directories }
+      allow(listener).to receive(:sync).with(:change_pool) { actor }
     end
 
     it 're-inits paths' do
@@ -95,9 +95,40 @@ describe Listen::Record do
 
     it 'calls change asynchronously on all directories to build record'  do
       expect(actor).to receive(:change).
-        with(:dir, 'dir_path', recursive: true, silence: true)
-
+        with(:dir, 'dir_path', recursive: true, silence: true, build: true)
       record.build
+    end
+  end
+
+  describe '#still_building!' do
+    let(:directories) { ['dir_path'] }
+
+    let(:actor) do
+      instance_double(Listen::Change, change: nil, terminate: true)
+    end
+
+    before do
+      allow(listener).to receive(:directories) { directories }
+      allow(listener).to receive(:sync).with(:change_pool) { actor }
+    end
+
+    it 'keeps the build blocking longer' do
+      record # To avoid initializing record in thread
+
+      th = Thread.new do
+        10.times do
+          sleep 0.05
+          record.still_building!
+        end
+      end
+
+      started = Time.now
+      record.build
+      ended  = Time.now
+
+      th.join
+
+      expect(ended - started).to be > 0.5
     end
   end
 end

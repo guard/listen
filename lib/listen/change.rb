@@ -20,20 +20,14 @@ module Listen
         return
       end
 
-      if options[:silence]
-        _log :debug, "recording: #{type}:#{path} (#{options.inspect})"
-      else
-        if change
-          _log :debug, "#{change}: #{type}:#{path} (#{options.inspect})"
-        else
-          _log :debug, "unknown: #{type}:#{path} (#{options.inspect})"
-        end
-      end
+      log_details = options[:silence] && 'recording' || change || 'unknown'
+      _log :debug, "#{log_details}: #{type}:#{path} (#{options.inspect})"
 
       if change
         listener.queue(type, change, path, cookie ? { cookie: cookie } : {})
       else
         return unless (record = listener.sync(:record))
+        record.async.still_building! if options[:build]
 
         if type == :dir
           return unless (change_queue = listener.async(:change_pool))
