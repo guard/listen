@@ -2,6 +2,7 @@ module Listen
   class Record
     include Celluloid
 
+    # TODO: deprecate
     attr_accessor :paths, :listener
 
     def initialize(listener)

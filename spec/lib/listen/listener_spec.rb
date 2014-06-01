@@ -12,15 +12,12 @@ describe Listen::Listener do
   let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
   let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
   let(:adapter) { instance_double(Listen::Adapter::Base, start: nil) }
-  let(:proxy) { instance_double(Celluloid::ActorProxy, terminate: true) }
-  let(:change_pool_async) { instance_double(Listen::Change) }
   before do
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
     allow(registry).to receive(:[]).with(:silencer) { silencer }
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
-    allow(registry).to receive(:[]).with(:change_pool) { proxy }
   end
 
   describe 'initialize' do
@@ -114,7 +111,7 @@ describe Listen::Listener do
 
     it 'sets paused to false' do
       subject.start
-      expect(subject.paused).to be_falsey
+      expect(subject).to_not be_paused
     end
 
     it 'starts adapter' do
@@ -135,17 +132,20 @@ describe Listen::Listener do
   end
 
   describe '#stop' do
-    before { subject.start }
+    before do
+      allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
+      subject.start
+    end
+
     it 'terminates supervisor' do
-      subject.supervisor = supervisor
       expect(supervisor).to receive(:terminate)
       subject.stop
     end
   end
 
   describe '#pause' do
+    before { subject.start }
     it 'sets paused to true' do
-      subject.start
       subject.pause
       expect(subject).to be_paused
     end

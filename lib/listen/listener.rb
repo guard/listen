@@ -3,15 +3,19 @@ require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
 require 'listen/silencer'
+require 'listen/queue_optimizer'
 require 'English'
 
 module Listen
   class Listener
     include Celluloid::FSM
+    include QueueOptimizer
 
-    attr_accessor :options, :directories, :paused, :changes, :block, :stopping
-    attr_accessor :registry, :supervisor
+    attr_accessor :block
 
+    # TODO: deprecate
+    attr_reader :options, :directories
+    attr_reader :registry, :supervisor
     attr_reader :host, :port
 
     # Initializes the directories listener.
@@ -25,36 +29,24 @@ module Listen
     # @yieldparam [Array<String>] removed the list of removed files
     #
     def initialize(*args, &block)
-      transition :initializing
-      @options     = _init_options(args.last.is_a?(Hash) ? args.pop : {})
+      @options = _init_options(args.last.is_a?(Hash) ? args.pop : {})
 
-      # Handle TCP options here
+      # Setup logging first
+      Celluloid.logger.level = _debug_level
+      _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+
       @tcp_mode = nil
       if [:recipient, :broadcaster].include? args[1]
-        require 'listen/tcp'
         target = args.shift
-        unless target
-          fail ArgumentError, 'TCP::Listener requires target to be given'
-        end
         @tcp_mode = args.shift
-        @host = 'localhost' if @tcp_mode == :recipient
-        if target.is_a? Fixnum
-          @port = target
-        else
-          @host, @port = target.split(':')
-          @port = @port.to_i
-        end
-
-        @options[:force_tcp] = true if @tcp_mode == :recipient
+        _init_tcp_options(target)
       end
 
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @queue = Queue.new
-      @block       = block
-      @registry    = Celluloid::Registry.new
-      Celluloid.logger.level = _debug_level
+      @block = block
+      @registry = Celluloid::Registry.new
 
-      _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
       transition :stopped
     end
 
@@ -64,14 +56,7 @@ module Listen
     state :paused, to: [:processing, :stopped]
 
     state :stopped, to: [:processing] do
-      if wait_thread
-        if wait_thread.alive?
-          wait_thread.wakeup
-          wait_thread.join
-        end
-        @wait_thread = nil
-      end
-
+      _stop_wait_thread
       if @supervisor
         @supervisor.terminate
         @supervisor = nil
@@ -79,27 +64,29 @@ module Listen
     end
 
     state :processing, to: [:paused, :stopped] do
-      if wait_thread
-        # resume if paused
-        wait_thread.wakeup if wait_thread.alive?
+      if wait_thread # means - was paused
+        _wakeup_wait_thread
       else
         @last_queue_event_time = nil
-        @wait_thread = Thread.new { _wait_for_changes }
-
+        _start_wait_thread
         _init_actors
 
         # Note: make sure building is finished before starting adapter (for
         # consistent results both in specs and normal usage)
-        registry[:record].build
+        sync(:record).build
 
         _start_adapter
       end
     end
 
     # Starts processing events and starts adapters
+    # or resumes invoking callbacks if paused
     def start
       transition :processing
     end
+
+    # TODO: depreciate
+    alias_method :unpause, :start
 
     # Stops processing and terminates all actors
     def stop
@@ -111,64 +98,42 @@ module Listen
       transition :paused
     end
 
-    def paused=(value)
-      if value
-        transition :paused unless state == :paused
-      else
-        transition :processing unless state == :processing
-      end
-    end
-
-    # Resumes invoking callbacks
-    def unpause
-      transition :processing
+    # processing means callbacks are called
+    def processing?
+      state == :processing
     end
 
     def paused?
       state == :paused
     end
 
-    # TODO: deprecate and alias to processing?
-    def listen?
-      state == :processing
+    # TODO: deprecate
+    alias_method :listen?, :processing?
+
+    # TODO: deprecate
+    def paused=(value)
+      transition value ? :paused : :processing
     end
 
-    def processing?
-      state == :processing
-    end
+    # TODO: deprecate
+    alias_method :paused, :paused?
 
-    # Adds ignore patterns to the existing one
+    # Add files and dirs to ignore on top of defaults
     #
-    # @see DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in
-    #   Listen::Silencer)
-    #
-    # @param [Regexp, Array<Regexp>] new ignoring patterns.
+    # (@see Listen::Silencer for default ignored files and dirs)
     #
     def ignore(regexps)
-      @options[:ignore] = [options[:ignore], regexps]
-      registry[:silencer] = Silencer.new(self)
+      _reconfigure_silencer(ignore: [options[:ignore], regexps])
     end
 
-    # Overwrites ignore patterns
-    #
-    # @see DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in
-    #   Listen::Silencer)
-    #
-    # @param [Regexp, Array<Regexp>] new ignoring patterns.
-    #
+    # Replace default ignore patterns with provided regexp
     def ignore!(regexps)
-      @options.delete(:ignore)
-      @options[:ignore!] = regexps
-      registry[:silencer] = Silencer.new(self)
+      _reconfigure_silencer(ignore: [], ignore!: regexps)
     end
 
-    # Sets only patterns, to listen only to specific regexps
-    #
-    # @param [Regexp, Array<Regexp>] new ignoring patterns.
-    #
+    # Listen only to files and dirs matching regexp
     def only(regexps)
-      @options[:only] = regexps
-      registry[:silencer] = Silencer.new(self)
+      _reconfigure_silencer(only: regexps)
     end
 
     def async(type)
@@ -186,10 +151,7 @@ module Listen
       @queue << [type, change, path, options]
 
       @last_queue_event_time = Time.now.to_f
-
-      unless state == :paused
-        wait_thread.wakeup if wait_thread && wait_thread.alive?
-      end
+      _wakeup_wait_thread unless state == :paused
 
       return unless @tcp_mode == :broadcaster
 
@@ -273,112 +235,13 @@ module Listen
       Kernel.warn "Backtrace:\n\t#{$@.join("\n\t")}"
     end
 
-    def _smoosh_changes(changes)
-      # TODO: adapter could be nil at this point (shutdown)
-      if _adapter_class.local_fs?
-        cookies = changes.group_by do |_, _, _, options|
-          (options || {})[:cookie]
-        end
-        _squash_changes(_reinterpret_related_changes(cookies))
-      else
-        smooshed = { modified: [], added: [], removed: [] }
-        changes.each { |_, change, path, _| smooshed[change] << path.to_s }
-        smooshed.tap { |s| s.each { |_, v| v.uniq! } }
-      end
-    end
-
-    def _squash_changes(changes)
-      actions = changes.group_by(&:last).map do |path, action_list|
-        [_logical_action_for(path, action_list.map(&:first)), path.to_s]
-      end
-      _log :info, "listen: raw changes: #{actions.inspect}"
-
-      { modified: [], added: [], removed: [] }.tap do |squashed|
-        actions.each do |type, path|
-          squashed[type] << path unless type.nil?
-        end
-        _log :info, "listen: final changes: #{squashed.inspect}"
-      end
-    end
-
-    def _logical_action_for(path, actions)
-      actions << :added if actions.delete(:moved_to)
-      actions << :removed if actions.delete(:moved_from)
-
-      modified = actions.detect { |x| x == :modified }
-      _calculate_add_remove_difference(actions, path, modified)
-    end
-
-    def _calculate_add_remove_difference(actions, path, default_if_exists)
-      added = actions.count { |x| x == :added }
-      removed = actions.count { |x| x == :removed }
-      diff = added - removed
-
-      # TODO: avoid checking if path exists and instead assume the events are
-      # in order (if last is :removed, it doesn't exist, etc.)
-      if path.exist?
-        if diff > 0
-          :added
-        elsif diff.zero? && added > 0
-          :modified
-        else
-          default_if_exists
-        end
-      else
-        diff < 0 ? :removed : nil
-      end
-    end
-
-    # remove extraneous rb-inotify events, keeping them only if it's a possible
-    # editor rename() call (e.g. Kate and Sublime)
-    def _reinterpret_related_changes(cookies)
-      table = { moved_to: :added, moved_from: :removed }
-      cookies.map do |_, changes|
-        file = _detect_possible_editor_save(changes)
-        if file
-          [[:modified, file]]
-        else
-          not_silenced = changes.reject do |type, _, path, _|
-            _silenced?(path, type)
-          end
-          not_silenced.map do |_, change, path, _|
-            [table.fetch(change, change), path]
-          end
-        end
-      end.flatten(1)
-    end
-
-    def _detect_possible_editor_save(changes)
-      return unless changes.size == 2
-
-      from_type = from_change = from = nil
-      to_type = to_change = to = nil
-
-      changes.each do |data|
-        case data[1]
-        when :moved_from
-          from_type, from_change, from, _ = data
-        when :moved_to
-          to_type, to_change, to, _ = data
-        else
-          return nil
-        end
-      end
-
-      return unless from && to
-
-      # Expect an ignored moved_from and non-ignored moved_to
-      # to qualify as an "editor modify"
-      _silenced?(from, from_type) && !_silenced?(to, to_type) ? to : nil
-    end
-
     def _silenced?(path, type)
-      registry[:silencer].silenced?(path, type)
+      sync(:silencer).silenced?(path, type)
     end
 
     def _start_adapter
       # Don't run async, because configuration has to finish first
-      registry[:adapter].start
+      sync(:adapter).start
     end
 
     def _log(type, message)
@@ -410,5 +273,45 @@ module Listen
     end
 
     attr_reader :wait_thread
+
+    def _init_tcp_options(target)
+      # Handle TCP options here
+      require 'listen/tcp'
+      fail ArgumentError, 'missing host/port for TCP' unless target
+
+      if @tcp_mode == :recipient
+        @host = 'localhost'
+        @options[:force_tcp] = true
+      end
+
+      if target.is_a? Fixnum
+        @port = target
+      else
+        @host, port = target.split(':')
+        @port = port.to_i
+      end
+    end
+
+    def _reconfigure_silencer(extra_options)
+      @options.merge!(extra_options)
+      registry[:silencer] = Silencer.new(self)
+    end
+
+    def _start_wait_thread
+      @wait_thread = Thread.new { _wait_for_changes }
+    end
+
+    def _wakeup_wait_thread
+      wait_thread.wakeup if wait_thread && wait_thread.alive?
+    end
+
+    def _stop_wait_thread
+      return unless wait_thread
+      if wait_thread.alive?
+        wait_thread.wakeup
+        wait_thread.join
+      end
+      @wait_thread = nil
+    end
   end
 end
