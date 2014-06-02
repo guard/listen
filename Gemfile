@@ -38,6 +38,8 @@ group :tool do
   gem 'yard', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop'
+  gem 'pry-rescue'
+  gem 'pry-stack_explorer'
 end
 
 group :test do
