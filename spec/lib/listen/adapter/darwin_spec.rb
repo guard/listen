@@ -1,6 +1,10 @@
 require 'spec_helper'
 
-describe Listen::Adapter::Darwin do
+require 'listen/adapter/darwin'
+
+include Listen
+
+describe Adapter::Darwin do
   describe 'class' do
     subject { described_class }
     it { should be_local_fs }
@@ -13,13 +17,16 @@ describe Listen::Adapter::Darwin do
   end
 
   let(:options) { {} }
-  let(:listener) { instance_double(Listen::Listener, options: options) }
+  let(:mq) { instance_double(Listener, options: options) }
 
   describe '#_latency' do
-    subject { described_class.new(listener).send(:_latency) }
+    subject do
+      adapter = described_class.new(options.merge(mq: mq, directories: []))
+      adapter.options.latency
+    end
 
     context 'with no overriding option' do
-      it { should eq described_class.const_get('DEFAULT_LATENCY') }
+      it { should eq 0.1 }
     end
 
     context 'with custom latency overriding' do

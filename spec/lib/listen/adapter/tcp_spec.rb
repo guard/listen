@@ -5,7 +5,9 @@ describe Listen::Adapter::TCP do
   let(:host) { '10.0.0.2' }
   let(:port) { 4000 }
 
-  subject { described_class.new(listener) }
+  let(:options) { { host: host, port: port } }
+
+  subject { described_class.new(options.merge(mq: listener)) }
   let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:listener) do

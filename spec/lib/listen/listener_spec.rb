@@ -1,6 +1,8 @@
 require 'spec_helper'
 
-describe Listen::Listener do
+include Listen
+
+describe Listener do
   subject { described_class.new(options) }
   let(:options) { {} }
   let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
@@ -9,9 +11,9 @@ describe Listen::Listener do
     instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
-  let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
-  let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
-  let(:adapter) { instance_double(Listen::Adapter::Base, start: nil) }
+  let(:record) { instance_double(Record, terminate: true, build: true) }
+  let(:silencer) { instance_double(Silencer, terminate: true) }
+  let(:adapter) { instance_double(Adapter::Base, start: nil) }
   before do
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
@@ -77,29 +79,30 @@ describe Listen::Listener do
 
     it 'registers silencer' do
       expect(supervisor).to receive(:add).
-        with(Listen::Silencer, as: :silencer, args: subject)
+        with(Silencer, as: :silencer, args: subject)
 
       subject.start
     end
 
     it 'supervises change_pool' do
       expect(supervisor).to receive(:pool).
-        with(Listen::Change, as: :change_pool, args: subject)
+        with(Change, as: :change_pool, args: subject)
 
       subject.start
     end
 
     it 'supervises adaper' do
-      allow(Listen::Adapter).to receive(:select) { Listen::Adapter::Polling }
+      allow(Adapter).to receive(:select) { Adapter::Polling }
+      options = [mq: subject, directories: []]
       expect(supervisor).to receive(:add).
-        with(Listen::Adapter::Polling, as: :adapter, args: subject)
+        with(Adapter::Polling, as: :adapter, args: options)
 
       subject.start
     end
 
     it 'supervises record' do
       expect(supervisor).to receive(:add).
-        with(Listen::Record, as: :record, args: subject)
+        with(Record, as: :record, args: subject)
 
       subject.start
     end
@@ -199,11 +202,11 @@ describe Listen::Listener do
   end
 
   describe '#ignore' do
-    let(:new_silencer) { instance_double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
+      expect(Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       subject.ignore(/foo/)
     end
@@ -212,7 +215,7 @@ describe Listen::Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'adds up to existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(subject)
+        expect(Silencer).to receive(:new).with(subject)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [/bar/, /foo/])
       end
@@ -222,7 +225,7 @@ describe Listen::Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it 'adds up to existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(subject)
+        expect(Silencer).to receive(:new).with(subject)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [[/bar/], /foo/])
       end
@@ -230,11 +233,11 @@ describe Listen::Listener do
   end
 
   describe '#ignore!' do
-    let(:new_silencer) { instance_double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
+      expect(Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       subject.ignore!(/foo/)
       expect(subject.options).to include(ignore!: /foo/)
@@ -244,7 +247,7 @@ describe Listen::Listener do
       let(:options) { { ignore!: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(subject)
+        expect(Silencer).to receive(:new).with(subject)
         subject.ignore!([/foo/])
         expect(subject.options).to include(ignore!: [/foo/])
       end
@@ -254,7 +257,7 @@ describe Listen::Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'deletes ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(subject)
+        expect(Silencer).to receive(:new).with(subject)
         subject.ignore!([/foo/])
         expect(subject.options).to_not include(ignore: /bar/)
       end
@@ -262,11 +265,11 @@ describe Listen::Listener do
   end
 
   describe '#only' do
-    let(:new_silencer) { instance_double(Listen::Silencer) }
+    let(:new_silencer) { instance_double(Silencer) }
     before { allow(Celluloid::Actor).to receive(:[]=) }
 
     it 'resets silencer actor' do
-      expect(Listen::Silencer).to receive(:new).with(subject) { new_silencer }
+      expect(Silencer).to receive(:new).with(subject) { new_silencer }
       expect(registry).to receive(:[]=).with(:silencer, new_silencer)
       subject.only(/foo/)
     end
@@ -275,7 +278,7 @@ describe Listen::Listener do
       let(:options) { { only: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Listen::Silencer).to receive(:new).with(subject)
+        expect(Silencer).to receive(:new).with(subject)
         subject.only([/foo/])
         expect(subject.options).to include(only: [/foo/])
       end

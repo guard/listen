@@ -9,15 +9,19 @@ module Listen
       OS_REGEXP = // # match any
 
       include Celluloid::IO
-
       finalizer :finalize
+
+      DEFAULTS = {
+        host: 'localhost',
+        port: '4000'
+      }
 
       attr_reader :buffer, :socket
 
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
         attempts = 3
-        @socket = TCPSocket.new(listener.host, listener.port)
+        @socket = TCPSocket.new(options.host, options.port)
         @buffer = ''
         async.run
       rescue Celluloid::Task::TerminatedError

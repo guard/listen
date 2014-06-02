@@ -1,12 +1,26 @@
+require 'listen/options'
+
 module Listen
   module Adapter
     class Base
       include Celluloid
 
-      attr_accessor :listener
+      attr_reader :options
 
-      def initialize(listener)
-        @listener = listener
+      # TODO: only used by tests
+      DEFAULTS = {}
+
+      def initialize(opts)
+        options = opts.dup
+        @mq = options.delete(:mq)
+        @directories = options.delete(:directories)
+
+        # TODO: actually use this in every adapter
+        @recursion = options.delete(:recursion)
+        @recursion = true if @recursion.nil?
+
+        defaults = self.class.const_get('DEFAULTS')
+        @options = Listen::Options.new(options, defaults)
       rescue
         _log :error, "adapter config failed: #{$!}:#{$@.join("\n")}"
         raise
@@ -38,11 +52,11 @@ module Listen
       end
 
       def _directories
-        listener.directories
+        @directories
       end
 
       def _notify_change(type, path, options = {})
-        unless (worker = listener.async(:change_pool))
+        unless (worker = @mq.async(:change_pool))
           _log :warn, 'Failed to allocate worker from change pool'
           return
         end

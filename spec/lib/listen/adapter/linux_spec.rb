@@ -13,26 +13,24 @@ describe Listen::Adapter::Linux do
   end
 
   if linux?
-    let(:listener) { instance_double(Listen::Listener) }
-    let(:adapter) { described_class.new(listener) }
+    let(:directories) { [] }
+    let(:mq) { instance_double(Listen::Listener) }
+
+    subject { described_class.new(mq: mq, directories: directories) }
 
     describe '#initialize' do
-      before do
-        allow(listener).to receive(:directories) { [] }
-      end
       it 'requires rb-inotify gem' do
-        adapter.send(:_configure)
+        subject.send(:_configure)
         expect(defined?(INotify)).to be
       end
     end
 
     # workaround: Celluloid ignores SystemExit exception messages
     describe 'inotify limit message' do
-      let!(:adapter) { described_class.new(listener) }
+      let(:directories) { ['foo/dir'] }
 
       before do
         require 'rb-inotify'
-        allow(listener).to receive(:directories) { ['foo/dir'] }
         fake_worker = double(:fake_worker)
         allow(fake_worker).to receive(:watch).and_raise(Errno::ENOSPC)
 
@@ -46,16 +44,12 @@ describe Listen::Adapter::Linux do
 
         # Expect RuntimeError here, for the sake of unit testing (actual
         # handling depends on Celluloid supervisor setup, which is beyond the
-        # scope of adapter tests)
-        expect { adapter.start }.to raise_error RuntimeError, expected_message
+        # scope of subject tests)
+        expect { subject.start }.to raise_error RuntimeError, expected_message
       end
     end
 
     describe '_callback' do
-      before do
-        allow(listener).to receive(:directories) { [] }
-      end
-
       let(:expect_change) do
         lambda do |change|
           allow_any_instance_of(Listen::Adapter::Base).
@@ -70,7 +64,7 @@ describe Listen::Adapter::Linux do
 
       let(:event_callback) do
         lambda do |flags|
-          callback = adapter.send(:_callback)
+          callback = subject.send(:_callback)
           callback.call double(
             :inotify_event,
             name: 'foo.txt',

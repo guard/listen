@@ -6,14 +6,15 @@ module Listen
       OS_REGEXP = /darwin(1.+)?$/i
 
       # The default delay between checking for changes.
-      DEFAULT_LATENCY = 0.1
+      DEFAULTS = { latency: 0.1 }
 
       private
 
       def _configure
         require 'rb-fsevent'
-        @worker = FSEvent.new
-        @worker.watch(_directories.map(&:to_s), latency: _latency) do |changes|
+        @worker ||= FSEvent.new
+        opts = { latency: options.latency }
+        @worker.watch(_directories.map(&:to_s), opts) do |changes|
           changes.each do |path|
             new_path = Pathname.new(path.sub(/\/$/, ''))
             _log :debug, "fsevent: #{new_path}"
@@ -24,10 +25,6 @@ module Listen
 
       def _run
         @worker.run
-      end
-
-      def _latency
-        listener.options[:latency] || DEFAULT_LATENCY
       end
     end
   end

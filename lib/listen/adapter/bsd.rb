@@ -7,7 +7,16 @@ module Listen
     class BSD < Base
       OS_REGEXP = /bsd|dragonfly/i
 
-      EVENTS = [:delete, :write, :extend, :attrib, :rename] # :link, :revoke
+      DEFAULTS = {
+        events: [
+          :delete,
+          :write,
+          :extend,
+          :attrib,
+          :rename
+          # :link, :revoke
+        ]
+      }
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
@@ -103,7 +112,7 @@ module Listen
       end
 
       def _watch_file(path, queue)
-        queue.watch_file(path, *EVENTS, &_worker_callback)
+        queue.watch_file(path, *options.events, &_worker_callback)
       end
 
       # Quick rubocop workaround

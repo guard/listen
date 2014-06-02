@@ -1,30 +1,35 @@
 module Listen
   module Adapter
-    # Listener implementation for Linux `inotify`.
     # @see https://github.com/nex3/rb-inotify
-    #
     class Linux < Base
       OS_REGEXP = /linux/i
 
-      EVENTS = [:recursive, :attrib, :create, :delete, :move, :close_write]
+      DEFAULTS = {
+        events: [
+          :recursive,
+          :attrib,
+          :create,
+          :delete,
+          :move,
+          :close_write
+        ]
+      }
+
+      private
 
       WIKI_URL = 'https://github.com/guard/listen'\
         '/wiki/Increasing-the-amount-of-inotify-watchers'
 
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
         FATAL: Listen error: unable to monitor directories for changes.
-
-        Please head to #{WIKI_URL}
-        for information on how to solve this issue.
+        Visit #{WIKI_URL} for info on how to fix this.
       EOS
-
-      private
 
       def _configure
         require 'rb-inotify'
         @worker = INotify::Notifier.new
         _directories.each do |path|
-          @worker.watch(path.to_s, *EVENTS, &_callback)
+          @worker.watch(path.to_s, *options.events, &_callback)
         end
       rescue Errno::ENOSPC
         # workaround - Celluloid catches abort and prints nothing

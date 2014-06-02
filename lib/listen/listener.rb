@@ -205,7 +205,8 @@ module Listen
         registry[:broadcaster].start
       end
 
-      supervisor.add(_adapter_class, as: :adapter, args: self)
+      options = [mq: self, directories: directories]
+      supervisor.add(_adapter_class, as: :adapter, args: options)
     end
 
     def _wait_for_changes
