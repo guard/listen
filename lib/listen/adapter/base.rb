@@ -11,9 +11,15 @@ module Listen
       DEFAULTS = {}
 
       def initialize(opts)
+        @configured = nil
         options = opts.dup
         @mq = options.delete(:mq)
         @directories = options.delete(:directories)
+
+        Array(@directories).each do |dir|
+          next if dir.is_a?(Pathname)
+          fail ArgumentError, "not a Pathname: #{dir.inspect}"
+        end
 
         # TODO: actually use this in every adapter
         @recursion = options.delete(:recursion)
@@ -26,8 +32,32 @@ module Listen
         raise
       end
 
+      # TODO: it's a separate method as a temporary workaround for tests
+      def configure
+        return if @configured
+        @configured = true
+
+        @callbacks ||= {}
+        @directories.each do |dir|
+          unless dir.is_a?(Pathname)
+            fail ArgumentError, "not a Pathname: #{dir.inspect}"
+          end
+
+          callback = @callbacks[dir] || lambda do |event|
+            new_changes = []
+            _process_event(dir, event, new_changes)
+            new_changes.each do |args|
+              type, path, options = *args
+              _notify_change(type, dir + path, options)
+            end
+          end
+          @callbacks[dir] = callback
+          _configure(dir, &callback)
+        end
+      end
+
       def start
-        _configure
+        configure
         Thread.new do
           begin
             _run
@@ -47,13 +77,6 @@ module Listen
       end
 
       private
-
-      def _configure
-      end
-
-      def _directories
-        @directories
-      end
 
       def _notify_change(type, path, options = {})
         unless (worker = @mq.async(:change_pool))

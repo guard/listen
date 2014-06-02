@@ -20,12 +20,12 @@ describe Adapter::Polling do
   before { allow(mq).to receive(:async).with(:change_pool) { worker } }
 
   describe '#start' do
-    let(:directories) { ['directory_path'] }
+    let(:directories) { [Pathname.pwd] }
 
     it 'notifies change on every listener directories path' do
       expect(worker).to receive(:change).with(
         :dir,
-        'directory_path',
+        Pathname.pwd,
         recursive: true)
 
       t = Thread.new { subject.start }

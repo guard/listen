@@ -242,7 +242,8 @@ module Listen
 
     def _start_adapter
       # Don't run async, because configuration has to finish first
-      sync(:adapter).start
+      adapter = sync(:adapter)
+      adapter.start
     end
 
     def _log(type, message)

@@ -10,21 +10,25 @@ module Listen
 
       private
 
-      def _configure
+      def _configure(directory, &callback)
         require 'rb-fsevent'
         @worker ||= FSEvent.new
         opts = { latency: options.latency }
-        @worker.watch(_directories.map(&:to_s), opts) do |changes|
-          changes.each do |path|
-            new_path = Pathname.new(path.sub(/\/$/, ''))
-            _log :debug, "fsevent: #{new_path}"
-            _notify_change(:dir, new_path)
-          end
-        end
+        @worker.watch(directory, opts, &callback)
       end
 
       def _run
         @worker.run
+      end
+
+      def _process_event(directory, event, new_changes)
+        event.each do |path|
+          new_path = Pathname.new(path.sub(/\/$/, ''))
+          _log :debug, "fsevent: #{new_path}"
+          # TODO: does this preserve symlinks?
+          rel_path = new_path.relative_from(directory)
+          new_changes << [:dir, rel_path]
+        end
       end
     end
   end

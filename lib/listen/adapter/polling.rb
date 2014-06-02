@@ -12,15 +12,24 @@ module Listen
 
       private
 
+      def _configure(_, &callback)
+        @polling_callbacks ||= []
+        @polling_callbacks << callback
+      end
+
       def _run
         loop do
           start = Time.now.to_f
-          _directories.each do |path|
-            _notify_change(:dir, path, recursive: true)
+          @polling_callbacks.each do |callback|
+            callback.call(nil)
             nap_time = options.latency - (Time.now.to_f - start)
             sleep(nap_time) if nap_time > 0
           end
         end
+      end
+
+      def _process_event(_, _, new_changes)
+        new_changes << [:dir, '.', recursive: true]
       end
     end
   end

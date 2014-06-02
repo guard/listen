@@ -18,16 +18,9 @@ describe Listen::Adapter::Linux do
 
     subject { described_class.new(mq: mq, directories: directories) }
 
-    describe '#initialize' do
-      it 'requires rb-inotify gem' do
-        subject.send(:_configure)
-        expect(defined?(INotify)).to be
-      end
-    end
-
     # workaround: Celluloid ignores SystemExit exception messages
     describe 'inotify limit message' do
-      let(:directories) { ['foo/dir'] }
+      let(:directories) { [Pathname.pwd] }
 
       before do
         require 'rb-inotify'
@@ -50,13 +43,15 @@ describe Listen::Adapter::Linux do
     end
 
     describe '_callback' do
+      let(:directories) { [Pathname.pwd] }
+      before { subject.configure }
       let(:expect_change) do
         lambda do |change|
           allow_any_instance_of(Listen::Adapter::Base).
             to receive(:_notify_change).
             with(
               :file,
-              Pathname.new('path/foo.txt'),
+              Pathname.pwd + 'path/foo.txt',
               change: change,
               cookie: 123)
         end
@@ -64,13 +59,15 @@ describe Listen::Adapter::Linux do
 
       let(:event_callback) do
         lambda do |flags|
-          callback = subject.send(:_callback)
-          callback.call double(
-            :inotify_event,
-            name: 'foo.txt',
-            watcher: double(:watcher, path: 'path'),
-            flags: flags,
-            cookie: 123)
+          callbacks = subject.instance_variable_get(:'@callbacks')
+          callbacks.values.flatten.each do |callback|
+            callback.call double(
+              :inotify_event,
+              name: 'foo.txt',
+              watcher: double(:watcher, path: (Pathname.pwd + 'path').to_s),
+              flags: flags,
+              cookie: 123)
+          end
         end
       end
 

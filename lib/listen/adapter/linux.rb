@@ -25,12 +25,10 @@ module Listen
         Visit #{WIKI_URL} for info on how to fix this.
       EOS
 
-      def _configure
+      def _configure(directory, &callback)
         require 'rb-inotify'
-        @worker = INotify::Notifier.new
-        _directories.each do |path|
-          @worker.watch(path.to_s, *options.events, &_callback)
-        end
+        @worker ||= INotify::Notifier.new
+        @worker.watch(directory.to_s, *options.events, &callback)
       rescue Errno::ENOSPC
         # workaround - Celluloid catches abort and prints nothing
         STDERR.puts INOTIFY_LIMIT_MESSAGE
@@ -42,32 +40,37 @@ module Listen
         @worker.run
       end
 
-      def _callback
-        lambda do |event|
-          # NOTE: avoid using event.absolute_name since new API
-          # will need to have a custom recursion implemented
-          # to properly match events to configured directories
-          path = Pathname.new(event.watcher.path) + event.name
+      def _process_event(directory, event, new_changes)
+        # NOTE: avoid using event.absolute_name since new API
+        # will need to have a custom recursion implemented
+        # to properly match events to configured directories
+        path = Pathname.new(event.watcher.path) + event.name
 
-          _log :debug, "inotify: #{event.name} #{path} (#{event.flags.inspect})"
+        _log :debug, "inotify: #{event.name} #{path} (#{event.flags.inspect})"
 
-          if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
-            if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
-              _notify_change(:dir, path.dirname)
-            else
-              _notify_change(:dir, path)
-            end
+        if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
+          if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
+            new_changes << [:dir, path.dirname]
           else
-            next if _skip_event?(event)
-            cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
-            if _dir_event?(event)
-              _notify_change(:dir, path, cookie_opts)
-            else
-              options = { change: _change(event.flags) }
-              _notify_change(:file, path, options.merge(cookie_opts))
-            end
+            new_changes << [:dir, path]
           end
+          return
         end
+
+        return if _skip_event?(event)
+
+        cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
+        if _dir_event?(event)
+          new_changes << [:dir, path, cookie_opts]
+          return
+        end
+
+        options = { change: _change(event.flags) }
+        rel_path = path.relative_path_from(directory)
+
+        # TODO: will be kept separate later
+        full_path = directory + rel_path
+        new_changes << [:file, full_path, options.merge(cookie_opts)]
       end
 
       def _skip_event?(event)
