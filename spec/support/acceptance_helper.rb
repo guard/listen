@@ -185,14 +185,25 @@ class ListenerWrapper
   end
 
   def listen(reset_queue = true)
-    @timed_changes.allow_changes(reset_queue) do
+    # Give previous events time to be received, queued and processed
+    # so they complete and don't interfere
+    sleep lag
 
-      # give events time to be received, queued and processed
-      sleep lag
+    @timed_changes.allow_changes(reset_queue) do
 
       yield
 
-      sleep lag # wait for changes
+      # Polling sleep (default: 1s)
+      adapter = @listener.sync(:adapter)
+      if adapter.is_a?(Listen::Adapter::Polling)
+        sleep adapter.options.latency
+      end
+
+      # Lag should include:
+      #  0.1s - 0.2s if the test needs Listener queue to be processed
+      #  0.1s in case the system is busy
+      #  0.1s - for celluloid overhead and scheduling
+      sleep lag
     end
 
     # Keep this to detect a lag too small (changes during this sleep
