@@ -25,14 +25,21 @@ module Listen
 
       private
 
-      def _configure
+      def _configure(dir, &callback)
+        require 'wdm'
         _log :debug, 'wdm - starting...'
-        @worker = WDM::Monitor.new
-        _directories.each do |path|
-          @worker.watch_recursively(path.to_s, :files, &_file_callback)
-          @worker.watch_recursively(path.to_s, :directories, &_dir_callback)
-          @worker.watch_recursively(path.to_s, :attributes, :last_write,
-                                    &_attr_callback)
+        @worker ||= WDM::Monitor.new
+        @worker.watch_recursively(dir.to_s, :files) do |change|
+          callback.call([:file, change])
+        end
+
+        @worker.watch_recursively(dir.to_s, :directories) do |change|
+          callback.call([:dir, change])
+        end
+
+        events = [:attributes, :last_write]
+        @worker.watch_recursively(dir.to_s, *events) do |change|
+          callback.call([:attr, change])
         end
       end
 
@@ -40,62 +47,40 @@ module Listen
         @worker.run!
       end
 
-      def _file_callback
-        lambda do |change|
-          begin
-            path = _path(change.path)
-            _log :debug, "wdm - FILE callback: #{change.inspect}"
-            options = { change: _change(change.type) }
-            _notify_change(:file, path, options)
-          rescue
-            _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
-            raise
+      def _process_event(directory, event, new_changes)
+        _log :debug, "wdm - callback: #{event.inspect}"
+
+        type, change = event
+
+        rel_path = Pathname(change.path).relative_from(directory)
+
+        options = { change: _change(change.type) }
+
+        case type
+        when :file
+          new_changes << [:file, rel_path, options]
+        when :attr
+          unless path.directory?
+            new_changes << [:file, rel_path, options]
+          end
+        when :dir
+          if change.type == :removed
+            new_changes << [:dir, rel_path.dirname]
+          elsif change.type == :added
+            new_changes << [:dir, rel_path]
+          else
+            # do nothing - changed directory means either:
+            #   - removed subdirs (handled above)
+            #   - added subdirs (handled above)
+            #   - removed files (handled by _file_callback)
+            #   - added files (handled by _file_callback)
+            # so what's left?
           end
         end
-      end
-
-      def _attr_callback
-        lambda do |change|
-          begin
-            path = _path(change.path)
-            return if path.directory?
-
-            _log :debug, "wdm - ATTR callback: #{change.inspect}"
-            options = { change: _change(change.type) }
-            _notify_change(:file, _path(change.path), options)
-          rescue
-            _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
-            raise
-          end
-        end
-      end
-
-      def _dir_callback
-        lambda do |change|
-          begin
-            path = _path(change.path)
-            _log :debug, "wdm - DIR callback: #{change.inspect}"
-            if change.type == :removed
-              _notify_change(:dir, path.dirname)
-            elsif change.type == :added
-              _notify_change(:dir, path)
-            else
-              # do nothing - changed directory means either:
-              #   - removed subdirs (handled above)
-              #   - added subdirs (handled above)
-              #   - removed files (handled by _file_callback)
-              #   - added files (handled by _file_callback)
-              # so what's left?
-            end
-          rescue
-            _log :error, "wdm - callback failed: #{$!}:#{$@.join("\n")}"
-            raise
-          end
-        end
-      end
-
-      def _path(path)
-        Pathname.new(path)
+      rescue
+        details = event.inspect
+        _log :error, "wdm - callback (#{details}): #{$!}:#{$@.join("\n")}"
+        raise
       end
 
       def _change(type)
