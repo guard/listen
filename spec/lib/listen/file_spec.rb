@@ -133,12 +133,23 @@ describe Listen::File do
 
               let(:record_mtime) { stat_mtime.to_f }
 
-              context 'with mtime within current second' do
-                let(:now) { Time.at(1401235714.99) }
+              context 'with real mtime barely not within last second' do
+                before { allow(Time).to receive(:now) { now } }
 
-                before do
-                  allow(Time).to receive(:now) { now }
-                end
+                # NOTE: if real mtime is ???14.99, the
+                # saved mtime is ???14.0
+                let(:now) { Time.at(1401235716.00) }
+                it { should be_nil }
+              end
+
+              context 'with real mtime barely within last second' do
+                # NOTE: real mtime is in range (???14.0 .. ???14.999),
+                # so saved mtime at ???14.0 means it could be
+                # ???14.999, so ???15.999 could still be within 1 second
+                # range
+                let(:now) { Time.at(1401235715.999999) }
+
+                before { allow(Time).to receive(:now) { now } }
 
                 context 'without available md5' do
                   let(:md5) { fail Errno::ENOENT }
