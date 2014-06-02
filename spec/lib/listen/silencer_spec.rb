@@ -44,13 +44,16 @@ describe Listen::Silencer do
       # Intellij swap files
       all_files += %w(foo.rb___jb_bak___ foo.rb___jb_old___)
 
+      # Vim swap files
+      all_files += %w(foo.swp foo.swx foo.swpx 4913)
+
       all_files.each do |path|
         it "silences #{path}" do
           expect(silencer.silenced?(pwd + path, :file)).to be_truthy
         end
       end
 
-      %w(foo.tmpl file.new file54321.new).each do |path|
+      %w(foo.tmpl file.new file54321.new a.swf 14913 49131).each do |path|
         it "does not silence #{path}" do
           expect(silencer.silenced?(pwd + path, :file)).to be_falsey
         end

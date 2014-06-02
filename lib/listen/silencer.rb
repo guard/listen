@@ -29,6 +29,11 @@ module Listen
       | ___jb_bak___
       | ___jb_old___
 
+      # Vim swap files and write test
+      | \.sw[px]
+      | \.swpx
+      | ^4913
+
       # other files
       | \.DS_Store
       | \.tmp
