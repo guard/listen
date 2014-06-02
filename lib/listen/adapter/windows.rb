@@ -52,7 +52,9 @@ module Listen
 
         type, change = event
 
-        rel_path = Pathname(change.path).relative_from(directory)
+        full_path = Pathname(change.path)
+
+        rel_path = full_path.relative_path_from(directory)
 
         options = { change: _change(change.type) }
 
@@ -60,7 +62,7 @@ module Listen
         when :file
           new_changes << [:file, rel_path, options]
         when :attr
-          unless path.directory?
+          unless full_path.directory?
             new_changes << [:file, rel_path, options]
           end
         when :dir

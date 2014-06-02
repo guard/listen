@@ -48,7 +48,7 @@ module Listen
             _process_event(dir, event, new_changes)
             new_changes.each do |args|
               type, path, options = *args
-              _notify_change(type, dir + path, options)
+              _notify_change(type, dir + path, options || {})
             end
           end
           @callbacks[dir] = callback
