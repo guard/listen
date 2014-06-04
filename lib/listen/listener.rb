@@ -13,6 +13,8 @@ module Listen
 
     attr_accessor :block
 
+    attr_reader :silencer
+
     # TODO: deprecate
     attr_reader :options, :directories
     attr_reader :registry, :supervisor
@@ -34,6 +36,9 @@ module Listen
       # Setup logging first
       Celluloid.logger.level = _debug_level
       _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+
+      @silencer = Silencer.new
+      _reconfigure_silencer({})
 
       @tcp_mode = nil
       if [:recipient, :broadcaster].include? args[1]
@@ -145,22 +150,19 @@ module Listen
       @registry[type]
     end
 
-    def queue(type, change, path, options = {})
+    def queue(type, change, dir, path, options = {})
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
-      @queue << [type, change, path, options]
+      fail "Invalid path: #{path.inspect}" unless path.is_a?(String)
+      @queue << [type, change, dir, path, options]
 
       @last_queue_event_time = Time.now.to_f
       _wakeup_wait_thread unless state == :paused
 
       return unless @tcp_mode == :broadcaster
 
-      message = TCP::Message.new(type, change, path, options)
+      message = TCP::Message.new(type, change, dir, path, options)
       registry[:broadcaster].async.broadcast(message.payload)
-    end
-
-    def silencer
-      @registry[:silencer]
     end
 
     private
@@ -191,7 +193,6 @@ module Listen
 
     def _init_actors
       @supervisor = Celluloid::SupervisionGroup.run!(registry)
-      supervisor.add(Silencer, as: :silencer, args: self)
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
 
@@ -237,7 +238,7 @@ module Listen
     end
 
     def _silenced?(path, type)
-      sync(:silencer).silenced?(path, type)
+      @silencer.silenced?(path, type)
     end
 
     def _start_adapter
@@ -296,7 +297,13 @@ module Listen
 
     def _reconfigure_silencer(extra_options)
       @options.merge!(extra_options)
-      registry[:silencer] = Silencer.new(self)
+
+      # TODO: this should be directory specific
+      rules = [:only, :ignore, :ignore!].map do |option|
+        [option, @options[option]] if @options.key? option
+      end
+
+      @silencer.configure(Hash[rules.compact])
     end
 
     def _start_wait_thread
@@ -314,6 +321,20 @@ module Listen
         wait_thread.join
       end
       @wait_thread = nil
+    end
+
+    def _queue_raw_change(type, dir, rel_path, options)
+      _log :debug, "raw queue: #{[type, dir, rel_path, options].inspect}"
+
+      unless (worker = async(:change_pool))
+        _log :warn, 'Failed to allocate worker from change pool'
+        return
+      end
+
+      worker.change(type, dir, rel_path, options)
+    rescue RuntimeError
+      _log :error, "#{__method__} crashed: #{$!}:#{$@.join("\n")}"
+      raise
     end
   end
 end

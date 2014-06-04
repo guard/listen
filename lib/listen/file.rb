@@ -1,24 +1,25 @@
 module Listen
   class File
-    def self.change(record, path)
+    def self.change(record, dir, rel_path)
+      path = dir + rel_path
       lstat = path.lstat
 
       data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
 
-      record_data = record.file_data(path)
+      record_data = record.file_data(dir, rel_path)
 
       if record_data.empty?
-        record.async.set_path(:file, path, data)
+        record.async.update_file(dir, rel_path, data)
         return :added
       end
 
       if data[:mode] != record_data[:mode]
-        record.async.set_path(:file, path, data)
+        record.async.update_file(dir, rel_path, data)
         return :modified
       end
 
       if data[:mtime] != record_data[:mtime]
-        record.async.set_path(:file, path, data)
+        record.async.update_file(dir, rel_path, data)
         return :modified
       end
 
@@ -54,7 +55,7 @@ module Listen
           if data[:mtime].to_i + 2 > Time.now.to_f
             begin
               md5 = Digest::MD5.file(path).digest
-              record.async.set_path(:file, path, data.merge(md5: md5))
+              record.async.update_file(dir, rel_path, data.merge(md5: md5))
               :modified if record_data[:md5] && md5 != record_data[:md5]
 
             rescue SystemCallError
@@ -64,10 +65,10 @@ module Listen
         end
       end
     rescue SystemCallError
-      record.async.unset_path(path)
+      record.async.unset_path(dir, rel_path)
       :removed
     rescue
-      Celluloid::Logger.debug "lstat failed for: #{path} (#{$!})"
+      Celluloid::Logger.debug "lstat failed for: #{rel_path} (#{$!})"
       raise
     end
 

@@ -28,8 +28,8 @@ module Listen
         end
       end
 
-      def _process_event(_, _, new_changes)
-        new_changes << [:dir, '.', recursive: true]
+      def _process_event(dir, _)
+        _queue_change(:dir, dir, '.', recursive: true)
       end
     end
   end

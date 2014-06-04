@@ -17,7 +17,7 @@ describe Listen::Listener do
   end
 
   let(:record) { instance_double(Listen::Record, terminate: true, build: true) }
-  let(:silencer) { instance_double(Listen::Silencer, terminate: true) }
+  let(:silencer) { instance_double(Listen::Silencer, configure: nil) }
   let(:adapter) { instance_double(Listen::Adapter::Base) }
   let(:async) { instance_double(Listen::TCP::Broadcaster, broadcast: true) }
   let(:broadcaster) { instance_double(Listen::TCP::Broadcaster, async: async) }
@@ -26,11 +26,12 @@ describe Listen::Listener do
   before do
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
-    allow(registry).to receive(:[]).with(:silencer) { silencer }
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
     allow(registry).to receive(:[]).with(:change_pool) { change_pool }
     allow(registry).to receive(:[]).with(:broadcaster) { broadcaster }
+
+    allow(Listen::Silencer).to receive(:new) { silencer }
   end
 
   describe '#initialize' do
@@ -78,15 +79,17 @@ describe Listen::Listener do
           end
 
           subject.stop
-          subject.queue(:file, :modified, 'foo')
+          subject.queue(:file, :modified, Pathname.pwd, 'foo')
           expect(broadcaster).not_to receive(:async)
         end
       end
 
+      let(:dir) { Pathname.pwd }
+
       it 'broadcasts changes asynchronously' do
-        message = Listen::TCP::Message.new(:file, :modified, 'foo', {})
+        message = Listen::TCP::Message.new(:file, :modified, dir, 'foo', {})
         expect(async).to receive(:broadcast).with message.payload
-        subject.queue(:file, :modified, 'foo')
+        subject.queue(:file, :modified, Pathname.pwd, 'foo')
       end
     end
   end

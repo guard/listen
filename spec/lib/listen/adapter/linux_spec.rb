@@ -47,11 +47,11 @@ describe Listen::Adapter::Linux do
       before { subject.configure }
       let(:expect_change) do
         lambda do |change|
-          allow_any_instance_of(Listen::Adapter::Base).
-            to receive(:_notify_change).
+          allow(mq).to receive(:_queue_raw_change).
             with(
               :file,
-              Pathname.pwd + 'path/foo.txt',
+              Pathname.pwd,
+              'path/foo.txt',
               change: change,
               cookie: 123)
         end

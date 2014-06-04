@@ -47,29 +47,30 @@ module Listen
         @worker.run!
       end
 
-      def _process_event(directory, event, new_changes)
+      def _process_event(dir, event)
         _log :debug, "wdm - callback: #{event.inspect}"
 
         type, change = event
 
         full_path = Pathname(change.path)
 
-        rel_path = full_path.relative_path_from(directory)
+        rel_path = full_path.relative_path_from(dir).to_s
 
         options = { change: _change(change.type) }
 
         case type
         when :file
-          new_changes << [:file, rel_path, options]
+          _queue_change(:file, dir, rel_path, options)
         when :attr
           unless full_path.directory?
-            new_changes << [:file, rel_path, options]
+            _queue_change(:file, dir, rel_path, options)
           end
         when :dir
           if change.type == :removed
-            new_changes << [:dir, rel_path.dirname]
+            # TODO: check if watched dir?
+            _queue_change(:dir, dir, Pathname(rel_path).dirname.to_s, {})
           elsif change.type == :added
-            new_changes << [:dir, rel_path]
+            _queue_change(:dir, dir, rel_path, {})
           else
             # do nothing - changed directory means either:
             #   - removed subdirs (handled above)

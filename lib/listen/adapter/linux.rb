@@ -40,37 +40,38 @@ module Listen
         @worker.run
       end
 
-      def _process_event(directory, event, new_changes)
+      def _process_event(dir, event)
         # NOTE: avoid using event.absolute_name since new API
         # will need to have a custom recursion implemented
         # to properly match events to configured directories
         path = Pathname.new(event.watcher.path) + event.name
+        rel_path = path.relative_path_from(dir).to_s
 
-        _log :debug, "inotify: #{event.name} #{path} (#{event.flags.inspect})"
+        _log :debug, "inotify: #{rel_path} (#{event.flags.inspect})"
 
         if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
           if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
-            new_changes << [:dir, path.dirname]
+            _queue_change(:dir, dir, Pathname(rel_path).dirname, {})
           else
-            new_changes << [:dir, path]
+            _queue_change(:dir, dir, rel_path, {})
           end
           return
         end
 
         return if _skip_event?(event)
 
-        cookie_opts = event.cookie.zero? ? {} : { cookie: event.cookie }
+        cookie_params = event.cookie.zero? ? {} : { cookie: event.cookie }
+
+        # Note: don't pass options to force rescanning the directory, so we can
+        # detect moving/deleting a whole tree
         if _dir_event?(event)
-          new_changes << [:dir, path, cookie_opts]
+          _queue_change(:dir, dir, rel_path, cookie_params)
           return
         end
 
-        options = { change: _change(event.flags) }
-        rel_path = path.relative_path_from(directory)
+        params = cookie_params.merge(change: _change(event.flags))
 
-        # TODO: will be kept separate later
-        full_path = directory + rel_path
-        new_changes << [:file, full_path, options.merge(cookie_opts)]
+        _queue_change(:file, dir, rel_path, params)
       end
 
       def _skip_event?(event)

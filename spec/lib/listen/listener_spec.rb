@@ -5,19 +5,21 @@ include Listen
 describe Listener do
   subject { described_class.new(options) }
   let(:options) { {} }
-  let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:supervisor) do
     instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
   let(:record) { instance_double(Record, terminate: true, build: true) }
-  let(:silencer) { instance_double(Silencer, terminate: true) }
+  let(:silencer) { instance_double(Silencer, configure: nil) }
   let(:adapter) { instance_double(Adapter::Base, start: nil) }
+
   before do
+    allow(Listen::Silencer).to receive(:new) { silencer }
+
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
-    allow(registry).to receive(:[]).with(:silencer) { silencer }
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
   end
@@ -77,13 +79,6 @@ describe Listener do
       allow(silencer).to receive(:silenced?) { false }
     end
 
-    it 'registers silencer' do
-      expect(supervisor).to receive(:add).
-        with(Silencer, as: :silencer, args: subject)
-
-      subject.start
-    end
-
     it 'supervises change_pool' do
       expect(supervisor).to receive(:pool).
         with(Change, as: :change_pool, args: subject)
@@ -125,11 +120,14 @@ describe Listener do
     it 'calls block on changes' do
       foo = instance_double(Pathname, to_s: 'foo', exist?: true)
 
+      dir = instance_double(Pathname)
+      allow(dir).to receive(:+).with('foo') { foo }
+
       block_stub = instance_double(Proc)
       subject.block = block_stub
       expect(block_stub).to receive(:call).with(['foo'], [], [])
       subject.start
-      subject.queue(:file, :modified, foo)
+      subject.queue(:file, :modified, dir, 'foo')
       sleep 0.25
     end
   end
@@ -202,20 +200,11 @@ describe Listener do
   end
 
   describe '#ignore' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
-
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.ignore(/foo/)
-    end
-
     context 'with existing ignore options' do
       let(:options) { { ignore: /bar/ } }
 
       it 'adds up to existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [/bar/, /foo/])
       end
@@ -225,7 +214,7 @@ describe Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it 'adds up to existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [[/bar/], /foo/])
       end
@@ -233,21 +222,20 @@ describe Listener do
   end
 
   describe '#ignore!' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
+    context 'with no existing options' do
+      let(:options) { {} }
 
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.ignore!(/foo/)
-      expect(subject.options).to include(ignore!: /foo/)
+      it 'sets options' do
+        expect(silencer).to receive(:configure).with(options)
+        subject
+      end
     end
 
     context 'with existing ignore! options' do
       let(:options) { { ignore!: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore!([/foo/])
         expect(subject.options).to include(ignore!: [/foo/])
       end
@@ -257,7 +245,7 @@ describe Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'deletes ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore!([/foo/])
         expect(subject.options).to_not include(ignore: /bar/)
       end
@@ -265,20 +253,11 @@ describe Listener do
   end
 
   describe '#only' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
-
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.only(/foo/)
-    end
-
     context 'with existing only options' do
       let(:options) { { only: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.only([/foo/])
         expect(subject.options).to include(only: [/foo/])
       end
@@ -290,60 +269,69 @@ describe Listener do
       allow(silencer).to receive(:silenced?) { false }
 
       subject.block = proc do |modified, added, _|
-        expect(modified).to eql(['foo.txt'])
-        expect(added).to eql(['bar.txt'])
+        expect(modified).to eql(['foo/bar.txt'])
+        expect(added).to eql(['foo/baz.txt'])
       end
-
-      foo = instance_double(
-        Pathname,
-        to_s: 'foo.txt',
-        exist?: true,
-        directory?: false)
 
       bar = instance_double(
         Pathname,
-        to_s: 'bar.txt',
+        to_s: 'foo/bar.txt',
         exist?: true,
         directory?: false)
 
+      baz = instance_double(
+        Pathname,
+        to_s: 'foo/baz.txt',
+        exist?: true,
+        directory?: false)
+
+      dir = instance_double(Pathname)
+      expect(dir).to receive(:+).with('bar.txt') { bar }
+      expect(dir).to receive(:+).with('baz.txt') { baz }
+
       subject.start
-      subject.queue(:file, :modified, foo, {})
-      subject.queue(:file, :added, bar, {})
+      subject.queue(:file, :modified, dir, 'bar.txt', {})
+      subject.queue(:file, :added, dir, 'baz.txt', {})
       sleep 0.25
     end
   end
 
   describe '_smoosh_changes' do
     it 'recognizes rename from temp file' do
-      path = instance_double(
+      bar = instance_double(
         Pathname,
-        to_s: 'foo',
+        to_s: 'bar',
         exist?: true,
         directory?: false)
 
+      foo = instance_double(Pathname, to_s: 'foo')
+      allow(foo).to receive(:+).with('bar') { bar }
+
       changes = [
-        [:file, :modified, path],
-        [:file, :removed, path],
-        [:file, :added, path],
-        [:file, :modified, path]
+        [:file, :modified, foo, 'bar'],
+        [:file, :removed, foo, 'bar'],
+        [:file, :added, foo, 'bar'],
+        [:file, :modified, foo, 'bar']
       ]
       allow(silencer).to receive(:silenced?) { false }
       smooshed = subject.send :_smoosh_changes, changes
-      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
+      expect(smooshed).to eq(modified: ['bar'], added: [], removed: [])
     end
 
-    it 'recognizes deleted temp file' do
-      path = instance_double(
+    it 'ignores deleted temp file' do
+      bar = instance_double(
         Pathname,
-        to_s: 'foo',
-        exist?: false,
-        directory?: false)
+        to_s: 'bar',
+        exist?: false)
+
+      foo = instance_double(Pathname, to_s: 'foo')
+      allow(foo).to receive(:+).with('bar') { bar }
 
       changes = [
-        [:file, :added, path],
-        [:file, :modified, path],
-        [:file, :removed, path],
-        [:file, :modified, path]
+        [:file, :added, foo, 'bar'],
+        [:file, :modified, foo, 'bar'],
+        [:file, :removed, foo, 'bar'],
+        [:file, :modified, foo, 'bar']
       ]
       allow(silencer).to receive(:silenced?) { false }
       smooshed = subject.send :_smoosh_changes, changes
@@ -352,19 +340,21 @@ describe Listener do
 
     it 'recognizes double move as modification' do
       # e.g. "mv foo x && mv x foo" is like "touch foo"
-      path = instance_double(
+      bar = instance_double(
         Pathname,
-        to_s: 'foo',
-        exist?: true,
-        directory?: false)
+        to_s: 'bar',
+        exist?: true)
+
+      dir = instance_double(Pathname, to_s: 'foo')
+      allow(dir).to receive(:+).with('bar') { bar }
 
       changes = [
-        [:file, :removed, path],
-        [:file, :added, path]
+        [:file, :removed, dir, 'bar'],
+        [:file, :added, dir, 'bar']
       ]
       allow(silencer).to receive(:silenced?) { false }
       smooshed = subject.send :_smoosh_changes, changes
-      expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
+      expect(smooshed).to eq(modified: ['bar'], added: [], removed: [])
     end
 
     context 'with cookie' do
@@ -373,11 +363,15 @@ describe Listener do
         foo = instance_double(
           Pathname,
           to_s: 'foo',
-          exist?: true,
-          directory?: false)
+          exist?: true)
 
-        changes = [[:file, :moved_to, foo, cookie: 4321]]
-        expect(silencer).to receive(:silenced?).with(foo, :file) { false }
+        dir = instance_double(Pathname, to_s: 'foo')
+        allow(dir).to receive(:+).with('foo') { foo }
+
+        changes = [[:file, :moved_to, dir, 'foo', cookie: 4321]]
+        expect(silencer).to receive(:silenced?).
+          with(Pathname('foo'), :file) { false }
+
         smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: [], added: ['foo'], removed: [])
       end
@@ -395,15 +389,21 @@ describe Listener do
           exist?: true,
           directory?: false)
 
+        dir = instance_double(Pathname)
+        allow(dir).to receive(:+).with('foo') { foo }
+        allow(dir).to receive(:+).with('bar') { bar }
+
         changes = [
-          [:file, :moved_from, foo , cookie: 4321],
-          [:file, :moved_to, bar, cookie: 4321]
+          [:file, :moved_from, dir, 'foo', cookie: 4321],
+          [:file, :moved_to, dir, 'bar', cookie: 4321]
         ]
 
         expect(silencer).to receive(:silenced?).
-          twice.with(foo, :file) { false }
+          twice.with(Pathname('foo'), :file) { false }
 
-        expect(silencer).to receive(:silenced?).with(bar, :file) { false }
+        expect(silencer).to receive(:silenced?).
+          with(Pathname('bar'), :file) { false }
+
         smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: [], added: ['bar'], removed: [])
       end
@@ -413,7 +413,7 @@ describe Listener do
 
         ignored = instance_double(
           Pathname,
-          to_s: 'foo',
+          to_s: 'ignored',
           exist?: true,
           directory?: false)
 
@@ -423,26 +423,60 @@ describe Listener do
           exist?: true,
           directory?: false)
 
+        dir = instance_double(Pathname)
+        allow(dir).to receive(:+).with('foo') { foo }
+        allow(dir).to receive(:+).with('ignored') { ignored }
+
         changes = [
-          [:file, :moved_from, ignored, cookie: 4321],
-          [:file, :moved_to, foo , cookie: 4321]
+          [:file, :moved_from, dir, 'ignored', cookie: 4321],
+          [:file, :moved_to, dir, 'foo' , cookie: 4321]
         ]
-        expect(silencer).to receive(:silenced?).with(ignored, :file) { true }
-        expect(silencer).to receive(:silenced?).with(foo, :file) { false }
+
+        expect(silencer).to receive(:silenced?).
+          with(Pathname('ignored'), :file) { true }
+
+        expect(silencer).to receive(:silenced?).
+          with(Pathname('foo'), :file) { false }
+
         smooshed = subject.send :_smoosh_changes, changes
         expect(smooshed).to eq(modified: ['foo'], added: [], removed: [])
       end
     end
 
     context 'with no cookie' do
-      it 'recognizes properly ignores files' do
-        ignored = instance_double(Pathname, to_s: 'foo', exist?: true)
+      context 'with ignored file' do
+        let(:dir) { instance_double(Pathname) }
+        let(:ignored) { instance_double(Pathname, to_s: 'foo', exist?: true) }
 
-        changes = [[:file, :modified, ignored]]
-        expect(silencer).to receive(:silenced?).with(ignored, :file) { true }
-        smooshed = subject.send :_smoosh_changes, changes
-        expect(smooshed).to eq(modified: [], added: [], removed: [])
+        before do
+          expect(silencer).to receive(:silenced?).
+            with(Pathname('ignored'), :file) { true }
+
+          allow(dir).to receive(:+).with('ignored') { ignored }
+        end
+
+        it 'recognizes properly ignores files' do
+          changes = [[:file, :modified, dir, 'ignored']]
+          smooshed = subject.send :_smoosh_changes, changes
+          expect(smooshed).to eq(modified: [], added: [], removed: [])
+        end
       end
+    end
+  end
+
+  context 'when listener is stopped' do
+
+    before do
+      allow(registry).to receive(:[]).with(:change_pool) { nil }
+      subject.stop
+    end
+
+    let(:dir) { instance_double(Pathname) }
+
+    it 'queuing does not crash when no worker is available' do
+      expect do
+        subject.send(:_queue_raw_change, :dir, dir, 'path', recursive: true)
+      end.to_not raise_error
     end
   end
 end
