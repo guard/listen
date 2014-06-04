@@ -4,7 +4,8 @@ describe Listen::File do
   let(:async_record) do
     instance_double(
       Listen::Record,
-      set_path: true,
+      add_dir: true,
+      update_file: true,
       unset_path: true,
     )
   end
@@ -18,8 +19,7 @@ describe Listen::File do
   end
 
   let(:path) { Pathname.pwd }
-  let(:file_path) { path + 'file.rb' }
-  let(:subject) { described_class.change(record, file_path) }
+  let(:subject) { described_class.change(record, path, 'file.rb') }
 
   around { |example| fixtures { example.run } }
 
@@ -30,7 +30,7 @@ describe Listen::File do
       { mtime: kind_of(Float), mode: kind_of(Integer) }
     end
 
-    context 'with file in record' do
+    context 'with file record' do
       let(:record_mtime) { nil }
       let(:record_md5) { nil }
       let(:record_mode) { nil }
@@ -48,7 +48,7 @@ describe Listen::File do
         it { should be :removed }
 
         it 'sets path in record' do
-          expect(async_record).to receive(:unset_path).with(file_path)
+          expect(async_record).to receive(:unset_path).with(path, 'file.rb')
           subject
         end
       end
@@ -81,8 +81,8 @@ describe Listen::File do
           it { should be :modified }
 
           it 'sets path in record with expected data' do
-            expect(async_record).to receive(:set_path).
-              with(:file, file_path, expected_data)
+            expect(async_record).to receive(:update_file).
+              with(path, 'file.rb', expected_data)
             subject
           end
         end
@@ -97,8 +97,8 @@ describe Listen::File do
             it { should be :modified }
 
             it 'sets path in record with expected data' do
-              expect(async_record).to receive(:set_path).
-                with(:file, file_path, expected_data)
+              expect(async_record).to receive(:update_file).
+                with(path, 'file.rb', expected_data)
               subject
             end
           end
@@ -109,8 +109,8 @@ describe Listen::File do
             it { should be :modified }
 
             it 'sets path in record with expected data' do
-              expect(async_record).to receive(:set_path).
-                with(:file, file_path, expected_data)
+              expect(async_record).to receive(:update_file).
+                with(path, 'file.rb', expected_data)
               subject
             end
           end
@@ -182,8 +182,8 @@ describe Listen::File do
                     it { should be :modified }
 
                     it 'sets path in record with expected data' do
-                      expect(async_record).to receive(:set_path).
-                        with(:file, file_path, expected_data. merge(md5: md5))
+                      expect(async_record).to receive(:update_file).
+                        with(path, 'file.rb', expected_data. merge(md5: md5))
                       subject
                     end
                   end
@@ -216,9 +216,8 @@ describe Listen::File do
         end
 
         it 'sets path in record with expected data' do
-          expect(async_record).to receive(:set_path).
-            with(:file, file_path, expected_data)
-
+          expect(async_record).to receive(:update_file).
+            with(path, 'file.rb', expected_data)
           subject
         end
       end

@@ -145,17 +145,18 @@ module Listen
       @registry[type]
     end
 
-    def queue(type, change, path, options = {})
+    def queue(type, change, dir, path, options = {})
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
-      @queue << [type, change, path, options]
+      fail "Invalid path: #{path.inspect}" unless path.is_a?(String)
+      @queue << [type, change, dir, path, options]
 
       @last_queue_event_time = Time.now.to_f
       _wakeup_wait_thread unless state == :paused
 
       return unless @tcp_mode == :broadcaster
 
-      message = TCP::Message.new(type, change, path, options)
+      message = TCP::Message.new(type, change, dir, path, options)
       registry[:broadcaster].async.broadcast(message.payload)
     end
 
@@ -314,6 +315,20 @@ module Listen
         wait_thread.join
       end
       @wait_thread = nil
+    end
+
+    def _queue_raw_change(type, dir, rel_path, options)
+      _log :debug, "raw queue: #{[type, dir, rel_path, options].inspect}"
+
+      unless (worker = async(:change_pool))
+        _log :warn, 'Failed to allocate worker from change pool'
+        return
+      end
+
+      worker.change(type, dir, rel_path, options)
+    rescue RuntimeError
+      _log :error, "#{__method__} crashed: #{$!}:#{$@.join("\n")}"
+      raise
     end
   end
 end

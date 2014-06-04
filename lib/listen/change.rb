@@ -11,31 +11,36 @@ module Listen
       @listener = listener
     end
 
-    def change(type, path, options = {})
+    def change(type, watched_dir, rel_path, options = {})
       change = options[:change]
       cookie = options[:cookie]
 
-      if !cookie && listener.silencer.silenced?(path, type)
-        _log :debug, "(silenced): #{path.inspect}"
+      if !cookie && listener.silencer.silenced?(Pathname(rel_path), type)
+        _log :debug, "(silenced): #{rel_path.inspect}"
         return
       end
+
+      path = watched_dir + rel_path
 
       log_details = options[:silence] && 'recording' || change || 'unknown'
       _log :debug, "#{log_details}: #{type}:#{path} (#{options.inspect})"
 
       if change
-        listener.queue(type, change, path, cookie ? { cookie: cookie } : {})
+        # TODO: move this to Listener to avoid Celluloid overhead
+        # from caller
+        options = cookie ? { cookie: cookie } : {}
+        listener.queue(type, change, watched_dir, rel_path, options)
       else
         return unless (record = listener.sync(:record))
         record.async.still_building! if options[:build]
 
         if type == :dir
           return unless (change_queue = listener.async(:change_pool))
-          Directory.scan(change_queue, record, path, options)
+          Directory.scan(change_queue, record, watched_dir, rel_path, options)
         else
-          change = File.change(record, path)
+          change = File.change(record, watched_dir, rel_path)
           return if !change || options[:silence]
-          listener.queue(:file, change, path)
+          listener.queue(:file, change, watched_dir, rel_path)
         end
       end
     rescue Celluloid::Task::TerminatedError

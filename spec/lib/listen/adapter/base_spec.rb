@@ -10,30 +10,21 @@ describe Adapter::Base do
     end
   end
 
-  subject { FakeAdapter.new(mq: listener, directories: []) }
+  subject { FakeAdapter.new(mq: mq, directories: []) }
 
-  let(:listener) { instance_double(Listener) }
-
-  before { allow(listener).to receive(:async).with(:change_pool) { worker } }
+  let(:mq) { instance_double(Listener) }
 
   describe '#_notify_change' do
+    let(:dir) { Pathname.pwd }
+
     context 'listener is listening or paused' do
       let(:worker) { instance_double(Change) }
 
       it 'calls change on change_pool asynchronously' do
-        expect(worker).to receive(:change).
-          with(:dir, 'path', recursive: true)
-        subject.send(:_notify_change, :dir, 'path', recursive: true)
-      end
-    end
+        expect(mq).to receive(:_queue_raw_change).
+          with(:dir, dir, 'path', recursive: true)
 
-    context 'listener is stopped' do
-      let(:worker) { nil }
-
-      it 'does not fail when no worker is available' do
-        expect do
-          subject.send(:_notify_change, :dir, 'path', recursive: true)
-        end.to_not raise_error
+        subject.send(:_queue_change, :dir, dir, 'path', recursive: true)
       end
     end
   end

@@ -78,15 +78,17 @@ describe Listen::Listener do
           end
 
           subject.stop
-          subject.queue(:file, :modified, 'foo')
+          subject.queue(:file, :modified, Pathname.pwd, 'foo')
           expect(broadcaster).not_to receive(:async)
         end
       end
 
+      let(:dir) { Pathname.pwd }
+
       it 'broadcasts changes asynchronously' do
-        message = Listen::TCP::Message.new(:file, :modified, 'foo', {})
+        message = Listen::TCP::Message.new(:file, :modified, dir, 'foo', {})
         expect(async).to receive(:broadcast).with message.payload
-        subject.queue(:file, :modified, 'foo')
+        subject.queue(:file, :modified, Pathname.pwd, 'foo')
       end
     end
   end

@@ -51,7 +51,11 @@ module Listen
     def silenced?(path, type)
       silenced = false
 
-      relative_path = _relative_path(path)
+      relative_path = if path.absolute?
+                        _relative_path(path).to_s
+                      else
+                        path.to_s
+                      end
 
       if only_patterns && type == :file
         silenced = !only_patterns.any? { |pattern| relative_path =~ pattern }

@@ -56,36 +56,33 @@ module Listen
 
       private
 
-      def _configure
-        @worker = KQueue::Queue.new
-        _directories.each do |path|
-          # use Record to make a snapshot of dir, so we
-          # can detect new files
-          _find(path.to_s) { |file_path| _watch_file(file_path, @worker) }
-        end
+      def _configure(directory, &_callback)
+        @worker ||= KQueue::Queue.new
+        # use Record to make a snapshot of dir, so we
+        # can detect new files
+        _find(directory.to_s) { |path| _watch_file(path, @worker) }
       end
 
       def _run
         @worker.run
       end
 
-      def _worker_callback
-        lambda do |event|
-          path = _event_path(event)
-          if path.directory?
-            # Force dir content tracking to kick in, or we won't have
-            # names of added files
-            _notify_change(:dir, path, recursive: true)
-          else
-            _notify_change(:file, path, change: _change(event.flags))
-          end
-
-          # If it is a directory, and it has a write flag, it means a
-          # file has been added so find out which and deal with it.
-          # No need to check for removed files, kqueue will forget them
-          # when the vfs does.
-          _watch_for_new_file(event) if path.directory?
+      def _process_event(dir, event)
+        full_path = _event_path(event)
+        if full_path.directory?
+          # Force dir content tracking to kick in, or we won't have
+          # names of added files
+          _queue_change(:dir, dir, '.', recursive: true)
+        else
+          path = full_path.relative_path_from(dir)
+          _queue_change(:file, dir, path, change: _change(event.flags))
         end
+
+        # If it is a directory, and it has a write flag, it means a
+        # file has been added so find out which and deal with it.
+        # No need to check for removed files, kqueue will forget them
+        # when the vfs does.
+        _watch_for_new_file(event) if path.directory?
       end
 
       def _change(event_flags)

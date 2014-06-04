@@ -44,12 +44,7 @@ module Listen
           end
 
           callback = @callbacks[dir] || lambda do |event|
-            new_changes = []
-            _process_event(dir, event, new_changes)
-            new_changes.each do |args|
-              type, path, options = *args
-              _notify_change(type, dir + path, options || {})
-            end
+            _process_event(dir, event)
           end
           @callbacks[dir] = callback
           _configure(dir, &callback)
@@ -78,16 +73,10 @@ module Listen
 
       private
 
-      def _notify_change(type, path, options = {})
-        unless (worker = @mq.async(:change_pool))
-          _log :warn, 'Failed to allocate worker from change pool'
-          return
-        end
-
-        worker.change(type, path, options)
-      rescue RuntimeError
-        _log :error, "_notify_change crashed: #{$!}:#{$@.join("\n")}"
-        raise
+      def _queue_change(type, dir, rel_path, options)
+        # TODO: temporary workaround to remove dependency on Change through
+        # Celluloid in tests
+        @mq.send(:_queue_raw_change, type, dir, rel_path, options)
       end
 
       def _log(type, message)

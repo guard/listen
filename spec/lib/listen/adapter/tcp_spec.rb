@@ -113,11 +113,12 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#handle_message' do
+    let(:dir) { Pathname.pwd }
     it 'notifies listener of path changes' do
-      message = Listen::TCP::Message.new('file', 'modified', '/foo', {})
+      message = Listen::TCP::Message.new('file', 'modified', dir, 'foo', {})
 
       expect(subject.wrapped_object).
-        to receive(:_notify_change).with :file, '/foo', change: :modified
+        to receive(:_queue_change).with :file, dir, 'foo', change: :modified
 
       subject.handle_message message
     end
