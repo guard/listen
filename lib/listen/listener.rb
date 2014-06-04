@@ -13,6 +13,8 @@ module Listen
 
     attr_accessor :block
 
+    attr_reader :silencer
+
     # TODO: deprecate
     attr_reader :options, :directories
     attr_reader :registry, :supervisor
@@ -34,6 +36,9 @@ module Listen
       # Setup logging first
       Celluloid.logger.level = _debug_level
       _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+
+      @silencer = Silencer.new
+      _reconfigure_silencer({})
 
       @tcp_mode = nil
       if [:recipient, :broadcaster].include? args[1]
@@ -160,10 +165,6 @@ module Listen
       registry[:broadcaster].async.broadcast(message.payload)
     end
 
-    def silencer
-      @registry[:silencer]
-    end
-
     private
 
     def _init_options(options = {})
@@ -192,7 +193,6 @@ module Listen
 
     def _init_actors
       @supervisor = Celluloid::SupervisionGroup.run!(registry)
-      supervisor.add(Silencer, as: :silencer, args: self)
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
 
@@ -238,7 +238,7 @@ module Listen
     end
 
     def _silenced?(path, type)
-      sync(:silencer).silenced?(path, type)
+      @silencer.silenced?(path, type)
     end
 
     def _start_adapter
@@ -297,7 +297,13 @@ module Listen
 
     def _reconfigure_silencer(extra_options)
       @options.merge!(extra_options)
-      registry[:silencer] = Silencer.new(self)
+
+      # TODO: this should be directory specific
+      rules = [:only, :ignore, :ignore!].map do |option|
+        [option, @options[option]] if @options.key? option
+      end
+
+      @silencer.configure(Hash[rules.compact])
     end
 
     def _start_wait_thread

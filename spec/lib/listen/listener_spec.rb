@@ -5,19 +5,21 @@ include Listen
 describe Listener do
   subject { described_class.new(options) }
   let(:options) { {} }
-  let(:registry) { instance_double(Celluloid::Registry, :[]= => true) }
+  let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:supervisor) do
     instance_double(Celluloid::SupervisionGroup, add: true, pool: true)
   end
 
   let(:record) { instance_double(Record, terminate: true, build: true) }
-  let(:silencer) { instance_double(Silencer, terminate: true) }
+  let(:silencer) { instance_double(Silencer, configure: nil) }
   let(:adapter) { instance_double(Adapter::Base, start: nil) }
+
   before do
+    allow(Listen::Silencer).to receive(:new) { silencer }
+
     allow(Celluloid::Registry).to receive(:new) { registry }
     allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
-    allow(registry).to receive(:[]).with(:silencer) { silencer }
     allow(registry).to receive(:[]).with(:adapter) { adapter }
     allow(registry).to receive(:[]).with(:record) { record }
   end
@@ -75,13 +77,6 @@ describe Listener do
     before do
       allow(subject).to receive(:_start_adapter)
       allow(silencer).to receive(:silenced?) { false }
-    end
-
-    it 'registers silencer' do
-      expect(supervisor).to receive(:add).
-        with(Silencer, as: :silencer, args: subject)
-
-      subject.start
     end
 
     it 'supervises change_pool' do
@@ -205,20 +200,11 @@ describe Listener do
   end
 
   describe '#ignore' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
-
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.ignore(/foo/)
-    end
-
     context 'with existing ignore options' do
       let(:options) { { ignore: /bar/ } }
 
       it 'adds up to existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [/bar/, /foo/])
       end
@@ -228,7 +214,7 @@ describe Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it 'adds up to existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore(/foo/)
         expect(subject.options).to include(ignore: [[/bar/], /foo/])
       end
@@ -236,21 +222,20 @@ describe Listener do
   end
 
   describe '#ignore!' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
+    context 'with no existing options' do
+      let(:options) { {} }
 
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.ignore!(/foo/)
-      expect(subject.options).to include(ignore!: /foo/)
+      it 'sets options' do
+        expect(silencer).to receive(:configure).with(options)
+        subject
+      end
     end
 
     context 'with existing ignore! options' do
       let(:options) { { ignore!: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore!([/foo/])
         expect(subject.options).to include(ignore!: [/foo/])
       end
@@ -260,7 +245,7 @@ describe Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'deletes ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.ignore!([/foo/])
         expect(subject.options).to_not include(ignore: /bar/)
       end
@@ -268,20 +253,11 @@ describe Listener do
   end
 
   describe '#only' do
-    let(:new_silencer) { instance_double(Silencer) }
-    before { allow(Celluloid::Actor).to receive(:[]=) }
-
-    it 'resets silencer actor' do
-      expect(Silencer).to receive(:new).with(subject) { new_silencer }
-      expect(registry).to receive(:[]=).with(:silencer, new_silencer)
-      subject.only(/foo/)
-    end
-
     context 'with existing only options' do
       let(:options) { { only: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(Silencer).to receive(:new).with(subject)
+        expect(silencer).to receive(:configure).with(options)
         subject.only([/foo/])
         expect(subject.options).to include(only: [/foo/])
       end

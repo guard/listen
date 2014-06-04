@@ -1,7 +1,5 @@
 module Listen
   class Silencer
-    include Celluloid
-
     # The default list of directories that get ignored.
     DEFAULT_IGNORED_DIRECTORIES = %r{^(?:
       \.git
@@ -40,67 +38,46 @@ module Listen
       | ~
     )$}x
 
-    attr_accessor :listener, :only_patterns, :ignore_patterns
+    attr_accessor :only_patterns, :ignore_patterns
 
-    def initialize(listener)
-      @listener = listener
-      _init_only_patterns
-      _init_ignore_patterns
+    def initialize
+      configure({})
     end
 
-    def silenced?(path, type)
-      silenced = false
+    def configure(options)
+      @only_patterns = options[:only] ? Array(options[:only]) : nil
+      @ignore_patterns = _init_ignores(options[:ignore], options[:ignore!])
+    end
 
-      relative_path = if path.absolute?
-                        _relative_path(path).to_s
-                      else
-                        path.to_s
-                      end
+    # Note: relative_path is temporarily expected to be a relative Pathname to
+    # make refactoring easier (ideally, it would take a string)
+
+    # TODO: switch type and path places - and verify
+    def silenced?(relative_path, type)
+      path = relative_path.to_s
 
       if only_patterns && type == :file
-        silenced = !only_patterns.any? { |pattern| relative_path =~ pattern }
+        return true unless only_patterns.any? { |pattern| path =~ pattern }
       end
 
-      silenced || ignore_patterns.any? { |pattern| relative_path =~ pattern }
+      ignore_patterns.any? { |pattern| path =~ pattern }
     end
 
     private
 
-    def _init_only_patterns
-      return unless listener.options[:only]
+    attr_reader :options
 
-      @only_patterns = Array(listener.options[:only])
-    end
-
-    def _init_ignore_patterns
-      options = listener.options
-
+    def _init_ignores(ignores, overrides)
       patterns = []
-      unless options[:ignore!]
+      unless overrides
         patterns << DEFAULT_IGNORED_DIRECTORIES
         patterns << DEFAULT_IGNORED_EXTENSIONS
       end
 
-      patterns << options[:ignore]
-      patterns << options[:ignore!]
+      patterns << ignores
+      patterns << overrides
 
-      patterns.compact!
-      patterns.flatten!
-
-      @ignore_patterns = patterns
-    end
-
-    def _relative_path(path)
-      relative_paths = listener.directories.map do |dir|
-        begin
-          path.relative_path_from(dir).to_s
-        rescue ArgumentError
-          # Windows raises errors across drives, e.g. when 'C:/' and 'E:/dir'
-          # So, here's a Dirty hack to fool the detect() below..
-          '../'
-        end
-      end
-      relative_paths.detect { |rel_path| !rel_path.start_with?('../') }
+      patterns.compact.flatten
     end
   end
 end
