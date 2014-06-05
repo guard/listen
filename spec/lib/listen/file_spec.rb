@@ -36,10 +36,7 @@ describe Listen::File do
       let(:record_mode) { nil }
 
       let(:record_data) do
-        { type: :file,
-          mtime: record_mtime,
-          md5: record_md5,
-          mode: record_mode }
+        { mtime: record_mtime, md5: record_md5, mode: record_mode }
       end
 
       context 'with non-existing file' do
