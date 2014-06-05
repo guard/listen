@@ -10,7 +10,7 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * OS-specific adapters on MRI for Mac OS X 10.6+, Linux, ~~\*BSD~~ and Windows, [more info](#listen-adapters) below.
 * Detects file modification, addition and removal.
 * Allows supplying regexp-patterns to ignore paths for better results.
-* File content checksum comparison for modifications made under the same second (OS X only).
+* File content checksum comparison for modifications made under the same second (OS X HFS volumes, VFAT volumes).
 * Forwarding file events over TCP, [more info](#forwarding-file-events-over-tcp) below.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
@@ -22,8 +22,10 @@ Please note that:
 
 ## Pending features
 
-* Non-recursive directory scanning. [#111](https://github.com/guard/listen/issues/111)
+* ~~Non-recursive directory scanning~~ [#111](https://github.com/guard/listen/issues/111)
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
+* Directory/adapter specific configuration options
+* Support for plugins
 
 Pull request or help is very welcome for these.
 
@@ -55,13 +57,20 @@ Listeners can also be easily paused/unpaused:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen') { |modified, added, removed| # ... }
+
 listener.start
-listener.listen? # => true
-listener.pause   # stop listening to changes
+listener.paused? # => false
+listener.processing? # => true
+
+listener.pause   # stops processing changes (but keeps on collecting them)
 listener.paused? # => true
-listener.unpause # start listening to changes again
-listener.stop    # stop completely the listener
+listener.processing? # => false
+
+listener.unpause # resumes processing changes ("start" would do the same)
+listener.stop    # stop both listening to changes and processing them
 ```
+
+  Note: While paused, Listen keeps on collecting changes in the background - to clear them, call "stop"
 
   Note: You should keep track of all started listeners and stop them properly on finish.
 
@@ -90,7 +99,8 @@ listener.only /_spec\.rb$/ # overwrite all existing only patterns.
 sleep
 ```
 
-Note: Only regexp patterns are evaluated only against relative **file** paths.
+Note: ':only' regexp patterns are evaluated only against relative **file** paths.
+
 
 ## Changes callback
 
@@ -225,6 +235,22 @@ Listen traps SIGINT signal to properly finalize listeners. If you plan
 on trapping this signal yourself - make sure to call `Listen.stop` in
 signal handler.
 
+## Performance
+
+If Listen seems slow or unresponsive, make sure you're not using the Polling adapter (you should see a warning upon startup if you are).
+
+Also, if the directories you're watching contain many files, make sure you're:
+
+* not using Polling (ideally)
+* using `:ignore` and `:only` options to avoid tracking directories you don't care about
+* not using a version of Listen prior to 2.7.7
+* not getting silent crashes within Listen (see LISTEN_GEM_DEBUGGING=2)
+* not running multiple instances of Listen in the background
+* using a file system with atime modification disabled (ideally)
+* not using a filesystem with inaccurate file modification times (ideally), e.g. HFS, VFAT
+* running Listen with the latency option not too small or too big (depends on needs)
+
+When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and time they happened.
 
 ## Forwarding file events over TCP
 
