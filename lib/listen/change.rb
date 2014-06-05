@@ -32,7 +32,6 @@ module Listen
         listener.queue(type, change, watched_dir, rel_path, options)
       else
         return unless (record = listener.sync(:record))
-        record.async.still_building! if options[:build]
 
         if type == :dir
           return unless (change_queue = listener.async(:change_pool))
