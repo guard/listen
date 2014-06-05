@@ -20,15 +20,10 @@ describe Listen::Change do
     before { allow(listener).to receive(:silencer) { silencer } }
 
     context 'with build options' do
-      let(:async_record) do
-        instance_double(Listen::Record, still_building!: nil)
-      end
-
       it 'calls still_building! on record' do
         allow(listener).to receive(:queue)
         allow(record).to receive(:async) { async_record }
         allow(Listen::File).to receive(:change)
-        expect(async_record).to receive(:still_building!)
         subject.change(:file, dir, 'file.rb', build: true)
       end
     end
