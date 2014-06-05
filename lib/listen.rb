@@ -3,8 +3,6 @@ require 'listen/listener'
 
 module Listen
   class << self
-    attr_accessor :stopping
-
     # Listens to file system modifications on a either single directory or
     # multiple directories.
     #
@@ -21,13 +19,12 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def to(*args, &block)
-      boot_celluloid
-      @stopping = false
+      Celluloid.boot unless Celluloid.running?
       options = args.last.is_a?(Hash) ? args.last : {}
       if target = options.delete(:forward_to)
-        Listener.new(target, :broadcaster, *args, &block)
+        _add_listener(target, :broadcaster, *args, &block)
       else
-        Listener.new(*args, &block)
+        _add_listener(*args, &block)
       end
     end
 
@@ -36,7 +33,15 @@ module Listen
     # Use it for testing purpose or when you are sure that Celluloid could be
     # ended.
     #
+    # This is used by the `listen` binary to handle Ctrl-C
+    #
     def stop
+      @listeners ||= []
+      @listeners.each do |listener|
+        # call stop to halt the main loop
+        listener.stop
+      end
+
       Celluloid.shutdown
     end
 
@@ -52,13 +57,16 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def on(target, *args, &block)
-      Listener.new(target, :recipient, *args, &block)
+      _add_listener(target, :recipient, *args, &block)
     end
 
     private
 
-    def boot_celluloid
-      Celluloid.boot unless Celluloid.running?
+    def _add_listener(*args, &block)
+      @listeners ||= []
+      Listener.new(*args, &block).tap do |listener|
+        @listeners << listener
+      end
     end
   end
 end

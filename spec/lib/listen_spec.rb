@@ -14,12 +14,6 @@ describe Listen do
         described_class.to('/path', forward_to: 4000)
       end
     end
-
-    it 'sets stopping at false' do
-      allow(Listen::Listener).to receive(:new)
-      Listen.to('/path')
-      expect(Listen.stopping).to be_falsey
-    end
   end
 
   describe '.stop' do
