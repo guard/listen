@@ -142,9 +142,6 @@ describe Listen::Record do
       context 'with file.rb in record' do
         before { record.update_file(dir, 'file.rb', mtime: 1.1) }
         it { should eq('file.rb' => { mtime: 1.1 }) }
-        context 'when file is removed' do
-          before { record.update_file(dir, 'file.rb', mtime: 1.1) }
-        end
       end
 
       context 'with subdir/file.rb in record' do
