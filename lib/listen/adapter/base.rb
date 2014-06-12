@@ -79,8 +79,12 @@ module Listen
         @mq.send(:_queue_raw_change, type, dir, rel_path, options)
       end
 
-      def _log(type, message)
-        Celluloid.logger.send(type, message)
+      def _log(*args)
+        self.class.send(:_log, *args)
+      end
+
+      def self._log(*args)
+        Celluloid.logger.send(*args)
       end
     end
   end
