@@ -5,7 +5,7 @@ require 'listen/cli'
 
 unless defined?(JRUBY_VERSION)
   if Signal.list.keys.include?('INT')
-    Signal.trap('INT') { Listen.stop }
+    Signal.trap('INT') { Thread.new { Listen.stop } }
   end
 end
 
