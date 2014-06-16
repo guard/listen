@@ -271,8 +271,10 @@ module Listen
       hash = _smoosh_changes(changes)
       result = [hash[:modified], hash[:added], hash[:removed]]
 
+      block_start = Time.now.to_f
       # TODO: condition not tested, but too complex to test ATM
       block.call(*result) unless result.all?(&:empty?)
+      _log :debug, "Callback took #{Time.now.to_f - block_start} seconds"
     end
 
     attr_reader :wait_thread
