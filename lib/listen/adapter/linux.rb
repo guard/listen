@@ -51,7 +51,8 @@ module Listen
 
         if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
           if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
-            _queue_change(:dir, dir, Pathname(rel_path).dirname, {})
+            rel_path = path.dirname.relative_path_from(dir).to_s
+            _queue_change(:dir, dir, rel_path, {})
           else
             _queue_change(:dir, dir, rel_path, {})
           end
