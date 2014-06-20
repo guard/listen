@@ -37,10 +37,13 @@ module Listen
     #
     def stop
       @listeners ||= []
+
+      # TODO: should use a mutex for this
       @listeners.each do |listener|
         # call stop to halt the main loop
         listener.stop
       end
+      @listeners = nil
 
       Celluloid.shutdown
     end
