@@ -79,19 +79,39 @@ describe Listen::Record do
   end
 
   describe '#unset_path' do
-    context 'path is present' do
-      before { record.update_file(dir, 'path/file.rb', mtime: 1.1) }
+    context 'within watched dir' do
+      context 'when path is present' do
+        before { record.update_file(dir, 'file.rb', mtime: 1.1) }
 
-      it 'unsets path' do
-        record.unset_path(dir, 'path/file.rb')
-        expect(record.paths).to eq('/dir' => { 'path' => {} })
+        it 'unsets path' do
+          record.unset_path(dir, 'file.rb')
+          expect(record.paths).to eq('/dir' => {})
+        end
+      end
+
+      context 'when path not present' do
+        it 'unsets path' do
+          record.unset_path(dir, 'file.rb')
+          expect(record.paths).to eq('/dir' => {})
+        end
       end
     end
 
-    context 'path not present' do
-      it 'unsets path' do
-        record.unset_path(dir, 'path/file.rb')
-        expect(record.paths).to eq('/dir' => { 'path' => {} })
+    context 'within subdir' do
+      context 'when path is present' do
+        before { record.update_file(dir, 'path/file.rb', mtime: 1.1) }
+
+        it 'unsets path' do
+          record.unset_path(dir, 'path/file.rb')
+          expect(record.paths).to eq('/dir' => { 'path' => {} })
+        end
+      end
+
+      context 'when path not present' do
+        it 'unsets path' do
+          record.unset_path(dir, 'path/file.rb')
+          expect(record.paths).to eq('/dir' => {})
+        end
       end
     end
   end

@@ -24,8 +24,6 @@ module Listen
 
     def unset_path(dir, rel_path)
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
-
-      @paths[dir.to_s][dirname] ||= {}
       _fast_unset_path(dir, dirname, basename)
     end
 
@@ -93,8 +91,13 @@ module Listen
       root = @paths[dir.to_s]
       # this may need to be reworked to properly remove
       # entries from a tree, without adding non-existing dirs to the record
-      return unless root.key?(dirname)
-      root[dirname].delete(basename)
+      if [nil, '', '.'].include? dirname
+        return unless root.key?(basename)
+        root.delete(basename)
+      else
+        return unless root.key?(dirname)
+        root[dirname].delete(basename)
+      end
     end
 
     def _fast_build(root)
