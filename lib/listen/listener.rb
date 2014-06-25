@@ -176,10 +176,6 @@ module Listen
     end
 
     def _debug_level
-      # TODO: remove? (since there are BSD warnings anyway)
-      bsd = RbConfig::CONFIG['host_os'] =~ /bsd|dragonfly/
-      return Logger::DEBUG if bsd
-
       debugging = ENV['LISTEN_GEM_DEBUGGING'] || options[:debug]
       case debugging.to_s
       when /2/
