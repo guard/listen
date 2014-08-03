@@ -21,7 +21,7 @@ module Listen
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
         attempts = 3
-        @socket = TCPSocket.new(@mq.options[:host], @mq.options[:port])
+        @socket = TCPSocket.new(options.host, options.port)
         @buffer = ''
         async.run
       rescue Celluloid::Task::TerminatedError
