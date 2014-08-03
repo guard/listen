@@ -18,7 +18,6 @@ module Listen
     # TODO: deprecate
     attr_reader :options, :directories
     attr_reader :registry, :supervisor
-    attr_reader :host, :port
 
     # Initializes the directories listener.
     #
@@ -194,7 +193,7 @@ module Listen
 
       if @tcp_mode == :broadcaster
         require 'listen/tcp/broadcaster'
-        supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
+        supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@options[:host], @options[:port]])
 
         # TODO: should be auto started, because if it crashes
         # a new instance is spawned by supervisor, but it's 'start' isn't
@@ -281,15 +280,16 @@ module Listen
       fail ArgumentError, 'missing host/port for TCP' unless target
 
       if @tcp_mode == :recipient
-        @host = 'localhost'
+        @options[:host] = 'localhost'
         @options[:force_tcp] = true
       end
 
       if target.is_a? Fixnum
+        @options[:port] = target
         @port = target
       else
-        @host, port = target.split(':')
-        @port = port.to_i
+        @options[:host], port = target.split(':')
+        @options[:port] = port.to_i
       end
     end
 
