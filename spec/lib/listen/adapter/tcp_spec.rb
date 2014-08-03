@@ -39,7 +39,7 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#start' do
-    it 'initializes and exposes a socket with options host and port' do
+    it 'initializes and exposes a socket with listener options host and port' do
       expect(described_class::TCPSocket).
         to receive(:new).
         with listener.options[:host], listener.options[:port]
