@@ -20,7 +20,7 @@ module Listen
 
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
-        attempts = 3
+        attempts ||= 3
         @socket = TCPSocket.new(options.host, options.port)
         @buffer = ''
         async.run
@@ -30,7 +30,7 @@ module Listen
         sleep 1
         attempts -= 1
         _log :warn, "TCP.start: #{$!.inspect}"
-        retry if retries > 0
+        retry if attempts > 0
         _log :error, "TCP.start: #{$!.inspect}:#{$@.join("\n")}"
         raise
       rescue
