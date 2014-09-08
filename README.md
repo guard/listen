@@ -1,3 +1,5 @@
+### :warning: Listen is [looking for new maintainers](https://groups.google.com/forum/#!topic/guard-dev/2Td0QTvTIsE). Please [contact me](mailto:thibaud@thibaud.gg) if you're interested.
+
 # Listen
 
 [![Gem Version](https://badge.fury.io/rb/listen.png)](http://badge.fury.io/rb/listen) [![Build Status](https://travis-ci.org/guard/listen.png)](https://travis-ci.org/guard/listen) [![Dependency Status](https://gemnasium.com/guard/listen.png)](https://gemnasium.com/guard/listen) [![Code Climate](https://codeclimate.com/github/guard/listen.png)](https://codeclimate.com/github/guard/listen) [![Coverage Status](https://coveralls.io/repos/guard/listen/badge.png?branch=master)](https://coveralls.io/r/guard/listen)
