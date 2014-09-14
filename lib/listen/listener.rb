@@ -197,6 +197,7 @@ module Listen
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
 
+      # TODO: broadcaster should be a separate plugin
       if @tcp_mode == :broadcaster
         require 'listen/tcp/broadcaster'
         supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
@@ -206,6 +207,7 @@ module Listen
         # called
         registry[:broadcaster].start
       elsif @tcp_mode == :recipient
+        # TODO: adapter options should be configured in Listen.{on/to}
         options.first.merge!(host: @host, port: @port)
       end
 
