@@ -21,6 +21,7 @@ module Listen
       # Initializes and starts a Celluloid::IO-powered TCP-recipient
       def start
         attempts = 3
+        _log :info, "TCP: opening socket #{options.host}:#{options.port}"
         @socket = TCPSocket.new(options.host, options.port)
         @buffer = ''
         async.run

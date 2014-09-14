@@ -18,6 +18,9 @@ module Listen
     # TODO: deprecate
     attr_reader :options, :directories
     attr_reader :registry, :supervisor
+
+    # TODO: deprecate
+    # NOTE: these are VERY confusing (broadcast + recipient modes)
     attr_reader :host, :port
 
     # Initializes the directories listener.

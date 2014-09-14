@@ -16,6 +16,7 @@ module Listen
       #
       def initialize(host, port)
         @sockets = []
+        _log :debug, "Broadcaster: starting tcp server: #{host}:#{port}"
         @server = TCPServer.new(host, port)
       rescue
         _log :error, "Broadcaster.initialize: #{$!.inspect}:#{$@.join("\n")}"
