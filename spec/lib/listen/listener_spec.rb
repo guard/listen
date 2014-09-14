@@ -86,7 +86,7 @@ describe Listener do
       subject.start
     end
 
-    it 'supervises adaper' do
+    it 'supervises adapter' do
       allow(Adapter).to receive(:select) { Adapter::Polling }
       options = [mq: subject, directories: []]
       expect(supervisor).to receive(:add).
