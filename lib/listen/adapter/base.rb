@@ -84,7 +84,7 @@ module Listen
       end
 
       def self._log(*args)
-        Celluloid.logger.send(*args)
+        Celluloid::Logger.send(*args)
       end
     end
   end

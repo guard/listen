@@ -52,7 +52,7 @@ module Listen
     private
 
     def _log(type, message)
-      Celluloid.logger.send(type, message)
+      Celluloid::Logger.send(type, message)
     end
   end
 end

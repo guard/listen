@@ -65,9 +65,9 @@ module Listen
         _fast_build(directory.to_s)
       end
 
-      Celluloid.logger.info "Record.build took #{Time.now.to_f - start} seconds"
+      Celluloid::Logger.info "Record.build(): #{Time.now.to_f - start} seconds"
     rescue
-      Celluloid.logger.warn "build crashed: #{$!.inspect}"
+      Celluloid::Logger.warn "build crashed: #{$!.inspect}"
       raise
     end
 
