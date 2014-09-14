@@ -14,9 +14,10 @@ describe Listen::Adapter::TCP do
     instance_double(
       Listen::Listener,
       registry: registry,
-      options: {},
-      host: host,
-      port: port)
+      options: {
+        host: host,
+        port: port
+      })
   end
 
   let(:socket) do
@@ -38,10 +39,10 @@ describe Listen::Adapter::TCP do
   end
 
   describe '#start' do
-    it 'initializes and exposes a socket with listener host and port' do
+    it 'initializes and exposes a socket with listener options host and port' do
       expect(described_class::TCPSocket).
         to receive(:new).
-        with listener.host, listener.port
+        with listener.options[:host], listener.options[:port]
 
       subject.start
       expect(subject.socket).to be socket
