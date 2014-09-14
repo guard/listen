@@ -14,11 +14,15 @@ module Listen
       current = Set.new(path.children)
 
       if options[:silence]
-        _log(:debug) { "Recording: #{rel_path}: #{options.inspect}"\
-          " [#{previous.inspect}] -> (#{current.inspect})" }
+        _log(:debug) do
+          "Recording: #{rel_path}: #{options.inspect}"\
+            " [#{previous.inspect}] -> (#{current.inspect})"
+        end
       else
-        _log(:debug) { "Scanning: #{rel_path}: #{options.inspect}"\
-          " [#{previous.inspect}] -> (#{current.inspect})" }
+        _log(:debug) do
+          "Scanning: #{rel_path}: #{options.inspect}"\
+          " [#{previous.inspect}] -> (#{current.inspect})"
+        end
       end
 
       current.each do |full_path|
@@ -69,6 +73,7 @@ module Listen
     end
 
     def self._log(type, &block)
+      return unless Celluloid.logger
       Celluloid.logger.send(type) do
         block.call
       end
