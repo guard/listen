@@ -15,10 +15,10 @@ module Listen
 
       if options[:silence]
         _log(:debug) { "Recording: #{rel_path}: #{options.inspect}"\
-          " [#{previous.inspect}] -> (#{(self.dof).inspect})" }
+          " [#{previous.inspect}] -> (#{current.inspect})" }
       else
         _log(:debug) { "Scanning: #{rel_path}: #{options.inspect}"\
-          " [#{previous.inspect}] -> (#{self.dof.inspect})" }
+          " [#{previous.inspect}] -> (#{current.inspect})" }
       end
 
       current.each do |full_path|
