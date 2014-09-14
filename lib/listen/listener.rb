@@ -191,6 +191,8 @@ module Listen
     end
 
     def _init_actors
+      options = [mq: self, directories: directories]
+
       @supervisor = Celluloid::SupervisionGroup.run!(registry)
       supervisor.add(Record, as: :record, args: self)
       supervisor.pool(Change, as: :change_pool, args: self)
@@ -203,9 +205,10 @@ module Listen
         # a new instance is spawned by supervisor, but it's 'start' isn't
         # called
         registry[:broadcaster].start
+      elsif @tcp_mode == :recipient
+        options.first.merge!(host: @host, port: @port)
       end
 
-      options = [mq: self, directories: directories]
       supervisor.add(_adapter_class, as: :adapter, args: options)
     end
 
