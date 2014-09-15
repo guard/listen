@@ -12,13 +12,14 @@ module Listen
 
       def _configure(dir, &callback)
         require 'rb-fsevent'
-        @worker ||= FSEvent.new
         opts = { latency: options.latency }
-        @worker.watch(dir.to_s, opts, &callback)
+
+        @workers ||= Queue.new
+        @workers << FSEvent.new.watch(dir.to_s, opts, &callback)
       end
 
       def _run
-        @worker.run
+        @workers.pop.run while !@workers.empty?
       end
 
       def _process_event(dir, event)
