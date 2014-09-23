@@ -15,7 +15,9 @@ module Listen
         opts = { latency: options.latency }
 
         @workers ||= Queue.new
-        @workers << FSEvent.new.watch(dir.to_s, opts, &callback)
+        @workers << FSEvent.new.tap do |worker|
+          worker.watch(dir.to_s, opts, &callback)
+        end
       end
 
       def _run
