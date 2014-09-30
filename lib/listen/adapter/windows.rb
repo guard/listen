@@ -7,10 +7,7 @@ module Listen
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
-          require 'rbconfig'
-          if RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
-            gem 'wdm', '>= 0.1.0'
-          end
+          gem 'wdm', '>= 0.1.0' if Gem.win_platform?
       EOS
 
       def self.usable?
