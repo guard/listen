@@ -4,6 +4,8 @@ Contribute to Listen
 File an issue
 -------------
 
+If you haven't already, first see [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md) for known issues, solutions and workarounds.
+
 You can report bugs and feature requests to [GitHub Issues](https://github.com/guard/listen/issues).
 
 **Please don't ask question in the issue tracker**, instead ask them in our
@@ -11,11 +13,6 @@ You can report bugs and feature requests to [GitHub Issues](https://github.com/g
 
 Try to figure out where the issue belongs to: Is it an issue with Listen itself or with Guard?
 
-When you file a bug, please try to follow these simple rules if applicable:
-
-* Make sure you run Listen with `bundle exec` first.
-* Add your `Guardfile` (if used) and `Gemfile` to the issue.
-* Make sure that the issue is reproducible with your description.
 
 **It's most likely that your bug gets resolved faster if you provide as much information as possible!**
 

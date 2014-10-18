@@ -17,12 +17,13 @@ The Listen gem listens to file modifications and notifies you about the changes.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
 Please note that:
+- Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.)
 - Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 - Windows and \*BSD adapter aren't continuously and automaticaly tested.
 - \*BSD is broken and not supported any more, see: [#220](https://github.com/guard/listen/issues/220)
 
 
-## Pending features
+## Pending features / issues
 
 * ~~Non-recursive directory scanning~~ [#111](https://github.com/guard/listen/issues/111)
 * Symlinks support. [#25](https://github.com/guard/listen/issues/25)
@@ -168,11 +169,12 @@ Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as
 ## Listen adapters
 
 The Listen gem has a set of adapters to notify it when there are changes.
+
 There are 4 OS-specific adapters to support Darwin, Linux, ~~\*BSD~~ and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
 
-There is also a polling adapter which is a cross-platform adapter and it will
-work on any system. This adapter is slower than the rest of the adapters.
+There is also a polling adapter - although it's much slower than other adapters,
+it works on every platform/system and scenario (including network filesystems such as VM shared folders).
 
 The Darwin and Linux adapters are dependencies of the Listen gem so they work out of the box. For other adapters a specific gem will have to be added to your Gemfile, please read below.
 
@@ -182,11 +184,11 @@ while initializing the listener.
 
 ### On Windows
 
-If your are on Windows, you can try to use the [`wdm`](https://github.com/Maher4Ever/wdm) instead of polling.
+If your are on Windows, it's recommended to use the [`wdm`](https://github.com/Maher4Ever/wdm) adapter instead of polling.
+
 Please add the following to your Gemfile:
 
 ```ruby
-require 'rbconfig'
 gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 ```
 
@@ -195,6 +197,7 @@ gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 **NOTE: \*BSD currently is BROKEN with no plans to fix it or support it (see: [#220](https://github.com/guard/listen/issues/220))**
 
 If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
+
 Please add the following to your Gemfile:
 
 ```ruby
@@ -213,29 +216,10 @@ end
 
 ### Issues and troubleshooting
 
-Sometimes OS-specific adapters don't work. :'(
+*NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=1` environment variable, it can be almost impossible to guess why listen is not working as expected.*
 
-Here are some things you could try to avoid forcing polling.
+See [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md)
 
-* [Update your Dropbox client](http://www.dropbox.com/downloading), if you have Dropbox installed.
-* Move or rename the listened directory.
-* Update/reboot your OS.
-* Increase latency.
-* If running Linux, check and see if you need package inotify-tools
-
-If your application keeps using the polling-adapter and you can't figure out why, feel free to [open an issue](https://github.com/guard/listen/issues/new) (and be sure to [give all the details](https://github.com/guard/listen/blob/master/CONTRIBUTING.md)).
-
-Also, if you have problems related to receiving the wrong events, too many
-events or none at all, be sure set the environment variable
-`LISTEN_GEM_DEBUGGING=1` and include the output when reporting a new issue.
-
-If the listener works and then stops listening at some point and no errors are
-shown with `LISTEN_GEM_DEBUGGING=1`, set `LISTEN_GEM_DEBUGGING=2` for full
-logging.
-
-Listen traps SIGINT signal to properly finalize listeners. If you plan
-on trapping this signal yourself - make sure to call `Listen.stop` in
-signal handler.
 
 ## Performance
 
@@ -250,13 +234,15 @@ Also, if the directories you're watching contain many files, make sure you're:
 * not running multiple instances of Listen in the background
 * using a file system with atime modification disabled (ideally)
 * not using a filesystem with inaccurate file modification times (ideally), e.g. HFS, VFAT
-* running Listen with the latency option not too small or too big (depends on needs)
+* running Listen with the `:latency` and `:wait_for_delay` options not too small or too big (depends on needs)
+* not buffering to a slow terminal (e.g. transparency + fancy font + slow gfx card + lots of output)
+* ideally not running a slow encryption stack, e.g. btrfs + ecryptfs
 
 When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and time they happened.
 
 ## Forwarding file events over TCP
 
-Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with [Vagrant](https://github.com/mitchellh/vagrant).
+Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with shared folders in VMs. [Vagrant](https://github.com/mitchellh/vagrant) uses Listen in it's rsync-auto mode to solve this issue.
 
 To broadcast events over TCP programmatically, use the `forward_to` option with an address - just a port or a hostname/port combination:
 
