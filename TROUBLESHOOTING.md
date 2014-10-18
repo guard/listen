@@ -35,7 +35,7 @@ INFO -- : listen: raw changes: [[:added, "/home/me/foo"]]
 INFO -- : listen: final changes: {:modified=>[], :added=>["/home/me/foo"], :removed=>[]}
 ```
 
-("raw changes" contains changes collected during the `latency` interval, while "final changes" is what listen decided are relevant changes)
+"raw changes" contains changes collected during the `:wait_for_delay` and `:latency` intervals, while "final changes" is what listen decided are relevant changes (for better editor support).
 
 ## Adapter-specific diagnostics
 
@@ -100,9 +100,11 @@ Here are common issues grouped by area in which they occur:
   * watched folders moved/removed while listen was running (try restarting listen and moving/copying watched folder to a new location)
 
 4. Insufficient latency (for polling and rb-fsevent)
-  * slow hard drive
   * too many files being watched (polling) and not enough threads or CPU power
   * slow editor save (see below)
+  * slow hard drive
+  * encryption
+  * a combination of factors
 
 5. Too few or too many callbacks (`:wait_for_delay` option)
   * complex editor file-save causes events to happen during callback (result: multiple callbacks if wait_for_delay is too small)
