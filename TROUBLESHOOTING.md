@@ -1,17 +1,17 @@
 # Issues and troubleshooting
 
-## 3 steps before you diagnose problems
+## 3 steps before you start diagnosing problems
 
 These 3 steps will:
 * help quickly troubleshoot issues caused by obscure problems
-* help quickly identify the area of the problem (a full list is below)
+* help quickly identify the area of the problem (a full list is [below](#known-issues))
 * help you get familiar with listen's diagnostic mode
 * help you create relevant output before you submit an issue
 
 1) For effective troubleshooting set the `LISTEN_GEM_DEBUGGING=1` variable
 before starting listen.
 
-2) Verify polling works with polling (see `force_polling` option).
+2) Verify polling works (see `force_polling` option).
 
 After starting listen, you should see something like:
 ```
@@ -19,12 +19,12 @@ INFO -- : Celluloid loglevel set to: 1
 INFO -- : Record.build(): 0.06773114204406738 seconds
 ```
 
-(Listen uses Celluloid for logging, so if you don't see anything, Celluloid.logger might have been disabled by a different gem, e.g. sidekiq)
+(Listen uses [Celluloid](https://github.com/celluloid/celluloid) for logging, so if you don't see anything, `Celluloid.logger` might have been disabled by a different gem, e.g. sidekiq)
 
-If you don't see "Record.build()":
-- and there's a lot of disk activity, you may have to wait a few seconds
-- you may be using an outdated version of Listen
-- listen may have got stuck on a recursive symlink, see #259
+If you don't see the line `Record.build()`:
+* and there's a lot of disk activity, you may have to wait a few seconds
+* you may be using an outdated version of Listen
+* listen may have got stuck on a recursive symlink, see #259
 
 3) Make changes e.g. `touch foo` or `echo "a" >> foo` (for troubleshooting, avoid using an editor which could generate too many misleading events)
 
@@ -39,7 +39,9 @@ INFO -- : listen: final changes: {:modified=>[], :added=>["/home/me/foo"], :remo
 
 ## Adapter-specific diagnostics
 
-Use the `LISTEN_GEM_DEBUGGING` set to '2' for additional info, e.g. you'll get:
+Use the `LISTEN_GEM_DEBUGGING` set to `2` for additional info.
+
+E.g. you'll get:
 
 ```
 INFO -- : Celluloid loglevel set to: 0
@@ -71,12 +73,12 @@ This shows:
 
 #### Known issues
 
-After the above troubleshoot, you should have an idea which of the areas is causing problems:
+Here are common issues grouped by area in which they occur:
 
 1. System/OS
   * [Update your Dropbox client](http://www.dropbox.com/downloading), if you have Dropbox installed.
   * old MacOS (< 10.6)
-  * certain old versions of Ruby (try a newer Ruby on Windows for wdm and TCP mode to work)
+  * certain old versions of Ruby (try a newer Ruby on Windows for `wdm` and TCP mode to work)
   * system limits
     * threads for Celluloid (e.g. Virtual Machine CPU/RAM limitations)
     * [inotify limits (Linux)](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers)
@@ -84,17 +86,18 @@ After the above troubleshoot, you should have an idea which of the areas is caus
   * FSEvent bug: (http://feedback.livereload.com/knowledgebase/articles/86239)
 
 2. Installation/gems/config
-  * not running list or app (e.g. guard) with `bundle exec` first
+  * not running listen or your app (e.g. guard) with `bundle exec` first
   * old version of listen
-  * problems with adapter gems (wdm, rb-fsevent, rb-inotify) not installed, not detected properly (Windows) or not in Gemfile (Windows)
+  * problems with adapter gems (`wdm`, `rb-fsevent`, `rb-inotify`) not installed, not detected properly (Windows) or not in Gemfile (Windows)
   * Celluloid actors are silently crashing (when no LISTEN_GEM_DEBUGGING variable is present)
   * see the [Performance](https://github.com/guard/listen/blob/master/README.md#Performance) section in the README
 
 3. Filesystem
   * VM shared folders and network folders (NFS, Samba, SSHFS) don't work with optimized backends (workaround: polling, [TCP mode](https://github.com/guard/listen/blob/master/README.md#forwarding-file-events-over-tcp), Vagrant's rsync-auto mode, rsync/unison)
-  * FAT/HFS has 1-sec precision, which causes polling to be very slow on large files (try `LISTEN_GEM_DISABLE_HASING` variable)
+  * FAT/HFS timestamps have 1-second precision, which can cause polling and rb-fsevent to be very slow on large files (try `LISTEN_GEM_DISABLE_HASING` variable)
   * virtual filesystems may not implement event monitoring
-  * file/folder permissions or folders moved/removed (try restarting listen and moving/copying watched folder to a new location)
+  * restrictive file/folder permissions
+  * watched folders moved/removed while listen was running (try restarting listen and moving/copying watched folder to a new location)
 
 4. Insufficient latency (for polling and rb-fsevent)
   * slow hard drive
@@ -114,7 +117,7 @@ After the above troubleshoot, you should have an idea which of the areas is caus
   * TCP paths don't match with client's current working directory
 
 7. Editors
-  * "atomic save" in editors may confuse listen
+  * "atomic save" in editors may confuse listen (disable it and try again)
   * listen's default ignore rules may need tweaking
   * your editor may not be supported yet (see default ignore rules for editors)
   * use `touch foo` or `echo "a" >> foo`  to confirm it's an editor issue

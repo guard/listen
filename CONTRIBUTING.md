@@ -16,6 +16,9 @@ Try to figure out where the issue belongs to: Is it an issue with Listen itself 
 
 **It's most likely that your bug gets resolved faster if you provide as much information as possible!**
 
+The MOST useful information is debugging output from Listen (`LISTEN_GEM_DEBUGGING=1`) - see [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md) for details.
+
+
 Development
 -----------
 
