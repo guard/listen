@@ -94,7 +94,7 @@ Here are common issues grouped by area in which they occur:
 
 3. Filesystem
   * VM shared folders and network folders (NFS, Samba, SSHFS) don't work with optimized backends (workaround: polling, [TCP mode](https://github.com/guard/listen/blob/master/README.md#forwarding-file-events-over-tcp), Vagrant's rsync-auto mode, rsync/unison)
-  * FAT/HFS timestamps have 1-second precision, which can cause polling and rb-fsevent to be very slow on large files (try `LISTEN_GEM_DISABLE_HASING` variable)
+  * FAT/HFS timestamps have 1-second precision, which can cause polling and rb-fsevent to be very slow on large files (try `LISTEN_GEM_DISABLE_HASHING` variable)
   * virtual filesystems may not implement event monitoring
   * restrictive file/folder permissions
   * watched folders moved/removed while listen was running (try restarting listen and moving/copying watched folder to a new location)
