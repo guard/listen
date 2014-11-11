@@ -40,6 +40,7 @@ module Listen
       if Celluloid.logger
         Celluloid.logger.level = _debug_level
         _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
+        _log :info, "Listen version: #{Listen::VERSION}"
       end
 
       @silencer = Silencer.new
