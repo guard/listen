@@ -3,6 +3,8 @@ require 'rubygems'
 require 'listen'
 require 'listen/tcp'
 
+require 'listen/internals/thread_pool'
+
 def ci?
   ENV['CI']
 end
@@ -40,9 +42,11 @@ Thread.abort_on_exception = true
 Celluloid.logger.level = Logger::ERROR
 
 RSpec.configuration.before(:each) do
+  Listen::Internals::ThreadPool.stop
   Celluloid.boot
 end
 
 RSpec.configuration.after(:each) do
   Celluloid.shutdown
+  Listen::Internals::ThreadPool.stop
 end
