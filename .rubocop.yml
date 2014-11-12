@@ -16,7 +16,7 @@ AllCops:
     - Guardfile
     - Rakefile
 
-#TODO: put your overrides here:
-+StringLiterals:
-+  EnforcedStyle: single_quotes
-+  Enabled: true
+# TODO: put your overrides here:
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+  Enabled: true
