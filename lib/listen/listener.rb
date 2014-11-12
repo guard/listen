@@ -1,4 +1,6 @@
 require 'pathname'
+
+require 'listen/version'
 require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
