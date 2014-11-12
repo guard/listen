@@ -42,7 +42,7 @@ module Listen
       actions << :added if actions.delete(:moved_to)
       actions << :removed if actions.delete(:moved_from)
 
-      modified = actions.detect { |x| x == :modified }
+      modified = actions.find { |x| x == :modified }
       _calculate_add_remove_difference(actions, path, modified)
     end
 

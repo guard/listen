@@ -429,7 +429,7 @@ describe Listener do
 
         changes = [
           [:file, :moved_from, dir, 'ignored', cookie: 4321],
-          [:file, :moved_to, dir, 'foo' , cookie: 4321]
+          [:file, :moved_to, dir, 'foo', cookie: 4321]
         ]
 
         expect(silencer).to receive(:silenced?).

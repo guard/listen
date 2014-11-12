@@ -1,6 +1,8 @@
 require 'celluloid'
 require 'listen/listener'
 
+require 'listen/internals/thread_pool'
+
 module Listen
   class << self
     # Listens to file system modifications on a either single directory or
@@ -21,11 +23,9 @@ module Listen
     def to(*args, &block)
       Celluloid.boot unless Celluloid.running?
       options = args.last.is_a?(Hash) ? args.last : {}
-      if target = options.delete(:forward_to)
-        _add_listener(target, :broadcaster, *args, &block)
-      else
-        _add_listener(*args, &block)
-      end
+      target = options.delete(:forward_to)
+      args = ([target, :broadcaster] + args) if target
+      _add_listener(*args, &block)
     end
 
     # Stop all listeners & Celluloid
@@ -36,6 +36,7 @@ module Listen
     # This is used by the `listen` binary to handle Ctrl-C
     #
     def stop
+      Internals::ThreadPool.stop
       @listeners ||= []
 
       # TODO: should use a mutex for this
