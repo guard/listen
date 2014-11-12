@@ -285,7 +285,7 @@ describe Listen::Record do
           to eq(
             'foo' => {},
             'foo/bar' => {},
-            'foo/baz' => {},
+            'foo/baz' => {}
         )
         expect(record.paths['/dir2']).to eq({})
       end

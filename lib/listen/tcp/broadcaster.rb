@@ -16,10 +16,12 @@ module Listen
       #
       def initialize(host, port)
         @sockets = []
-        _log :debug, "Broadcaster: starting tcp server: #{host}:#{port}"
+        _log :debug, format('Broadcaster: tcp server listening on: %s:%s',
+                            host, port)
         @server = TCPServer.new(host, port)
       rescue
-        _log :error, "Broadcaster.initialize: #{$!.inspect}:#{$@.join("\n")}"
+        _log :error, format('Broadcaster.initialize: %s:%s', $ERROR_INFO,
+                            $ERROR_POSITION * "\n")
         raise
       end
 
@@ -48,13 +50,14 @@ module Listen
 
       # Continuously accept and handle incoming connections
       def run
-        while socket = @server.accept
+        while (socket = @server.accept)
           @sockets << socket
         end
       rescue Celluloid::Task::TerminatedError
-        _log :debug, "TCP adapter was terminated: #{$!.inspect}"
+        _log :debug, "TCP adapter was terminated: #{$ERROR_INFO}"
       rescue
-        _log :error, "Broadcaster.run: #{$!.inspect}:#{$@.join("\n")}"
+        _log :error, format('Broadcaster.run: %s:%s', $ERROR_INFO,
+                            $ERROR_POSITION * "\n")
         raise
       end
 

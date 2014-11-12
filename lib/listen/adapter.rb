@@ -22,14 +22,15 @@ module Listen
       _warn_polling_fallback(options)
       Polling
     rescue
-      _log :warn, "Adapter: failed: #{$!.inspect}:#{$@.join("\n")}"
+      _log :warn, format('Adapter: failed: %s:%s', $ERROR_POSITION.inspect,
+                         $ERROR_POSITION * "\n")
       raise
     end
 
     private
 
     def self._usable_adapter_class
-      OPTIMIZED_ADAPTERS.detect(&:usable?)
+      OPTIMIZED_ADAPTERS.find(&:usable?)
     end
 
     def self._warn_polling_fallback(options)

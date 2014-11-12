@@ -67,7 +67,7 @@ module Listen
 
       Celluloid::Logger.info "Record.build(): #{Time.now.to_f - start} seconds"
     rescue
-      Celluloid::Logger.warn "build crashed: #{$!.inspect}"
+      Celluloid::Logger.warn "build crashed: #{$ERROR_INFO.inspect}"
       raise
     end
 
@@ -105,7 +105,7 @@ module Listen
       left = Queue.new
       left << '.'
 
-      while !left.empty?
+      until left.empty?
         dirname = left.pop
         add_dir(root, dirname)
 
