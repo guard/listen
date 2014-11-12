@@ -1,5 +1,5 @@
-inherit_from:
-  vendor/hound/config/style_guides/ruby.yml
+#inherit_from:
+#  vendor/hound/config/style_guides/ruby.yml
 
 inherit_from:
   .rubocop_todo.yml
@@ -17,3 +17,6 @@ AllCops:
     - Rakefile
 
 #TODO: put your overrides here:
++StringLiterals:
++  EnforcedStyle: single_quotes
++  Enabled: true
