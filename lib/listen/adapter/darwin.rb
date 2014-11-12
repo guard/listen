@@ -21,7 +21,7 @@ module Listen
       end
 
       def _run
-        @workers.pop.run while !@workers.empty?
+        @workers.pop.run until @workers.empty?
       end
 
       def _process_event(dir, event)

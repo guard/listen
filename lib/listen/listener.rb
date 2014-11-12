@@ -242,8 +242,9 @@ module Listen
         _process_changes unless state == :paused
       end
     rescue RuntimeError
-      Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
-      Kernel.warn "Backtrace:\n\t#{$@.join("\n\t")}"
+      Kernel.warn format(
+        "Listen warning: exception in processing events: %s\nBacktrace:\n\t%s",
+        $ERROR_INFO, $ERROR_POSITION * "\n\t")
     end
 
     def _silenced?(path, type)
@@ -271,9 +272,7 @@ module Listen
       @last_queue_event_time = nil
 
       changes = []
-      while !@queue.empty?
-        changes << @queue.pop
-      end
+      changes << @queue.pop until @queue.empty?
 
       return if block.nil?
 
@@ -344,7 +343,8 @@ module Listen
 
       worker.change(type, dir, rel_path, options)
     rescue RuntimeError
-      _log :error, "#{__method__} crashed: #{$!}:#{$@.join("\n")}"
+      _log :error, format('%s crashed: %s:%s', __method__, $ERROR_INFO,
+                          $ERROR_POSITION * "\n")
       raise
     end
   end

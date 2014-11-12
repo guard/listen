@@ -14,8 +14,8 @@ Gem::Specification.new do |s|
   s.description = 'The Listen gem listens to file modifications and '\
     'notifies you about the changes. Works everywhere!'
 
-  s.files        = `git ls-files`.split($/)
-  s.test_files   = s.files.grep(%r{^spec/})
+  s.files        = `git ls-files`.split($INPUT_RECORD_SEPARATOR)
+  s.test_files   = s.files.grep(/^spec\//)
   s.executable   = 'listen'
   s.require_path = 'lib'
 

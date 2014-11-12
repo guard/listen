@@ -22,7 +22,8 @@ module Listen
       _warn_polling_fallback(options)
       Polling
     rescue
-      _log :warn, "Adapter: failed: #{$!.inspect}:#{$@.join("\n")}"
+      _log :warn, format('Adapter: failed: %s:%s', $ERROR_POSITION.inspect,
+                         $ERROR_POSITION * "\n")
       raise
     end
 

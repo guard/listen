@@ -6,7 +6,10 @@ describe Listen::Listener do
   let(:broadcast_options) { { forward_to: port } }
   let(:paths) { Pathname.new(Dir.pwd) }
 
-  around { |example| fixtures { example.run } }
+  around do |example|
+    fixtures { example.run }
+    Listen.stop
+  end
 
   modes = if !windows? || Celluloid::VERSION > '0.15.2'
             [:recipient, :broadcaster]
