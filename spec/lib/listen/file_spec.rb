@@ -6,7 +6,7 @@ describe Listen::File do
       Listen::Record,
       add_dir: true,
       update_file: true,
-      unset_path: true,
+      unset_path: true
     )
   end
 
@@ -116,17 +116,17 @@ describe Listen::File do
             let(:record_mtime) { stat_mtime.to_f }
 
             context 'with accurate stat times' do
-              let(:stat_mtime) { Time.at(1401235714.123) }
-              let(:stat_atime) { Time.at(1401235714.123) }
-              let(:stat_ctime) { Time.at(1401235714.123) }
+              let(:stat_mtime) { Time.at(1_401_235_714.123) }
+              let(:stat_atime) { Time.at(1_401_235_714.123) }
+              let(:stat_ctime) { Time.at(1_401_235_714.123) }
               let(:record_mtime) { stat_mtime.to_f }
               it { should be_nil }
             end
 
             context 'with inaccurate stat times' do
-              let(:stat_mtime) { Time.at(1401235714.0) }
-              let(:stat_atime) { Time.at(1401235714.0) }
-              let(:stat_ctime) { Time.at(1401235714.0) }
+              let(:stat_mtime) { Time.at(1_401_235_714.0) }
+              let(:stat_atime) { Time.at(1_401_235_714.0) }
+              let(:stat_ctime) { Time.at(1_401_235_714.0) }
 
               let(:record_mtime) { stat_mtime.to_f }
 
@@ -135,7 +135,7 @@ describe Listen::File do
 
                 # NOTE: if real mtime is ???14.99, the
                 # saved mtime is ???14.0
-                let(:now) { Time.at(1401235716.00) }
+                let(:now) { Time.at(1_401_235_716.00) }
                 it { should be_nil }
               end
 
@@ -144,17 +144,17 @@ describe Listen::File do
                 # so saved mtime at ???14.0 means it could be
                 # ???14.999, so ???15.999 could still be within 1 second
                 # range
-                let(:now) { Time.at(1401235715.999999) }
+                let(:now) { Time.at(1_401_235_715.999999) }
 
                 before { allow(Time).to receive(:now) { now } }
 
                 context 'without available md5' do
                   let(:md5) { fail Errno::ENOENT }
 
-                  # Treat is as an ignored file, because chances are ...  ...
+                  # Treat it as a removed file, because chances are ...
                   # whatever is listening for changes won't be able to deal
                   # with the file either (e.g. because of permissions)
-                  it { should be nil }
+                  it { should be :removed }
 
                   it 'should not unset record' do
                     expect(async_record).to_not receive(:unset_path)
@@ -229,23 +229,23 @@ describe Listen::File do
     subject { Listen::File.inaccurate_mac_time?(stat) }
 
     context 'with no accurate times' do
-      let(:mtime) { Time.at(1234567.0) }
-      let(:atime) { Time.at(1234567.0) }
-      let(:ctime) { Time.at(1234567.0) }
+      let(:mtime) { Time.at(1_234_567.0) }
+      let(:atime) { Time.at(1_234_567.0) }
+      let(:ctime) { Time.at(1_234_567.0) }
       it { should be_truthy }
     end
 
     context 'with all accurate times' do
-      let(:mtime) { Time.at(1234567.89) }
-      let(:atime) { Time.at(1234567.89) }
-      let(:ctime) { Time.at(1234567.89) }
+      let(:mtime) { Time.at(1_234_567.89) }
+      let(:atime) { Time.at(1_234_567.89) }
+      let(:ctime) { Time.at(1_234_567.89) }
       it { should be_falsey }
     end
 
     context 'with one accurate time' do
-      let(:mtime) { Time.at(1234567.0) }
-      let(:atime) { Time.at(1234567.89) }
-      let(:ctime) { Time.at(1234567.0) }
+      let(:mtime) { Time.at(1_234_567.0) }
+      let(:atime) { Time.at(1_234_567.89) }
+      let(:ctime) { Time.at(1_234_567.0) }
       it { should be_falsey }
     end
   end

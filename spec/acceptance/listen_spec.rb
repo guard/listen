@@ -23,8 +23,7 @@ describe 'Listen' do
 
       it 'warns the backtrace' do
         expect(Kernel).to receive(:warn).
-          with('[Listen warning]: Change block raised an exception: foo')
-        expect(Kernel).to receive(:warn).with(/^Backtrace:.*/)
+          with(/exception while processing events: foo .*Backtrace:/)
         wrapper.listen { touch 'file.rb' }
       end
     end

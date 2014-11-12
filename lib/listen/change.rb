@@ -43,9 +43,10 @@ module Listen
         end
       end
     rescue Celluloid::Task::TerminatedError
-      _log :debug, "Change#change was terminated: #{$!.inspect}"
+      _log :debug, "Change#change was terminated: #{$ERROR_INFO.inspect}"
     rescue RuntimeError
-      _log :error, "Change#change crashed #{$!.inspect}:#{$@.join("\n")}"
+      _log :error, format('Change#change crashed %s:%s', $ERROR_INFO.inspect,
+                          $ERROR_POSITION * "\n")
       raise
     end
 

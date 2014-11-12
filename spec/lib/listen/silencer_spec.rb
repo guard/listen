@@ -49,7 +49,7 @@ describe Listen::Silencer do
     end
 
     context 'when ignoring foo/bar* and *.pid' do
-      let(:options) { { ignore: [%r{^foo/bar}, /\.pid$/] } }
+      let(:options) { { ignore: [/^foo\/bar/, /\.pid$/] } }
       it { should_not accept(:file, 'foo/bar/baz') }
       it { should_not accept(:file, 'foo.pid') }
     end
@@ -61,13 +61,13 @@ describe Listen::Silencer do
     end
 
     context 'when accepting only *foo*' do
-      let(:options) { { only: %r{foo} } }
+      let(:options) { { only: /foo/ } }
       it { should accept(:file, 'foo') }
       it { should_not accept(:file, 'bar') }
     end
 
     context 'when accepting only foo/* and *.txt' do
-      let(:options) { { only: [%r{^foo/}, %r{\.txt$}] } }
+      let(:options) { { only: [/^foo\//, /\.txt$/] } }
       it { should accept(:file, 'foo/bar.rb') }
       it { should accept(:file, 'bar.txt') }
       it { should_not accept(:file, 'bar/baz.rb') }
@@ -76,7 +76,7 @@ describe Listen::Silencer do
 
     context 'when accepting only *.pid' do
       context 'when ignoring bar*' do
-        let(:options) { { only: /\.pid$/, ignore: %r{^bar} } }
+        let(:options) { { only: /\.pid$/, ignore: /^bar/ } }
         it { should_not accept(:file, 'foo.rb') }
         it { should_not accept(:file, 'bar.pid') }
         it { should accept(:file, 'foo.pid') }

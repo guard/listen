@@ -26,16 +26,18 @@ module Listen
         @buffer = ''
         async.run
       rescue Celluloid::Task::TerminatedError
-        _log :debug, "TCP adapter was terminated: #{$!.inspect}"
+        _log :debug, "TCP adapter was terminated: #{$ERROR_INFO.inspect}"
       rescue Errno::ECONNREFUSED
         sleep 1
         attempts -= 1
-        _log :warn, "TCP.start: #{$!.inspect}"
+        _log :warn, "TCP.start: #{$ERROR_INFO.inspect}"
         retry if attempts > 0
-        _log :error, "TCP.start: #{$!.inspect}:#{$@.join("\n")}"
+        _log :error, format('TCP.start: %s:%s', $ERROR_INFO.inspect,
+                            $ERROR_POSITION * "\n")
         raise
       rescue
-        _log :error, "TCP.start: #{$!.inspect}:#{$@.join("\n")}"
+        _log :error, format('TCP.start: %s:%s', $ERROR_INFO.inspect,
+                            $ERROR_POSITION * "\n")
         raise
       end
 
@@ -65,7 +67,8 @@ module Listen
           handle_message(message)
         end
       rescue
-        _log :error, "TCP.handle_data crashed: #{$!}:#{$@.join("\n")}"
+        _log :error, format('TCP.handle_data crashed: %s:%s', $ERROR_INFO,
+                            $ERROR_POSITION * "\n")
         raise
       end
 

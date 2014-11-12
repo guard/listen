@@ -55,9 +55,7 @@ module Listen
       listener = Listen.to directory, forward_to: address, &callback
       listener.start
 
-      while listener.listen?
-        sleep 0.5
-      end
+      sleep 0.5 while listener.listen?
     end
   end
 end

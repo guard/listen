@@ -15,7 +15,9 @@ module Listen
         require 'wdm'
         true
       rescue LoadError
-        _log :debug, "wdm - load failed: #{$!}:#{$@.join("\n")}"
+        _log :debug, format('wdm - load failed: %s:%s', $ERROR_INFO,
+                            $ERROR_POSITION * "\n")
+
         Kernel.warn BUNDLER_DECLARE_GEM
         false
       end
@@ -79,7 +81,8 @@ module Listen
         end
       rescue
         details = event.inspect
-        _log :error, "wdm - callback (#{details}): #{$!}:#{$@.join("\n")}"
+        _log :error, format('wdm - callback (%): %s:%s', details, $ERROR_INFO,
+                            $ERROR_POSITION * "\n")
         raise
       end
 
