@@ -1,3 +1,5 @@
+require 'listen/internals/thread_pool'
+
 module Listen
   module Adapter
     # Adapter implementation for Mac OS X `FSEvents`.
@@ -10,6 +12,7 @@ module Listen
 
       private
 
+      # NOTE: each directory gets a DIFFERENT callback!
       def _configure(dir, &callback)
         require 'rb-fsevent'
         opts = { latency: options.latency }
@@ -20,8 +23,20 @@ module Listen
         end
       end
 
+      # NOTE: _run is called within a thread, so run every other
+      # worker in it's own thread
       def _run
-        @workers.pop.run until @workers.empty?
+        first = @workers.pop
+        until @workers.empty?
+          Listen::Internals::ThreadPool.add do
+            begin
+              @workers.pop.run
+            rescue
+              _log_exception 'run() in extra thread(s) failed: %s: %s'
+            end
+          end
+        end
+        first.run
       end
 
       def _process_event(dir, event)

@@ -53,7 +53,7 @@ module Listen
 
       def start
         configure
-        Thread.new do
+        Listen::Internals::ThreadPool.add do
           begin
             _run
           rescue
