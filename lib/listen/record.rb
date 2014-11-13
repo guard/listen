@@ -1,7 +1,9 @@
+require 'listen/record/entry'
+require 'listen/record/symlink_detector'
+
 module Listen
   class Record
     include Celluloid
-
     # TODO: one Record object per watched directory?
 
     # TODO: deprecate
@@ -100,34 +102,32 @@ module Listen
       end
     end
 
+    # TODO: test with a file name given
+    # TODO: test other permissions
+    # TODO: test with mixed encoding
     def _fast_build(root)
+      symlink_detector = SymlinkDetector.new
       @paths[root] = _auto_hash
-      left = Queue.new
-      left << '.'
+      remaining = Queue.new
+      remaining << Entry.new(root, nil, nil)
+      _fast_build_dir(remaining, symlink_detector) until remaining.empty?
+    end
 
-      until left.empty?
-        dirname = left.pop
-        add_dir(root, dirname)
+    def _fast_build_dir(remaining, symlink_detector)
+      entry = remaining.pop
+      entry.children.each { |child| remaining << child }
+      symlink_detector.verify_unwatched!(entry)
+      add_dir(entry.root, entry.record_dir_key)
+    rescue Errno::ENOTDIR
+      _fast_try_file(entry)
+    rescue SystemCallError
+      _fast_unset_path(entry.root, entry.relative, entry.name)
+    end
 
-        path = ::File.join(root, dirname)
-        current = Dir.entries(path.to_s) - %w(. ..)
-
-        current.each do |entry|
-          full_path = ::File.join(path, entry)
-
-          if Dir.exist?(full_path)
-            left << (dirname == '.' ? entry : ::File.join(dirname, entry))
-          else
-            begin
-              lstat = ::File.lstat(full_path)
-              data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
-              _fast_update_file(root, dirname, entry, data)
-            rescue SystemCallError
-              _fast_unset_path(root, dirname, entry)
-            end
-          end
-        end
-      end
+    def _fast_try_file(entry)
+      _fast_update_file(entry.root, entry.relative, entry.name, entry.meta)
+    rescue SystemCallError
+      _fast_unset_path(entry.root, entry.relative, entry.name)
     end
   end
 end
