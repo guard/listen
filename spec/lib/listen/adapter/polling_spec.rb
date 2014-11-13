@@ -26,6 +26,7 @@ describe Adapter::Polling do
       t = Thread.new { subject.start }
       sleep 0.25
       t.kill
+      t.join
     end
   end
 

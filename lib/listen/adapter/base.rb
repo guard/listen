@@ -28,7 +28,7 @@ module Listen
         defaults = self.class.const_get('DEFAULTS')
         @options = Listen::Options.new(options, defaults)
       rescue
-        _log :error, "adapter config failed: #{$!}:#{$@.join("\n")}"
+        _log_exception 'adapter config failed: %s:%s'
         raise
       end
 
@@ -53,11 +53,11 @@ module Listen
 
       def start
         configure
-        Thread.new do
+        Listen::Internals::ThreadPool.add do
           begin
             _run
           rescue
-            _log :error, "run() in thread failed: #{$!}:#{$@.join("\n")}"
+            _log_exception 'run() in thread failed: %s:%s'
             raise
           end
         end
@@ -81,6 +81,10 @@ module Listen
 
       def _log(*args)
         self.class.send(:_log, *args)
+      end
+
+      def _log_exception(msg)
+        _log :error, format(msg, $ERROR_INFO, $ERROR_POSITION * "\n")
       end
 
       def self._log(*args)

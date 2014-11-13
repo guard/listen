@@ -13,16 +13,10 @@ module Listen
       path = dir + rel_path
       current = Set.new(path.children)
 
-      if options[:silence]
-        _log(:debug) do
-          "Recording: #{rel_path}: #{options.inspect}"\
-            " [#{previous.inspect}] -> (#{current.inspect})"
-        end
-      else
-        _log(:debug) do
-          "Scanning: #{rel_path}: #{options.inspect}"\
-          " [#{previous.inspect}] -> (#{current.inspect})"
-        end
+      _log(:debug) do
+        format('%s: %s(%s): %s -> %s',
+               (options[:silence] ? 'Recording' : 'Scanning'),
+               rel_path, options.inspect, previous.inspect, current.inspect)
       end
 
       current.each do |full_path|
@@ -46,7 +40,9 @@ module Listen
       _async_changes(dir, path, queue, previous, options)
       _change(queue, :file, dir, rel_path, options)
     rescue
-      _log(:warn) { "scanning DIED: #{$!}:#{$@.join("\n")}" }
+      _log(:warn) do
+        format('scan DIED: %s:%s', $ERROR_INFO, $ERROR_POSITION * "\n")
+      end
       raise
     end
 

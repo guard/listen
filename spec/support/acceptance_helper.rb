@@ -3,7 +3,7 @@
   addition: :added,
   removal: :removed,
   queued_modification: :modified,
-  queued_addition: :added,
+  queued_addition: :added
 }.each do |description, type|
 
   RSpec::Matchers.define "process_#{description}_of".to_sym do |expected|
@@ -195,9 +195,7 @@ class ListenerWrapper
 
       # Polling sleep (default: 1s)
       adapter = @listener.sync(:adapter)
-      if adapter.is_a?(Listen::Adapter::Polling)
-        sleep adapter.options.latency
-      end
+      sleep(adapter.options.latency) if adapter.is_a?(Listen::Adapter::Polling)
 
       # Lag should include:
       #  0.1s - 0.2s if the test needs Listener queue to be processed

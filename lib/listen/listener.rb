@@ -8,6 +8,8 @@ require 'listen/silencer'
 require 'listen/queue_optimizer'
 require 'English'
 
+require 'listen/internals/logging'
+
 module Listen
   class Listener
     include Celluloid::FSM
@@ -41,8 +43,8 @@ module Listen
       # Setup logging first
       if Celluloid.logger
         Celluloid.logger.level = _debug_level
-        _log :info, "Celluloid loglevel set to: #{Celluloid.logger.level}"
-        _log :info, "Listen version: #{Listen::VERSION}"
+        _info "Celluloid loglevel set to: #{Celluloid.logger.level}"
+        _info "Listen version: #{Listen::VERSION}"
       end
 
       @silencer = Silencer.new
@@ -175,6 +177,8 @@ module Listen
 
     private
 
+    include Internals::Logging
+
     def _init_options(options = {})
       { debug: false,
         latency: nil,
@@ -242,8 +246,7 @@ module Listen
         _process_changes unless state == :paused
       end
     rescue RuntimeError
-      Kernel.warn "[Listen warning]: Change block raised an exception: #{$!}"
-      Kernel.warn "Backtrace:\n\t#{$@.join("\n\t")}"
+      Kernel.warn _format_error('exception while processing events: %s %s')
     end
 
     def _silenced?(path, type)
@@ -254,10 +257,6 @@ module Listen
       # Don't run async, because configuration has to finish first
       adapter = sync(:adapter)
       adapter.start
-    end
-
-    def _log(type, message)
-      Celluloid::Logger.send(type, message)
     end
 
     def _adapter_class
@@ -271,9 +270,7 @@ module Listen
       @last_queue_event_time = nil
 
       changes = []
-      while !@queue.empty?
-        changes << @queue.pop
-      end
+      changes << @queue.pop until @queue.empty?
 
       return if block.nil?
 
@@ -283,7 +280,7 @@ module Listen
       block_start = Time.now.to_f
       # TODO: condition not tested, but too complex to test ATM
       block.call(*result) unless result.all?(&:empty?)
-      _log :debug, "Callback took #{Time.now.to_f - block_start} seconds"
+      _debug "Callback took #{Time.now.to_f - block_start} seconds"
     end
 
     attr_reader :wait_thread
@@ -335,16 +332,16 @@ module Listen
     end
 
     def _queue_raw_change(type, dir, rel_path, options)
-      _log :debug, "raw queue: #{[type, dir, rel_path, options].inspect}"
+      _debug "raw queue: #{[type, dir, rel_path, options].inspect}"
 
       unless (worker = async(:change_pool))
-        _log :warn, 'Failed to allocate worker from change pool'
+        _warn 'Failed to allocate worker from change pool'
         return
       end
 
       worker.change(type, dir, rel_path, options)
     rescue RuntimeError
-      _log :error, "#{__method__} crashed: #{$!}:#{$@.join("\n")}"
+      _error_exception "_queue_raw_change exception %s:\n%s:\n"
       raise
     end
   end
