@@ -193,21 +193,24 @@ describe Listen::Record do
     before do
       allow(listener).to receive(:directories) { directories }
 
-      allow(::File).to receive(:lstat) do |path|
-        fail "::File.lstat stub called with: #{path.inspect}"
-      end
+      stubs = {
+        ::File => %w(lstat realpath),
+        ::Dir => %w(entries exist?)
+      }
 
-      allow(::Dir).to receive(:entries) do |path|
-        fail "::Dir.entries stub called with: #{path.inspect}"
-      end
-
-      allow(::Dir).to receive(:exist?) do |path|
-        fail "::Dir.exist? stub called with: #{path.inspect}"
+      stubs.each do |klass, meths|
+        meths.each do |meth|
+          allow(klass).to receive(meth.to_sym) do |*args|
+            fail "stub called: #{klass}.#{meth}(#{args.map(&:inspect) * ', '})"
+          end
+        end
       end
     end
 
     it 're-inits paths' do
-      allow(::Dir).to receive(:entries) { [] }
+      allow(::Dir).to receive(:entries).and_return([])
+      allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
+      allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
 
       record.update_file(dir, 'path/file.rb', mtime: 1.1)
       record.build
@@ -219,18 +222,19 @@ describe Listen::Record do
     let(:bar_stat) { instance_double(::File::Stat, mtime: 2.3, mode: 0755) }
 
     context 'with no subdirs' do
-
       before do
-        expect(::Dir).to receive(:entries).with('/dir1/.') { %w(foo bar) }
-        expect(::Dir).to receive(:exist?).with('/dir1/./foo') { false }
-        expect(::Dir).to receive(:exist?).with('/dir1/./bar') { false }
-        expect(::File).to receive(:lstat).with('/dir1/./foo') { foo_stat }
-        expect(::File).to receive(:lstat).with('/dir1/./bar') { bar_stat }
+        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo bar) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo').and_raise(Errno::ENOTDIR)
+        allow(::Dir).to receive(:entries).with('/dir1/bar').and_raise(Errno::ENOTDIR)
+        allow(::File).to receive(:lstat).with('/dir1/foo') { foo_stat }
+        allow(::File).to receive(:lstat).with('/dir1/bar') { bar_stat }
+        allow(::Dir).to receive(:entries).with('/dir2') { [] }
 
-        expect(::Dir).to receive(:entries).with('/dir2/.') { [] }
+        allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
+        allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
       end
 
-      it 'builds record'  do
+      it 'builds record' do
         record.build
         expect(record.paths.keys).to eq %w( /dir1 /dir2 )
         expect(record.paths['/dir1']).
@@ -242,15 +246,16 @@ describe Listen::Record do
 
     context 'with subdir containing files' do
       before do
-        expect(::Dir).to receive(:entries).with('/dir1/.') { %w(foo) }
-        expect(::Dir).to receive(:exist?).with('/dir1/./foo') { true }
+        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo/bar').and_raise(Errno::ENOTDIR)
+        allow(::File).to receive(:lstat).with('/dir1/foo/bar') { bar_stat }
+        allow(::Dir).to receive(:entries).with('/dir2') { [] }
 
-        expect(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar) }
-
-        expect(::Dir).to receive(:exist?).with('/dir1/foo/bar') { false }
-        expect(::File).to receive(:lstat).with('/dir1/foo/bar') { bar_stat }
-
-        expect(::Dir).to receive(:entries).with('/dir2/.') { [] }
+        allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
+        allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
+        allow(::File).to receive(:realpath).with('/dir1/foo').
+          and_return('/dir1/foo')
       end
 
       it 'builds record'  do
@@ -264,18 +269,12 @@ describe Listen::Record do
 
     context 'with subdir containing dirs' do
       before do
-        expect(::Dir).to receive(:entries).with('/dir1/.') { %w(foo) }
-        expect(::Dir).to receive(:exist?).with('/dir1/./foo') { true }
-
-        expect(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar baz) }
-
-        expect(::Dir).to receive(:exist?).with('/dir1/foo/bar') { true }
-        expect(::Dir).to receive(:entries).with('/dir1/foo/bar') { [] }
-
-        expect(::Dir).to receive(:exist?).with('/dir1/foo/baz') { true }
-        expect(::Dir).to receive(:entries).with('/dir1/foo/baz') { [] }
-
-        expect(::Dir).to receive(:entries).with('/dir2/.') { [] }
+        allow(::File).to receive(:realpath) { |path| path }
+        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar baz) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo/bar') { [] }
+        allow(::Dir).to receive(:entries).with('/dir1/foo/baz') { [] }
+        allow(::Dir).to receive(:entries).with('/dir2') { [] }
       end
 
       it 'builds record'  do
@@ -288,6 +287,23 @@ describe Listen::Record do
             'foo/baz' => {}
         )
         expect(record.paths['/dir2']).to eq({})
+      end
+    end
+
+    context 'with subdir containing symlink to parent' do
+      subject { record.paths }
+      before do
+        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
+        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(foo) }
+        allow(::File).to receive(:realpath).with('/dir1').and_return('/bar')
+        allow(::File).to receive(:realpath).with('/dir1/foo').and_return('/bar')
+      end
+
+      it 'shows message and aborts with error' do
+        expect(STDERR).to receive(:puts).with(/detected a duplicate directory/)
+
+        expect { record.build }.to raise_error(RuntimeError,
+                                               /Failed due to looped symlinks/)
       end
     end
   end
