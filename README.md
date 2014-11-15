@@ -6,6 +6,21 @@
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
+## IMPORTANT NOTE
+
+Got an issue with Listen and you're "in a hurry"? First, try Polling mode as a workaround (described below).
+
+Otherwise ...
+
+Output from using `LISTEN_GEM_DEBUGGING` (debug mode) is often *crucial* to quickly diagnosing and fixing issues.
+
+There are TOO MANY possible and surprising reasons why Listen "doesn't work as expected" (e.g. Dropbox folders, editor settings, system limits) - and the best way to find out is by going through these 3 steps first:
+
+See [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md)
+
+Once you've reproduced the problem in debug mode (`LISTEN_GEM_DEBUGGING`), paste the output it into a Gist and link it to your issue.
+
+
 ## Features
 
 * Supports watching multiple directories from a single listener.
@@ -25,8 +40,7 @@ Please note that:
 
 ## Pending features / issues
 
-* ~~Non-recursive directory scanning~~ [#111](https://github.com/guard/listen/issues/111)
-* Symlinks support. [#25](https://github.com/guard/listen/issues/25)
+* Ignored directories are actually still scanned [#274](https://github.com/guard/listen/issues/274) (Except when polling)
 * Directory/adapter specific configuration options
 * Support for plugins
 
