@@ -7,20 +7,28 @@ module Listen
       SYMLINK_LOOP_ERROR = <<-EOS
         ** ERROR: Listen detected a duplicate directory being watched! **
 
-        (This may be due to symlinks pointing to parent directories).
+        (This may be due to multiple symlinks pointing to already watched dirs).
 
         Duplicate: %s
 
         which already is added as: %s
 
-        Listen is refusing to continue, because this may likely result in
-        an infinite loop.
+        Listen is refusing to continue, because it may cause an infinite loop,
+        a crash or confusing results.
 
         Suggestions:
 
-          1) (best option) watch only directories you care about, e.g.
+          1) (best option) watch only directories you care about (e.g.
           either symlinked folders or folders with the real directories,
-          but not both.
+          but not both).
+
+          IMPORTANT: The `:ignore` options DO NOT HELP here
+          (see: https://github.com/guard/listen/issues/274)
+
+          NOTE: If you are using Listen through some other application
+          (like Guard, Compass, Jekyll, Vagrant), check the documentation on
+          selecting watched directories (e.g. Guard has a `-w` option, Compass
+          allows you to specify multiple input/output directories, etc.)
 
           2) reorganize your project so that watched directories do not
           contain symlinked directories
@@ -29,10 +37,6 @@ module Listen
           detect symlinks to already watched read directories, skip
           them, and then reasonably choose which symlinked paths to
           report as changed (if any)
-
-          4) (not worth it) help implement a "reverse symlink lookup"
-          function in Listen, which - given a real directory - would
-          return all the symlinks pointing to that directory
 
         Issue: https://github.com/guard/listen/issues/259
       EOS
