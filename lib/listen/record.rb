@@ -115,12 +115,12 @@ module Listen
 
     def _fast_build_dir(remaining, symlink_detector)
       entry = remaining.pop
-      entry.children.each { |child| remaining << child }
       symlink_detector.verify_unwatched!(entry)
+      entry.children.each { |child| remaining << child }
       add_dir(entry.root, entry.record_dir_key)
     rescue Errno::ENOTDIR
       _fast_try_file(entry)
-    rescue SystemCallError
+    rescue SystemCallError, SymlinkDetector::Error
       _fast_unset_path(entry.root, entry.relative, entry.name)
     end
 
