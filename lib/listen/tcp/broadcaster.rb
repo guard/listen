@@ -18,7 +18,7 @@ module Listen
         @sockets = []
         _log :debug, format('Broadcaster: tcp server listening on: %s:%s',
                             host, port)
-        @server = TCPServer.new(host, port)
+        @server = Celluloid::IO::TCPServer.new(host || 'localhost', port)
       rescue
         _log :error, format('Broadcaster.initialize: %s:%s', $ERROR_INFO,
                             $ERROR_POSITION * "\n")
