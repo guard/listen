@@ -4,42 +4,20 @@ module Listen
   # @private api
   class Record
     class SymlinkDetector
+      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'
+
       SYMLINK_LOOP_ERROR = <<-EOS
-        ** ERROR: Listen detected a duplicate directory being watched! **
+        ** ERROR: directory is already being watched! **
 
-        (This may be due to multiple symlinks pointing to already watched dirs).
+        Directory: %s
 
-        Duplicate: %s
+        is already begin watched through: %s
 
-        which already is added as: %s
-
-        Listen is refusing to continue, because it may cause an infinite loop,
-        a crash or confusing results.
-
-        Suggestions:
-
-          1) (best option) watch only directories you care about (e.g.
-          either symlinked folders or folders with the real directories,
-          but not both).
-
-          IMPORTANT: The `:ignore` options DO NOT HELP here
-          (see: https://github.com/guard/listen/issues/274)
-
-          NOTE: If you are using Listen through some other application
-          (like Guard, Compass, Jekyll, Vagrant), check the documentation on
-          selecting watched directories (e.g. Guard has a `-w` option, Compass
-          allows you to specify multiple input/output directories, etc.)
-
-          2) reorganize your project so that watched directories do not
-          contain symlinked directories
-
-          3) submit patches so that Listen can reliably and quickly (!)
-          detect symlinks to already watched read directories, skip
-          them, and then reasonably choose which symlinked paths to
-          report as changed (if any)
-
-        Issue: https://github.com/guard/listen/issues/259
+        MORE INFO: #{WIKI}
       EOS
+
+      class Error < RuntimeError
+      end
 
       def initialize
         @real_dirs = Set.new
@@ -54,9 +32,7 @@ module Listen
 
       def _fail(symlinked, real_path)
         STDERR.puts format(SYMLINK_LOOP_ERROR, symlinked, real_path)
-
-        # Note Celluloid eats up abort message anyway
-        fail 'Failed due to looped symlinks'
+        fail Error, 'Failed due to looped symlinks'
       end
     end
   end
