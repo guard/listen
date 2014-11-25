@@ -6,29 +6,22 @@
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
-## IMPORTANT NOTE
+## Known issues / Quickfixes / Workarounds
 
-Got an issue with Listen and you're "in a hurry"? First, try Polling mode as a workaround (described below).
+Just head over here: https://github.com/guard/listen/wiki/Quickfixes,-known-issues-and-workarounds
 
-Otherwise ...
+## Tips and Techniques
 
-Output from using `LISTEN_GEM_DEBUGGING` (debug mode) is often *crucial* to quickly diagnosing and fixing issues.
-
-There are TOO MANY possible and surprising reasons why Listen "doesn't work as expected" (e.g. Dropbox folders, editor settings, system limits) - and the best way to find out is by going through these 3 steps first:
-
-See [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md)
-
-Once you've reproduced the problem in debug mode (`LISTEN_GEM_DEBUGGING`), paste the output it into a Gist and link it to your issue.
-
+Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/Tips-and-Techniques
 
 ## Features
 
-* Supports watching multiple directories from a single listener.
-* OS-specific adapters on MRI for Mac OS X 10.6+, Linux, ~~\*BSD~~ and Windows, [more info](#listen-adapters) below.
+* OS-optimized adapters on MRI for Mac OS X 10.6+, Linux, ~~\*BSD~~ and Windows, [more info](#listen-adapters) below.
 * Detects file modification, addition and removal.
-* Allows supplying regexp-patterns to ignore paths for better results.
-* File content checksum comparison for modifications made under the same second (OS X HFS volumes, VFAT volumes).
+* You can watch multiple directories.
+* Regexp-patterns for ignoring paths for more accuracy and speed
 * Forwarding file events over TCP, [more info](#forwarding-file-events-over-tcp) below.
+* Increased change detection accuracy on OS X HFS and VFAT volumes.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
 Please note that:
@@ -37,10 +30,9 @@ Please note that:
 - Windows and \*BSD adapter aren't continuously and automaticaly tested.
 - \*BSD is broken and not supported any more, see: [#220](https://github.com/guard/listen/issues/220)
 
-
 ## Pending features / issues
 
-* Ignored directories are actually still scanned [#274](https://github.com/guard/listen/issues/274) (Except when polling)
+* symlinked directories aren't fully transparent yet: https://github.com/guard/listen/issues/279
 * Directory/adapter specific configuration options
 * Support for plugins
 
@@ -51,7 +43,7 @@ Pull request or help is very welcome for these.
 The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ```ruby
-gem 'listen', '~> 2.0'
+gem 'listen', '~> 2.7' # this prevents upgrading to 3.x
 ```
 
 ## Usage
@@ -104,6 +96,8 @@ sleep
 ```
 
 Note: Ignoring regexp patterns are evaluated against relative paths.
+
+Note: ignoring paths does not improve performance - except when Polling
 
 ### Only
 
@@ -170,11 +164,11 @@ wait_for_delay: 4                               # Set the delay (**in seconds**)
 force_polling: true                             # Force the use of the polling adapter
                                                 # default: none
 
-polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
-                                                # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
-
 debug: true                                     # Enable Celluloid logger
                                                 # default: false
+
+polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
+                                                # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
 ```
 
 Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as `debug: true` above.
@@ -242,13 +236,14 @@ If Listen seems slow or unresponsive, make sure you're not using the Polling ada
 Also, if the directories you're watching contain many files, make sure you're:
 
 * not using Polling (ideally)
-* using `:ignore` and `:only` options to avoid tracking directories you don't care about
+* using `:ignore` and `:only` options to avoid tracking directories you don't care about (important with Polling and on MacOS)
+* running Listen with the `:latency` and `:wait_for_delay` options not too small or too big (depends on needs)
+* not watching directories with log files, database files or other frequently changing files
 * not using a version of Listen prior to 2.7.7
 * not getting silent crashes within Listen (see LISTEN_GEM_DEBUGGING=2)
 * not running multiple instances of Listen in the background
 * using a file system with atime modification disabled (ideally)
 * not using a filesystem with inaccurate file modification times (ideally), e.g. HFS, VFAT
-* running Listen with the `:latency` and `:wait_for_delay` options not too small or too big (depends on needs)
 * not buffering to a slow terminal (e.g. transparency + fancy font + slow gfx card + lots of output)
 * ideally not running a slow encryption stack, e.g. btrfs + ecryptfs
 
