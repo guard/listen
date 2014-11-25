@@ -30,10 +30,18 @@ module Listen
           selecting watched directories (e.g. Guard has a `-w` option, Compass
           allows you to specify multiple input/output directories, etc.)
 
-          2) reorganize your project so that watched directories do not
+          2) Downgrade to the 2.7.x listen gem. You can lock this into your
+          Gemfile:
+
+            gem "listen", "~> 2.7"
+
+          IMPORTANT: Version 2.8 fixes performance and reliability issues
+          present in 2.7 (see: https://github.com/guard/listen/pull/273)
+
+          3) reorganize your project so that watched directories do not
           contain symlinked directories
 
-          3) submit patches so that Listen can reliably and quickly (!)
+          4) submit patches so that Listen can reliably and quickly (!)
           detect symlinks to already watched read directories, skip
           them, and then reasonably choose which symlinked paths to
           report as changed (if any)
