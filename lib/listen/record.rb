@@ -115,8 +115,9 @@ module Listen
 
     def _fast_build_dir(remaining, symlink_detector)
       entry = remaining.pop
+      children = entry.children # NOTE: children() implicitly tests if dir
       symlink_detector.verify_unwatched!(entry)
-      entry.children.each { |child| remaining << child }
+      children.each { |child| remaining << child }
       add_dir(entry.root, entry.record_dir_key)
     rescue Errno::ENOTDIR
       _fast_try_file(entry)

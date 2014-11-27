@@ -7,6 +7,46 @@ describe Listen::Record do
     instance_double(Listen::Listener, registry: registry, options: {})
   end
 
+  def dir_entries_for(hash)
+    hash.each do |dir, entries|
+      allow(::Dir).to receive(:entries).with(dir) { entries }
+    end
+  end
+
+  def real_directory(hash)
+    dir_entries_for(hash)
+    hash.each do |dir, _|
+      realpath(dir)
+    end
+  end
+
+  def file(path)
+    allow(::Dir).to receive(:entries).with(path).and_raise(Errno::ENOTDIR)
+    path
+  end
+
+  def lstat(path, stat = nil)
+    stat ||= instance_double(::File::Stat, mtime: 2.3, mode: 0755)
+    allow(::File).to receive(:lstat).with(path).and_return(stat)
+    stat
+  end
+
+  def realpath(path)
+    allow(::File).to receive(:realpath).with(path).and_return(path)
+    path
+  end
+
+  def symlink(hash_or_dir)
+    if String === hash_or_dir
+      allow(::File).to receive(:realpath).with(hash_or_dir).
+        and_return(hash_or_dir)
+    else
+      hash_or_dir.each do |dir, real_path|
+        allow(::File).to receive(:realpath).with(dir).and_return(real_path)
+      end
+    end
+  end
+
   let(:record) { Listen::Record.new(listener) }
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
 
@@ -208,9 +248,8 @@ describe Listen::Record do
     end
 
     it 're-inits paths' do
-      allow(::Dir).to receive(:entries).and_return([])
-      allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
-      allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
+      real_directory('/dir1' => [])
+      real_directory('/dir2' => [])
 
       record.update_file(dir, 'path/file.rb', mtime: 1.1)
       record.build
@@ -223,19 +262,10 @@ describe Listen::Record do
 
     context 'with no subdirs' do
       before do
-        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo bar) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo').and_raise(Errno::ENOTDIR)
-        allow(::Dir).to receive(:entries).with('/dir1/bar').and_raise(Errno::ENOTDIR)
-        allow(::File).to receive(:lstat).with('/dir1/foo') { foo_stat }
-        allow(::File).to receive(:lstat).with('/dir1/bar') { bar_stat }
-        allow(::Dir).to receive(:entries).with('/dir2') { [] }
-
-        allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
-        allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
-        allow(::File).to receive(:realpath).with('/dir1/foo').
-          and_return('/dir1/foo')
-        allow(::File).to receive(:realpath).with('/dir1/bar').
-          and_return('/dir1/bar')
+        real_directory('/dir1' => %w(foo bar))
+        lstat(file('/dir1/foo'), foo_stat)
+        lstat(file('/dir1/bar'), bar_stat)
+        real_directory('/dir2' => [])
       end
 
       it 'builds record' do
@@ -250,18 +280,10 @@ describe Listen::Record do
 
     context 'with subdir containing files' do
       before do
-        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo/bar').and_raise(Errno::ENOTDIR)
-        allow(::File).to receive(:lstat).with('/dir1/foo/bar') { bar_stat }
-        allow(::Dir).to receive(:entries).with('/dir2') { [] }
-
-        allow(::File).to receive(:realpath).with('/dir1').and_return('/dir1')
-        allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
-        allow(::File).to receive(:realpath).with('/dir1/foo').
-          and_return('/dir1/foo')
-        allow(::File).to receive(:realpath).with('/dir1/foo/bar').
-          and_return('/dir1/foo/bar')
+        real_directory('/dir1' => %w(foo))
+        real_directory('/dir1/foo' => %w(bar))
+        lstat(file('/dir1/foo/bar'))
+        real_directory('/dir2' => [])
       end
 
       it 'builds record'  do
@@ -275,12 +297,13 @@ describe Listen::Record do
 
     context 'with subdir containing dirs' do
       before do
+        real_directory('/dir1' => %w(foo))
+        real_directory('/dir1/foo' => %w(bar baz))
+        real_directory('/dir1/foo/bar' => [])
+        real_directory('/dir1/foo/baz' => [])
+        real_directory('/dir2' => [])
+
         allow(::File).to receive(:realpath) { |path| path }
-        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(bar baz) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo/bar') { [] }
-        allow(::Dir).to receive(:entries).with('/dir1/foo/baz') { [] }
-        allow(::Dir).to receive(:entries).with('/dir2') { [] }
       end
 
       it 'builds record'  do
@@ -299,21 +322,55 @@ describe Listen::Record do
     context 'with subdir containing symlink to parent' do
       subject { record.paths }
       before do
-        allow(::Dir).to receive(:entries).with('/dir1') { %w(foo) }
-        allow(::Dir).to receive(:entries).with('/dir1/foo') { %w(foo) }
-        allow(::Dir).to receive(:entries).with('/dir2') { [] }
-        allow(::File).to receive(:realpath).with('/dir1').and_return('/bar')
-        allow(::File).to receive(:realpath).with('/dir1/foo').and_return('/bar')
-        allow(::File).to receive(:realpath).with('/dir2').and_return('/dir2')
+        real_directory('/dir1' => %w(foo))
+        dir_entries_for('/dir1/foo' => %w(dir1))
+        symlink('/dir1/foo' => '/dir1')
+
+        real_directory('/dir2' => [])
       end
 
-      it 'shows message and aborts with error' do
+      it 'shows a warning' do
         expect(STDERR).to receive(:puts).
           with(/directory is already being watched/)
 
         record.build
         # expect { record.build }.
         # to raise_error(RuntimeError, /Failed due to looped symlinks/)
+      end
+    end
+
+    context 'with a normal symlinked directory to another' do
+      subject { record.paths }
+
+      before do
+        real_directory('/dir1' => %w(foo))
+
+        symlink('/dir1/foo' => '/dir2')
+        dir_entries_for('/dir1/foo' => %w(bar))
+        lstat(realpath(file('/dir1/foo/bar')))
+
+        real_directory('/dir2' => %w(bar))
+        lstat(file('/dir2/bar'))
+      end
+
+      it 'shows message' do
+        expect(STDERR).to_not receive(:puts)
+        record.build
+      end
+    end
+
+    context 'with subdir containing symlinked file' do
+      subject { record.paths }
+      before do
+        real_directory('/dir1' => %w(foo))
+        lstat(file('/dir1/foo'))
+        real_directory('/dir2' => [])
+      end
+
+      it 'shows a warning' do
+        expect(STDERR).to_not receive(:puts)
+
+        record.build
       end
     end
   end
