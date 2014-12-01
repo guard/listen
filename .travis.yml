@@ -10,9 +10,6 @@ matrix:
   allow_failures:
     - rvm: jruby
     - rvm: rbx-2
-notifications:
-  recipients:
-    - thibaud@thibaud.gg
 os:
   - linux
   - osx
