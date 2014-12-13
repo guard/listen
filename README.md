@@ -168,7 +168,7 @@ debug: true                                     # Enable Celluloid logger
                                                 # default: false
 
 polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
-                                                # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#polling-fallback."
+                                                # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#listen-adapters."
 ```
 
 Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as `debug: true` above.

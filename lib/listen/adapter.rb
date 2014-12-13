@@ -9,7 +9,7 @@ module Listen
   module Adapter
     OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows]
     POLLING_FALLBACK_MESSAGE = 'Listen will be polling for changes.'\
-      'Learn more at https://github.com/guard/listen#polling-fallback.'
+      'Learn more at https://github.com/guard/listen#listen-adapters.'
 
     def self.select(options = {})
       _log :debug, 'Adapter: considering TCP ...'
