@@ -224,22 +224,7 @@ end
 
 ### Getting the [polling fallback message](#options)?
 
-If you see:
-
-> Listen will be polling for changes. …
-
-This means the Listen gem can’t find an optimized adapter. Typically this is caused by:
-
-1. You’re on Windows and [WDM gem](https://rubygems.org/gems/wdm) isn’t installed.
-1. You’re running the app without [Bundler](http://bundler.io/) or [RubyGems](https://rubygems.org/).
-1. Using [Sass](http://sass-lang.com/) which includes an old version of the Listen gem.
-
-Possible solutions:
-
-1. Use the `:force_polling` option when initializing the listener (as [stated above](#listen-adapters)).
-1. Windows users: [Install the WDM gem](https://github.com/Maher4Ever/wdm#installation) ([see above](#on-windows)).
-1. Upgrade Ruby (use [RubyInstaller](http://rubyinstaller.org/) for Windows or [RVM](https://rvm.io/)/[rbenv](http://rbenv.org/) for Mac) and [RubyGems](https://rubygems.org/pages/download).
-1. Run your apps using [Bundler](http://bundler.io/#getting-started).
+Please visit the [installation section of the Listen WIKI](https://github.com/guard/listen/wiki#installation) for more information and options for potential fixes.
 
 ### Issues and troubleshooting
 
