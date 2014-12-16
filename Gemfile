@@ -1,48 +1,34 @@
 source 'https://rubygems.org'
 
-gemspec
+gemspec development_group: :gem_build_tools
 
 require 'rbconfig'
 
 case RbConfig::CONFIG['target_os']
-
 when /mswin|mingw|cygwin/i
   gem 'wdm', '>= 0.1.0'
-  Kernel.warn 'NOTE: Known issues for your platform:'
-  Kernel.warn ' * celluloid-io dns resovler bug causes TCP adapter to fail'
-  Kernel.warn ' (fixed celluloid-io requires unreleased celluloid version)'
-  Kernel.warn " * celluloid master branch doesn't work properly on Windows"
-
-  # has fix, but causes above other problems:
-  # gem 'celluloid-io', github: 'celluloid/celluloid-io', ref: 'a72cae2e'
-
+  Kernel.warn 'NOTE: Celluloid may not work properly on your platform'
 when /bsd|dragonfly/i
-
   gem 'rb-kqueue', '>= 0.2'
-
-  Kernel.warn 'NOTE: BSD is unsupported because:'
-  Kernel.warn "* Ruby threads don't work correctly (Ruby/MRI unit tests)"
-  Kernel.warn "* and because of them, Celluloid doesn't work correctly"
-
-  Kernel.warn '* FFI blows up when libc is a LD script (ac63e07f7)'
-  gem 'ffi', github: 'carpetsmoker/ffi', ref: 'ac63e07f7'
-
-  Kernel.warn '* Celluloid core detection blows up (7fdef04)'
-  gem 'celluloid', github: 'celluloid/celluloid', ref: '7fdef04'
-
-else
-  # handled by gemspec
+  Kernel.warn 'NOTE: You are using BSD. You are on your own!'
 end
 
-group :tool do
+group :test do
+  gem 'celluloid-io', '>= 0.15.0'
+  gem 'rake'
+  gem 'rspec', '~> 3.0.0rc1'
+  gem 'rspec-retry'
+  gem 'coveralls'
+end
+
+group :development do
   gem 'yard', require: false
   gem 'guard-rspec', require: false
   gem 'rubocop', '0.25.0' # TODO: should match Gemfile HoundCi
   gem 'guard-rubocop'
   gem 'pry-rescue'
   gem 'pry-stack_explorer'
-end
-
-group :test do
-  gem 'coveralls', require: false
+  gem 'gems', require: false
+  gem 'netrc', require: false
+  gem 'octokit', require: false
 end
