@@ -222,6 +222,10 @@ end
 
 ```
 
+### Getting the [polling fallback message](#options)?
+
+Please visit the [installation section of the Listen WIKI](https://github.com/guard/listen/wiki#installation) for more information and options for potential fixes.
+
 ### Issues and troubleshooting
 
 *NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=1` environment variable, it can be almost impossible to guess why listen is not working as expected.*
