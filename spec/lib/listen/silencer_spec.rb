@@ -34,11 +34,25 @@ describe Listen::Silencer do
       # Vim swap files
       ignored += %w(foo.swp foo.swx foo.swpx 4913)
 
+      # sed temp files
+      ignored += %w(sedq7eVAR sed86w1kB)
+
       ignored.each do |path|
         it { should_not accept(:file, path) }
       end
 
-      %w(foo.tmpl file.new file54321.new a.swf 14913 49131).each do |path|
+      %w(
+        foo.tmpl file.new file54321.new a.swf 14913 49131
+
+        sed_ABCDE
+        sedabcdefg
+        .sedq7eVAR
+        foo.sedq7eVAR
+        sedatives
+        sediments
+        sedan2014
+
+      ).each do |path|
         it { should accept(:file, path) }
       end
     end
