@@ -1,5 +1,5 @@
 language: ruby
-bundler_args: --without tool
+bundler_args: --without development
 rvm:
   - 1.9.3
   - 2.0.0
@@ -13,3 +13,4 @@ matrix:
 os:
   - linux
   - osx
+sudo: false
