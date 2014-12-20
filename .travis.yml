@@ -13,3 +13,4 @@ matrix:
 os:
   - linux
   - osx
+sudo: false
