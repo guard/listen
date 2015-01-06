@@ -332,7 +332,7 @@ module Listen
     end
 
     def _queue_raw_change(type, dir, rel_path, options)
-      _debug "raw queue: #{[type, dir, rel_path, options].inspect}"
+      _debug { "raw queue: #{[type, dir, rel_path, options].inspect}" }
 
       unless (worker = async(:change_pool))
         _warn 'Failed to allocate worker from change pool'

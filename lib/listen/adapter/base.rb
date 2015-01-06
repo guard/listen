@@ -79,16 +79,20 @@ module Listen
         @mq.send(:_queue_raw_change, type, dir, rel_path, options)
       end
 
-      def _log(*args)
-        self.class.send(:_log, *args)
+      def _log(*args, &block)
+        self.class.send(:_log, *args, &block)
       end
 
       def _log_exception(msg)
         _log :error, format(msg, $ERROR_INFO, $ERROR_POSITION * "\n")
       end
 
-      def self._log(*args)
-        Celluloid::Logger.send(*args)
+      def self._log(*args, &block)
+        if block
+          Celluloid::Logger.send(*args, block.call)
+        else
+          Celluloid::Logger.send(*args)
+        end
       end
     end
   end
