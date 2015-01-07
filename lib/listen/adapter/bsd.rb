@@ -58,6 +58,7 @@ module Listen
 
       def _configure(directory, &_callback)
         @worker ||= KQueue::Queue.new
+        @callback = _callback
         # use Record to make a snapshot of dir, so we
         # can detect new files
         _find(directory.to_s) { |path| _watch_file(path, @worker) }
@@ -109,7 +110,7 @@ module Listen
       end
 
       def _watch_file(path, queue)
-        queue.watch_file(path, *options.events, &_worker_callback)
+        queue.watch_file(path, *options.events, &@callback)
       end
 
       # Quick rubocop workaround
