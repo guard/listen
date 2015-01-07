@@ -83,7 +83,7 @@ module Listen
         # file has been added so find out which and deal with it.
         # No need to check for removed files, kqueue will forget them
         # when the vfs does.
-        _watch_for_new_file(event) if path.directory?
+        _watch_for_new_file(event) if full_path.directory?
       end
 
       def _change(event_flags)
