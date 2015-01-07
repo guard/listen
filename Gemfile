@@ -10,7 +10,6 @@ when /mswin|mingw|cygwin/i
   Kernel.warn 'NOTE: Celluloid may not work properly on your platform'
 when /bsd|dragonfly/i
   gem 'rb-kqueue', '>= 0.2'
-  Kernel.warn 'NOTE: You are using BSD. You are on your own!'
 end
 
 group :test do

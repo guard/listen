@@ -16,7 +16,7 @@ Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/
 
 ## Features
 
-* OS-optimized adapters on MRI for Mac OS X 10.6+, Linux, ~~\*BSD~~ and Windows, [more info](#listen-adapters) below.
+* OS-optimized adapters on MRI for Mac OS X 10.6+, Linux, \*BSD and Windows, [more info](#listen-adapters) below.
 * Detects file modification, addition and removal.
 * You can watch multiple directories.
 * Regexp-patterns for ignoring paths for more accuracy and speed
@@ -28,7 +28,6 @@ Please note that:
 - Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.)
 - Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 - Windows and \*BSD adapter aren't continuously and automaticaly tested.
-- \*BSD is broken and not supported any more, see: [#220](https://github.com/guard/listen/issues/220)
 
 ## Pending features / issues
 
@@ -178,7 +177,7 @@ Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as
 
 The Listen gem has a set of adapters to notify it when there are changes.
 
-There are 4 OS-specific adapters to support Darwin, Linux, ~~\*BSD~~ and Windows.
+There are 4 OS-specific adapters to support Darwin, Linux, \*BSD and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
 
 There is also a polling adapter - although it's much slower than other adapters,
@@ -202,8 +201,6 @@ gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 
 ### On \*BSD
 
-**NOTE: \*BSD currently is BROKEN with no plans to fix it or support it (see: [#220](https://github.com/guard/listen/issues/220))**
-
 If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
 
 Please add the following to your Gemfile:
@@ -213,11 +210,6 @@ require 'rbconfig'
 gem 'rb-kqueue', '>= 0.2'
 if RbConfig::CONFIG['target_os'] =~ /bsd|dragonfly/i
   gem 'rb-kqueue', '>= 0.2'
-
-  # Base versions have known conflicts/bugs
-  # Even master branches may not work...
-  gem 'ffi', github: 'carpetsmoker/ffi', ref: 'ac63e07f7'
-  gem 'celluloid', github: 'celluloid/celluloid', ref: '7fdef04'
 end
 
 ```
