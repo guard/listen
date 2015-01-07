@@ -113,8 +113,8 @@ module Listen
       end
 
       # Quick rubocop workaround
-      def _find(*paths)
-        Find.send(:find, *paths)
+      def _find(*paths, &block)
+        Find.send(:find, *paths, &block)
       end
     end
   end
