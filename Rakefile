@@ -76,11 +76,16 @@ class Releaser
   private
 
   def _verify_released
-    if @version != Gems.info(@gem_name)["version"]
-      STDOUT.puts "#{@project_name} #{@version} is not yet released."
-      STDOUT.puts "Please release it first with: rake release:gem"
-      exit
-    end
+    latest = Gems.info(@gem_name)["version"]
+    return if @version == latest
+    STDOUT.puts format(
+      "%s %s is not yet released (latest: %s)",
+      @project_name,
+      @version,
+      latest.inspect
+    )
+    STDOUT.puts "Please release it first with: rake release:gem"
+    exit
   end
 
   def _verify_tag_pushed
@@ -128,8 +133,8 @@ CURRENT_VERSION = Listen::VERSION
 def releaser
   $releaser ||= Releaser.new(
     project_name: PROJECT_NAME,
-    gem_name: "guard",
-    github_repo: "guard/guard",
+    gem_name: "listen",
+    github_repo: "guard/listen",
     version: CURRENT_VERSION)
 end
 
