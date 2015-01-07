@@ -31,21 +31,8 @@ module Listen
           end
       EOS
 
-      BSD_EXPERIMENTAL = <<-EOS.gsub(/^ {6}/, '')
-        NOTE *BSD SUPPORT IS EXPERIMENTAL!
-
-        In fact, it likely WONT WORK!!!!
-
-        (see: https://github.com/guard/listen/issues/220)
-
-        If you're brave enough, feel free to suggest pull requests and
-        experiment on your own. For help, browse existing issues marked 'bsd'
-        for clues, tips and workaround.
-      EOS
-
       def self.usable?
         return false unless super
-        Kernel.warn BSD_EXPERIMENTAL
         require 'rb-kqueue'
         require 'find'
         true
