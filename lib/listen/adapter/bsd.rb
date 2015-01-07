@@ -56,7 +56,7 @@ module Listen
           # Force dir content tracking to kick in, or we won't have
           # names of added files
           _queue_change(:dir, dir, '.', recursive: true)
-        else
+        elsif full_path.exist?
           path = full_path.relative_path_from(dir)
           _queue_change(:file, dir, path.to_s, change: _change(event.flags))
         end
