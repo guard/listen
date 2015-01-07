@@ -23,11 +23,6 @@ module Listen
           require 'rbconfig'
           if RbConfig::CONFIG['target_os'] =~ #{OS_REGEXP}
             gem 'rb-kqueue', '>= 0.2'
-
-            # Base versions have known conflicts/bugs
-            # Even master branches may not work...
-            gem 'ffi', github: 'carpetsmoker/ffi', ref: 'ac63e07f7'
-            gem 'celluloid', github: 'celluloid/celluloid', ref: '7fdef04'
           end
       EOS
 
