@@ -207,7 +207,6 @@ Please add the following to your Gemfile:
 
 ```ruby
 require 'rbconfig'
-gem 'rb-kqueue', '>= 0.2'
 if RbConfig::CONFIG['target_os'] =~ /bsd|dragonfly/i
   gem 'rb-kqueue', '>= 0.2'
 end
