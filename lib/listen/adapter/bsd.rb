@@ -21,7 +21,7 @@ module Listen
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
           require 'rbconfig'
-          if RbConfig::CONFIG['target_os'] =~ #{OS_REGEXP}
+          if RbConfig::CONFIG['target_os'] =~ /#{OS_REGEXP}/
             gem 'rb-kqueue', '>= 0.2'
           end
       EOS
