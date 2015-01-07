@@ -76,7 +76,7 @@ module Listen
           _queue_change(:dir, dir, '.', recursive: true)
         else
           path = full_path.relative_path_from(dir)
-          _queue_change(:file, dir, path, change: _change(event.flags))
+          _queue_change(:file, dir, path.to_s, change: _change(event.flags))
         end
 
         # If it is a directory, and it has a write flag, it means a
