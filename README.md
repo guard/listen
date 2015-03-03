@@ -221,7 +221,7 @@ Please visit the [installation section of the Listen WIKI](https://github.com/gu
 
 *NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=1` environment variable, it can be almost impossible to guess why listen is not working as expected.*
 
-See [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/TROUBLESHOOTING.md)
+See [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting)
 
 
 ## Performance
