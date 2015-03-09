@@ -30,7 +30,7 @@ module Listen
 
       _async_changes(dir, rel_path, queue, previous, options)
 
-    rescue Errno::ENOENT
+    rescue Errno::ENOENT, Errno::EHOSTDOWN
       record.unset_path(dir, rel_path)
       _async_changes(dir, rel_path, queue, previous, options)
 
