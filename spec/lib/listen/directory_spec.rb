@@ -86,6 +86,20 @@ describe Directory do
         end
       end
 
+      context 'when network share is disconnected' do
+        before { allow(dir).to receive(:children) { fail Errno::EHOSTDOWN } }
+
+        it 'reports no changes' do
+          expect(queue).to_not receive(:change)
+          described_class.scan(queue, record, dir, '.', options)
+        end
+
+        it 'unsets record dir path' do
+          expect(async_record).to receive(:unset_path).with(dir, '.')
+          described_class.scan(queue, record, dir, '.', options)
+        end
+      end
+
       context 'with file.rb in dir' do
         before { allow(dir).to receive(:children) { [file] } }
 
