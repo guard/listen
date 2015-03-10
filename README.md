@@ -249,7 +249,9 @@ When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and ti
 
 ## Forwarding file events over TCP
 
-Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with shared folders in VMs. [Vagrant](https://github.com/mitchellh/vagrant) uses Listen in it's rsync-auto mode to solve this issue.
+Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with shared folders in VMs.
+
+[Vagrant](https://github.com/mitchellh/vagrant) uses Listen in it's rsync-auto mode to solve this issue.
 
 To broadcast events over TCP programmatically, use the `forward_to` option with an address - just a port or a hostname/port combination:
 
@@ -265,9 +267,12 @@ sleep
 As a convenience, the `listen` script is supplied which listens to a directory and forwards the events to a network address
 
 ```bash
-listen -f "10.0.0.2:4000"
-listen -v -d "/projects/my_project" -f "10.0.0.2:4000"
+listen -f "10.0.0.2:4000" # changes in current directory are sent as absolute paths
+listen -r -f "10.0.0.2:4000" # changes in current directory are sent as relative paths
+listen -v -d "/projects/my_project" -f "10.0.0.2:4000" # changes in given directory are also shown
 ```
+
+*NOTE: if you are using a gem like `guard` and the paths on host and guest are not exactly the same, you'll generally want to use the `-r` option for relative paths*
 
 To connect to a broadcasting listener as a recipient, specify its address using `Listen.on`:
 
