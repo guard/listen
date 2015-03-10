@@ -164,6 +164,14 @@ module Listen
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
       fail "Invalid path: #{path.inspect}" unless path.is_a?(String)
+      if @options[:relative]
+        dir = begin
+                cwd = Pathname.pwd
+                dir.relative_path_from(cwd)
+              rescue ArgumentError
+                dir
+              end
+      end
       @queue << [type, change, dir, path, options]
 
       @last_queue_event_time = Time.now.to_f
@@ -184,6 +192,7 @@ module Listen
         latency: nil,
         wait_for_delay: 0.1,
         force_polling: false,
+        relative: false,
         polling_fallback_message: nil }.merge(options)
     end
 

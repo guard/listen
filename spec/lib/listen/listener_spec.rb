@@ -50,13 +50,18 @@ RSpec.describe Listener do
             latency: nil,
             wait_for_delay: 0.1,
             force_polling: false,
+            relative: false,
             polling_fallback_message: nil)
       end
     end
 
     context 'custom options' do
       subject do
-        described_class.new('lib', latency: 1.234, wait_for_delay: 0.85)
+        described_class.new(
+          'lib',
+          latency: 1.234,
+          wait_for_delay: 0.85,
+          relative: true)
       end
 
       it 'sets new options on initialize' do
@@ -66,6 +71,7 @@ RSpec.describe Listener do
             latency: 1.234,
             wait_for_delay: 0.85,
             force_polling: false,
+            relative: true,
             polling_fallback_message: nil)
       end
     end
@@ -127,6 +133,84 @@ RSpec.describe Listener do
       subject.start
       subject.queue(:file, :modified, dir, 'foo')
       sleep 0.25
+    end
+
+    context 'when relative option is true' do
+      before do
+        current_path = instance_double(Pathname, to_s: '/project/path')
+        allow(Pathname).to receive(:new).with(Dir.pwd).and_return(current_path)
+      end
+
+      context 'when watched dir is the current dir' do
+        let(:options) { { relative: true, directories: Pathname.pwd } }
+        it 'registers relative paths' do
+          event_dir = instance_double(Pathname)
+          dir_rel_path = instance_double(Pathname, to_s: '.')
+          foo_rel_path = instance_double(Pathname, to_s: 'foo', exist?: true)
+
+          allow(event_dir).to receive(:relative_path_from).
+            with(Pathname.pwd).
+            and_return(dir_rel_path)
+
+          allow(dir_rel_path).to receive(:+).with('foo') { foo_rel_path }
+
+          block_stub = instance_double(Proc)
+          expect(block_stub).to receive(:call).with(['foo'], [], [])
+          subject.block = block_stub
+
+          subject.start
+          subject.queue(:file, :modified, event_dir, 'foo')
+          sleep 0.25
+        end
+      end
+
+      context 'when watched dir is not the current dir' do
+        let(:options) { { relative: true } }
+
+        it 'registers relative path' do
+          event_dir = instance_double(Pathname)
+          dir_rel_path = instance_double(Pathname, to_s: '..')
+          foo_rel_path = instance_double(Pathname, to_s: '../foo', exist?: true)
+
+          allow(event_dir).to receive(:relative_path_from).
+            with(Pathname.pwd).
+            and_return(dir_rel_path)
+
+          allow(dir_rel_path).to receive(:+).with('foo') { foo_rel_path }
+
+          block_stub = instance_double(Proc)
+          expect(block_stub).to receive(:call).with(['../foo'], [], [])
+          subject.block = block_stub
+
+          subject.start
+          subject.queue(:file, :modified, event_dir, 'foo')
+          sleep 0.25
+        end
+      end
+
+      context 'when watched dir is on another drive' do
+        let(:options) { { relative: true } }
+
+        it 'registers full path' do
+          event_dir = instance_double(Pathname)
+          foo_rel_path = instance_double(Pathname, to_s: 'd:/foo', exist?: true)
+
+          allow(event_dir).to receive(:relative_path_from).
+            with(Pathname.pwd).
+            and_raise(ArgumentError)
+
+          allow(event_dir).to receive(:+).with('foo') { foo_rel_path }
+
+          block_stub = instance_double(Proc)
+          expect(block_stub).to receive(:call).with(['d:/foo'], [], [])
+          subject.block = block_stub
+
+          subject.start
+          subject.queue(:file, :modified, event_dir, 'foo')
+          sleep 0.25
+        end
+      end
+
     end
   end
 

@@ -26,6 +26,12 @@ module Listen
                  aliases: '-d',
                  banner:  'The directory to listen to'
 
+    class_option :relative,
+                 type:    :boolean,
+                 default: false,
+                 aliases: '-r',
+                 banner:  'Convert paths relative to current directory'
+
     def start
       Listen::Forwarder.new(options).start
     end
@@ -44,6 +50,7 @@ module Listen
       logger.info 'Starting listen...'
       address = @options[:forward]
       directory = @options[:directory]
+      relative = @options[:relative]
       callback = proc do |modified, added, removed|
         if @options[:verbose]
           logger.info "+ #{added}" unless added.empty?
@@ -52,7 +59,12 @@ module Listen
         end
       end
 
-      listener = Listen.to directory, forward_to: address, &callback
+      listener = Listen.to(
+        directory,
+        forward_to: address,
+        relative: relative,
+        &callback)
+
       listener.start
 
       sleep 0.5 while listener.listen?

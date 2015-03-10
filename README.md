@@ -163,6 +163,9 @@ wait_for_delay: 4                               # Set the delay (**in seconds**)
 force_polling: true                             # Force the use of the polling adapter
                                                 # default: none
 
+relative: false                                 # Whether changes should be relative to current dir or not
+                                                # default: false
+
 debug: true                                     # Enable Celluloid logger
                                                 # default: false
 
