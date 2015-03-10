@@ -1,3 +1,3 @@
 module Listen
-  VERSION = '2.8.6'
+  VERSION = '2.9.0'
 end
