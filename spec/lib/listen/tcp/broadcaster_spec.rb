@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 require 'listen/tcp/broadcaster'
 
-describe Listen::TCP::Broadcaster do
+RSpec.describe Listen::TCP::Broadcaster do
 
   let(:host) { '10.0.0.2' }
   let(:port) { 4000 }

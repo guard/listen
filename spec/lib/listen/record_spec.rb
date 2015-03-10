@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Record do
+RSpec.describe Listen::Record do
   let(:registry) { instance_double(Celluloid::Registry) }
 
   let(:listener) do

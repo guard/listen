@@ -1,8 +1,6 @@
 # encoding: utf-8
 
-require 'spec_helper'
-
-describe Listen::TCP::Message do
+RSpec.describe Listen::TCP::Message do
 
   let(:object)  { [1, 2, { 'foo' => 'bar' }] }
   let(:body)    { '[1,2,{"foo":"bar"}]' }

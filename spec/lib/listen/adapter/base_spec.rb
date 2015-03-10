@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 include Listen
 
-describe Adapter::Base do
+RSpec.describe Adapter::Base do
 
   class FakeAdapter < described_class
     def initialize(*args)

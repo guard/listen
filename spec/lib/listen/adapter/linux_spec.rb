@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Adapter::Linux do
+RSpec.describe Listen::Adapter::Linux do
   describe 'class' do
     subject { described_class }
     it { should be_local_fs }

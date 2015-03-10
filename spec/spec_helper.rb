@@ -30,6 +30,8 @@ RSpec.configure do |config|
     mocks.verify_doubled_constant_names = true
     mocks.verify_partial_doubles = true
   end
+
+  config.disable_monkey_patching!
 end
 
 require 'rspec/retry'

@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen do
+RSpec.describe Listen do
   let(:listener) { instance_double(Listen::Listener, stop: nil) }
 
   after do

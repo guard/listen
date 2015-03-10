@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 include Listen
 
-describe Directory do
+RSpec.describe Directory do
   let(:dir) { double(:dir) }
   let(:file) { double(:file, directory?: false) }
   let(:file2) { double(:file2, directory?: false) }

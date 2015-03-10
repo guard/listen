@@ -1,7 +1,6 @@
 # encoding: UTF-8
-require 'spec_helper'
 
-describe 'Listen' do
+RSpec.describe 'Listen' do
   let(:base_options) { { wait_for_delay: 0.1, latency: 0.1 } }
   let(:polling_options) { {} }
   let(:options) { {} }

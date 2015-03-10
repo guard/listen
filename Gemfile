@@ -13,6 +13,7 @@ when /bsd|dragonfly/i
 end
 
 group :test do
+  gem 'celluloid', github: 'chronomantic/celluloid', branch: 'update_rspec'
   gem 'celluloid-io', '>= 0.15.0'
   gem 'rake'
   gem 'rspec', '~> 3.0.0rc1'

@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Adapter::TCP do
+RSpec.describe Listen::Adapter::TCP do
 
   let(:host) { '10.0.0.2' }
   let(:port) { 4000 }

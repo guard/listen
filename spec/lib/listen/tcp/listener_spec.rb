@@ -1,9 +1,7 @@
-require 'spec_helper'
-
 require 'listen/tcp/message'
 require 'listen/tcp/broadcaster'
 
-describe Listen::Listener do
+RSpec.describe Listen::Listener do
 
   let(:host) { '10.0.0.2' }
   let(:port) { 4000 }
