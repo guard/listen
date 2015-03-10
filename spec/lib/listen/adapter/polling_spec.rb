@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 include Listen
 
-describe Adapter::Polling do
+RSpec.describe Adapter::Polling do
   describe 'class' do
     subject { described_class }
     it { should be_local_fs }

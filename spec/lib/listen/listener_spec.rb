@@ -1,8 +1,6 @@
-require 'spec_helper'
-
 include Listen
 
-describe Listener do
+RSpec.describe Listener do
   subject { described_class.new(options) }
   let(:options) { {} }
   let(:registry) { instance_double(Celluloid::Registry) }

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 # This is just so stubs work
 require 'rb-fsevent'
 
@@ -7,7 +5,7 @@ require 'listen/adapter/darwin'
 
 include Listen
 
-describe Adapter::Darwin do
+RSpec.describe Adapter::Darwin do
   describe 'class' do
     subject { described_class }
     it { should be_local_fs }

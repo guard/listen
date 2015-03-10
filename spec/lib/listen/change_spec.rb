@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Change do
+RSpec.describe Listen::Change do
   let(:subject) { Listen::Change.new(listener) }
   let(:listener) { instance_double(Listen::Listener, options: {}) }
   let(:record) { instance_double(Listen::Record) }

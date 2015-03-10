@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Listener do
+RSpec.describe Listen::Listener do
 
   let(:port) { 4000 }
   let(:broadcast_options) { { forward_to: port } }

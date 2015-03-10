@@ -1,10 +1,8 @@
-require 'spec_helper'
-
 RSpec::Matchers.define :accept do |type, path|
   match { |actual| !actual.silenced?(Pathname(path), type) }
 end
 
-describe Listen::Silencer do
+RSpec.describe Listen::Silencer do
   let(:options) { {} }
   before { subject.configure(options) }
 

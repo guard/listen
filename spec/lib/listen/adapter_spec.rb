@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::Adapter do
+RSpec.describe Listen::Adapter do
 
   let(:listener) { instance_double(Listen::Listener, options: {}) }
   before do

@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-describe Listen::File do
+RSpec.describe Listen::File do
   let(:async_record) do
     instance_double(
       Listen::Record,
