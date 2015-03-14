@@ -204,7 +204,7 @@ gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 
 ### On \*BSD
 
-If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) instead of polling.
+If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) adapter instead of polling.
 
 Please add the following to your Gemfile:
 
