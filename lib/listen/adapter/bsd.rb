@@ -93,6 +93,8 @@ module Listen
 
       def _watch_file(path, queue)
         queue.watch_file(path, *options.events, &@callback)
+      rescue Errno::ENOENT => e
+        _log :warn, "kqueue: watch file failed: #{e.message}"
       end
 
       # Quick rubocop workaround
