@@ -277,7 +277,7 @@ listen -v -d "/projects/my_project" -f "10.0.0.2:4000" # changes in given direct
 To connect to a broadcasting listener as a recipient, specify its address using `Listen.on`:
 
 ```ruby
-listener = Listen.on '10.0.0.2:4000' do |modified, added, removed|
+listener = Listen.on '10.0.0.2:4000' do |modified, added, removed, moved_from, moved_to|
   # This block will be called
 end
 listener.start
