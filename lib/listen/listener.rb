@@ -284,7 +284,7 @@ module Listen
       return if block.nil?
 
       hash = _smoosh_changes(changes)
-      result = [hash[:modified], hash[:added], hash[:removed]]
+      result = [hash[:modified], hash[:added], hash[:removed], hash[:moved_from], hash[:moved_to]]
 
       block_start = Time.now.to_f
       # TODO: condition not tested, but too complex to test ATM

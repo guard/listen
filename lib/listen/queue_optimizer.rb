@@ -10,8 +10,9 @@ module Listen
         end
         _squash_changes(_reinterpret_related_changes(cookies))
       else
-        smooshed = { modified: [], added: [], removed: [] }
+        smooshed = {}
         changes.each do |_, change, dir, rel_path, _|
+          smooshed[change] = [] unless smooshed.key?(change)
           smooshed[change] << (dir + rel_path).to_s
         end
         smooshed.tap { |s| s.each { |_, v| v.uniq! } }
