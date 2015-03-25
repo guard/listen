@@ -21,7 +21,7 @@ module Listen
                  banner:  'The address to forward filesystem events'
 
     class_option :directory,
-                 type:    :string,
+                 type:    :array,
                  default: '.',
                  aliases: '-d',
                  banner:  'The directory to listen to'

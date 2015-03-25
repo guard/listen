@@ -8,6 +8,41 @@ RSpec.describe Listen::CLI do
     allow(forwarder).to receive(:start)
   end
 
+  describe 'directories option' do
+    context 'not specified' do
+      let(:options) { %w[] }
+      it 'is set to local directory' do
+        expect(Listen::Forwarder).to receive(:new) do |options|
+          expect(options[:directory]).to eq('.')
+          forwarder
+        end
+        described_class.start(options)
+      end
+    end
+
+    context 'with a single directory' do
+      let(:options) { %w[-d app] }
+      it 'is set to app' do
+        expect(Listen::Forwarder).to receive(:new) do |options|
+          expect(options[:directory]).to eq(['app'])
+          forwarder
+        end
+        described_class.start(options)
+      end
+    end
+
+    context 'with a multiple directories' do
+      let(:options) { %w[-d app spec] }
+      it 'is set to an array of the directories' do
+        expect(Listen::Forwarder).to receive(:new) do |options|
+          expect(options[:directory]).to eq(%w(app spec))
+          forwarder
+        end
+        described_class.start(options)
+      end
+    end
+  end
+
   describe 'relative option' do
     context 'without relative option' do
       let(:options) { %w[] }
