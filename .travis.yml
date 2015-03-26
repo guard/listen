@@ -17,4 +17,6 @@ matrix:
 os:
   - linux
   - osx
+env:
+  - LISTEN_TESTS_DEFAULT_LAG=0.8 LISTEN_TESTS_DEFAULT_TCP_LAG=1.2
 sudo: false
