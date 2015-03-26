@@ -153,11 +153,11 @@ class ListenerWrapper
     #
     # On Travis it used to be > 0.5, but that was before broadcaster sent
     # changes immediately, so 0.2-0.4 might be enough for Travis, but we set it
-    # to 0.6
+    # to 0.8 (because 0.75 wasn't enough recently)
     #
     # The value should be 2-3 x wait_for_delay + time between fs operation and
     # notification, which for polling and FSEvent means the configured latency
-    @lag = 0.6
+    @lag = Float(ENV['LISTEN_TESTS_DEFAULT_LAG'] || 0.2)
 
     @paths = paths
 

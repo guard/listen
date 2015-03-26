@@ -2,15 +2,21 @@ language: ruby
 bundler_args: --without development
 rvm:
   - 1.9.3
-  - 2.0.0
-  - 2.1.2
+  - 2.2.0
   - jruby
   - rbx-2
 matrix:
   allow_failures:
     - rvm: jruby
     - rvm: rbx-2
+  exclude:
+    - rvm: jruby
+      os: osx
+    - rvm: rbx-2
+      os: osx
 os:
   - linux
   - osx
+env:
+  - LISTEN_TESTS_DEFAULT_LAG=0.8 LISTEN_TESTS_DEFAULT_TCP_LAG=1.2
 sudo: false

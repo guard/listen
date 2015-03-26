@@ -24,7 +24,10 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 1.9.3'
 
-  s.add_dependency 'celluloid',  '>= 0.15.2'
+  # NOTE: different minor versions are API-incompatible,
+  # so we stick to the latest stable+maintained version
+  s.add_dependency 'celluloid',  '~> 0.16.0'
+
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
   s.add_dependency 'rb-inotify', '>= 0.9'
 

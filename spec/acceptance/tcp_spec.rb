@@ -27,8 +27,7 @@ RSpec.describe Listen::Listener do
 
         before do
           broadcaster.listener.start
-          # Travis on OSX is too slow
-          subject.lag = 1.2
+          subject.lag = Float(ENV['LISTEN_TESTS_DEFAULT_TCP_LAG'] || 0.2)
           subject.listener.start
         end
         after do
