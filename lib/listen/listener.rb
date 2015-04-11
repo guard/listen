@@ -8,6 +8,8 @@ require 'listen/silencer'
 require 'listen/queue_optimizer'
 require 'English'
 
+require 'celluloid/fsm'
+
 require 'listen/internals/logging'
 
 module Listen
