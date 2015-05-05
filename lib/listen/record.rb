@@ -15,7 +15,7 @@ module Listen
     end
 
     def add_dir(dir, rel_path)
-      return if [nil, '', '.'].include? rel_path
+      rel_path = '.' if [nil, '', '.'].include? rel_path
       @paths[dir.to_s][rel_path] ||= {}
     end
 
@@ -32,23 +32,16 @@ module Listen
     def file_data(dir, rel_path)
       root = @paths[dir.to_s]
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
-      if [nil, '', '.'].include? dirname
-        root[basename] ||= {}
-        root[basename].dup
-      else
-        root[dirname] ||= {}
-        root[dirname][basename] ||= {}
-        root[dirname][basename].dup
-      end
+      dirname = '.' if [nil, '', '.'].include? dirname
+      root[dirname] ||= {}
+      root[dirname][basename] ||= {}
+      root[dirname][basename].dup
     end
 
     def dir_entries(dir, rel_path)
-      tree = if [nil, '', '.'].include? rel_path.to_s
-               @paths[dir.to_s]
-             else
-               @paths[dir.to_s][rel_path.to_s] ||= _auto_hash
-               @paths[dir.to_s][rel_path.to_s]
-             end
+      rel_path = '.' if [nil, '', '.'].include? rel_path.to_s
+      @paths[dir.to_s][rel_path.to_s] ||= _auto_hash
+      tree = @paths[dir.to_s][rel_path.to_s]
 
       result = {}
       tree.each do |key, values|
@@ -81,25 +74,18 @@ module Listen
 
     def _fast_update_file(dir, dirname, basename, data)
       root = @paths[dir.to_s]
-      if [nil, '', '.'].include? dirname
-        root[basename] = (root[basename] || {}).merge(data)
-      else
-        root[dirname] ||= {}
-        root[dirname][basename] = (root[dirname][basename] || {}).merge(data)
-      end
+      dirname = '.' if [nil, '', '.'].include? dirname
+      root[dirname] ||= {}
+      root[dirname][basename] = (root[dirname][basename] || {}).merge(data)
     end
 
     def _fast_unset_path(dir, dirname, basename)
       root = @paths[dir.to_s]
       # this may need to be reworked to properly remove
       # entries from a tree, without adding non-existing dirs to the record
-      if [nil, '', '.'].include? dirname
-        return unless root.key?(basename)
-        root.delete(basename)
-      else
-        return unless root.key?(dirname)
-        root[dirname].delete(basename)
-      end
+      dirname = '.' if [nil, '', '.'].include? dirname
+      return unless root.key?(dirname)
+      root[dirname].delete(basename)
     end
 
     # TODO: test with a file name given
