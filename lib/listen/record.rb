@@ -11,12 +11,7 @@ module Listen
 
     def initialize(listener)
       @listener = listener
-      @paths    = _auto_hash
-    end
-
-    def add_dir(dir, rel_path)
-      rel_path = '.' if [nil, '', '.'].include? rel_path
-      @paths[dir.to_s][rel_path] ||= {}
+      @paths = {}
     end
 
     def update_file(dir, rel_path, data)
@@ -33,6 +28,8 @@ module Listen
       root = @paths[dir.to_s]
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
       dirname = '.' if [nil, '', '.'].include? dirname
+      fail "directory not watched: #{dir}" unless root
+
       root[dirname] ||= {}
       root[dirname][basename] ||= {}
       root[dirname][basename].dup
@@ -40,20 +37,12 @@ module Listen
 
     def dir_entries(dir, rel_path)
       rel_path = '.' if [nil, '', '.'].include? rel_path.to_s
-      @paths[dir.to_s][rel_path.to_s] ||= _auto_hash
-      tree = @paths[dir.to_s][rel_path.to_s]
-
-      result = {}
-      tree.each do |key, values|
-        # only get data for file entries
-        result[key] = values.key?(:mtime) ? values : {}
-      end
-      result
+      @paths[dir.to_s][rel_path.to_s] ||= {}
     end
 
     def build
       start = Time.now.to_f
-      @paths = _auto_hash
+      @paths = {}
 
       # TODO: refactor this out (1 Record = 1 watched dir)
       listener.directories.each do |directory|
@@ -68,13 +57,31 @@ module Listen
 
     private
 
-    def _auto_hash
-      Hash.new { |h, k| h[k] = Hash.new }
+    # TODO: refactor/refactor out
+    def add_dir(dir, rel_path)
+      rel_path = '.' if [nil, '', '.'].include? rel_path
+      dirname, basename = Pathname(rel_path).split.map(&:to_s)
+      basename = '.' if [nil, '', '.'].include? basename
+      root = (@paths[dir.to_s] ||= {})
+      if [nil, '', '.'].include?(dirname)
+        entries = (root['.'] || {})
+        entries.merge!(basename => {}) if basename != '.'
+        root['.'] = entries
+      else
+        root[rel_path] ||= {}
+      end
     end
 
     def _fast_update_file(dir, dirname, basename, data)
       root = @paths[dir.to_s]
       dirname = '.' if [nil, '', '.'].include? dirname
+
+      internal_dirname, internal_key = ::File.split(dirname.to_s)
+      if internal_dirname == '.' && internal_key != '.'
+        root[internal_dirname] ||= {}
+        root[internal_dirname][internal_key] ||= {}
+      end
+
       root[dirname] ||= {}
       root[dirname][basename] = (root[dirname][basename] || {}).merge(data)
     end
@@ -93,7 +100,7 @@ module Listen
     # TODO: test with mixed encoding
     def _fast_build(root)
       symlink_detector = SymlinkDetector.new
-      @paths[root] = _auto_hash
+      @paths[root] = {}
       remaining = Queue.new
       remaining << Entry.new(root, nil, nil)
       _fast_build_dir(remaining, symlink_detector) until remaining.empty?

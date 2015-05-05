@@ -7,8 +7,6 @@ module Listen
 
       previous = sync_record.dir_entries(dir, rel_path)
 
-      record.add_dir(dir, rel_path)
-
       # TODO: use children(with_directory: false)
       path = dir + rel_path
       current = Set.new(path.children)

@@ -9,7 +9,7 @@ RSpec.describe Directory do
   let(:queue) { instance_double(Change, change: nil) }
 
   let(:async_record) do
-    instance_double(Record, add_dir: true, unset_path: true)
+    instance_double(Record, unset_path: true)
   end
 
   let(:record) do
@@ -36,11 +36,6 @@ RSpec.describe Directory do
 
       context 'with empty dir' do
         before { allow(dir).to receive(:children) { [] } }
-
-        it 'sets record dir path' do
-          expect(async_record).to receive(:add_dir).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
-        end
 
         it "queues changes for file path and dir that doesn't exist" do
           expect(queue).to receive(:change).with(:file, dir, 'file.rb')

@@ -45,31 +45,39 @@ RSpec.describe Listen::Record do
     end
   end
 
+  def build_watched_dir(record, dir)
+    record.send(:add_dir, dir, '.')
+  end
+
   let(:record) { Listen::Record.new(listener) }
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
 
   describe '#update_file' do
+    before { build_watched_dir(record, dir) }
+
     context 'with path in watched dir' do
       it 'sets path by spliting dirname and basename' do
         record.update_file(dir, 'file.rb', mtime: 1.1)
-        expect(record.paths['/dir']).to eq('file.rb' => { mtime: 1.1 })
+        expect(record.paths['/dir']['.']).to eq('file.rb' => { mtime: 1.1 })
       end
 
       it 'sets path and keeps old data not overwritten' do
         record.update_file(dir, 'file.rb', foo: 1, bar: 2)
         record.update_file(dir, 'file.rb', foo: 3)
         watched_dir = record.paths['/dir']
-        expect(watched_dir).to eq('file.rb' => { foo: 3, bar: 2 })
+        expect(watched_dir['.']).to eq('file.rb' => { foo: 3, bar: 2 })
       end
     end
 
     context 'with subdir path' do
       it 'sets path by spliting dirname and basename' do
+        record.send(:add_dir, dir, 'path')
         record.update_file(dir, 'path/file.rb', mtime: 1.1)
         expect(record.paths['/dir']['path']).to eq('file.rb' => { mtime: 1.1 })
       end
 
       it 'sets path and keeps old data not overwritten' do
+        record.send(:add_dir, dir, 'path')
         record.update_file(dir, 'path/file.rb', foo: 1, bar: 2)
         record.update_file(dir, 'path/file.rb', foo: 3)
         file_data = record.paths['/dir']['path']['file.rb']
@@ -78,36 +86,40 @@ RSpec.describe Listen::Record do
     end
   end
 
+  # TODO: refactor/refactor out
   describe '#add_dir' do
     it 'sets itself when .' do
-      record.add_dir(dir, '.')
-      expect(record.paths['/dir']).to eq({})
+      record.send(:add_dir, dir, '.')
+      expect(record.paths['/dir']['.']).to eq({})
     end
 
     it 'sets itself when nil' do
-      record.add_dir(dir, nil)
-      expect(record.paths['/dir']).to eq({})
+      record.send(:add_dir, dir, nil)
+      expect(record.paths['/dir']['.']).to eq({})
     end
 
     it 'sets itself when empty' do
-      record.add_dir(dir, '')
-      expect(record.paths['/dir']).to eq({})
+      record.send(:add_dir, dir, '')
+      expect(record.paths['/dir']['.']).to eq({})
     end
 
     it 'correctly sets new directory data' do
-      record.add_dir(dir, 'path/subdir')
-      expect(record.paths['/dir']).to eq('path/subdir' => {})
+      record.send(:add_dir, dir, '.')
+      record.send(:add_dir, dir, 'path/subdir')
+      expect(record.paths['/dir']).to eq('.' => {}, 'path/subdir' => {})
     end
 
     it 'sets path and keeps old data not overwritten' do
-      record.add_dir(dir, 'path/subdir')
+      record.send(:add_dir, dir, '.')
+      record.send(:add_dir, dir, 'path')
+      record.send(:add_dir, dir, 'path/subdir')
       record.update_file(dir, 'path/subdir/file.rb', mtime: 1.1)
-      record.add_dir(dir, 'path/subdir')
+      record.send(:add_dir, dir, 'path/subdir')
       record.update_file(dir, 'path/subdir/file2.rb', mtime: 1.2)
-      record.add_dir(dir, 'path/subdir')
+      record.send(:add_dir, dir, 'path/subdir')
 
       watched = record.paths['/dir']
-      expect(watched.keys).to eq ['path/subdir']
+      expect(watched.keys).to eq ['.', 'path/subdir']
       expect(watched['path/subdir'].keys).to eq %w(file.rb file2.rb)
 
       subdir = watched['path/subdir']
@@ -117,20 +129,22 @@ RSpec.describe Listen::Record do
   end
 
   describe '#unset_path' do
+    before { build_watched_dir(record, dir) }
+
     context 'within watched dir' do
       context 'when path is present' do
         before { record.update_file(dir, 'file.rb', mtime: 1.1) }
 
         it 'unsets path' do
           record.unset_path(dir, 'file.rb')
-          expect(record.paths).to eq('/dir' => {})
+          expect(record.paths['/dir']).to eq('.' => {})
         end
       end
 
       context 'when path not present' do
         it 'unsets path' do
           record.unset_path(dir, 'file.rb')
-          expect(record.paths).to eq('/dir' => {})
+          expect(record.paths['/dir']).to eq('.' => {})
         end
       end
     end
@@ -141,20 +155,21 @@ RSpec.describe Listen::Record do
 
         it 'unsets path' do
           record.unset_path(dir, 'path/file.rb')
-          expect(record.paths).to eq('/dir' => { 'path' => {} })
+          expect(record.paths['/dir']).to eq('.' => {'path' => {}}, 'path' => {} )
         end
       end
 
       context 'when path not present' do
         it 'unsets path' do
           record.unset_path(dir, 'path/file.rb')
-          expect(record.paths).to eq('/dir' => {})
+          expect(record.paths['/dir']).to eq('.' => {})
         end
       end
     end
   end
 
   describe '#file_data' do
+    before { build_watched_dir(record, dir) }
     context 'with path in watched dir' do
       context 'when path is present' do
         before { record.update_file(dir, 'file.rb', mtime: 1.1) }
@@ -190,6 +205,8 @@ RSpec.describe Listen::Record do
   end
 
   describe '#dir_entries' do
+    before { build_watched_dir(record, dir) }
+
     context 'in watched dir' do
       subject { record.dir_entries(dir, '.') }
 
@@ -203,8 +220,28 @@ RSpec.describe Listen::Record do
       end
 
       context 'with subdir/file.rb in record' do
-        before { record.update_file(dir, 'subdir/file.rb', mtime: 1.1) }
-        it { should eq('subdir' => {}) }
+        before do
+          record.update_file(dir, 'subdir', mtime: 1.0)
+          record.update_file(dir, 'subdir/file.rb', mtime: 1.1)
+        end
+
+        it do
+          should eq('subdir' => { mtime: 1.0 })
+        end
+      end
+
+      context 'with tree and root files in record' do
+        before do
+          record.update_file(dir, 'file1.rb', mtime: 1.1)
+          record.update_file(dir, 'subdir', mtime: 1.2)
+          record.update_file(dir, 'subdir/file2.rb', mtime: 1.4)
+        end
+        it do
+          should eq(
+            'file1.rb' => { mtime: 1.1 },
+            'subdir' => { mtime: 1.2 }
+          )
+        end
       end
     end
 
@@ -249,10 +286,12 @@ RSpec.describe Listen::Record do
       real_directory('/dir1' => [])
       real_directory('/dir2' => [])
 
-      record.update_file(dir, 'path/file.rb', mtime: 1.1)
+      build_watched_dir(record, '/dir1')
+      record.update_file('/dir1', 'path/file.rb', mtime: 1.1)
       record.build
-      expect(record.paths).to eq('/dir1' => {}, '/dir2' => {})
-      expect(record.file_data(dir, 'path/file.rb')).to be_empty
+      expect(record.paths['/dir1']).to eq('.' => {})
+      expect(record.paths['/dir2']).to eq('.' => {})
+      expect(record.file_data('/dir1', 'path/file.rb')).to be_empty
     end
 
     let(:foo_stat) { instance_double(::File::Stat, mtime: 1.0, mode: 0644) }
@@ -271,8 +310,10 @@ RSpec.describe Listen::Record do
         expect(record.paths.keys).to eq %w( /dir1 /dir2 )
         expect(record.paths['/dir1']).
           to eq(
-            'foo' => { mtime: 1.0, mode: 0644 },
-            'bar' => { mtime: 2.3, mode: 0755 })
+            '.' => {
+              'foo' => { mtime: 1.0, mode: 0644 },
+              'bar' => { mtime: 2.3, mode: 0755 }
+            })
       end
     end
 
@@ -287,9 +328,17 @@ RSpec.describe Listen::Record do
       it 'builds record'  do
         record.build
         expect(record.paths.keys).to eq %w( /dir1 /dir2 )
-        expect(record.paths['/dir1']).
-          to eq('foo' => { 'bar' => { mtime: 2.3, mode: 0755 } })
-        expect(record.paths['/dir2']).to eq({})
+        expect(record.paths['/dir1']).to eq(
+          '.' => {'foo' => {}},
+          'foo' => { 'bar' => { mtime: 2.3, mode: 0755 } }
+        )
+        expect(record.paths['/dir2']['.']).to eq({})
+      end
+
+      it 'properly shows list of children' do
+        record.build
+        expect(record.dir_entries('/dir1', 'foo')).to eq('bar' => {mtime: 2.3, mode: 0755})
+        expect(record.dir_entries('/dir1', '.')).to eq('foo' => {})
       end
     end
 
@@ -307,13 +356,12 @@ RSpec.describe Listen::Record do
       it 'builds record'  do
         record.build
         expect(record.paths.keys).to eq %w( /dir1 /dir2 )
-        expect(record.paths['/dir1']).
-          to eq(
-            'foo' => {},
-            'foo/bar' => {},
-            'foo/baz' => {}
+        expect(record.paths['/dir1']).to eq(
+          '.' => {'foo' => {}},
+          'foo/bar' => {},
+          'foo/baz' => {}
         )
-        expect(record.paths['/dir2']).to eq({})
+        expect(record.paths['/dir2']).to eq('.' => {})
       end
     end
 
