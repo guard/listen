@@ -26,7 +26,7 @@ module Listen
       end
 
       # TODO: this is not tested properly
-      previous.reject! { |entry, _| current.include? path + entry }
+      previous = previous.reject { |entry, _| current.include? path + entry }
 
       _async_changes(dir, rel_path, queue, previous, options)
 

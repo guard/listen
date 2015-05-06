@@ -31,7 +31,7 @@ RSpec.describe Directory do
 
     context 'with file & subdir in record' do
       let(:record_entries) do
-        { 'file.rb' => { mtime: 1.1 }, 'subdir' => {} }
+        { 'file.rb' => { mtime: 1.1 }, 'subdir' => {} }.freeze
       end
 
       context 'with empty dir' do
