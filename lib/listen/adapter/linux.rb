@@ -49,16 +49,6 @@ module Listen
 
         _log :debug, "inotify: #{rel_path} (#{event.flags.inspect})"
 
-        if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
-          if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
-            rel_path = path.dirname.relative_path_from(dir).to_s
-            _queue_change(:dir, dir, rel_path, {})
-          else
-            _queue_change(:dir, dir, rel_path, {})
-          end
-          return
-        end
-
         return if _skip_event?(event)
 
         cookie_params = event.cookie.zero? ? {} : { cookie: event.cookie }

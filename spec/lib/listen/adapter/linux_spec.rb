@@ -70,21 +70,19 @@ RSpec.describe Listen::Adapter::Linux do
       end
 
       # TODO: get fsevent adapter working like INotify
-      unless /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
-        it 'recognizes close_write as modify' do
-          expect_change.call(:modified)
-          event_callback.call([:close_write])
-        end
+      it 'recognizes close_write as modify' do
+        expect_change.call(:modified)
+        event_callback.call([:close_write])
+      end
 
-        it 'recognizes moved_to as moved_to' do
-          expect_change.call(:moved_to)
-          event_callback.call([:moved_to])
-        end
+      it 'recognizes moved_to as moved_to' do
+        expect_change.call(:moved_to)
+        event_callback.call([:moved_to])
+      end
 
-        it 'recognizes moved_from as moved_from' do
-          expect_change.call(:moved_from)
-          event_callback.call([:moved_from])
-        end
+      it 'recognizes moved_from as moved_from' do
+        expect_change.call(:moved_from)
+        event_callback.call([:moved_from])
       end
     end
   end

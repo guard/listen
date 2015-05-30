@@ -4,6 +4,7 @@ RSpec.describe Listen::Adapter do
   before do
     allow(Listen::Adapter::BSD).to receive(:usable?) { false }
     allow(Listen::Adapter::Darwin).to receive(:usable?) { false }
+    allow(Listen::Adapter::SimulatedDarwin).to receive(:usable?) { false }
     allow(Listen::Adapter::Linux).to receive(:usable?) { false }
     allow(Listen::Adapter::Windows).to receive(:usable?) { false }
   end
@@ -47,7 +48,19 @@ RSpec.describe Listen::Adapter do
     context "when on Linux" do
       before { allow(Listen::Adapter::Linux).to receive(:usable?) { true } }
 
-      it { is_expected.to be Listen::Adapter::Linux }
+      context "when simulation mode is on" do
+        before do
+          allow(Listen::Adapter::SimulatedDarwin).to receive(:usable?) { true }
+        end
+        it { is_expected.to be Listen::Adapter::SimulatedDarwin }
+      end
+
+      context "when simulation mode is off" do
+        before do
+          allow(Listen::Adapter::SimulatedDarwin).to receive(:usable?) { false }
+        end
+        it { is_expected.to be Listen::Adapter::Linux }
+      end
 
       context "when TCP is requested" do
         let(:options) { { force_tcp: true } }
