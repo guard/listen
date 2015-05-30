@@ -9,38 +9,73 @@ RSpec.describe Listen::Adapter do
   end
 
   describe '.select' do
-    it 'returns TCP adapter when requested' do
-      klass = Listen::Adapter.select(force_tcp: true)
-      expect(klass).to eq Listen::Adapter::TCP
+    let(:options) { {} }
+    subject { Listen::Adapter.select(options) }
+
+    context "when on Darwin" do
+      before { allow(Listen::Adapter::Darwin).to receive(:usable?) { true } }
+
+      it { is_expected.to be Listen::Adapter::Darwin }
+
+      context "when TCP is requested" do
+        let(:options) { { force_tcp: true } }
+        it { is_expected.to be Listen::Adapter::TCP }
+      end
+
+      context "when polling is forced" do
+        let(:options) { { force_polling: true } }
+        it { is_expected.to be Listen::Adapter::Polling }
+      end
     end
 
-    it 'returns Polling adapter if forced' do
-      klass = Listen::Adapter.select(force_polling: true)
-      expect(klass).to eq Listen::Adapter::Polling
+    context "when on BSD" do
+      before { allow(Listen::Adapter::BSD).to receive(:usable?) { true } }
+
+      it { is_expected.to be Listen::Adapter::BSD }
+
+      context "when TCP is requested" do
+        let(:options) { { force_tcp: true } }
+        it { is_expected.to be Listen::Adapter::TCP }
+      end
+
+      context "when polling is forced" do
+        let(:options) { { force_polling: true } }
+        it { is_expected.to be Listen::Adapter::Polling }
+      end
     end
 
-    it 'returns BSD adapter when usable' do
-      allow(Listen::Adapter::BSD).to receive(:usable?) { true }
-      klass = Listen::Adapter.select
-      expect(klass).to eq Listen::Adapter::BSD
+    context "when on Linux" do
+      before { allow(Listen::Adapter::Linux).to receive(:usable?) { true } }
+
+      it { is_expected.to be Listen::Adapter::Linux }
+
+      context "when TCP is requested" do
+        let(:options) { { force_tcp: true } }
+        it { is_expected.to be Listen::Adapter::TCP }
+      end
+
+      context "when polling is forced" do
+        let(:options) { { force_polling: true } }
+        it { is_expected.to be Listen::Adapter::Polling }
+      end
     end
 
-    it 'returns Darwin adapter when usable' do
-      allow(Listen::Adapter::Darwin).to receive(:usable?) { true }
-      klass = Listen::Adapter.select
-      expect(klass).to eq Listen::Adapter::Darwin
-    end
+    context "when on Windows" do
+      before do
+        allow(Listen::Adapter::Windows).to receive(:usable?) { true }
+      end
 
-    it 'returns Linux adapter when usable' do
-      allow(Listen::Adapter::Linux).to receive(:usable?) { true }
-      klass = Listen::Adapter.select
-      expect(klass).to eq Listen::Adapter::Linux
-    end
+      it { is_expected.to be Listen::Adapter::Windows }
 
-    it 'returns Windows adapter when usable' do
-      allow(Listen::Adapter::Windows).to receive(:usable?) { true }
-      klass = Listen::Adapter.select
-      expect(klass).to eq Listen::Adapter::Windows
+      context "when TCP is requested" do
+        let(:options) { { force_tcp: true } }
+        it { is_expected.to be Listen::Adapter::TCP }
+      end
+
+      context "when polling is forced" do
+        let(:options) { { force_polling: true } }
+        it { is_expected.to be Listen::Adapter::Polling }
+      end
     end
 
     context 'no usable adapters' do
