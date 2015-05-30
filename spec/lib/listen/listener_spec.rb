@@ -139,6 +139,10 @@ RSpec.describe Listener do
       before do
         current_path = instance_double(Pathname, to_s: '/project/path')
         allow(Pathname).to receive(:new).with(Dir.pwd).and_return(current_path)
+
+        # value passed to silencer
+        foo = instance_double(Pathname, to_s: 'foo')
+        allow(Pathname).to receive(:new).with('foo').and_return(foo)
       end
 
       context 'when watched dir is the current dir' do

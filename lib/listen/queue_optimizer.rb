@@ -77,7 +77,7 @@ module Listen
           [[:modified, to_dir, to_file]]
         else
           not_silenced = changes.reject do |type, _, _, path, _|
-            _silenced?(Pathname(path), type)
+            _silenced?(Pathname.new(path), type)
           end
           not_silenced.map do |_, change, dir, path, _|
             [table.fetch(change, change), dir, path]
