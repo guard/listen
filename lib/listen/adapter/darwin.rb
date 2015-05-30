@@ -45,7 +45,14 @@ module Listen
           _log :debug, "fsevent: #{new_path}"
           # TODO: does this preserve symlinks?
           rel_path = new_path.relative_path_from(dir).to_s
-          _queue_change(:dir, dir, rel_path, recursive: true)
+
+          options =
+            if /1|true/ =~ ENV['LISTEN_GEM_FSEVENT_NO_RECURSION']
+              {}
+            else
+              {recursion: true}
+            end
+          _queue_change(:dir, dir, rel_path, options)
         end
       end
     end

@@ -54,6 +54,47 @@ RSpec.describe Adapter::Darwin do
       subject.configure
     end
 
+    describe 'handling events' do
+      let(:config) { { dir1: foo1 } }
+
+      subject do
+        dirs = config.keys.map { |p| Pathname(p.to_s) }
+        described_class.new(options.merge(mq: mq, directories: dirs))
+      end
+
+      around do |example|
+        old = ENV['LISTEN_GEM_FSEVENT_NO_RECURSION']
+        ENV['LISTEN_GEM_FSEVENT_NO_RECURSION'] = env_value
+        example.run
+        ENV['LISTEN_GEM_FSEVENT_NO_RECURSION'] = old
+      end
+
+      before do
+        allow(mq).to receive(:send)
+        callbacks = subject.instance_variable_get(:@callbacks)
+        dir = callbacks.keys.first
+        ev = ["#{dir.to_s}/foo/bar/baz/"]
+        callback = callbacks[dir]
+        callback.call(ev)
+      end
+
+      context "when special env is set" do
+        let(:env_value) { "1" }
+
+        it "does not force recursion" do
+          expect(mq).to have_received(:send).with(:_queue_raw_change, :dir, Pathname('dir1'), 'foo/bar/baz', {})
+        end
+      end
+
+      context "when special env is not set" do
+        let(:env_value) { nil }
+        # TODO: switch default when works well without recursion
+        it "uses recursion by default" do
+          expect(mq).to have_received(:send).with(:_queue_raw_change, :dir, Pathname('dir1'), 'foo/bar/baz', {recursion: true})
+        end
+      end
+    end
+
     describe 'configuration' do
       context 'with 1 directory' do
         let(:config) { { dir1: foo1 } }
