@@ -14,6 +14,10 @@ module Listen
 
       # NOTE: each directory gets a DIFFERENT callback!
       def _configure(dir, &callback)
+        if /1|true/ =~ ENV['LISTEN_GEM_FSEVENT_NO_RECURSION']
+          STDERR.puts "WARNING: Recursive scanning is disabled, which should"\
+            " be faster, but not all changes may be properly detected yet."
+        end
         require 'rb-fsevent'
         opts = { latency: options.latency }
 
