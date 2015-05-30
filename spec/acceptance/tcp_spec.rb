@@ -1,7 +1,11 @@
 RSpec.describe Listen::Listener do
+  def polling_tests?
+    /1|true/i =~ ENV['LISTEN_TESTS_POLLING']
+  end
 
   let(:port) { 4000 }
-  let(:broadcast_options) { { forward_to: port } }
+  let(:polling_options) { { force_polling: polling_tests? } }
+  let(:broadcast_options) { { forward_to: port }.merge(polling_options) }
   let(:paths) { Pathname.new(Dir.pwd) }
 
   around do |example|
