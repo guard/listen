@@ -1,7 +1,6 @@
 module Listen
   # @private api
   module Internals
-    # Just a wrapper for tests to avoid interfereing with Celluloid's threads
     module ThreadPool
       def self.add(&block)
         Thread.new { block.call }.tap do |th|

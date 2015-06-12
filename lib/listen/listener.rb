@@ -14,13 +14,13 @@ require 'English'
 
 require 'listen/internals/logging'
 
+require 'listen/fsm'
 
 require 'listen/event_processor'
 
-
 module Listen
   class Listener
-    include Celluloid::FSM
+    include Listen::FSM
 
     attr_accessor :block
 
@@ -28,8 +28,6 @@ module Listen
 
     # TODO: deprecate
     attr_reader :options, :directories
-    attr_reader :registry, :supervisor
-
 
     # Initializes the directories listener.
     #
@@ -44,20 +42,31 @@ module Listen
     def initialize(*args, &block)
       @options = _init_options(args.last.is_a?(Hash) ? args.pop : {})
 
-      # Setup logging first
-      if Celluloid.logger
-        Celluloid.logger.level = _debug_level
-        _info "Celluloid loglevel set to: #{Celluloid.logger.level}"
-        _info "Listen version: #{Listen::VERSION}"
-      end
-
       @silencer = Silencer.new
       @silencer_controller = Silencer::Controller.new(@silencer, @options)
 
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @event_queue = Queue.new
       @block = block
-      @registry = Celluloid::Registry.new
+
+      change_config = Listen::Change::Config.new(self)
+      changes = @directories.map do |dir|
+        [
+          dir.to_s,
+          Change.new(change_config, Record.new(dir))
+        ]
+      end
+      @fs_changes = Hash[changes]
+
+      adapter_options = { mq: self, directories: directories }
+
+      # TODO: refactor
+      valid_adapter_options = _adapter_class.const_get(:DEFAULTS).keys
+      valid_adapter_options.each do |key|
+        adapter_options.merge!(key => options[key]) if options.key?(key)
+      end
+
+      @adapter = Adapter.select(options).new(adapter_options)
 
       optimizer_config = QueueOptimizer::Config.new(@adapter.class, @silencer)
       @queue_optimizer = QueueOptimizer.new(optimizer_config)
@@ -72,10 +81,6 @@ module Listen
 
     state :stopped, to: [:processing] do
       _stop_wait_thread
-      if @supervisor
-        @supervisor.terminate
-        @supervisor = nil
-      end
     end
 
     state :processing, to: [:paused, :stopped] do
@@ -84,7 +89,6 @@ module Listen
       else
         self.last_queue_event_time = nil
         _start_wait_thread
-        _init_actors
 
         begin
           start = Time.now.to_f
@@ -97,7 +101,7 @@ module Listen
           raise
         end
 
-        _start_adapter
+        @adapter.start
       end
     end
 
@@ -158,15 +162,6 @@ module Listen
       @silencer_controller.replace_with_only(regexps)
     end
 
-    def async(type)
-      proxy = sync(type)
-      proxy ? proxy.async : nil
-    end
-
-    def sync(type)
-      @registry[type]
-    end
-
     def queue(type, change, dir, path, options = {})
       fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
       fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
@@ -207,49 +202,6 @@ module Listen
       }.merge(options)
     end
 
-    def _debug_level
-      debugging = ENV['LISTEN_GEM_DEBUGGING'] || options[:debug]
-      case debugging.to_s
-      when /2/
-        Logger::DEBUG
-      when /true|yes|1/i
-        Logger::INFO
-      else
-        Logger::ERROR
-      end
-    end
-
-    def _init_actors
-      adapter_options = { mq: self, directories: directories }
-
-      @supervisor = Celluloid::SupervisionGroup.run!(registry)
-
-      # TODO: broadcaster should be a separate plugin
-      if @tcp_mode == :broadcaster
-        require 'listen/tcp/broadcaster'
-
-        # TODO: pass a TCP::Config class to make sure host and port are properly
-        # passed, even when nil
-        supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
-
-        # TODO: should be auto started, because if it crashes
-        # a new instance is spawned by supervisor, but it's 'start' isn't
-        # called
-        registry[:broadcaster].start
-      elsif @tcp_mode == :recipient
-        # TODO: adapter options should be configured in Listen.{on/to}
-        adapter_options.merge!(host: @host, port: @port)
-      end
-
-      # TODO: refactor
-      valid_adapter_options = _adapter_class.const_get(:DEFAULTS).keys
-      valid_adapter_options.each do |key|
-        adapter_options.merge!(key => options[key]) if options.key?(key)
-      end
-
-      supervisor.add(_adapter_class, as: :adapter, args: [adapter_options])
-    end
-
     def _wait_for_changes(config)
       latency = options[:wait_for_delay]
       EventProcessor.new(config).loop_for(latency)
@@ -261,16 +213,6 @@ module Listen
 
     def _silenced?(path, type)
       @silencer.silenced?(path, type)
-    end
-
-    def _start_adapter
-      # Don't run async, because configuration has to finish first
-      adapter = sync(:adapter)
-      adapter.start
-    end
-
-    def _adapter_class
-      @adapter_class ||= Adapter.select(options)
     end
 
     attr_reader :adapter

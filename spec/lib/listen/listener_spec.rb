@@ -110,24 +110,8 @@ RSpec.describe Listener do
 
   describe '#start' do
     before do
-      allow(subject).to receive(:_start_adapter)
+      allow(adapter).to receive(:start)
       allow(silencer).to receive(:silenced?) { false }
-    end
-
-    it 'supervises adapter' do
-      allow(Adapter).to receive(:select) { Adapter::Polling }
-      options = [mq: subject, directories: []]
-      expect(supervisor).to receive(:add).
-        with(Adapter::Polling, as: :adapter, args: options)
-
-      subject.start
-    end
-
-    it 'supervises record' do
-      expect(supervisor).to receive(:add).
-        with(Record, as: :record, args: subject)
-
-      subject.start
     end
 
     it 'builds record' do
@@ -141,7 +125,7 @@ RSpec.describe Listener do
     end
 
     it 'starts adapter' do
-      expect(subject).to receive(:_start_adapter)
+      expect(adapter).to receive(:start)
       subject.start
     end
 
@@ -227,12 +211,10 @@ RSpec.describe Listener do
 
   describe '#stop' do
     before do
-      allow(Celluloid::SupervisionGroup).to receive(:run!) { supervisor }
       subject.start
     end
 
-    it 'terminates supervisor' do
-      expect(supervisor).to receive(:terminate)
+    it 'terminates' do
       subject.stop
     end
   end
@@ -388,11 +370,12 @@ RSpec.describe Listener do
   context 'when listener is stopped' do
     before do
       subject.stop
+      allow(silencer).to receive(:silenced?) { true }
     end
 
     it 'queuing does not crash when changes come in' do
       expect do
-        subject.send(:_queue_raw_change, :dir, dir, 'path', recursive: true)
+        subject.send(:_queue_raw_change, :dir, realdir1, 'path', recursive: true)
       end.to_not raise_error
     end
   end

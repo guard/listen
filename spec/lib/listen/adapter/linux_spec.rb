@@ -16,7 +16,6 @@ RSpec.describe Listen::Adapter::Linux do
 
     subject { described_class.new(mq: mq, directories: directories) }
 
-    # workaround: Celluloid ignores SystemExit exception messages
     describe 'inotify limit message' do
       let(:directories) { [Pathname.pwd] }
 
@@ -31,12 +30,7 @@ RSpec.describe Listen::Adapter::Linux do
 
       it 'should be shown before calling abort' do
         expected_message = described_class.const_get('INOTIFY_LIMIT_MESSAGE')
-        expect(STDERR).to receive(:puts).with(expected_message)
-
-        # Expect RuntimeError here, for the sake of unit testing (actual
-        # handling depends on Celluloid supervisor setup, which is beyond the
-        # scope of subject tests)
-        expect { subject.start }.to raise_error RuntimeError, expected_message
+        expect { subject.start }.to raise_error SystemExit, expected_message
       end
     end
 

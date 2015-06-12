@@ -3,8 +3,6 @@ require 'listen/options'
 module Listen
   module Adapter
     class Base
-      include Celluloid
-
       attr_reader :options
 
       # TODO: only used by tests
@@ -78,8 +76,7 @@ module Listen
       private
 
       def _queue_change(type, dir, rel_path, options)
-        # TODO: temporary workaround to remove dependency on Change through
-        # Celluloid in tests
+        # TODO: temporary workaround to remove dependency on Change
         @mq.send(:_queue_raw_change, type, dir, rel_path, options)
       end
 

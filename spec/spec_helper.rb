@@ -36,16 +36,13 @@ RSpec.configure do |config|
   config.default_retry_count = ci? ? 5 : 1
 end
 
-require 'celluloid/rspec'
 Thread.abort_on_exception = true
 Listen.logger.level = Logger::DEBUG
 
 RSpec.configuration.before(:each) do
   Listen::Internals::ThreadPool.stop
-  Celluloid.boot
 end
 
 RSpec.configuration.after(:each) do
-  Celluloid.shutdown
   Listen::Internals::ThreadPool.stop
 end

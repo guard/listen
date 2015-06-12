@@ -7,13 +7,11 @@ require 'rbconfig'
 case RbConfig::CONFIG['target_os']
 when /mswin|mingw|cygwin/i
   gem 'wdm', '>= 0.1.0'
-  Kernel.warn 'NOTE: Celluloid may not work properly on your platform'
 when /bsd|dragonfly/i
   gem 'rb-kqueue', '>= 0.2'
 end
 
 group :test do
-  gem 'celluloid', github: 'celluloid/celluloid', branch: '0-16-stable'
   gem 'rake'
   gem 'rspec', '~> 3.2'
   gem 'rspec-retry'

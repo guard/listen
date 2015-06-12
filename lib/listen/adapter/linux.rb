@@ -30,9 +30,6 @@ module Listen
         @worker ||= INotify::Notifier.new
         @worker.watch(directory.to_s, *options.events, &callback)
       rescue Errno::ENOSPC
-        # workaround - Celluloid catches abort and prints nothing
-        STDERR.puts INOTIFY_LIMIT_MESSAGE
-        STDERR.flush
         abort(INOTIFY_LIMIT_MESSAGE)
       end
 

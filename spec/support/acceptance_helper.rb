@@ -194,7 +194,7 @@ class ListenerWrapper
       yield
 
       # Polling sleep (default: 1s)
-      adapter = @listener.sync(:adapter)
+      adapter = @listener.send(:adapter)
       sleep(1.0) if adapter.is_a?(Listen::Adapter::Polling)
 
       # Lag should include:
