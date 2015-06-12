@@ -4,7 +4,9 @@ module Listen
     # Just a wrapper for tests to avoid interfereing with Celluloid's threads
     module ThreadPool
       def self.add(&block)
-        (@threads ||= Queue.new) << Thread.new { block.call }
+        Thread.new { block.call }.tap do |th|
+          (@threads ||= Queue.new) << th
+        end
       end
 
       def self.stop
