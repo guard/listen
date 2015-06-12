@@ -547,7 +547,6 @@ RSpec.describe Listener do
   end
 
   context 'when listener is stopped' do
-
     before do
       allow(registry).to receive(:[]).with(:change_pool) { nil }
       subject.stop
