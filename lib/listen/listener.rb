@@ -76,9 +76,16 @@ module Listen
         _start_wait_thread
         _init_actors
 
-        # Note: make sure building is finished before starting adapter (for
-        # consistent results both in specs and normal usage)
-        sync(:record).build
+        begin
+          start = Time.now.to_f
+          # Note: make sure building is finished before starting adapter (for
+          # consistent results both in specs and normal usage)
+          fs_changes.values.map(&:record).map(&:build)
+          Listen::Logger.info "Record.build(): #{Time.now.to_f - start} seconds"
+        rescue
+          Listen::Logger.warn "build crashed: #{$ERROR_INFO.inspect}"
+          raise
+        end
 
         _start_adapter
       end
@@ -166,7 +173,10 @@ module Listen
 
       @last_queue_event_time = Time.now.to_f
       _wakeup_wait_thread unless state == :paused
+    end
 
+    def record_for(dir)
+      fs_changes[dir.to_s].record
     end
 
     private
@@ -203,8 +213,6 @@ module Listen
       adapter_options = { mq: self, directories: directories }
 
       @supervisor = Celluloid::SupervisionGroup.run!(registry)
-      supervisor.add(Record, as: :record, args: self)
-      supervisor.pool(Change, as: :change_pool, args: self)
 
       # TODO: broadcaster should be a separate plugin
       if @tcp_mode == :broadcaster
@@ -292,6 +300,11 @@ module Listen
       _debug "Callback took #{Time.now.to_f - block_start} seconds"
     end
 
+    attr_reader :adapter
+    attr_reader :queue_optimizer
+    attr_reader :event_queue
+    attr_reader :fs_changes
+
     attr_reader :wait_thread
 
 
@@ -325,13 +338,7 @@ module Listen
 
     def _queue_raw_change(type, dir, rel_path, options)
       _debug { "raw queue: #{[type, dir, rel_path, options].inspect}" }
-
-      unless (worker = async(:change_pool))
-        _warn 'Failed to allocate worker from change pool'
-        return
-      end
-
-      worker.change(type, dir, rel_path, options)
+      fs_changes[dir.to_s].change(type, rel_path, options)
     rescue RuntimeError
       _error_exception "_queue_raw_change exception %s:\n%s:\n"
       raise

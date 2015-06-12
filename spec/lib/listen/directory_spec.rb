@@ -2,19 +2,15 @@ include Listen
 
 RSpec.describe Directory do
   let(:dir) { double(:dir) }
-  let(:file) { double(:file, directory?: false) }
-  let(:file2) { double(:file2, directory?: false) }
-  let(:subdir) { double(:subdir, directory?: true) }
-
-  let(:queue) { instance_double(Change, change: nil) }
-
-  let(:async_record) do
-    instance_double(Record, add_dir: true, unset_path: true)
-  end
+  let(:file) { double(:file, directory?: false, to_s: 'file.rb') }
+  let(:file2) { double(:file2, directory?: false, to_s: 'file2.rb') }
+  let(:subdir) { double(:subdir, directory?: true, to_s: 'subdir') }
 
   let(:record) do
-    instance_double(Record, async: async_record, dir_entries: record_entries)
+    instance_double(Record, root: 'some_dir', dir_entries: record_entries, add_dir: true, unset_path: true)
   end
+
+  let(:fs_change) { instance_double(Change, change: nil, record: record) }
 
   before do
     allow(dir).to receive(:+).with('.') { dir }
@@ -24,6 +20,9 @@ RSpec.describe Directory do
     allow(file).to receive(:relative_path_from).with(dir) { 'file.rb' }
     allow(file2).to receive(:relative_path_from).with(dir) { 'file2.rb' }
     allow(subdir).to receive(:relative_path_from).with(dir) { 'subdir' }
+
+    allow(Pathname).to receive(:new).with('some_dir').and_return(dir)
+    allow(Pathname).to receive(:new).with('.').and_return(dir)
   end
 
   context '#scan with recursive off' do
@@ -38,17 +37,15 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { [] } }
 
         it 'sets record dir path' do
-          expect(async_record).to receive(:add_dir).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:add_dir).with('.')
+          described_class.scan(fs_change, '.', options)
         end
 
-        it "queues changes for file path and dir that doesn't exist" do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it "fs_changes changes for file path and dir that doesn't exist" do
+          expect(fs_change).to receive(:change).with(:file, 'file.rb', {})
+          expect(fs_change).to receive(:change).with(:dir, 'subdir', recursive: false)
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
-
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
 
@@ -56,13 +53,11 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { [file2] } }
 
         it 'notices file & file2 and no longer existing dir' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
-          expect(queue).to receive(:change).with(:file, dir, 'file2.rb')
+          expect(fs_change).to receive(:change).with(:file, 'file.rb', {})
+          expect(fs_change).to receive(:change).with(:file, 'file2.rb', {})
+          expect(fs_change).to receive(:change).with(:dir, 'subdir', recursive: false)
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
-
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
     end
@@ -74,13 +69,13 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { fail Errno::ENOENT } }
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(fs_change).to_not receive(:change)
+          described_class.scan(fs_change, '.', options)
         end
 
         it 'unsets record dir path' do
-          expect(async_record).to receive(:unset_path).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:unset_path).with('.')
+          described_class.scan(fs_change, '.', options)
         end
       end
 
@@ -88,27 +83,25 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { fail Errno::EHOSTDOWN } }
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(fs_change).to_not receive(:change)
+          described_class.scan(fs_change, '.', options)
         end
 
         it 'unsets record dir path' do
-          expect(async_record).to receive(:unset_path).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:unset_path).with('.')
+          described_class.scan(fs_change, '.', options)
         end
       end
 
       context 'with file.rb in dir' do
         before { allow(dir).to receive(:children) { [file] } }
 
-        it 'queues changes for file & file2 paths' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
-          expect(queue).to_not receive(:change).with(:file, dir, 'file2.rb')
+        it 'fs_changes changes for file & file2 paths' do
+          expect(fs_change).to receive(:change).with(:file, 'file.rb', {})
+          expect(fs_change).to_not receive(:change).with(:file,'file2.rb', {})
+          expect(fs_change).to_not receive(:change).with(:dir, 'subdir', recursive: false)
 
-          expect(queue).to_not receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
-
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
     end
@@ -127,13 +120,13 @@ RSpec.describe Directory do
           allow(dir).to receive(:children) { [] }
         end
 
-        it 'queues changes for file & subdir path' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it 'fs_changes changes for file & subdir path' do
+          expect(fs_change).to receive(:change).with(:file, 'file.rb', {})
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+          expect(fs_change).to receive(:change).
+            with(:dir, 'subdir', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
 
@@ -145,16 +138,16 @@ RSpec.describe Directory do
           allow(subdir2).to receive(:relative_path_from).with(dir) { 'subdir2' }
         end
 
-        it 'queues changes for file, file2 & subdir paths' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it 'fs_changes changes for file, file2 & subdir paths' do
+          expect(fs_change).to receive(:change).with(:file, 'file.rb', {})
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+          expect(fs_change).to receive(:change).
+            with(:dir, 'subdir', recursive: true)
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir2', recursive: true)
+          expect(fs_change).to receive(:change).
+            with(:dir, 'subdir2', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
     end
@@ -168,8 +161,8 @@ RSpec.describe Directory do
         end
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(fs_change).to_not receive(:change)
+          described_class.scan(fs_change, '.', options)
         end
       end
 
@@ -180,11 +173,11 @@ RSpec.describe Directory do
           allow(subdir).to receive(:children) { [] }
         end
 
-        it 'queues changes for subdir' do
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+        it 'fs_changes changes for subdir' do
+          expect(fs_change).to receive(:change).
+            with(:dir, 'subdir', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(fs_change, '.', options)
         end
       end
     end

@@ -114,13 +114,6 @@ RSpec.describe Listener do
       allow(silencer).to receive(:silenced?) { false }
     end
 
-    it 'supervises change_pool' do
-      expect(supervisor).to receive(:pool).
-        with(Change, as: :change_pool, args: subject)
-
-      subject.start
-    end
-
     it 'supervises adapter' do
       allow(Adapter).to receive(:select) { Adapter::Polling }
       options = [mq: subject, directories: []]
@@ -579,13 +572,10 @@ RSpec.describe Listener do
 
   context 'when listener is stopped' do
     before do
-      allow(registry).to receive(:[]).with(:change_pool) { nil }
       subject.stop
     end
 
-    let(:dir) { instance_double(Pathname) }
-
-    it 'queuing does not crash when no worker is available' do
+    it 'queuing does not crash when changes come in' do
       expect do
         subject.send(:_queue_raw_change, :dir, dir, 'path', recursive: true)
       end.to_not raise_error
