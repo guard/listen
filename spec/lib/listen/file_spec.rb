@@ -70,7 +70,8 @@ RSpec.describe Listen::File do
           it { should be :modified }
 
           it 'sets path in record with expected data' do
-            expect(record).to receive(:update_file).with('file.rb', expected_data)
+            expect(record).to receive(:update_file).
+              with('file.rb', expected_data)
             subject
           end
         end
