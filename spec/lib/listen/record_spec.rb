@@ -139,7 +139,7 @@ RSpec.describe Listen::Record do
 
         it 'unsets path' do
           record.unset_path('path/file.rb')
-          expect(record_tree(record)).to eq({ 'path' => {} })
+          expect(record_tree(record)).to eq('path' => {})
         end
       end
 
