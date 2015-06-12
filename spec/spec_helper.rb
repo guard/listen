@@ -1,5 +1,3 @@
-require 'rubygems'
-
 require 'listen'
 require 'listen/tcp'
 
