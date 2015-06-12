@@ -16,7 +16,7 @@ group :test do
   gem 'celluloid', github: 'celluloid/celluloid', branch: '0-16-stable'
   gem 'celluloid-io', '>= 0.15.0'
   gem 'rake'
-  gem 'rspec', '~> 3.0.0rc1'
+  gem 'rspec', '~> 3.2'
   gem 'rspec-retry'
   gem 'coveralls'
 end
