@@ -1,10 +1,31 @@
 module Listen
-  module QueueOptimizer
-    private
+  class QueueOptimizer
+    class Config
+      def initialize(adapter_class, silencer)
+        @adapter_class = adapter_class
+        @silencer = silencer
+      end
 
-    def _smoosh_changes(changes)
+      def local_fs?
+        @adapter_class.local_fs?
+      end
+
+      def exist?(path)
+        Pathname(path).exist?
+      end
+
+      def silenced?(path, type)
+        @silencer.silenced?(path, type)
+      end
+
+      def debug(*args, &block)
+        Listen.logger.debug(*args, &block)
+      end
+    end
+
+    def smoosh_changes(changes)
       # TODO: adapter could be nil at this point (shutdown)
-      if _adapter_class.local_fs?
+      if config.local_fs?
         cookies = changes.group_by do |_, _, _, _, options|
           (options || {})[:cookie]
         end
@@ -18,6 +39,14 @@ module Listen
       end
     end
 
+    def initialize(config)
+      @config = config
+    end
+
+    private
+
+    attr_reader :config
+
     # groups changes into the expected structure expected by
     # clients
     def _squash_changes(changes)
@@ -28,13 +57,14 @@ module Listen
       actions = changes.group_by(&:last).map do |path, action_list|
         [_logical_action_for(path, action_list.map(&:first)), path.to_s]
       end
-      _log :info, "listen: raw changes: #{actions.inspect}"
+
+      config.debug("listen: raw changes: #{actions.inspect}")
 
       { modified: [], added: [], removed: [] }.tap do |squashed|
         actions.each do |type, path|
           squashed[type] << path unless type.nil?
         end
-        _log :info, "listen: final changes: #{squashed.inspect}"
+        config.debug("listen: final changes: #{squashed.inspect}")
       end
     end
 
@@ -53,7 +83,7 @@ module Listen
 
       # TODO: avoid checking if path exists and instead assume the events are
       # in order (if last is :removed, it doesn't exist, etc.)
-      if path.exist?
+      if config.exist?(path)
         if diff > 0
           :added
         elsif diff.zero? && added > 0
@@ -77,7 +107,7 @@ module Listen
           [[:modified, to_dir, to_file]]
         else
           not_silenced = changes.reject do |type, _, _, path, _|
-            _silenced?(Pathname(path), type)
+            config.silenced?(Pathname(path), type)
           end
           not_silenced.map do |_, change, dir, path, _|
             [table.fetch(change, change), dir, path]
@@ -107,8 +137,8 @@ module Listen
 
       # Expect an ignored moved_from and non-ignored moved_to
       # to qualify as an "editor modify"
-      return unless _silenced?(Pathname(from), from_type)
-      _silenced?(Pathname(to), to_type) ? nil : [to_dir, to]
+      return unless config.silenced?(Pathname(from), from_type)
+      config.silenced?(Pathname(to), to_type) ? nil : [to_dir, to]
     end
   end
 end

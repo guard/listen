@@ -6,6 +6,7 @@ require 'listen/change'
 require 'listen/record'
 require 'listen/silencer'
 require 'listen/queue_optimizer'
+
 require 'English'
 
 require 'listen/internals/logging'
@@ -13,7 +14,6 @@ require 'listen/internals/logging'
 module Listen
   class Listener
     include Celluloid::FSM
-    include QueueOptimizer
 
     attr_accessor :block
 
@@ -48,9 +48,12 @@ module Listen
       _reconfigure_silencer({})
 
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
-      @queue = Queue.new
+      @event_queue = Queue.new
       @block = block
       @registry = Celluloid::Registry.new
+
+      optimizer_config = QueueOptimizer::Config.new(@adapter.class, @silencer)
+      @queue_optimizer = QueueOptimizer.new(optimizer_config)
 
       transition :stopped
     end
