@@ -4,7 +4,10 @@ require 'listen/version'
 require 'listen/adapter'
 require 'listen/change'
 require 'listen/record'
+
 require 'listen/silencer'
+require 'listen/silencer/controller'
+
 require 'listen/queue_optimizer'
 
 require 'English'
@@ -45,7 +48,7 @@ module Listen
       end
 
       @silencer = Silencer.new
-      _reconfigure_silencer({})
+      @silencer_controller = Silencer::Controller.new(@silencer, @options)
 
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @event_queue = Queue.new
@@ -138,17 +141,17 @@ module Listen
     # (@see Listen::Silencer for default ignored files and dirs)
     #
     def ignore(regexps)
-      _reconfigure_silencer(ignore: [options[:ignore], regexps])
+      @silencer_controller.append_ignores(regexps)
     end
 
     # Replace default ignore patterns with provided regexp
     def ignore!(regexps)
-      _reconfigure_silencer(ignore: [], ignore!: regexps)
+      @silencer_controller.replace_with_bang_ignores(regexps)
     end
 
     # Listen only to files and dirs matching regexp
     def only(regexps)
-      _reconfigure_silencer(only: regexps)
+      @silencer_controller.replace_with_only(regexps)
     end
 
     def async(type)
@@ -309,18 +312,6 @@ module Listen
     attr_reader :fs_changes
 
     attr_reader :wait_thread
-
-
-    def _reconfigure_silencer(extra_options)
-      @options.merge!(extra_options)
-
-      # TODO: this should be directory specific
-      rules = [:only, :ignore, :ignore!].map do |option|
-        [option, @options[option]] if @options.key? option
-      end
-
-      @silencer.configure(Hash[rules.compact])
-    end
 
     def _start_wait_thread
       @wait_thread = Thread.new { _wait_for_changes }
