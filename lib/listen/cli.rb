@@ -14,12 +14,6 @@ module Listen
                  aliases: '-v',
                  banner:  'Verbose'
 
-    class_option :forward,
-                 type:    :string,
-                 default: '127.0.0.1:4000',
-                 aliases: '-f',
-                 banner:  'The address to forward filesystem events'
-
     class_option :directory,
                  type:    :array,
                  default: '.',
@@ -48,7 +42,6 @@ module Listen
 
     def start
       logger.info 'Starting listen...'
-      address = @options[:forward]
       directory = @options[:directory]
       relative = @options[:relative]
       callback = proc do |modified, added, removed|
@@ -61,7 +54,6 @@ module Listen
 
       listener = Listen.to(
         directory,
-        forward_to: address,
         relative: relative,
         &callback)
 

@@ -23,9 +23,6 @@ module Listen
     attr_reader :options, :directories
     attr_reader :registry, :supervisor
 
-    # TODO: deprecate
-    # NOTE: these are VERY confusing (broadcast + recipient modes)
-    attr_reader :host, :port
 
     # Initializes the directories listener.
     #
@@ -49,13 +46,6 @@ module Listen
 
       @silencer = Silencer.new
       _reconfigure_silencer({})
-
-      @tcp_mode = nil
-      if [:recipient, :broadcaster].include? args[1]
-        target = args.shift
-        @tcp_mode = args.shift
-        _init_tcp_options(target)
-      end
 
       @directories = args.flatten.map { |path| Pathname.new(path).realpath }
       @queue = Queue.new
@@ -177,10 +167,6 @@ module Listen
       @last_queue_event_time = Time.now.to_f
       _wakeup_wait_thread unless state == :paused
 
-      return unless @tcp_mode == :broadcaster
-
-      message = TCP::Message.new(type, change, dir, path, options)
-      registry[:broadcaster].async.broadcast(message.payload)
     end
 
     private
@@ -308,23 +294,6 @@ module Listen
 
     attr_reader :wait_thread
 
-    def _init_tcp_options(target)
-      # Handle TCP options here
-      require 'listen/tcp'
-      fail ArgumentError, 'missing host/port for TCP' unless target
-
-      if @tcp_mode == :recipient
-        @host = 'localhost'
-        @options[:force_tcp] = true
-      end
-
-      if target.is_a? Fixnum
-        @port = target
-      else
-        @host, port = target.split(':')
-        @port = port.to_i
-      end
-    end
 
     def _reconfigure_silencer(extra_options)
       @options.merge!(extra_options)

@@ -12,8 +12,6 @@ module Listen
       'Learn more at https://github.com/guard/listen#listen-adapters.'
 
     def self.select(options = {})
-      _log :debug, 'Adapter: considering TCP ...'
-      return TCP if options[:force_tcp]
       _log :debug, 'Adapter: considering polling ...'
       return Polling if options[:force_polling]
       _log :debug, 'Adapter: considering optimized backend...'

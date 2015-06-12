@@ -20,7 +20,6 @@ Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/
 * Detects file modification, addition and removal.
 * You can watch multiple directories.
 * Regexp-patterns for ignoring paths for more accuracy and speed
-* Forwarding file events over TCP, [more info](#forwarding-file-events-over-tcp) below.
 * Increased change detection accuracy on OS X HFS and VFAT volumes.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
@@ -28,6 +27,8 @@ Please note that:
 - Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.)
 - Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 - Windows and \*BSD adapter aren't continuously and automaticaly tested.
+
+NOTE: TCP functionality has been moved to a separate gem (listen-server and listen-client)
 
 ## Pending features / issues
 
@@ -246,47 +247,6 @@ Also, if the directories you're watching contain many files, make sure you're:
 * ideally not running a slow encryption stack, e.g. btrfs + ecryptfs
 
 When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and time they happened.
-
-## Forwarding file events over TCP
-
-Listen is capable of forwarding file events over the network using a messaging protocol. This can be useful for virtualized development environments when file events are unavailable, as is the case with shared folders in VMs.
-
-[Vagrant](https://github.com/mitchellh/vagrant) uses Listen in it's rsync-auto mode to solve this issue.
-
-To broadcast events over TCP programmatically, use the `forward_to` option with an address - just a port or a hostname/port combination:
-
-```ruby
-listener = Listen.to 'path/to/app', forward_to: '10.0.0.2:4000' do |modified, added, removed|
-  # After broadcasting the changes to any connected recipients,
-  # this block will still be called
-end
-listener.start
-sleep
-```
-
-As a convenience, the `listen` script is supplied which listens to a directory and forwards the events to a network address
-
-```bash
-listen -f "10.0.0.2:4000" # changes in current directory are sent as absolute paths
-listen -r -f "10.0.0.2:4000" # changes in current directory are sent as relative paths
-listen -v -d "/projects/my_project" -f "10.0.0.2:4000" # changes in given directory are also shown
-```
-
-*NOTE: if you are using a gem like `guard` and the paths on host and guest are not exactly the same, you'll generally want to use the `-r` option for relative paths*
-
-To connect to a broadcasting listener as a recipient, specify its address using `Listen.on`:
-
-```ruby
-listener = Listen.on '10.0.0.2:4000' do |modified, added, removed|
-  # This block will be called
-end
-listener.start
-sleep
-```
-
-### Security considerations
-
-Since file events potentially expose sensitive information, care must be taken when specifying the broadcaster address. It is recommended to **always** specify a hostname and make sure it is as specific as possible to reduce any undesirable eavesdropping.
 
 ## Development
 

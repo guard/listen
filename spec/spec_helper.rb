@@ -1,5 +1,4 @@
 require 'listen'
-require 'listen/tcp'
 
 require 'listen/internals/thread_pool'
 
