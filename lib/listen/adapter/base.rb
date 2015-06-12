@@ -58,7 +58,10 @@ module Listen
           begin
             _run
           rescue
-            _log_exception "run() in thread failed: %s:\n %s\n\ncalled from:\n %s", calling_stack
+            msg = "run() in thread failed: %s:\n"\
+              " %s\n\ncalled from:\n %s", calling_stack
+
+            _log_exception(msg)
             raise
           end
         end
@@ -85,7 +88,12 @@ module Listen
       end
 
       def _log_exception(msg, caller_stack)
-        _log :error, format(msg, $ERROR_INFO, $ERROR_POSITION * "\n", caller_stack * "\n")
+        _log :error, format(
+          msg,
+          $ERROR_INFO,
+          $ERROR_POSITION * "\n",
+          caller_stack * "\n"
+        )
       end
 
       def self._log(*args, &block)
