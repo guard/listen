@@ -28,7 +28,7 @@ module Listen
         defaults = self.class.const_get('DEFAULTS')
         @options = Listen::Options.new(options, defaults)
       rescue
-        _log_exception 'adapter config failed: %s:%s'
+        _log_exception 'adapter config failed: %s:%s called from: %s', caller
         raise
       end
 
@@ -53,11 +53,12 @@ module Listen
 
       def start
         configure
+        calling_stack = caller.dup
         Listen::Internals::ThreadPool.add do
           begin
             _run
           rescue
-            _log_exception 'run() in thread failed: %s:%s'
+            _log_exception "run() in thread failed: %s:\n %s\n\ncalled from:\n %s", calling_stack
             raise
           end
         end
@@ -83,8 +84,8 @@ module Listen
         self.class.send(:_log, *args, &block)
       end
 
-      def _log_exception(msg)
-        _log :error, format(msg, $ERROR_INFO, $ERROR_POSITION * "\n")
+      def _log_exception(msg, caller_stack)
+        _log :error, format(msg, $ERROR_INFO, $ERROR_POSITION * "\n", caller_stack * "\n")
       end
 
       def self._log(*args, &block)
