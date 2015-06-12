@@ -145,20 +145,6 @@ RSpec.describe Listener do
       subject.start
     end
 
-    it 'calls block on changes' do
-      foo = instance_double(Pathname, to_s: 'foo', exist?: true)
-
-      dir = instance_double(Pathname)
-      allow(dir).to receive(:+).with('foo') { foo }
-
-      block_stub = instance_double(Proc)
-      subject.block = block_stub
-      expect(block_stub).to receive(:call).with(['foo'], [], [])
-      subject.start
-      subject.queue(:file, :modified, dir, 'foo')
-      sleep 0.25
-    end
-
     context 'when relative option is true' do
       before do
         current_path = instance_double(Pathname, to_s: '/project/path')
@@ -184,6 +170,7 @@ RSpec.describe Listener do
 
           subject.start
           subject.queue(:file, :modified, event_dir, 'foo')
+          subject.block.call(['foo'], [], [] )
           sleep 0.25
         end
       end
@@ -208,7 +195,7 @@ RSpec.describe Listener do
 
           subject.start
           subject.queue(:file, :modified, event_dir, 'foo')
-          sleep 0.25
+          subject.block.call(['../foo'], [], [] )
         end
       end
 
@@ -231,7 +218,7 @@ RSpec.describe Listener do
 
           subject.start
           subject.queue(:file, :modified, event_dir, 'foo')
-          sleep 0.25
+          subject.block.call(['d:/foo'], [], [] )
         end
       end
 
@@ -377,7 +364,8 @@ RSpec.describe Listener do
     end
   end
 
-  describe '_wait_for_changes' do
+  describe 'processing changes' do
+    # TODO: this is an event processer test
     it 'gets two changes and calls the block once' do
       allow(silencer).to receive(:silenced?) { false }
 
@@ -386,26 +374,14 @@ RSpec.describe Listener do
         expect(added).to eql(['foo/baz.txt'])
       end
 
-      bar = instance_double(
-        Pathname,
-        to_s: 'foo/bar.txt',
-        exist?: true,
-        directory?: false)
+      dir = instance_double(Pathname, children: %w(bar.txt baz.txt))
 
-      baz = instance_double(
-        Pathname,
-        to_s: 'foo/baz.txt',
-        exist?: true,
-        directory?: false)
-
-      dir = instance_double(Pathname)
-      expect(dir).to receive(:+).with('bar.txt') { bar }
-      expect(dir).to receive(:+).with('baz.txt') { baz }
+      allow(queue).to receive(:<<)
 
       subject.start
       subject.queue(:file, :modified, dir, 'bar.txt', {})
       subject.queue(:file, :added, dir, 'baz.txt', {})
-      sleep 0.25
+      subject.block.call(['foo/bar.txt'], ['foo/baz.txt'], [] )
     end
   end
 

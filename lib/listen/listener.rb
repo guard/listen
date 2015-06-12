@@ -14,6 +14,10 @@ require 'English'
 
 require 'listen/internals/logging'
 
+
+require 'listen/event_processor'
+
+
 module Listen
   class Listener
     include Celluloid::FSM
@@ -78,7 +82,7 @@ module Listen
       if wait_thread # means - was paused
         _wakeup_wait_thread
       else
-        @last_queue_event_time = nil
+        self.last_queue_event_time = nil
         _start_wait_thread
         _init_actors
 
@@ -175,9 +179,9 @@ module Listen
                 dir
               end
       end
-      @queue << [type, change, dir, path, options]
+      event_queue << [type, change, dir, path, options]
 
-      @last_queue_event_time = Time.now.to_f
+      self.last_queue_event_time = Time.now.to_f
       _wakeup_wait_thread unless state == :paused
     end
 
@@ -246,30 +250,13 @@ module Listen
       supervisor.add(_adapter_class, as: :adapter, args: [adapter_options])
     end
 
-    def _wait_for_changes
+    def _wait_for_changes(config)
       latency = options[:wait_for_delay]
-
-      loop do
-        break if state == :stopped
-
-        if state == :paused || @queue.empty?
-          sleep
-          break if state == :stopped
-        end
-
-        # Assure there's at least latency between callbacks to allow
-        # for accumulating changes
-        now = Time.now.to_f
-        diff = latency + (@last_queue_event_time || now) - now
-        if diff > 0
-          sleep diff
-          next
-        end
-
-        _process_changes unless state == :paused
-      end
-    rescue RuntimeError
-      Kernel.warn _format_error('exception while processing events: %s %s')
+      EventProcessor.new(config).loop_for(latency)
+    rescue StandardError => ex
+      msg = "exception while processing events: #{ex}"\
+        " Backtrace:\n -- #{ex.backtrace * "\n -- "}"
+      Listen::Logger.error(msg)
     end
 
     def _silenced?(path, type)
@@ -286,35 +273,19 @@ module Listen
       @adapter_class ||= Adapter.select(options)
     end
 
-    # for easier testing without sleep loop
-    def _process_changes
-      return if @queue.empty?
-
-      @last_queue_event_time = nil
-
-      changes = []
-      changes << @queue.pop until @queue.empty?
-
-      return if block.nil?
-
-      hash = _smoosh_changes(changes)
-      result = [hash[:modified], hash[:added], hash[:removed]]
-
-      block_start = Time.now.to_f
-      # TODO: condition not tested, but too complex to test ATM
-      block.call(*result) unless result.all?(&:empty?)
-      _debug "Callback took #{Time.now.to_f - block_start} seconds"
-    end
 
     attr_reader :adapter
     attr_reader :queue_optimizer
     attr_reader :event_queue
     attr_reader :fs_changes
 
+    attr_accessor :last_queue_event_time
+
     attr_reader :wait_thread
 
     def _start_wait_thread
-      @wait_thread = Thread.new { _wait_for_changes }
+      config = EventProcessor::Config.new(self, event_queue, @queue_optimizer)
+      @wait_thread = Internals::ThreadPool.add { _wait_for_changes(config) }
     end
 
     def _wakeup_wait_thread
