@@ -167,7 +167,7 @@ force_polling: true                             # Force the use of the polling a
 relative: false                                 # Whether changes should be relative to current dir or not
                                                 # default: false
 
-debug: true                                     # Enable Celluloid logger
+debug: true                                     # Enable Listen logger
                                                 # default: false
 
 polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)

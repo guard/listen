@@ -98,9 +98,9 @@ module Listen
 
       def self._log(*args, &block)
         if block
-          Celluloid::Logger.send(*args, block.call)
+          Listen::Logger.send(*args, block.call)
         else
-          Celluloid::Logger.send(*args)
+          Listen::Logger.send(*args)
         end
       end
     end

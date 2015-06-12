@@ -21,8 +21,8 @@ RSpec.describe 'Listen' do
       let(:wrapper) { setup_listener(all_options, callback) }
 
       it 'warns the backtrace' do
-        expect(Kernel).to receive(:warn).
-          with(/exception while processing events: foo .*Backtrace:/)
+        expect(Listen.logger).to receive(:error).
+          with(/exception while processing events: foo.*Backtrace:/)
         wrapper.listen { touch 'file.rb' }
       end
     end

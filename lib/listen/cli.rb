@@ -35,8 +35,8 @@ module Listen
     attr_reader :logger
     def initialize(options)
       @options = options
-      @logger = Logger.new(STDOUT)
-      @logger.level = Logger::INFO
+      @logger = ::Logger.new(STDOUT)
+      @logger.level = ::Logger::INFO
       @logger.formatter = proc { |_, _, _, msg| "#{msg}\n" }
     end
 

@@ -67,8 +67,8 @@ module Listen
     end
 
     def self._log(type, &block)
-      return unless Celluloid.logger
-      Celluloid.logger.send(type) do
+      return unless Listen.logger
+      Listen.logger.send(type) do
         block.call
       end
     end

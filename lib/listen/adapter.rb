@@ -37,7 +37,7 @@ module Listen
     end
 
     def self._log(type, message)
-      Celluloid::Logger.send(type, message)
+      Listen::Logger.send(type, message)
     end
   end
 end

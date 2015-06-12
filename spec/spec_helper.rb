@@ -38,7 +38,7 @@ end
 
 require 'celluloid/rspec'
 Thread.abort_on_exception = true
-Celluloid.logger.level = Logger::ERROR
+Listen.logger.level = Logger::DEBUG
 
 RSpec.configuration.before(:each) do
   Listen::Internals::ThreadPool.stop

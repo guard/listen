@@ -1,7 +1,29 @@
-require 'celluloid'
+require 'logger'
+require 'listen/logger'
 require 'listen/listener'
 
 require 'listen/internals/thread_pool'
+
+# Set up logging by default first time file is requried
+#
+Listen.logger ||= Logger.new(STDERR)
+
+if Listen.logger
+  debugging = ENV['LISTEN_GEM_DEBUGGING']
+
+  Listen.logger.level =
+    case debugging.to_s
+    when /2/
+      ::Logger::DEBUG
+    when /true|yes|1/i
+      ::Logger::INFO
+    else
+      ::Logger::ERROR
+    end
+
+  Listen.logger.info "Listen loglevel set to: #{Listen.logger.level}"
+  Listen.logger.info "Listen version: #{Listen::VERSION}"
+end
 
 module Listen
   class << self
