@@ -6,21 +6,17 @@ module Listen
   class Change
     # TODO: test this class for coverage
     class Config
-      attr_reader :listener
-      def initialize(listener)
-        @listener = listener
+      def initialize(queue, silencer)
+        @queue = queue
+        @silencer = silencer
       end
 
       def silenced?(path, type)
-        listener.silencer.silenced?(Pathname(path), type)
-      end
-
-      def record_for(directory)
-        listener.record_for(directory)
+        @silencer.silenced?(Pathname(path), type)
       end
 
       def queue(*args)
-        listener.queue(*args)
+        @queue << args
       end
     end
 
