@@ -1,6 +1,13 @@
 source 'https://rubygems.org'
 
-gemspec development_group: :gem_build_tools
+# Create this file to use pristine/installed version of Listen for development
+use_installed = "./use_installed_guard"
+if File.exist?(use_installed)
+  STDERR.puts "WARNING: using installed version of Listen for development" \
+    " (remove #{use_installed} file to use local version)"
+else
+  gemspec development_group: :gem_build_tools
+end
 
 require 'rbconfig'
 
