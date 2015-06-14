@@ -2,7 +2,9 @@ require 'listen/file'
 require 'listen/directory'
 
 module Listen
+  # TODO: rename to Snapshot
   class Change
+    # TODO: test this class for coverage
     class Config
       attr_reader :listener
       def initialize(listener)
