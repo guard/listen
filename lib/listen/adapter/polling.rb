@@ -8,7 +8,7 @@ module Listen
     class Polling < Base
       OS_REGEXP = // # match every OS
 
-      DEFAULTS = { latency: 1.0 }
+      DEFAULTS = { latency: 1.0, wait_for_delay: 0.01 }
 
       private
 

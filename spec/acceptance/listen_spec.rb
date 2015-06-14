@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 RSpec.describe 'Listen', acceptance: true do
-  let(:base_options) { { wait_for_delay: 0.1, latency: 0.1 } }
+  let(:base_options) { { latency: 0.1 } }
   let(:polling_options) { {} }
   let(:options) { {} }
   let(:all_options) { base_options.merge(polling_options).merge(options) }

@@ -12,7 +12,8 @@ module Listen
           :delete,
           :move,
           :close_write
-        ]
+        ],
+        wait_for_delay: 0.1
       }
 
       private
