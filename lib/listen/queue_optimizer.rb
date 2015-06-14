@@ -6,10 +6,6 @@ module Listen
         @silencer = silencer
       end
 
-      def local_fs?
-        @adapter_class.local_fs?
-      end
-
       def exist?(path)
         Pathname(path).exist?
       end
@@ -25,18 +21,10 @@ module Listen
 
     def smoosh_changes(changes)
       # TODO: adapter could be nil at this point (shutdown)
-      if config.local_fs?
-        cookies = changes.group_by do |_, _, _, _, options|
-          (options || {})[:cookie]
-        end
-        _squash_changes(_reinterpret_related_changes(cookies))
-      else
-        smooshed = { modified: [], added: [], removed: [] }
-        changes.each do |_, change, dir, rel_path, _|
-          smooshed[change] << (dir + rel_path).to_s if smooshed.key?(change)
-        end
-        smooshed.tap { |s| s.each { |_, v| v.uniq! } }
+      cookies = changes.group_by do |_, _, _, _, options|
+        (options || {})[:cookie]
       end
+      _squash_changes(_reinterpret_related_changes(cookies))
     end
 
     def initialize(config)

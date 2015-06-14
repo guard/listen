@@ -1,7 +1,6 @@
 RSpec.describe Listen::Adapter::Linux do
   describe 'class' do
     subject { described_class }
-    it { should be_local_fs }
 
     if linux?
       it { should be_usable }

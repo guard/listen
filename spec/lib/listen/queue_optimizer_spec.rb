@@ -3,7 +3,6 @@ RSpec.describe Listen::QueueOptimizer do
   subject { described_class.new(config) }
 
   before do
-    allow(config).to receive(:local_fs?).and_return(true)
     allow(config).to receive(:debug)
   end
 

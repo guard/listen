@@ -8,7 +8,6 @@ include Listen
 RSpec.describe Adapter::Darwin do
   describe 'class' do
     subject { described_class }
-    it { should be_local_fs }
 
     if darwin?
       it { should be_usable }
