@@ -100,7 +100,7 @@ RSpec.describe Listen::Forwarder do
     allow(logger).to receive(:info)
 
     allow(listener).to receive(:start)
-    allow(listener).to receive(:listen?).and_return false
+    allow(listener).to receive(:processing?).and_return false
   end
 
   it 'passes relative option to Listen' do

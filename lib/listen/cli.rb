@@ -59,7 +59,7 @@ module Listen
 
       listener.start
 
-      sleep 0.5 while listener.listen?
+      sleep 0.5 while listener.processing?
     end
   end
 end
