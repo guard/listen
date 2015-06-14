@@ -31,8 +31,15 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
 end
 
+module SpecHelpers
+  def fake_path(str, options = {})
+    instance_double(Pathname, str, { to_s: str }.merge(options))
+  end
+end
+
 require 'rspec/retry'
 RSpec.configure do |config|
+  config.include SpecHelpers
   config.default_retry_count = ci? ? 5 : 1
 end
 
