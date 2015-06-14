@@ -10,6 +10,7 @@ module Listen
 
       def self.stop
         return unless @threads ||= nil
+        return if @threads.empty? # return to avoid using possibly stubbed Queue
 
         killed = Queue.new
         killed << @threads.pop.kill until @threads.empty?
