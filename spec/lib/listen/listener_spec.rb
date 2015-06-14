@@ -2,318 +2,208 @@ include Listen
 
 RSpec.describe Listener do
 
-  let(:realdir1) { instance_double(Pathname, '/foo/dir1', children: []) }
-  let(:realdir2) { instance_double(Pathname, '/foo/dir2', children: []) }
+  let(:realdir1) { fake_path('/foo/dir1', children: []) }
+  let(:realdir2) { fake_path('/foo/dir2', children: []) }
 
-  let(:queue) { instance_double(Queue) }
-
-  let(:dir1) { instance_double(Pathname, 'dir1', realpath: realdir1) }
-  let(:dir2) { instance_double(Pathname, 'dir2', realpath: realdir2) }
+  let(:dir1) { fake_path('dir1', realpath: realdir1) }
+  let(:dir2) { fake_path('dir2', realpath: realdir2) }
 
   let(:dirs) { ['dir1'] }
 
-  subject { described_class.new(*(dirs + [options]).compact) }
+  let(:block) { instance_double(Proc) }
+
+  subject do
+    described_class.new(*(dirs + [options]).compact) do |*changes|
+      block.call(*changes)
+    end
+  end
 
   let(:options) { {} }
 
   let(:record) { instance_double(Record, build: true, root: 'dir2') }
   let(:silencer) { instance_double(Silencer, configure: nil) }
 
-  let(:adapter_namespace) do
-    class_double('Listen::Adapter').
-      as_stubbed_const(transfer_nested_constants: true)
-  end
+  let(:backend_class) { class_double('Listen::Backend') }
 
-  let(:adapter_class) { class_double('Listen::Adapter::Base') }
-  let(:adapter) { instance_double('Listen::Adapter::Base', start: nil) }
+  let(:backend) { instance_double(Backend) }
 
   let(:optimizer_config) { instance_double(QueueOptimizer::Config) }
   let(:optimizer) { instance_double(QueueOptimizer) }
 
-  let(:processor_config) { instance_double(EventProcessor::Config) }
-  let(:processor) { instance_double(EventProcessor) }
+  let(:processor_config) { instance_double(Event::Config) }
+  let(:processor) { instance_double(Event::Loop) }
+
+  let(:event_queue) { instance_double(Event::Queue) }
 
   let(:default_latency) { 0.1 }
+  let(:backend_wait_for_delay) { 0.123 }
+
+  let(:processing_thread) { instance_double(Thread) }
 
   before do
     allow(Silencer).to receive(:new) { silencer }
 
+    allow(Backend).to receive(:new).
+      with(anything, event_queue, silencer, anything).
+      and_return(backend)
+
+    allow(backend).to receive(:min_delay_between_events).
+      and_return(backend_wait_for_delay)
+
     # TODO: use a configuration object to clean this up
-    allow(adapter_namespace).to receive(:select).
-      with(anything).and_return(adapter_class)
 
-    allow(adapter_class).to receive(:new).with(anything).and_return(adapter)
-    allow(adapter_class).to receive(:local_fs?).and_return(true)
-    allow(adapter).to receive(:class).and_return(adapter_class)
-
-    allow(QueueOptimizer::Config).to receive(:new).
-      with(adapter_class, silencer).and_return(optimizer_config)
+    allow(QueueOptimizer::Config).to receive(:new).with(backend, silencer).
+      and_return(optimizer_config)
 
     allow(QueueOptimizer).to receive(:new).with(optimizer_config).
       and_return(optimizer)
 
-    allow(EventProcessor::Config).to receive(:new).
-      with(anything, queue, optimizer).and_return(processor_config)
+    allow(Event::Queue).to receive(:new).and_return(event_queue)
 
-    allow(EventProcessor).to receive(:new).with(processor_config).
+    allow(Event::Config).to receive(:new).
+      with(anything, event_queue, optimizer, backend_wait_for_delay).
+      and_return(processor_config)
+
+    allow(Event::Loop).to receive(:new).with(processor_config).
       and_return(processor)
-
-    allow(processor).to receive(:loop_for).with(default_latency)
 
     allow(Record).to receive(:new).and_return(record)
 
     allow(Pathname).to receive(:new).with('dir1').and_return(dir1)
     allow(Pathname).to receive(:new).with('dir2').and_return(dir2)
 
-    allow(Queue).to receive(:new).and_return(queue)
-    allow(queue).to receive(:<<)
-    allow(queue).to receive(:empty?).and_return(true)
+    allow(Internals::ThreadPool).to receive(:add).and_return(processing_thread)
+    allow(processing_thread).to receive(:alive?).and_return(true)
+    allow(processing_thread).to receive(:wakeup)
+    allow(processing_thread).to receive(:join)
 
-    allow(Internals::ThreadPool).to receive(:add)
+    allow(block).to receive(:call)
   end
 
   describe 'initialize' do
     it { should_not be_paused }
 
     context 'with a block' do
-      describe 'block' do
-        subject { described_class.new('dir1', &(proc {})) }
-        specify { expect(subject.block).to_not be_nil }
+      let(:myblock) { instance_double(Proc) }
+      let(:block) { proc { myblock.call }  }
+      subject { described_class.new('dir1', &block) }
+
+      it 'passes the block to the event processor' do
+        allow(Event::Config).to receive(:new) do |*_args, &some_block|
+          expect(some_block).to be
+          some_block.call
+          processor_config
+        end
+        expect(myblock).to receive(:call)
+        subject
       end
     end
 
     context 'with directories' do
-      describe 'directories' do
-        subject { described_class.new('dir1', 'dir2') }
-        specify { expect(subject.directories).to eq([realdir1, realdir2]) }
-      end
-    end
-  end
+      subject { described_class.new('dir1', 'dir2') }
 
-  describe 'options' do
-    context 'with supported adapter option' do
-      let(:options) { { latency: 1.234 } }
-      before do
-        allow(supervisor).to receive(:add)
-        allow(Adapter).to receive(:select) { Adapter::Polling }
-      end
-
-      it 'passes adapter options to adapter' do
-        expect(supervisor).to receive(:add).
-          with(anything, hash_including(
-            args: [hash_including(latency: 1.234)]
-        ))
-        subject.start
-      end
-    end
-
-    context 'with unsupported adapter option' do
-      let(:options) { { latency: 1.234 } }
-      before do
-        allow(supervisor).to receive(:add)
-        allow(Adapter).to receive(:select) { Adapter::Linux }
-      end
-
-      it 'passes adapter options to adapter' do
-        expect(supervisor).to_not receive(:add).
-          with(anything, hash_including(
-            args: [hash_including(latency: anything)]
-        ))
-        subject.start
-      end
-    end
-
-    context 'default options' do
-      it 'sets default options' do
-        expect(subject.options).
-          to eq(
-            debug: false,
-            wait_for_delay: 0.1,
-            force_polling: false,
-            relative: false,
-            polling_fallback_message: nil)
-      end
-    end
-
-    context 'custom options' do
-      subject do
-        described_class.new(
-          'dir1',
-          latency: 1.234,
-          wait_for_delay: 0.85,
-          relative: true)
-      end
-
-      it 'sets new options on initialize' do
-        expect(subject.options).
-          to eq(
-            debug: false,
-            latency: 1.234,
-            wait_for_delay: 0.85,
-            force_polling: false,
-            relative: true,
-            polling_fallback_message: nil)
+      it 'passes directories to backend' do
+        allow(Backend).to receive(:new).
+          with(['dir1', 'dir2'], anything, anything, anything).
+          and_return(backend)
+        subject
       end
     end
   end
 
   describe '#start' do
     before do
-      allow(adapter).to receive(:start)
+      allow(backend).to receive(:start)
       allow(silencer).to receive(:silenced?) { false }
     end
 
-    it 'builds record' do
-      expect(record).to receive(:build)
-      subject.start
-    end
-
     it 'sets paused to false' do
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
       subject.start
       expect(subject).to_not be_paused
     end
 
     it 'starts adapter' do
-      expect(adapter).to receive(:start)
+      expect(backend).to receive(:start)
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
       subject.start
-    end
-
-    context 'when relative option is true' do
-      before do
-        current_path = instance_double(Pathname, to_s: '/project/path')
-        allow(Pathname).to receive(:new).with(Dir.pwd).and_return(current_path)
-      end
-
-      context 'when watched dir is the current dir' do
-        let(:options) { { relative: true, directories: Pathname.pwd } }
-        it 'registers relative paths' do
-          event_dir = instance_double(Pathname)
-          dir_rel_path = instance_double(Pathname, to_s: '.')
-          foo_rel_path = instance_double(Pathname, to_s: 'foo', exist?: true)
-
-          allow(event_dir).to receive(:relative_path_from).
-            with(Pathname.pwd).
-            and_return(dir_rel_path)
-
-          allow(dir_rel_path).to receive(:+).with('foo') { foo_rel_path }
-
-          block_stub = instance_double(Proc)
-          expect(block_stub).to receive(:call).with(['foo'], [], [])
-          subject.block = block_stub
-
-          subject.start
-          subject.queue(:file, :modified, event_dir, 'foo')
-          subject.block.call(['foo'], [], [])
-          sleep 0.25
-        end
-      end
-
-      context 'when watched dir is not the current dir' do
-        let(:options) { { relative: true } }
-
-        it 'registers relative path' do
-          event_dir = instance_double(Pathname)
-          dir_rel_path = instance_double(Pathname, to_s: '..')
-          foo_rel_path = instance_double(Pathname, to_s: '../foo', exist?: true)
-
-          allow(event_dir).to receive(:relative_path_from).
-            with(Pathname.pwd).
-            and_return(dir_rel_path)
-
-          allow(dir_rel_path).to receive(:+).with('foo') { foo_rel_path }
-
-          block_stub = instance_double(Proc)
-          expect(block_stub).to receive(:call).with(['../foo'], [], [])
-          subject.block = block_stub
-
-          subject.start
-          subject.queue(:file, :modified, event_dir, 'foo')
-          subject.block.call(['../foo'], [], [])
-        end
-      end
-
-      context 'when watched dir is on another drive' do
-        let(:options) { { relative: true } }
-
-        it 'registers full path' do
-          event_dir = instance_double(Pathname, 'event_dir', realpath: 'd:/foo')
-
-          foo_rel_path = instance_double(
-            Pathname,
-            'rel_path',
-            to_s: 'd:/foo',
-            exist?: true,
-            children: []
-          )
-
-          allow(event_dir).to receive(:relative_path_from).
-            with(Pathname.pwd).
-            and_raise(ArgumentError)
-
-          allow(event_dir).to receive(:+).with('foo') { foo_rel_path }
-
-          block_stub = instance_double(Proc)
-          expect(block_stub).to receive(:call).with(['d:/foo'], [], [])
-          subject.block = block_stub
-
-          subject.start
-          subject.queue(:file, :modified, event_dir, 'foo')
-          subject.block.call(['d:/foo'], [], [])
-        end
-      end
-
     end
   end
 
   describe '#stop' do
     before do
+      allow(backend).to receive(:start)
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
       subject.start
     end
 
     it 'terminates' do
+      allow(backend).to receive(:stop)
+      allow(processor).to receive(:teardown)
       subject.stop
     end
   end
 
   describe '#pause' do
-    before { subject.start }
+    before do
+      allow(backend).to receive(:start)
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
+      subject.start
+    end
     it 'sets paused to true' do
+      allow(processor).to receive(:pause)
       subject.pause
       expect(subject).to be_paused
     end
   end
 
-  describe '#unpause' do
+  describe 'unpause with start' do
     before do
+      allow(backend).to receive(:start)
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
       subject.start
+      allow(processor).to receive(:pause)
       subject.pause
     end
 
     it 'sets paused to false' do
-      subject.unpause
+      subject.start
       expect(subject).to_not be_paused
     end
   end
 
   describe '#paused?' do
-    before { subject.start }
+    before do
+      allow(backend).to receive(:start)
+      allow(processor).to receive(:setup)
+      allow(processor).to receive(:resume)
+      subject.start
+    end
+
     it 'returns true when paused' do
-      subject.paused = true
+      allow(processor).to receive(:pause)
+      subject.pause
       expect(subject).to be_paused
     end
-    it 'returns false when not paused (nil)' do
-      subject.paused = nil
-      expect(subject).not_to be_paused
-    end
-    it 'returns false when not paused (false)' do
-      subject.paused = false
+
+    it 'returns false when not paused' do
       expect(subject).not_to be_paused
     end
   end
 
   describe '#listen?' do
     context 'when processing' do
-      before { subject.start }
+      before do
+        allow(backend).to receive(:start)
+        allow(processor).to receive(:setup)
+        allow(processor).to receive(:resume)
+        subject.start
+      end
       it { should be_processing }
     end
 
@@ -323,9 +213,14 @@ RSpec.describe Listener do
 
     context 'when paused' do
       before do
+        allow(backend).to receive(:start)
+        allow(processor).to receive(:setup)
+        allow(processor).to receive(:resume)
         subject.start
+        allow(processor).to receive(:pause)
         subject.pause
       end
+
       it { should_not be_processing }
     end
   end
@@ -411,23 +306,8 @@ RSpec.describe Listener do
   end
 
   describe 'processing changes' do
-    # TODO: this is an event processer test
-    it 'gets two changes and calls the block once' do
-      allow(silencer).to receive(:silenced?) { false }
-
-      subject.block = proc do |modified, added, _|
-        expect(modified).to eql(['foo/bar.txt'])
-        expect(added).to eql(['foo/baz.txt'])
-      end
-
-      dir = instance_double(Pathname, children: %w(bar.txt baz.txt))
-
-      allow(queue).to receive(:<<)
-
-      subject.start
-      subject.queue(:file, :modified, dir, 'bar.txt', {})
-      subject.queue(:file, :added, dir, 'baz.txt', {})
-      subject.block.call(['foo/bar.txt'], ['foo/baz.txt'], [])
+    before do
+      allow(backend).to receive(:start)
     end
   end
 
@@ -435,19 +315,6 @@ RSpec.describe Listener do
     before do
       subject.stop
       allow(silencer).to receive(:silenced?) { true }
-    end
-
-    it 'queuing does not crash when changes come in' do
-      expect do
-        # TODO: write directly to queue
-        subject.send(
-          :_queue_raw_change,
-          :dir,
-          realdir1,
-          'path',
-          recursive: true)
-
-      end.to_not raise_error
     end
   end
 end
