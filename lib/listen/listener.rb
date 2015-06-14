@@ -1,33 +1,25 @@
-require 'pathname'
+require 'English'
 
 require 'listen/version'
-require 'listen/adapter'
-require 'listen/change'
-require 'listen/record'
+
+require 'listen/backend'
 
 require 'listen/silencer'
 require 'listen/silencer/controller'
 
 require 'listen/queue_optimizer'
 
-require 'English'
-
-require 'listen/internals/logging'
-
 require 'listen/fsm'
 
-require 'listen/event_processor'
+require 'listen/event/loop'
+require 'listen/event/queue'
+require 'listen/event/config'
+
+require 'listen/listener/config'
 
 module Listen
   class Listener
     include Listen::FSM
-
-    attr_accessor :block
-
-    attr_reader :silencer
-
-    # TODO: deprecate
-    attr_reader :options, :directories
 
     # Initializes the directories listener.
     #
@@ -39,82 +31,69 @@ module Listen
     # @yieldparam [Array<String>] added the list of added files
     # @yieldparam [Array<String>] removed the list of removed files
     #
-    def initialize(*args, &block)
-      @options = _init_options(args.last.is_a?(Hash) ? args.pop : {})
+    def initialize(*dirs, &block)
+      options = dirs.last.is_a?(Hash) ? dirs.pop : {}
 
-      @silencer = Silencer.new
-      @silencer_controller = Silencer::Controller.new(@silencer, @options)
+      @config = Config.new(options)
 
-      @directories = args.flatten.map { |path| Pathname.new(path).realpath }
-      @event_queue = Queue.new
-      @block = block
+      eq_config = Event::Queue::Config.new(@config.relative?)
+      queue = Event::Queue.new(eq_config) { @processor.wakeup_on_event }
 
-      change_config = Listen::Change::Config.new(self)
-      changes = @directories.map do |dir|
-        [
-          dir.to_s,
-          Change.new(change_config, Record.new(dir))
-        ]
-      end
-      @fs_changes = Hash[changes]
+      silencer = Silencer.new
+      rules = @config.silencer_rules
+      @silencer_controller = Silencer::Controller.new(silencer, rules)
 
-      adapter_options = { mq: self, directories: directories }
+      @backend = Backend.new(dirs, queue, silencer, @config)
 
-      # TODO: refactor
-      valid_adapter_options = _adapter_class.const_get(:DEFAULTS).keys
-      valid_adapter_options.each do |key|
-        adapter_options.merge!(key => options[key]) if options.key?(key)
-      end
+      optimizer_config = QueueOptimizer::Config.new(@backend, silencer)
 
-      @adapter = Adapter.select(options).new(adapter_options)
+      pconfig = Event::Config.new(
+        self,
+        queue,
+        QueueOptimizer.new(optimizer_config),
+        @backend.min_delay_between_events,
+        &block)
 
-      optimizer_config = QueueOptimizer::Config.new(@adapter.class, @silencer)
-      @queue_optimizer = QueueOptimizer.new(optimizer_config)
+      @processor = Event::Loop.new(pconfig)
 
-      transition :stopped
+      super() # FSM
     end
 
     default_state :initializing
 
-    state :initializing, to: :stopped
-    state :paused, to: [:processing, :stopped]
+    state :initializing, to: :backend_started
 
-    state :stopped, to: [:processing] do
-      _stop_wait_thread
+    state :backend_started, to: [:frontend_ready] do
+      backend.start
     end
 
-    state :processing, to: [:paused, :stopped] do
-      if wait_thread # means - was paused
-        _wakeup_wait_thread
-      else
-        self.last_queue_event_time = nil
-        _start_wait_thread
+    state :frontend_ready, to: [:processing_events] do
+      processor.setup
+    end
 
-        begin
-          start = Time.now.to_f
-          # Note: make sure building is finished before starting adapter (for
-          # consistent results both in specs and normal usage)
-          fs_changes.values.map(&:record).map(&:build)
-          Listen::Logger.info "Record.build(): #{Time.now.to_f - start} seconds"
-        rescue
-          Listen::Logger.warn "build crashed: #{$ERROR_INFO.inspect}"
-          raise
-        end
+    state :processing_events, to: [:paused, :stopped] do
+      processor.resume
+    end
 
-        @adapter.start
-      end
+    state :paused, to: [:processing_events, :stopped] do
+      processor.pause
+    end
+
+    state :stopped, to: [:backend_started] do
+      backend.stop # should be before processor.teardown to halt events ASAP
+      processor.teardown
     end
 
     # Starts processing events and starts adapters
     # or resumes invoking callbacks if paused
     def start
-      transition :processing
+      transition :backend_started if state == :initializing
+      transition :frontend_ready if state == :backend_started
+      transition :processing_events if state == :frontend_ready
+      transition :processing_events if state == :paused
     end
 
-    # TODO: depreciate
-    alias_method :unpause, :start
-
-    # Stops processing and terminates all actors
+    # Stops both listening for events and processing them
     def stop
       transition :stopped
     end
@@ -126,128 +105,28 @@ module Listen
 
     # processing means callbacks are called
     def processing?
-      state == :processing
+      state == :processing_events
     end
 
     def paused?
       state == :paused
     end
 
-    # TODO: deprecate
-    alias_method :listen?, :processing?
-
-    # TODO: deprecate
-    def paused=(value)
-      transition value ? :paused : :processing
-    end
-
-    # TODO: deprecate
-    alias_method :paused, :paused?
-
-    # Add files and dirs to ignore on top of defaults
-    #
-    # (@see Listen::Silencer for default ignored files and dirs)
-    #
     def ignore(regexps)
       @silencer_controller.append_ignores(regexps)
     end
 
-    # Replace default ignore patterns with provided regexp
     def ignore!(regexps)
       @silencer_controller.replace_with_bang_ignores(regexps)
     end
 
-    # Listen only to files and dirs matching regexp
     def only(regexps)
       @silencer_controller.replace_with_only(regexps)
     end
 
-    def queue(type, change, dir, path, options = {})
-      fail "Invalid type: #{type.inspect}" unless [:dir, :file].include? type
-      fail "Invalid change: #{change.inspect}" unless change.is_a?(Symbol)
-      fail "Invalid path: #{path.inspect}" unless path.is_a?(String)
-      if @options[:relative]
-        dir = begin
-                cwd = Pathname.pwd
-                dir.relative_path_from(cwd)
-              rescue ArgumentError
-                dir
-              end
-      end
-      event_queue << [type, change, dir, path, options]
-
-      self.last_queue_event_time = Time.now.to_f
-      _wakeup_wait_thread unless state == :paused
-    end
-
-    def record_for(dir)
-      fs_changes[dir.to_s].record
-    end
-
     private
 
-    include Internals::Logging
-
-    def _init_options(options = {})
-      {
-        # Listener options
-        debug: false,
-        wait_for_delay: 0.1,
-        relative: false,
-
-        # Backend selecting options
-        force_polling: false,
-        polling_fallback_message: nil,
-
-      }.merge(options)
-    end
-
-    def _wait_for_changes(config)
-      latency = options[:wait_for_delay]
-      EventProcessor.new(config).loop_for(latency)
-    rescue StandardError => ex
-      msg = "exception while processing events: #{ex}"\
-        " Backtrace:\n -- #{ex.backtrace * "\n -- "}"
-      Listen::Logger.error(msg)
-    end
-
-    def _silenced?(path, type)
-      @silencer.silenced?(path, type)
-    end
-
-    attr_reader :adapter
-    attr_reader :queue_optimizer
-    attr_reader :event_queue
-    attr_reader :fs_changes
-
-    attr_accessor :last_queue_event_time
-
-    attr_reader :wait_thread
-
-    def _start_wait_thread
-      config = EventProcessor::Config.new(self, event_queue, @queue_optimizer)
-      @wait_thread = Internals::ThreadPool.add { _wait_for_changes(config) }
-    end
-
-    def _wakeup_wait_thread
-      wait_thread.wakeup if wait_thread && wait_thread.alive?
-    end
-
-    def _stop_wait_thread
-      return unless wait_thread
-      if wait_thread.alive?
-        wait_thread.wakeup
-        wait_thread.join
-      end
-      @wait_thread = nil
-    end
-
-    def _queue_raw_change(type, dir, rel_path, options)
-      _debug { "raw queue: #{[type, dir, rel_path, options].inspect}" }
-      fs_changes[dir.to_s].change(type, rel_path, options)
-    rescue RuntimeError
-      _error_exception "_queue_raw_change exception %s:\n%s:\n"
-      raise
-    end
+    attr_reader :processor
+    attr_reader :backend
   end
 end

@@ -2,11 +2,13 @@ module Listen
   class Listener
     class Config
       DEFAULTS = {
+        # Listener options
         debug: false, # TODO: is this broken?
-        latency: nil,
         wait_for_delay: nil, # NOTE: should be provided by adapter if possible
-        force_polling: false,
         relative: false,
+
+        # Backend selecting options
+        force_polling: false,
         polling_fallback_message: nil
       }
 
