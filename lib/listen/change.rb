@@ -27,7 +27,8 @@ module Listen
       @record = record
     end
 
-    def change(type, rel_path, options)
+    # Invalidate some part of the snapshot/record (dir, file, subtree, etc.)
+    def invalidate(type, rel_path, options)
       watched_dir = Pathname.new(record.root)
 
       change = options[:change]

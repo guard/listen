@@ -20,9 +20,8 @@ RSpec.describe Listen::Change do
     context 'with build options' do
       it 'calls still_building! on record' do
         allow(config).to receive(:queue)
-        allow(config).to receive(:record_for).with(dir).and_return(record)
         allow(Listen::File).to receive(:change)
-        subject.change(:file, 'file.rb', build: true)
+        subject.invalidate(:file, 'file.rb', build: true)
       end
     end
 
@@ -32,13 +31,13 @@ RSpec.describe Listen::Change do
           expect(config).to receive(:queue).
             with(:file, :modified, Pathname.new('/dir'), 'file.rb', {})
 
-          subject.change(:file, 'file.rb', change: :modified)
+          subject.invalidate(:file, 'file.rb', change: :modified)
         end
 
         it "doesn't notify to listener if path is silenced" do
           expect(config).to receive(:silenced?).and_return(true)
           expect(config).to_not receive(:queue)
-          subject.change(:file, 'file.rb', change: :modified)
+          subject.invalidate(:file, 'file.rb', change: :modified)
         end
       end
 
@@ -46,7 +45,7 @@ RSpec.describe Listen::Change do
 
         it 'calls Listen::File#change' do
           expect(Listen::File).to receive(:change).with(record, 'file.rb')
-          subject.change(:file, 'file.rb', {})
+          subject.invalidate(:file, 'file.rb', {})
         end
 
         it "doesn't call Listen::File#change if path is silenced" do
@@ -54,7 +53,7 @@ RSpec.describe Listen::Change do
             with('file.rb', :file).and_return(true)
 
           expect(Listen::File).to_not receive(:change)
-          subject.change(:file, 'file.rb', {})
+          subject.invalidate(:file, 'file.rb', {})
         end
 
         context 'that returns a change' do
@@ -65,13 +64,13 @@ RSpec.describe Listen::Change do
               expect(config).to receive(:queue).
                 with(:file, :modified, Pathname.new('/dir'), 'file.rb')
 
-              subject.change(:file, 'file.rb', {})
+              subject.invalidate(:file, 'file.rb', {})
             end
 
             context 'silence option' do
               it 'notifies change to listener' do
                 expect(config).to_not receive(:queue)
-                subject.change(:file, 'file.rb', silence: true)
+                subject.invalidate(:file, 'file.rb', silence: true)
               end
             end
           end
@@ -82,7 +81,7 @@ RSpec.describe Listen::Change do
 
           it "doesn't notifies no change" do
             expect(config).to_not receive(:queue)
-            subject.change(:file, 'file.rb', {})
+            subject.invalidate(:file, 'file.rb', {})
           end
         end
       end
@@ -95,7 +94,7 @@ RSpec.describe Listen::Change do
         expect(Listen::Directory).to receive(:scan).
           with(subject, 'dir1', dir_options)
 
-        subject.change(:dir, 'dir1', dir_options)
+        subject.invalidate(:dir, 'dir1', dir_options)
       end
     end
   end
