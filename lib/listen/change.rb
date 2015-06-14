@@ -47,8 +47,6 @@ module Listen
       end
 
       if change
-        # TODO: move this to Listener to avoid overhead
-        # from caller
         options = cookie ? { cookie: cookie } : {}
         config.queue(type, change, watched_dir, rel_path, options)
       else
