@@ -1,18 +1,20 @@
-RSpec.describe Listen::EventProcessor do
-  let(:event_queue) { instance_double(Queue) }
-  let(:config) { instance_double(described_class::Config) }
+require 'listen/event/processor'
+require 'listen/event/config'
 
-  subject { described_class.new(config) }
+RSpec.describe Listen::Event::Processor do
+  let(:event_queue) { instance_double(Thread::Queue, 'event_queue') }
+  let(:config) { instance_double(Listen::Event::Config) }
+  let(:reasons) { instance_double(Thread::Queue, 'reasons') }
 
+  subject { described_class.new(config, reasons) }
+
+  # This is to simulate events over various points in time
   let(:sequence) do
-    {
-    }
+    {}
   end
 
   let(:state) do
-    {
-      time: 0
-    }
+    { time: 0 }
   end
 
   def status_for_time(time)
@@ -39,12 +41,20 @@ RSpec.describe Listen::EventProcessor do
   end
 
   describe '#loop_for' do
+    before do
+      allow(reasons).to receive(:empty?).and_return(true)
+    end
+
     context 'when stopped' do
       before do
         sequence[0.0] = :stopped
       end
 
       context 'with pending changes' do
+        before do
+          allow(event_queue).to receive(:empty?).and_return(false)
+        end
+
         it 'does not change the event queue' do
           subject.loop_for(1)
         end
@@ -60,6 +70,10 @@ RSpec.describe Listen::EventProcessor do
     end
 
     context 'when not stopped' do
+      before do
+        allow(event_queue).to receive(:empty?).and_return(true)
+      end
+
       context 'when initially paused' do
         before do
           sequence[0.0] = :paused
@@ -85,7 +99,6 @@ RSpec.describe Listen::EventProcessor do
         context 'when still paused after sleeping' do
           context 'when there were no events before' do
             before do
-              allow(config).to receive(:last_queue_event_time).and_return(nil)
               sequence[1.0] = :stopped
             end
 
@@ -102,15 +115,8 @@ RSpec.describe Listen::EventProcessor do
             end
           end
 
-          # context "when there were events within latency" do
-          #  pending "todo"
-          #  fail "fix me"
-          # end
-
           context 'when there were no events for ages' do
             before do
-              allow(config).to receive(:last_queue_event_time).and_return(0.0)
-
               sequence[3.5] = :stopped # in the future to break from the loop
             end
 
@@ -175,17 +181,14 @@ RSpec.describe Listen::EventProcessor do
 
             it 'processes events' do
               allow(event_queue).to receive(:empty?).
-                and_return(false, false, false, true)
-
-              allow(config).to receive(:last_queue_event_time).and_return(-3.0)
+                and_return(false, false, true)
 
               # resets latency check
-              expect(config).to receive(:reset_last_queue_event_time)
               expect(config).to receive(:callable?).and_return(true)
 
               change = [:file, :modified, 'foo', 'bar']
               resulting_changes = { modified: ['foo'], added: [], removed: [] }
-              allow(event_queue).to receive(:pop).and_return(change).ordered
+              allow(event_queue).to receive(:pop).and_return(change)
 
               allow(config).to receive(:optimize_changes).with([change]).
                 and_return(resulting_changes)
@@ -196,6 +199,7 @@ RSpec.describe Listen::EventProcessor do
                 expect(changes).to eq(final_changes)
               end
 
+              subject.instance_variable_set(:@first_unprocessed_event_time, -3)
               subject.loop_for(1)
             end
           end
