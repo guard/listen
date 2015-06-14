@@ -21,7 +21,7 @@ module Listen
       end
 
       current.each do |full_path|
-        type = full_path.directory? ? :dir : :file
+        type = detect_type(full_path)
         item_rel_path = full_path.relative_path_from(dir).to_s
         _change(snapshot, type, item_rel_path, options)
       end
@@ -67,11 +67,14 @@ module Listen
       snapshot.invalidate(type, path, opts)
     end
 
-    def self._log(type, &block)
-      return unless Listen.logger
-      Listen.logger.send(type) do
-        block.call
-      end
+    def self.detect_type(full_path)
+      # TODO: should probably check record first
+      stat = ::File.lstat(full_path.to_s)
+      stat.directory? ? :dir : :file
+    rescue Errno::ENOENT
+      # TODO: ok, it should really check the record here
+      # report as dir for scanning
+      :dir
     end
   end
 end
