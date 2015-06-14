@@ -27,7 +27,19 @@ RSpec.describe 'Listen', acceptance: true do
       end
     end
 
-    [false, true].each do |polling|
+    modes =
+      case ENV['TEST_LISTEN_ADAPTER_MODES'] || 'both'
+      when 'polling'
+        [true]
+      when 'native'
+        [false]
+      else
+        [false, true]
+      end
+
+    # TODO: make it configurable
+    # TODO: restore
+    modes.each do |polling|
       context "force_polling option to #{polling}" do
         let(:polling_options) { { force_polling: polling } }
 
