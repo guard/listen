@@ -4,26 +4,18 @@ require 'listen/listener'
 
 require 'listen/internals/thread_pool'
 
-# Set up logging by default first time file is requried
+# Always set up logging by default first time file is requried
 #
-Listen.logger ||= Logger.new(STDERR)
+# NOTE: If you need to clear the logger completely, do so *after*
+# requiring this file. If you need to set a custom logger,
+# require the listen/logger file and set the logger before requiring
+# this file.
+Listen.setup_default_logger_if_unset
 
-if Listen.logger
-  debugging = ENV['LISTEN_GEM_DEBUGGING']
-
-  Listen.logger.level =
-    case debugging.to_s
-    when /2/
-      ::Logger::DEBUG
-    when /true|yes|1/i
-      ::Logger::INFO
-    else
-      ::Logger::ERROR
-    end
-
-  Listen.logger.info "Listen loglevel set to: #{Listen.logger.level}"
-  Listen.logger.info "Listen version: #{Listen::VERSION}"
-end
+# Won't print anything by default because of level - unless you've set
+# LISTEN_GEM_DEBUGGING or provided your own logger with a high enough level
+Listen::Logger.info "Listen loglevel set to: #{Listen.logger.level}"
+Listen::Logger.info "Listen version: #{Listen::VERSION}"
 
 module Listen
   class << self

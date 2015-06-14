@@ -13,7 +13,7 @@ module Listen
       path = dir + rel_path
       current = Set.new(path.children)
 
-      _log(:debug) do
+      Listen::Logger.debug do
         format('%s: %s(%s): %s -> %s',
                (options[:silence] ? 'Recording' : 'Scanning'),
                rel_path, options.inspect, previous.inspect, current.inspect)
@@ -40,7 +40,7 @@ module Listen
       _async_changes(fs_change, path, previous, options)
       _change(fs_change, :file, rel_path, options)
     rescue
-      _log(:warn) do
+      Listen::Logger.warn do
         format('scan DIED: %s:%s', $ERROR_INFO, $ERROR_POSITION * "\n")
       end
       raise

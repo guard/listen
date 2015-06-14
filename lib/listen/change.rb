@@ -36,14 +36,16 @@ module Listen
       cookie = options[:cookie]
 
       if !cookie && config.silenced?(rel_path, type)
-        _log :debug, "(silenced): #{rel_path.inspect}"
+        Listen::Logger.debug {  "(silenced): #{rel_path.inspect}" }
         return
       end
 
       path = watched_dir + rel_path
 
-      log_details = options[:silence] && 'recording' || change || 'unknown'
-      _log :debug, "#{log_details}: #{type}:#{path} (#{options.inspect})"
+      Listen::Logger.debug do
+        log_details = options[:silence] && 'recording' || change || 'unknown'
+        "#{log_details}: #{type}:#{path} (#{options.inspect})"
+      end
 
       if change
         # TODO: move this to Listener to avoid overhead
@@ -61,18 +63,19 @@ module Listen
           config.queue(:file, change, watched_dir, rel_path)
         end
       end
-    rescue RuntimeError
-      _log :error, format('Change#change crashed %s:%s', $ERROR_INFO.inspect,
-                          $ERROR_POSITION * "\n")
+    rescue RuntimeError => ex
+      msg = format(
+        '%s#%s crashed %s:%s',
+        self.class,
+        __method__,
+        exinspect,
+        ex.backtrace * "\n")
+      Listen::Logger.error(msg)
       raise
     end
 
     private
 
     attr_reader :config
-
-    def _log(type, message)
-      Listen::Logger.send(type, message)
-    end
   end
 end
