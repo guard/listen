@@ -4,7 +4,7 @@ require 'listen/listener'
 
 require 'listen/internals/thread_pool'
 
-# Always set up logging by default first time file is requried
+# Always set up logging by default first time file is required
 #
 # NOTE: If you need to clear the logger completely, do so *after*
 # requiring this file. If you need to set a custom logger,
