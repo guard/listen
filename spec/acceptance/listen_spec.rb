@@ -41,10 +41,12 @@ RSpec.describe 'Listen' do
             end
           end
         else
-          context 'when driver does not support option' do
-            let(:options) { { latency: 10 } }
-            it 'does not pass the latency option' do
-              expect(subject).to process_addition_of('file.rb')
+          unless darwin?
+            context 'when driver does not support option' do
+              let(:options) { { latency: 10 } }
+              it 'does not pass the latency option' do
+                expect(subject).to process_addition_of('file.rb')
+              end
             end
           end
         end
