@@ -14,6 +14,7 @@ end
 
 group :test do
   gem 'celluloid', github: 'celluloid/celluloid', branch: '0-16-stable'
+  gem 'celluloid-fsm', github: 'celluloid/celluloid-fsm', branch: 'master'
   gem 'celluloid-io', '>= 0.15.0'
   gem 'rake'
   gem 'rspec', '~> 3.2'
