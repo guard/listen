@@ -31,6 +31,24 @@ RSpec.describe 'Listen' do
       context "force_polling option to #{polling}" do
         let(:polling_options) { { force_polling: polling } }
 
+        if polling
+          context 'when polling' do
+            context 'with a large latency' do
+              let(:options) { { latency: 10 } }
+              it 'passes the latency option correctly' do
+                expect(subject).to_not process_addition_of('file.rb')
+              end
+            end
+          end
+        else
+          context 'when driver does not support option' do
+            let(:options) { { latency: 10 } }
+            it 'does not pass the latency option' do
+              expect(subject).to process_addition_of('file.rb')
+            end
+          end
+        end
+
         context 'with default ignore options' do
           context 'with nothing in listen dir' do
 

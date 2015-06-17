@@ -42,12 +42,43 @@ RSpec.describe Listener do
   end
 
   describe 'options' do
+    context 'with supported adapter option' do
+      let(:options) { { latency: 1.234 } }
+      before do
+        allow(supervisor).to receive(:add)
+        allow(Adapter).to receive(:select) { Adapter::Polling }
+      end
+
+      it 'passes adapter options to adapter' do
+        expect(supervisor).to receive(:add).
+          with(anything, hash_including(
+            args: [hash_including(latency: 1.234)]
+        ))
+        subject.start
+      end
+    end
+
+    context 'with unsupported adapter option' do
+      let(:options) { { latency: 1.234 } }
+      before do
+        allow(supervisor).to receive(:add)
+        allow(Adapter).to receive(:select) { Adapter::Linux }
+      end
+
+      it 'passes adapter options to adapter' do
+        expect(supervisor).to_not receive(:add).
+          with(anything, hash_including(
+            args: [hash_including(latency: anything)]
+        ))
+        subject.start
+      end
+    end
+
     context 'default options' do
       it 'sets default options' do
         expect(subject.options).
           to eq(
             debug: false,
-            latency: nil,
             wait_for_delay: 0.1,
             force_polling: false,
             relative: false,

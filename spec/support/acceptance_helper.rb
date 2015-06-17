@@ -195,7 +195,7 @@ class ListenerWrapper
 
       # Polling sleep (default: 1s)
       adapter = @listener.sync(:adapter)
-      sleep(adapter.options.latency) if adapter.is_a?(Listen::Adapter::Polling)
+      sleep(1.0) if adapter.is_a?(Listen::Adapter::Polling)
 
       # Lag should include:
       #  0.1s - 0.2s if the test needs Listener queue to be processed
