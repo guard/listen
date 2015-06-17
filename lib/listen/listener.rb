@@ -188,12 +188,17 @@ module Listen
     include Internals::Logging
 
     def _init_options(options = {})
-      { debug: false,
-        latency: nil,
+      {
+        # Listener options
+        debug: false,
         wait_for_delay: 0.1,
-        force_polling: false,
         relative: false,
-        polling_fallback_message: nil }.merge(options)
+
+        # Backend selecting options
+        force_polling: false,
+        polling_fallback_message: nil,
+
+      }.merge(options)
     end
 
     def _debug_level
@@ -209,7 +214,7 @@ module Listen
     end
 
     def _init_actors
-      options = [mq: self, directories: directories]
+      adapter_options = { mq: self, directories: directories }
 
       @supervisor = Celluloid::SupervisionGroup.run!(registry)
       supervisor.add(Record, as: :record, args: self)
@@ -218,6 +223,9 @@ module Listen
       # TODO: broadcaster should be a separate plugin
       if @tcp_mode == :broadcaster
         require 'listen/tcp/broadcaster'
+
+        # TODO: pass a TCP::Config class to make sure host and port are properly
+        # passed, even when nil
         supervisor.add(TCP::Broadcaster, as: :broadcaster, args: [@host, @port])
 
         # TODO: should be auto started, because if it crashes
@@ -226,10 +234,16 @@ module Listen
         registry[:broadcaster].start
       elsif @tcp_mode == :recipient
         # TODO: adapter options should be configured in Listen.{on/to}
-        options.first.merge!(host: @host, port: @port)
+        adapter_options.merge!(host: @host, port: @port)
       end
 
-      supervisor.add(_adapter_class, as: :adapter, args: options)
+      # TODO: refactor
+      valid_adapter_options = _adapter_class.const_get(:DEFAULTS).keys
+      valid_adapter_options.each do |key|
+        adapter_options.merge!(key => options[key]) if options.key?(key)
+      end
+
+      supervisor.add(_adapter_class, as: :adapter, args: [adapter_options])
     end
 
     def _wait_for_changes
