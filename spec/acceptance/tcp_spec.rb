@@ -26,7 +26,7 @@ RSpec.describe Listen::Listener do
         let(:broadcaster) { setup_listener(broadcast_options) }
 
         before do
-          broadcaster.listener.start
+          broadcaster.first.listener.start
           subject.lag = Float(ENV['LISTEN_TESTS_DEFAULT_TCP_LAG'] || 0.2)
           subject.listener.start
         end
