@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-RSpec.describe 'Listen' do
-  let(:base_options) { { wait_for_delay: 0.1, latency: 0.1 } }
+RSpec.describe 'Listen', acceptance: true do
+  let(:base_options) { { latency: 0.1 } }
   let(:polling_options) { {} }
   let(:options) { {} }
   let(:all_options) { base_options.merge(polling_options).merge(options) }
@@ -21,13 +21,25 @@ RSpec.describe 'Listen' do
       let(:wrapper) { setup_listener(all_options, callback) }
 
       it 'warns the backtrace' do
-        expect(Kernel).to receive(:warn).
-          with(/exception while processing events: foo .*Backtrace:/)
+        expect(Listen::Logger).to receive(:error).
+          with(/exception while processing events: foo.*Backtrace:/)
         wrapper.listen { touch 'file.rb' }
       end
     end
 
-    [false, true].each do |polling|
+    modes =
+      case ENV['TEST_LISTEN_ADAPTER_MODES'] || 'both'
+      when 'polling'
+        [true]
+      when 'native'
+        [false]
+      else
+        [false, true]
+      end
+
+    # TODO: make it configurable
+    # TODO: restore
+    modes.each do |polling|
       context "force_polling option to #{polling}" do
         let(:polling_options) { { force_polling: polling } }
 

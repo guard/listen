@@ -2,58 +2,77 @@ require 'listen/file'
 require 'listen/directory'
 
 module Listen
+  # TODO: rename to Snapshot
   class Change
-    include Celluloid
+    # TODO: test this class for coverage
+    class Config
+      def initialize(queue, silencer)
+        @queue = queue
+        @silencer = silencer
+      end
 
-    attr_accessor :listener
+      def silenced?(path, type)
+        @silencer.silenced?(Pathname(path), type)
+      end
 
-    def initialize(listener)
-      @listener = listener
+      def queue(*args)
+        @queue << args
+      end
     end
 
-    def change(type, watched_dir, rel_path, options = {})
+    attr_reader :record
+
+    def initialize(config, record)
+      @config = config
+      @record = record
+    end
+
+    # Invalidate some part of the snapshot/record (dir, file, subtree, etc.)
+    def invalidate(type, rel_path, options)
+      watched_dir = Pathname.new(record.root)
+
       change = options[:change]
       cookie = options[:cookie]
 
-      if !cookie && listener.silencer.silenced?(Pathname(rel_path), type)
-        _log :debug, "(silenced): #{rel_path.inspect}"
+      if !cookie && config.silenced?(rel_path, type)
+        Listen::Logger.debug {  "(silenced): #{rel_path.inspect}" }
         return
       end
 
       path = watched_dir + rel_path
 
-      log_details = options[:silence] && 'recording' || change || 'unknown'
-      _log :debug, "#{log_details}: #{type}:#{path} (#{options.inspect})"
+      Listen::Logger.debug do
+        log_details = options[:silence] && 'recording' || change || 'unknown'
+        "#{log_details}: #{type}:#{path} (#{options.inspect})"
+      end
 
       if change
-        # TODO: move this to Listener to avoid Celluloid overhead
-        # from caller
         options = cookie ? { cookie: cookie } : {}
-        listener.queue(type, change, watched_dir, rel_path, options)
+        config.queue(type, change, watched_dir, rel_path, options)
       else
-        return unless (record = listener.sync(:record))
-
         if type == :dir
-          return unless (change_queue = listener.async(:change_pool))
-          Directory.scan(change_queue, record, watched_dir, rel_path, options)
+          # NOTE: POSSIBLE RECURSION
+          # TODO: fix - use a queue instead
+          Directory.scan(self, rel_path, options)
         else
-          change = File.change(record, watched_dir, rel_path)
+          change = File.change(record, rel_path)
           return if !change || options[:silence]
-          listener.queue(:file, change, watched_dir, rel_path)
+          config.queue(:file, change, watched_dir, rel_path)
         end
       end
-    rescue Celluloid::Task::TerminatedError
-      _log :debug, "Change#change was terminated: #{$ERROR_INFO.inspect}"
-    rescue RuntimeError
-      _log :error, format('Change#change crashed %s:%s', $ERROR_INFO.inspect,
-                          $ERROR_POSITION * "\n")
+    rescue RuntimeError => ex
+      msg = format(
+        '%s#%s crashed %s:%s',
+        self.class,
+        __method__,
+        exinspect,
+        ex.backtrace * "\n")
+      Listen::Logger.error(msg)
       raise
     end
 
     private
 
-    def _log(type, message)
-      Celluloid::Logger.send(type, message)
-    end
+    attr_reader :config
   end
 end

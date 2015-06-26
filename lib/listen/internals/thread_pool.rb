@@ -1,7 +1,6 @@
 module Listen
   # @private api
   module Internals
-    # Just a wrapper for tests to avoid interfereing with Celluloid's threads
     module ThreadPool
       def self.add(&block)
         Thread.new { block.call }.tap do |th|
@@ -11,6 +10,7 @@ module Listen
 
       def self.stop
         return unless @threads ||= nil
+        return if @threads.empty? # return to avoid using possibly stubbed Queue
 
         killed = Queue.new
         killed << @threads.pop.kill until @threads.empty?

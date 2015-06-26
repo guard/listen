@@ -10,7 +10,7 @@ module Listen
       return if given_options.empty?
 
       msg = "Unknown options: #{given_options.inspect}"
-      Celluloid::Logger.warn msg
+      Listen::Logger.warn msg
       fail msg
     end
 

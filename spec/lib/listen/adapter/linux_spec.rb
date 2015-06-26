@@ -1,7 +1,6 @@
 RSpec.describe Listen::Adapter::Linux do
   describe 'class' do
     subject { described_class }
-    it { should be_local_fs }
 
     if linux?
       it { should be_usable }
@@ -11,14 +10,30 @@ RSpec.describe Listen::Adapter::Linux do
   end
 
   if linux?
-    let(:directories) { [] }
-    let(:mq) { instance_double(Listen::Listener) }
+    let(:dir1) do
+      instance_double(
+        Pathname,
+        'dir1',
+        to_s: '/foo/dir1',
+        cleanpath: real_dir1
+      )
+    end
 
-    subject { described_class.new(mq: mq, directories: directories) }
+    # just so cleanpath works in above double
+    let(:real_dir1) { instance_double(Pathname, 'dir1', to_s: '/foo/dir1') }
 
-    # workaround: Celluloid ignores SystemExit exception messages
+    let(:config) { instance_double(Listen::Adapter::Config) }
+    let(:queue) { instance_double(Queue) }
+    let(:silencer) { instance_double(Listen::Silencer) }
+    let(:snapshot) { instance_double(Listen::Change) }
+    let(:record) { instance_double(Listen::Record) }
+
+    # TODO: fix other adapters too!
+    subject { described_class.new(config) }
+
     describe 'inotify limit message' do
       let(:directories) { [Pathname.pwd] }
+      let(:adapter_options) { {} }
 
       before do
         require 'rb-inotify'
@@ -27,31 +42,53 @@ RSpec.describe Listen::Adapter::Linux do
 
         fake_notifier = double(:fake_notifier, new: fake_worker)
         stub_const('INotify::Notifier', fake_notifier)
+
+        allow(config).to receive(:directories).and_return(directories)
+        allow(config).to receive(:adapter_options).and_return(adapter_options)
       end
 
       it 'should be shown before calling abort' do
         expected_message = described_class.const_get('INOTIFY_LIMIT_MESSAGE')
-        expect(STDERR).to receive(:puts).with(expected_message)
-
-        # Expect RuntimeError here, for the sake of unit testing (actual
-        # handling depends on Celluloid supervisor setup, which is beyond the
-        # scope of subject tests)
-        expect { subject.start }.to raise_error RuntimeError, expected_message
+        expect { subject.start }.to raise_error SystemExit, expected_message
       end
     end
 
+    # TODO: should probably be adapted to be more like adapter/base_spec.rb
     describe '_callback' do
-      let(:directories) { [Pathname.pwd] }
-      before { subject.configure }
+      let(:directories) { [dir1] }
+      let(:adapter_options) { { events: [:recursive, :close_write] } }
+
+      before do
+        allow(Kernel).to receive(:require).with('rb-inotify')
+        fake_worker = double(:fake_worker)
+        events = [:recursive, :close_write]
+        allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
+
+        fake_notifier = double(:fake_notifier, new: fake_worker)
+        stub_const('INotify::Notifier', fake_notifier)
+
+        allow(config).to receive(:directories).and_return(directories)
+        allow(config).to receive(:adapter_options).and_return(adapter_options)
+        allow(config).to receive(:queue).and_return(queue)
+        allow(config).to receive(:silencer).and_return(silencer)
+
+        allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
+        allow(Listen::Change::Config).to receive(:new).with(queue, silencer).
+          and_return(config)
+        allow(Listen::Change).to receive(:new).with(config, record).
+          and_return(snapshot)
+
+        subject.configure
+      end
+
       let(:expect_change) do
         lambda do |change|
-          allow(mq).to receive(:_queue_raw_change).
-            with(
-              :file,
-              Pathname.pwd,
-              'path/foo.txt',
-              change: change,
-              cookie: 123)
+          expect(snapshot).to receive(:invalidate).with(
+            :file,
+            'path/foo.txt',
+            cookie: 123,
+            change: change
+          )
         end
       end
 
@@ -62,7 +99,7 @@ RSpec.describe Listen::Adapter::Linux do
             callback.call double(
               :inotify_event,
               name: 'foo.txt',
-              watcher: double(:watcher, path: (Pathname.pwd + 'path').to_s),
+              watcher: double(:watcher, path: '/foo/dir1/path'),
               flags: flags,
               cookie: 123)
           end

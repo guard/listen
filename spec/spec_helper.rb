@@ -1,5 +1,7 @@
+# TODO: reduce requires everwhere and be more strict about it
 require 'listen'
-require 'listen/tcp'
+
+Listen.logger.level = Logger::WARN unless ENV['LISTEN_GEM_DEBUGGING']
 
 require 'listen/internals/thread_pool'
 
@@ -32,21 +34,22 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
 end
 
-require 'rspec/retry'
-RSpec.configure do |config|
-  config.default_retry_count = ci? ? 5 : 1
+module SpecHelpers
+  def fake_path(str, options = {})
+    instance_double(Pathname, str, { to_s: str }.merge(options))
+  end
 end
 
-require 'celluloid/rspec'
+RSpec.configure do |config|
+  config.include SpecHelpers
+end
+
 Thread.abort_on_exception = true
-Celluloid.logger.level = Logger::ERROR
 
 RSpec.configuration.before(:each) do
   Listen::Internals::ThreadPool.stop
-  Celluloid.boot
 end
 
 RSpec.configuration.after(:each) do
-  Celluloid.shutdown
   Listen::Internals::ThreadPool.stop
 end

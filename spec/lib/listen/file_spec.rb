@@ -1,23 +1,17 @@
 RSpec.describe Listen::File do
-  let(:async_record) do
-    instance_double(
-      Listen::Record,
-      add_dir: true,
-      update_file: true,
-      unset_path: true
-    )
-  end
-
   let(:record) do
     instance_double(
       Listen::Record,
-      async: async_record,
-      file_data: record_data
+      root: '/foo/bar',
+      file_data: record_data,
+      add_dir: true,
+      update_file: true,
+      unset_path: true,
     )
   end
 
   let(:path) { Pathname.pwd }
-  let(:subject) { described_class.change(record, path, 'file.rb') }
+  let(:subject) { described_class.change(record, 'file.rb') }
 
   around { |example| fixtures { example.run } }
 
@@ -40,10 +34,10 @@ RSpec.describe Listen::File do
       context 'with non-existing file' do
         before { allow(::File).to receive(:lstat) { fail Errno::ENOENT } }
 
-        it { should be :removed }
+        it { is_expected.to eq(:removed) }
 
         it 'sets path in record' do
-          expect(async_record).to receive(:unset_path).with(path, 'file.rb')
+          expect(record).to receive(:unset_path).with('file.rb')
           subject
         end
       end
@@ -76,8 +70,8 @@ RSpec.describe Listen::File do
           it { should be :modified }
 
           it 'sets path in record with expected data' do
-            expect(async_record).to receive(:update_file).
-              with(path, 'file.rb', expected_data)
+            expect(record).to receive(:update_file).
+              with('file.rb', expected_data)
             subject
           end
         end
@@ -92,8 +86,8 @@ RSpec.describe Listen::File do
             it { should be :modified }
 
             it 'sets path in record with expected data' do
-              expect(async_record).to receive(:update_file).
-                with(path, 'file.rb', expected_data)
+              expect(record).to receive(:update_file).
+                with('file.rb', expected_data)
               subject
             end
           end
@@ -104,8 +98,8 @@ RSpec.describe Listen::File do
             it { should be :modified }
 
             it 'sets path in record with expected data' do
-              expect(async_record).to receive(:update_file).
-                with(path, 'file.rb', expected_data)
+              expect(record).to receive(:update_file).
+                with('file.rb', expected_data)
               subject
             end
           end
@@ -155,7 +149,7 @@ RSpec.describe Listen::File do
                   it { should be :removed }
 
                   it 'should not unset record' do
-                    expect(async_record).to_not receive(:unset_path)
+                    expect(record).to_not receive(:unset_path)
                   end
                 end
 
@@ -177,8 +171,9 @@ RSpec.describe Listen::File do
                     it { should be :modified }
 
                     it 'sets path in record with expected data' do
-                      expect(async_record).to receive(:update_file).
-                        with(path, 'file.rb', expected_data. merge(md5: md5))
+                      expected = expected_data. merge(md5: md5)
+                      expect(record).to receive(:update_file).
+                        with('file.rb', expected)
                       subject
                     end
                   end
@@ -211,8 +206,8 @@ RSpec.describe Listen::File do
         end
 
         it 'sets path in record with expected data' do
-          expect(async_record).to receive(:update_file).
-            with(path, 'file.rb', expected_data)
+          expect(record).to receive(:update_file).
+            with('file.rb', expected_data)
           subject
         end
       end

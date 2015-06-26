@@ -8,7 +8,7 @@ module Listen
     class Polling < Base
       OS_REGEXP = // # match every OS
 
-      DEFAULTS = { latency: 1.0 }
+      DEFAULTS = { latency: 1.0, wait_for_delay: 0.05 }
 
       private
 
@@ -23,6 +23,7 @@ module Listen
           @polling_callbacks.each do |callback|
             callback.call(nil)
             nap_time = options.latency - (Time.now.to_f - start)
+            # TODO: warn if nap_time is negative (polling too slow)
             sleep(nap_time) if nap_time > 0
           end
         end

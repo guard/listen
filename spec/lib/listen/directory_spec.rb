@@ -1,20 +1,31 @@
 include Listen
 
 RSpec.describe Directory do
-  let(:dir) { double(:dir) }
-  let(:file) { double(:file, directory?: false) }
-  let(:file2) { double(:file2, directory?: false) }
-  let(:subdir) { double(:subdir, directory?: true) }
-
-  let(:queue) { instance_double(Change, change: nil) }
-
-  let(:async_record) do
-    instance_double(Record, add_dir: true, unset_path: true)
+  def fake_file_stat(name, options = {})
+    defaults = { directory?: false }
+    instance_double(::File::Stat, name, defaults.merge(options))
   end
+
+  def fake_dir_stat(name, options = {})
+    defaults = { directory?: true }
+    instance_double(::File::Stat, name, defaults.merge(options))
+  end
+
+  let(:dir) { double(:dir) }
+  let(:file) { fake_path('file.rb') }
+  let(:file2) { fake_path('file2.rb') }
+  let(:subdir) { fake_path('subdir') }
 
   let(:record) do
-    instance_double(Record, async: async_record, dir_entries: record_entries)
+    instance_double(
+      Record,
+      root: 'some_dir',
+      dir_entries: record_entries,
+      add_dir: true,
+      unset_path: true)
   end
+
+  let(:snapshot) { instance_double(Change, record: record, invalidate: nil) }
 
   before do
     allow(dir).to receive(:+).with('.') { dir }
@@ -24,6 +35,13 @@ RSpec.describe Directory do
     allow(file).to receive(:relative_path_from).with(dir) { 'file.rb' }
     allow(file2).to receive(:relative_path_from).with(dir) { 'file2.rb' }
     allow(subdir).to receive(:relative_path_from).with(dir) { 'subdir' }
+
+    allow(Pathname).to receive(:new).with('some_dir').and_return(dir)
+    allow(Pathname).to receive(:new).with('.').and_return(dir)
+
+    allow(::File).to receive(:lstat) do |*args|
+      fail "Not stubbed: File.lstat(#{args.map(&:inspect) * ','})"
+    end
   end
 
   context '#scan with recursive off' do
@@ -38,31 +56,67 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { [] } }
 
         it 'sets record dir path' do
-          expect(async_record).to receive(:add_dir).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:add_dir).with('.')
+          described_class.scan(snapshot, '.', options)
         end
 
-        it "queues changes for file path and dir that doesn't exist" do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it "snapshots changes for file path and dir that doesn't exist" do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir', recursive: false)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(snapshot, '.', options)
         end
       end
 
-      context 'with only file2.rb in dir' do
-        before { allow(dir).to receive(:children) { [file2] } }
+      context 'when subdir is removed' do
+        before  do
+          allow(dir).to receive(:children) { [file] }
 
-        it 'notices file & file2 and no longer existing dir' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
-          expect(queue).to receive(:change).with(:file, dir, 'file2.rb')
+          allow(::File).to receive(:lstat).with('file.rb').
+            and_return(fake_file_stat('file.rb'))
+        end
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
+        it 'notices subdir does not exist' do
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir', recursive: false)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(snapshot, '.', options)
+        end
+      end
+
+      context 'when file.rb removed' do
+        before do
+          allow(dir).to receive(:children) { [subdir] }
+
+          allow(::File).to receive(:lstat).with('subdir').
+            and_return(fake_dir_stat('subdir'))
+        end
+
+        it 'notices file was removed' do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
+          described_class.scan(snapshot, '.', options)
+        end
+      end
+
+      context 'when file2.rb is added' do
+        before do
+          allow(dir).to receive(:children) { [file, file2, subdir] }
+
+          allow(::File).to receive(:lstat).with('file.rb').
+            and_return(fake_file_stat('file.rb'))
+
+          allow(::File).to receive(:lstat).with('file2.rb').
+            and_return(fake_file_stat('file2.rb'))
+
+          allow(::File).to receive(:lstat).with('subdir').
+            and_return(fake_dir_stat('subdir'))
+        end
+
+        it 'notices file removed and file2 changed' do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file2.rb', {})
+          described_class.scan(snapshot, '.', options)
         end
       end
     end
@@ -74,13 +128,13 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { fail Errno::ENOENT } }
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(snapshot).to_not receive(:invalidate)
+          described_class.scan(snapshot, '.', options)
         end
 
         it 'unsets record dir path' do
-          expect(async_record).to receive(:unset_path).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:unset_path).with('.')
+          described_class.scan(snapshot, '.', options)
         end
       end
 
@@ -88,27 +142,35 @@ RSpec.describe Directory do
         before { allow(dir).to receive(:children) { fail Errno::EHOSTDOWN } }
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(snapshot).to_not receive(:invalidate)
+          described_class.scan(snapshot, '.', options)
         end
 
         it 'unsets record dir path' do
-          expect(async_record).to receive(:unset_path).with(dir, '.')
-          described_class.scan(queue, record, dir, '.', options)
+          expect(record).to receive(:unset_path).with('.')
+          described_class.scan(snapshot, '.', options)
         end
       end
 
       context 'with file.rb in dir' do
-        before { allow(dir).to receive(:children) { [file] } }
+        before do
+          allow(dir).to receive(:children) { [file] }
 
-        it 'queues changes for file & file2 paths' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
-          expect(queue).to_not receive(:change).with(:file, dir, 'file2.rb')
+          allow(::File).to receive(:lstat).with('file.rb').
+            and_return(fake_file_stat('file.rb'))
+        end
 
-          expect(queue).to_not receive(:change).
-            with(:dir, dir, 'subdir', recursive: false)
+        it 'snapshots changes for file & file2 paths' do
+          expect(snapshot).to receive(:invalidate).
+            with(:file, 'file.rb', {})
 
-          described_class.scan(queue, record, dir, '.', options)
+          expect(snapshot).to_not receive(:invalidate).
+            with(:file, 'file2.rb', {})
+
+          expect(snapshot).to_not receive(:invalidate).
+            with(:dir, 'subdir', recursive: false)
+
+          described_class.scan(snapshot, '.', options)
         end
       end
     end
@@ -127,34 +189,37 @@ RSpec.describe Directory do
           allow(dir).to receive(:children) { [] }
         end
 
-        it 'queues changes for file & subdir path' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it 'snapshots changes for file & subdir path' do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(snapshot, '.', options)
         end
       end
 
-      context 'with subdir2 path present in dir' do
-        let(:subdir2) { double(:subdir2, directory?: true, children: []) }
+      context 'with subdir2 path present' do
+        let(:subdir2) { fake_path('subdir2', children: []) }
 
         before do
           allow(dir).to receive(:children) { [subdir2] }
           allow(subdir2).to receive(:relative_path_from).with(dir) { 'subdir2' }
+
+          allow(::File).to receive(:lstat).with('subdir2').
+            and_return(fake_dir_stat('subdir2'))
         end
 
-        it 'queues changes for file, file2 & subdir paths' do
-          expect(queue).to receive(:change).with(:file, dir, 'file.rb')
+        it 'snapshots changes for file, file2 & subdir paths' do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir', recursive: true)
 
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir2', recursive: true)
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir2', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(snapshot, '.', options)
         end
       end
     end
@@ -168,23 +233,24 @@ RSpec.describe Directory do
         end
 
         it 'reports no changes' do
-          expect(queue).to_not receive(:change)
-          described_class.scan(queue, record, dir, '.', options)
+          expect(snapshot).to_not receive(:invalidate)
+          described_class.scan(snapshot, '.', options)
         end
       end
 
       context 'with subdir present in dir' do
-
         before do
           allow(dir).to receive(:children) { [subdir] }
           allow(subdir).to receive(:children) { [] }
+          allow(::File).to receive(:lstat).with('subdir').
+            and_return(fake_dir_stat('subdir'))
         end
 
-        it 'queues changes for subdir' do
-          expect(queue).to receive(:change).
-            with(:dir, dir, 'subdir', recursive: true)
+        it 'snapshots changes for subdir' do
+          expect(snapshot).to receive(:invalidate).
+            with(:dir, 'subdir', recursive: true)
 
-          described_class.scan(queue, record, dir, '.', options)
+          described_class.scan(snapshot, '.', options)
         end
       end
     end
