@@ -21,7 +21,6 @@ end
 group :test do
   gem 'rake'
   gem 'rspec', '~> 3.3'
-  gem 'rspec-retry'
   gem 'coveralls'
 end
 

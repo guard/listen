@@ -40,10 +40,8 @@ module SpecHelpers
   end
 end
 
-require 'rspec/retry'
 RSpec.configure do |config|
   config.include SpecHelpers
-  config.default_retry_count = ci? ? 5 : 1
 end
 
 Thread.abort_on_exception = true
