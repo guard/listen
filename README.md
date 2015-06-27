@@ -8,7 +8,10 @@ The Listen gem listens to file modifications and notifies you about the changes.
 
 ## Known issues / Quickfixes / Workarounds
 
-Just head over here: https://github.com/guard/listen/wiki/Quickfixes,-known-issues-and-workarounds
+*NOTE: TCP functionality has been removed from Listen 3.x - please use Listen
+2.x until alternative server and client gems are created/released for 3.x.*
+
+For other issues, just head over here: https://github.com/guard/listen/wiki/Quickfixes,-known-issues-and-workarounds
 
 ## Tips and Techniques
 
@@ -23,12 +26,13 @@ Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/
 * Increased change detection accuracy on OS X HFS and VFAT volumes.
 * Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
-Please note that:
+NOTE: TCP functionality has been moved to a separate gem (listen-server and listen-client)
+
+NOTES:
 - Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.)
 - Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 - Windows and \*BSD adapter aren't continuously and automaticaly tested.
 
-NOTE: TCP functionality has been moved to a separate gem (listen-server and listen-client)
 
 ## Pending features / issues
 
@@ -43,8 +47,9 @@ Pull request or help is very welcome for these.
 The simplest way to install Listen is to use [Bundler](http://bundler.io).
 
 ```ruby
-gem 'listen', '~> 2.7' # this prevents upgrading to 3.x
+gem 'listen', '~> 3.0' # NOTE: for TCP functionality, use '~> 2.10' for now
 ```
+
 
 ## Usage
 
