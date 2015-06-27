@@ -11,6 +11,8 @@ The Listen gem listens to file modifications and notifies you about the changes.
 *NOTE: TCP functionality has been removed from Listen 3.x - please use Listen
 2.x until alternative server and client gems are created/released for 3.x.*
 
+*NOTE: Ruby 1.9.3 is no longer maintained (and may not work with Listen) - it's best to upgrade to Ruby 2.2.2*
+
 For other issues, just head over here: https://github.com/guard/listen/wiki/Quickfixes,-known-issues-and-workarounds
 
 ## Tips and Techniques
@@ -24,7 +26,7 @@ Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/
 * You can watch multiple directories.
 * Regexp-patterns for ignoring paths for more accuracy and speed
 * Increased change detection accuracy on OS X HFS and VFAT volumes.
-* Tested on MRI Ruby environments (1.9+ only) via [Travis CI](https://travis-ci.org/guard/listen),
+* Tested on MRI Ruby environments (2.0+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
 NOTE: TCP functionality has been moved to a separate gem (listen-server and listen-client)
 
