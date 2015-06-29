@@ -1,3 +1,5 @@
+require 'pathname'
+
 module Listen
   module Adapter
     class Config
