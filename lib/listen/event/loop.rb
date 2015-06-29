@@ -1,3 +1,4 @@
+require 'timeout'
 require 'listen/event/processor'
 
 module Listen
@@ -50,7 +51,8 @@ module Listen
       end
 
       def pause
-        fail NotImplementedError
+        # TODO: works?
+        # fail NotImplementedError
       end
 
       def teardown
