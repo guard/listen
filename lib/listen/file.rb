@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module Listen
   class File
     def self.change(record, rel_path)
