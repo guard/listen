@@ -2,14 +2,14 @@ language: ruby
 bundler_args: --without development
 rvm:
   - 2.2.2
-  - jruby
+  - jruby-head
   - rbx-2
 matrix:
   allow_failures:
-    - rvm: jruby
+    - rvm: jruby-head
     - rvm: rbx-2
   exclude:
-    - rvm: jruby
+    - rvm: jruby-head
       os: osx
     - rvm: rbx-2
       os: osx
