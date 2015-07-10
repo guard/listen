@@ -18,7 +18,7 @@ RSpec.describe Adapter::Darwin do
 
   let(:options) { {} }
   let(:config) { instance_double(Listen::Adapter::Config) }
-  let(:queue) { instance_double(Queue) }
+  let(:queue) { instance_double(::Queue) }
   let(:silencer) { instance_double(Listen::Silencer) }
 
   let(:dir1) { fake_path('/foo/dir1', cleanpath: fake_path('/foo/dir1')) }
@@ -110,9 +110,9 @@ RSpec.describe Adapter::Darwin do
       let(:directories) { expectations.keys.map { |p| Pathname(p.to_s) } }
 
       before do
-        started = Queue.new
-        threads = Queue.new
-        left = Queue.new
+        started = ::Queue.new
+        threads = ::Queue.new
+        left = ::Queue.new
 
         # NOTE: Travis has a hard time creating threads on OSX
         thread_start_overhead = 3
@@ -136,7 +136,7 @@ RSpec.describe Adapter::Darwin do
 
         running << started.pop until started.empty?
 
-        killed = Queue.new
+        killed = ::Queue.new
         killed << threads.pop.kill until threads.empty?
         killed.pop.join until killed.empty?
       end

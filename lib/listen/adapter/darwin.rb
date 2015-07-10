@@ -1,3 +1,4 @@
+require 'thread'
 require 'listen/internals/thread_pool'
 
 module Listen
@@ -17,7 +18,7 @@ module Listen
         require 'rb-fsevent'
         opts = { latency: options.latency }
 
-        @workers ||= Queue.new
+        @workers ||= ::Queue.new
         @workers << FSEvent.new.tap do |worker|
           worker.watch(dir.to_s, opts, &callback)
         end

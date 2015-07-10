@@ -1,3 +1,4 @@
+require 'thread'
 require 'listen/event/config'
 require 'listen/event/loop'
 require 'listen/internals/thread_pool'
@@ -7,8 +8,8 @@ RSpec.describe Listen::Event::Loop do
   let(:processor) { instance_double(Listen::Event::Processor, 'processor') }
   let(:thread) { instance_double(Thread) }
 
-  let(:reasons) { instance_double(Thread::Queue, 'reasons') }
-  let(:ready) { instance_double(Thread::Queue, 'ready') }
+  let(:reasons) { instance_double(::Queue, 'reasons') }
+  let(:ready) { instance_double(::Queue, 'ready') }
 
   let(:blocks) do
     {
@@ -21,7 +22,7 @@ RSpec.describe Listen::Event::Loop do
 
   # TODO: this is hideous
   before do
-    allow(Thread::Queue).to receive(:new).and_return(reasons, ready)
+    allow(::Queue).to receive(:new).and_return(reasons, ready)
     allow(Listen::Event::Processor).to receive(:new).with(config, reasons).
       and_return(processor)
 
