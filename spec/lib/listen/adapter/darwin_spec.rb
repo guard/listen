@@ -119,19 +119,24 @@ RSpec.describe Adapter::Darwin do
         max_test_time = 3 * thread_start_overhead
         block_time = max_test_time + thread_start_overhead
 
-        expectations.each do |name, obj|
-          left << name # anything, we're just counting
-          allow(obj).to receive(:run).once do
+        expectations.each do |name, _|
+          left << name
+        end
+
+        expectations.each do |_, obj|
+          allow(obj).to receive(:run) do
+            current_name = left.pop
             threads << Thread.current
-            started << name
-            left.pop
+            started << current_name
             sleep block_time
           end
         end
 
         Timeout.timeout(max_test_time) do
           subject.start
-          running << started.pop until left.empty?
+          until started.size == expectations.size
+            sleep 0.1
+          end
         end
 
         running << started.pop until started.empty?

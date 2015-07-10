@@ -29,9 +29,10 @@ module Listen
       def _run
         first = @workers.pop
         until @workers.empty?
+          next_worker = @workers.pop
           Listen::Internals::ThreadPool.add do
             begin
-              @workers.pop.run
+              next_worker.run
             rescue
               _log_exception 'run() in extra thread(s) failed: %s: %s'
             end
