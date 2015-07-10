@@ -30,7 +30,7 @@ group :development do
   gem 'rubocop', '0.25.0' # TODO: should match Gemfile HoundCi
   gem 'guard-rubocop'
   gem 'pry-rescue'
-  gem 'pry-stack_explorer'
+  gem 'pry-stack_explorer', platforms: [:mri, :rbx]
   gem 'gems', require: false
   gem 'netrc', require: false
   gem 'octokit', require: false
