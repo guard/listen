@@ -1,3 +1,5 @@
+require 'thread'
+
 require 'timeout'
 require 'listen/event/processor'
 
@@ -13,7 +15,7 @@ module Listen
         @config = config
         @wait_thread = nil
         @state = :paused
-        @reasons = Thread::Queue.new
+        @reasons = ::Queue.new
       end
 
       def wakeup_on_event
@@ -35,7 +37,7 @@ module Listen
 
       def setup
         # TODO: use a Fiber instead?
-        q = Thread::Queue.new
+        q = ::Queue.new
         @wait_thread = Internals::ThreadPool.add do
           _wait_for_changes(q, config)
         end
