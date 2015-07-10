@@ -1,3 +1,5 @@
+require 'thread'
+
 module Listen
   module Event
     class Queue
@@ -12,7 +14,7 @@ module Listen
       end
 
       def initialize(config, &block)
-        @event_queue = Thread::Queue.new
+        @event_queue = ::Queue.new
         @block = block
         @config = config
       end
