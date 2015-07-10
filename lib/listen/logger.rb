@@ -1,6 +1,6 @@
 module Listen
   def self.logger
-    @logger
+    @logger ||= nil
   end
 
   def self.logger=(logger)
