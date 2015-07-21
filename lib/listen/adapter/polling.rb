@@ -8,7 +8,7 @@ module Listen
     class Polling < Base
       OS_REGEXP = // # match every OS
 
-      DEFAULTS = { latency: 1.0, wait_for_delay: 0.05 }
+      DEFAULTS = { latency: 1.0, wait_for_delay: 0.05, check_with_size: false }
 
       private
 
@@ -30,7 +30,9 @@ module Listen
       end
 
       def _process_event(dir, _)
-        _queue_change(:dir, dir, '.', recursive: true)
+        new_options = @config.adapter_options
+        new_options[:recursive] = true
+        _queue_change(:dir, dir, '.', new_options)
       end
     end
   end
