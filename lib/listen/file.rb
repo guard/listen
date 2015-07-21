@@ -6,7 +6,7 @@ module Listen
       path = Pathname.new(record.root) + rel_path
       lstat = path.lstat
 
-      data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
+      data = { mtime: lstat.mtime.to_f, mode: lstat.mode, size: lstat.size }
 
       record_data = record.file_data(rel_path)
 
