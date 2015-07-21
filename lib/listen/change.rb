@@ -55,7 +55,7 @@ module Listen
           # TODO: fix - use a queue instead
           Directory.scan(self, rel_path, options)
         else
-          change = File.change(record, rel_path)
+          change = File.change(record, rel_path, options)
           return if !change || options[:silence]
           config.queue(:file, change, watched_dir, rel_path)
         end
