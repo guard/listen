@@ -1,3 +1,4 @@
+require 'thread'
 require 'listen/internals/thread_pool'
 
 module Listen
@@ -17,7 +18,7 @@ module Listen
         require 'rb-fsevent'
         opts = { latency: options.latency }
 
-        @workers ||= Queue.new
+        @workers ||= ::Queue.new
         @workers << FSEvent.new.tap do |worker|
           worker.watch(dir.to_s, opts, &callback)
         end
@@ -28,9 +29,10 @@ module Listen
       def _run
         first = @workers.pop
         until @workers.empty?
+          next_worker = @workers.pop
           Listen::Internals::ThreadPool.add do
             begin
-              @workers.pop.run
+              next_worker.run
             rescue
               _log_exception 'run() in extra thread(s) failed: %s: %s'
             end

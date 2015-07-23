@@ -2,9 +2,9 @@ require 'listen/event/processor'
 require 'listen/event/config'
 
 RSpec.describe Listen::Event::Processor do
-  let(:event_queue) { instance_double(Thread::Queue, 'event_queue') }
+  let(:event_queue) { instance_double(::Queue, 'event_queue') }
   let(:config) { instance_double(Listen::Event::Config) }
-  let(:reasons) { instance_double(Thread::Queue, 'reasons') }
+  let(:reasons) { instance_double(::Queue, 'reasons') }
 
   subject { described_class.new(config, reasons) }
 

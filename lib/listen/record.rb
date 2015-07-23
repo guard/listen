@@ -1,3 +1,4 @@
+require 'thread'
 require 'listen/record/entry'
 require 'listen/record/symlink_detector'
 
@@ -62,7 +63,7 @@ module Listen
       # TODO: test other permissions
       # TODO: test with mixed encoding
       symlink_detector = SymlinkDetector.new
-      remaining = Queue.new
+      remaining = ::Queue.new
       remaining << Entry.new(root, nil, nil)
       _fast_build_dir(remaining, symlink_detector) until remaining.empty?
     end
