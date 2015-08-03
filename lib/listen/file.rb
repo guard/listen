@@ -2,11 +2,11 @@ require 'digest/md5'
 
 module Listen
   class File
-    def self.change(record, rel_path)
+    def self.change(record, rel_path, options)
       path = Pathname.new(record.root) + rel_path
       lstat = path.lstat
 
-      data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
+      data = { mtime: lstat.mtime.to_f, mode: lstat.mode, size: lstat.size }
 
       record_data = record.file_data(rel_path)
 
@@ -23,6 +23,16 @@ module Listen
       if data[:mtime] != record_data[:mtime]
         record.update_file(rel_path, data)
         return :modified
+      end
+
+      if options[:check_with_size]
+        if data[:size] > record_data[:size]
+          record.update_file(rel_path, data)
+          return :modified
+        elsif data[:size] < record_data[:size]
+          record.update_file(rel_path, data)
+          return :added
+        end
       end
 
       return if /1|true/ =~ ENV['LISTEN_GEM_DISABLE_HASHING']

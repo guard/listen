@@ -177,6 +177,12 @@ relative: false                                 # Whether changes should be rela
 debug: true                                     # Enable Listen logger
                                                 # default: false
 
+check_with_size: false                          # Check whether a file has changed based on the size
+                                                # if the new size is bigger then the file has been modified,
+                                                # if the new size is smaller then the file was removed then added 
+                                                # in which case the update will only be "added" 
+                                                # default: false
+
 polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
                                                 # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#listen-adapters."
 ```
