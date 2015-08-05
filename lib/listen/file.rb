@@ -6,7 +6,7 @@ module Listen
       path = Pathname.new(record.root) + rel_path
       lstat = path.lstat
 
-      data = { mtime: lstat.mtime.to_f, mode: lstat.mode }
+      data = { mtime: lstat.mtime.to_f, mode: lstat.mode, size: lstat.size }
 
       record_data = record.file_data(rel_path)
 
@@ -24,7 +24,12 @@ module Listen
         record.update_file(rel_path, data)
         return :modified
       end
-
+      
+      if data[:size] != record_data[:size]
+        record.update_file(rel_path, data)
+        return :modified
+      end
+      
       return if /1|true/ =~ ENV['LISTEN_GEM_DISABLE_HASHING']
       return unless inaccurate_mac_time?(lstat)
 
