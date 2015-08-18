@@ -1,4 +1,4 @@
-### :warning: Listen is [looking for new maintainers](https://groups.google.com/forum/#!topic/guard-dev/2Td0QTvTIsE). Please [contact me](mailto:thibaud@thibaud.gg) if you're interested.
+:exclamation: Listen is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
 
 # Listen
 
