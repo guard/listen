@@ -27,7 +27,7 @@ module Listen
       EOS
 
       def _configure(directory, &callback)
-        Kernel.require 'rb-inotify'
+        require 'rb-inotify'
         @worker ||= ::INotify::Notifier.new
         @worker.watch(directory.to_s, *options.events, &callback)
       rescue Errno::ENOSPC
