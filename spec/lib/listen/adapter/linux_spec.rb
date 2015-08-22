@@ -59,7 +59,6 @@ RSpec.describe Listen::Adapter::Linux do
       let(:adapter_options) { { events: [:recursive, :close_write] } }
 
       before do
-        allow(Kernel).to receive(:require).with('rb-inotify')
         fake_worker = double(:fake_worker)
         events = [:recursive, :close_write]
         allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
@@ -78,6 +77,7 @@ RSpec.describe Listen::Adapter::Linux do
         allow(Listen::Change).to receive(:new).with(config, record).
           and_return(snapshot)
 
+        allow(subject).to receive(:require).with('rb-inotify')
         subject.configure
       end
 

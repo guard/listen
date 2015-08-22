@@ -201,7 +201,6 @@ class ListenerWrapper
       # Lag should include:
       #  0.1s - 0.2s if the test needs Listener queue to be processed
       #  0.1s in case the system is busy
-      #  0.1s - for celluloid overhead and scheduling
       sleep lag
     end
 
@@ -228,9 +227,6 @@ class ListenerWrapper
     freeze_offset = @timed_changes.freeze_offset
 
     msg = "Changes took #{change_offset}s (allowed lag: #{freeze_offset})s"
-
-    # Use STDERR (workaround for Celluloid, since it catches abort)
-    STDERR.puts msg
     abort(msg)
   end
 
@@ -258,9 +254,8 @@ def _sleep_to_separate_events
   # separate the events or Darwin and Polling
   # will detect only the :added event
   #
-  # (This is because both use directory scanning
-  # through Celluloid tasks, which may not kick in
-  # time before the next filesystem change)
+  # (This is because both use directory scanning which may not kick in time
+  # before the next filesystem change)
   #
   # The minimum for this is the time it takes between a syscall
   # changing the filesystem ... and ... an async

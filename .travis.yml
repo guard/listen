@@ -17,5 +17,6 @@ os:
   - linux
   - osx
 env:
-  - LISTEN_TESTS_DEFAULT_LAG=0.8
+  # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
+  - LISTEN_TESTS_DEFAULT_LAG=2
 sudo: false
