@@ -6,19 +6,6 @@
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
-## Known issues / Quickfixes / Workarounds
-
-*NOTE: TCP functionality has been removed from Listen 3.x - please use Listen
-2.x until alternative server and client gems are created/released for 3.x.*
-
-*NOTE: Ruby 1.9.3 is no longer maintained (and may not work with Listen) - it's best to upgrade to Ruby 2.2.2*
-
-For other issues, just head over here: https://github.com/guard/listen/wiki/Quickfixes,-known-issues-and-workarounds
-
-## Tips and Techniques
-
-Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/Tips-and-Techniques
-
 ## Features
 
 * OS-optimized adapters on MRI for Mac OS X 10.6+, Linux, \*BSD and Windows, [more info](#listen-adapters) below.
@@ -28,21 +15,21 @@ Make sure you know these few basic tricks: https://github.com/guard/listen/wiki/
 * Increased change detection accuracy on OS X HFS and VFAT volumes.
 * Tested on MRI Ruby environments (2.0+ only) via [Travis CI](https://travis-ci.org/guard/listen),
 
-NOTE: TCP functionality has been moved to a separate gem (listen-server and listen-client)
+## Issues / limitations
 
-NOTES:
-- Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.)
-- Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
-- Windows and \*BSD adapter aren't continuously and automaticaly tested.
+* Limited support for symlinked directories ([#279](https://github.com/guard/listen/issues/279)):
+  * Symlinks are always followed ([#25](https://github.com/guard/listen/issues/25)).
+  * Symlinked directories pointing within a watched directory are not supported ([#273](https://github.com/guard/listen/pull/273)- see [Duplicate directory errors](https://github.com/guard/listen/wiki/Duplicate-directory-errors)).
+* No directory/adapter-specific configuration options.
+* Support for plugins planned for future.
+* TCP functionality was removed in Listen [3.0.0](https://github.com/guard/listen/releases/tag/v3.0.0) ([#319](https://github.com/guard/listen/issues/319), [#218](https://github.com/guard/listen/issues/218)). There are plans to extract this feature to separate gems ([#258](https://github.com/guard/listen/issues/258)), until this is finished, you can use by locking the `listen` gem to version `'~> 2.10'`.
+* Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.).
+* Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
+* Windows and \*BSD adapter aren't continuously and automatically tested.
+* OSX adapter has some performance limitations ([#342](https://github.com/guard/listen/issues/342)).
+* Ruby 1.9.3 is no longer maintained (and may not work with Listen) - it's best to upgrade to Ruby 2.2.2.
 
-
-## Pending features / issues
-
-* symlinked directories aren't fully transparent yet: https://github.com/guard/listen/issues/279
-* Directory/adapter specific configuration options
-* Support for plugins
-
-Pull request or help is very welcome for these.
+Pull requests or help is very welcome for these.
 
 ## Install
 
@@ -51,7 +38,6 @@ The simplest way to install Listen is to use [Bundler](http://bundler.io).
 ```ruby
 gem 'listen', '~> 3.0' # NOTE: for TCP functionality, use '~> 2.10' for now
 ```
-
 
 ## Usage
 
@@ -102,13 +88,13 @@ listener.ignore /\.rb/   # ignore rb extension in addition of pkg.
 sleep
 ```
 
-Note: Ignoring regexp patterns are evaluated against relative paths.
+Note: `:ignore` regexp patterns are evaluated against relative paths.
 
-Note: ignoring paths does not improve performance - except when Polling
+Note: Ignoring paths does not improve performance, except when Polling ([#274](https://github.com/guard/listen/issues/274))
 
 ### Only
 
-Listen catches all files (less the ignored once) by default, if you want to only listen to a specific type of file (ie: just rb extension) you should use the `only` option/method.
+Listen catches all files (less the ignored ones) by default. If you want to only listen to a specific type of file (i.e., just `.rb` extension), you should use the `only` option/method.
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen', only: /\.rb$/) { |modified, added, removed| # ... }
@@ -117,7 +103,7 @@ listener.only /_spec\.rb$/ # overwrite all existing only patterns.
 sleep
 ```
 
-Note: ':only' regexp patterns are evaluated only against relative **file** paths.
+Note: `:only` regexp patterns are evaluated only against relative **file** paths.
 
 
 ## Changes callback
@@ -202,7 +188,7 @@ while initializing the listener.
 
 ### On Windows
 
-If your are on Windows, it's recommended to use the [`wdm`](https://github.com/Maher4Ever/wdm) adapter instead of polling.
+If you are on Windows, it's recommended to use the [`wdm`](https://github.com/Maher4Ever/wdm) adapter instead of polling.
 
 Please add the following to your Gemfile:
 
@@ -212,7 +198,7 @@ gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 
 ### On \*BSD
 
-If your are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) adapter instead of polling.
+If you are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat813/rb-kqueue) adapter instead of polling.
 
 Please add the following to your Gemfile:
 
@@ -234,7 +220,6 @@ Please visit the [installation section of the Listen WIKI](https://github.com/gu
 
 See [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting)
 
-
 ## Performance
 
 If Listen seems slow or unresponsive, make sure you're not using the Polling adapter (you should see a warning upon startup if you are).
@@ -254,6 +239,8 @@ Also, if the directories you're watching contain many files, make sure you're:
 * ideally not running a slow encryption stack, e.g. btrfs + ecryptfs
 
 When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and time they happened.
+
+See also [Tips and Techniques](https://github.com/guard/listen/wiki/Tips-and-Techniques).
 
 ## Development
 
