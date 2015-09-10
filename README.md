@@ -58,7 +58,7 @@ sleep
 Listeners can also be easily paused/unpaused:
 
 ``` ruby
-listener = Listen.to('dir/path/to/listen') { |modified, added, removed| # ... }
+listener = Listen.to('dir/path/to/listen') { |modified, added, removed| puts 'handle changes here...' }
 
 listener.start
 listener.paused? # => false
