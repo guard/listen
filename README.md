@@ -160,14 +160,11 @@ force_polling: true                             # Force the use of the polling a
 relative: false                                 # Whether changes should be relative to current dir or not
                                                 # default: false
 
-debug: true                                     # Enable Listen logger
-                                                # default: false
-
 polling_fallback_message: 'custom message'      # Set a custom polling fallback message (or disable it with false)
                                                 # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#listen-adapters."
 ```
 
-Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` does the same as `debug: true` above.
+Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` sets up the INFO level logger, while `LISTEN_GEM_DEBUGGING=2` sets up the DEBUG level logger. You can set `Listen.logger` to a custom logger.
 
 
 ## Listen adapters
