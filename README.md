@@ -164,7 +164,11 @@ polling_fallback_message: 'custom message'      # Set a custom polling fallback 
                                                 # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#listen-adapters."
 ```
 
-Also, setting the environment variable `LISTEN_GEM_DEBUGGING=1` sets up the INFO level logger, while `LISTEN_GEM_DEBUGGING=2` sets up the DEBUG level logger. You can set `Listen.logger` to a custom logger.
+## Debugging
+
+Setting the environment variable `LISTEN_GEM_DEBUGGING=1` sets up the INFO level logger, while `LISTEN_GEM_DEBUGGING=2` sets up the DEBUG level logger. 
+
+You can also set `Listen.logger` to a custom logger.
 
 
 ## Listen adapters
