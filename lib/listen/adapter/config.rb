@@ -9,6 +9,9 @@ module Listen
       attr_reader :adapter_options
 
       def initialize(directories, queue, silencer, adapter_options)
+        # Default to current directory if no directories are supplied
+        directories = [Dir.pwd] if directories.to_a.empty?
+        
         # TODO: fix (flatten, array, compact?)
         @directories = directories.map do |directory|
           Pathname.new(directory.to_s).realpath
