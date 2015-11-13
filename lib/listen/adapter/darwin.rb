@@ -50,7 +50,7 @@ module Listen
         _log :debug, "fsevent: running worker: #{worker.inspect}"
         worker.run
       rescue
-        _log_exception 'fsevent: running worker failed: %s: %s'
+        _log_exception 'fsevent: running worker failed: %s:%s called from: %s', caller
       end
 
       def _run_workers_in_background(workers)
