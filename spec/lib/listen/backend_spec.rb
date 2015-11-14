@@ -73,7 +73,7 @@ RSpec.describe Listen::Backend do
 
   describe '#stop' do
     it 'stops the adapter' do
-      # TODO: does nothing for now
+      expect(adapter).to receive(:stop)
       subject.stop
     end
   end

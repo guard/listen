@@ -27,7 +27,7 @@ module Listen
     end
 
     def stop
-      # TODO: does nothing
+      adapter.stop
     end
 
     def min_delay_between_events
