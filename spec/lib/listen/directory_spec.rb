@@ -100,6 +100,23 @@ RSpec.describe Directory do
         end
       end
 
+      context 'when file.rb no longer exists after scan' do
+        before do
+          allow(dir).to receive(:children).and_return([file], [file2])
+
+          allow(::File).to receive(:lstat).with('file.rb').
+            and_raise(Errno::ENOENT)
+
+          allow(::File).to receive(:lstat).with('file2.rb').
+            and_return(fake_file_stat('file2.rb'))
+        end
+
+        it 'rescans' do
+          expect(snapshot).to receive(:invalidate).with(:file, 'file2.rb', {})
+          described_class.scan(snapshot, '.', options)
+        end
+      end
+
       context 'when file2.rb is added' do
         before do
           allow(dir).to receive(:children) { [file, file2, subdir] }
