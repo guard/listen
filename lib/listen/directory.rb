@@ -74,7 +74,7 @@ module Listen
     rescue Errno::ENOENT
       # TODO: ok, it should really check the record here
       # report as dir for scanning
-      :file
+      :none
     end
   end
 end
