@@ -97,6 +97,10 @@ module Listen
       def _dir_event?(event)
         event.flags.include?(:isdir)
       end
+
+      def _stop
+        @worker.close
+      end
     end
   end
 end

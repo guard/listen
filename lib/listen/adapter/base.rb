@@ -85,11 +85,18 @@ module Listen
         end
       end
 
+      def stop
+        _stop
+      end
+
       def self.usable?
         const_get('OS_REGEXP') =~ RbConfig::CONFIG['target_os']
       end
 
       private
+
+      def _stop
+      end
 
       def _timed(title)
         start = Time.now.to_f
