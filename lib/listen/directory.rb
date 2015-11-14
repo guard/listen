@@ -20,10 +20,16 @@ module Listen
                rel_path, options.inspect, previous.inspect, current.inspect)
       end
 
-      current.each do |full_path|
-        type = detect_type(full_path)
-        item_rel_path = full_path.relative_path_from(dir).to_s
-        _change(snapshot, type, item_rel_path, options)
+      begin
+        current.each do |full_path|
+          type = ::File.lstat(full_path.to_s).directory? ? :dir : :file
+          item_rel_path = full_path.relative_path_from(dir).to_s
+          _change(snapshot, type, item_rel_path, options)
+        end
+      rescue Errno::ENOENT
+        # The directory changed meanwhile, so rescan it
+        current = Set.new(path.children)
+        retry
       end
 
       # TODO: this is not tested properly
@@ -65,16 +71,6 @@ module Listen
       opts = options.dup
       opts.delete(:recursive)
       snapshot.invalidate(type, path, opts)
-    end
-
-    def self.detect_type(full_path)
-      # TODO: should probably check record first
-      stat = ::File.lstat(full_path.to_s)
-      stat.directory? ? :dir : :file
-    rescue Errno::ENOENT
-      # TODO: ok, it should really check the record here
-      # report as dir for scanning
-      :dir
     end
   end
 end
