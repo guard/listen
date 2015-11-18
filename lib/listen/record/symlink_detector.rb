@@ -11,7 +11,7 @@ module Listen
 
         Directory: %s
 
-        is already begin watched through: %s
+        is already being watched through: %s
 
         MORE INFO: #{WIKI}
       EOS
