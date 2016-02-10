@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.3'
 
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
-  s.add_dependency 'rb-inotify', '>= 0.9'
+  s.add_dependency 'rb-inotify', '>= 0.9.7'
 
   s.add_development_dependency 'bundler', '>= 1.3.5'
 end
