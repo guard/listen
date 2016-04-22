@@ -4,7 +4,7 @@ inherit_from:
 
 # Rails cops
 AllCops:
-  RunRailsCops: true
+  RunRailsCops: false
 
 # Files you want to exclude
 AllCops:
