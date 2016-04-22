@@ -6,17 +6,34 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Base
-      OS_REGEXP = /darwin(1.+)?$/i
+      OS_REGEXP = /darwin(?<major_version>1\d+)/i
 
       # The default delay between checking for changes.
       DEFAULTS = { latency: 0.1 }
+
+      INCOMPATIBLE_GEM_VERSION = <<-EOS.gsub(/^ {8}/, '')
+        rb-fsevent > 0.9.4 no longer supports OS X 10.6 through 10.8.
+
+        Please add the following to your Gemfile to avoid polling for changes:
+          require 'rbconfig'
+          if RbConfig::CONFIG['target_os'] =~ /darwin(1[0-3])/i
+            gem 'rb-fsevent', '<= 0.9.4'
+          end
+      EOS
+
+      def self.usable?
+        require 'rb-fsevent'
+        darwin_version = RbConfig::CONFIG['target_os'][OS_REGEXP, :major_version] or return false
+        return true if darwin_version.to_i >= 13 # darwin13 is OS X 10.9
+        return true if Gem::Version.new(FSEvent::VERSION) <= Gem::Version.new('0.9.4')
+        Kernel.warn INCOMPATIBLE_GEM_VERSION
+        false
+      end
 
       private
 
       # NOTE: each directory gets a DIFFERENT callback!
       def _configure(dir, &callback)
-        require 'rb-fsevent'
-
         opts = { latency: options.latency }
 
         @workers ||= ::Queue.new
