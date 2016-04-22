@@ -23,9 +23,12 @@ module Listen
 
       def self.usable?
         require 'rb-fsevent'
-        darwin_version = RbConfig::CONFIG['target_os'][OS_REGEXP, :major_version] or return false
-        return true if darwin_version.to_i >= 13 # darwin13 is OS X 10.9
-        return true if Gem::Version.new(FSEvent::VERSION) <= Gem::Version.new('0.9.4')
+        version = RbConfig::CONFIG['target_os'][OS_REGEXP, :major_version]
+        return false unless version
+        return true if version.to_i >= 13 # darwin13 is OS X 10.9
+
+        fsevent_version = Gem::Version.new(FSEvent::VERSION)
+        return true if fsevent_version <= Gem::Version.new('0.9.4')
         Kernel.warn INCOMPATIBLE_GEM_VERSION
         false
       end
@@ -67,7 +70,8 @@ module Listen
         _log :debug, "fsevent: running worker: #{worker.inspect}"
         worker.run
       rescue
-        _log_exception 'fsevent: running worker failed: %s:%s called from: %s', caller
+        format_string = 'fsevent: running worker failed: %s:%s called from: %s'
+        _log_exception format_string, caller
       end
 
       def _run_workers_in_background(workers)
