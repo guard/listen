@@ -9,9 +9,30 @@ RSpec.describe Adapter::Darwin do
   describe 'class' do
     subject { described_class }
 
-    if darwin?
+    context "on darwin 13.0 (OS X Mavericks)" do
+      before { allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin13.0') }
       it { should be_usable }
-    else
+    end
+
+    context "on darwin10.0 (OS X Snow Leopard)" do
+      before { allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin10.0') }
+
+      context "with rb-fsevent > 0.9.4" do
+        before { stub_const("FSEvent::VERSION", "0.9.6") }
+        it "shows a warning and should not be usable" do
+          expect(Kernel).to receive(:warn)
+          expect(subject).to_not be_usable
+        end
+      end
+
+      context "with rb-fsevent <= 0.9.4" do
+        before { stub_const("FSEvent::VERSION", "0.9.4") }
+        it { should be_usable }
+      end
+    end
+
+    context "on another platform (linux)" do
+      before { allow(RbConfig::CONFIG).to receive(:[]).and_return('linux') }
       it { should_not be_usable }
     end
   end
