@@ -8,7 +8,7 @@ module Listen
       attr_reader :options
 
       # TODO: only used by tests
-      DEFAULTS = {}
+      DEFAULTS = {}.freeze
 
       attr_reader :config
 
@@ -129,8 +129,12 @@ module Listen
         _log(:error, formatted)
       end
 
-      def self._log(*args, &block)
-        Listen::Logger.send(*args, &block)
+      class << self
+        private
+
+        def _log(*args, &block)
+          Listen::Logger.send(*args, &block)
+        end
       end
     end
   end

@@ -9,7 +9,7 @@ module Listen
       OS_REGEXP = /darwin(?<major_version>1\d+)/i
 
       # The default delay between checking for changes.
-      DEFAULTS = { latency: 0.1 }
+      DEFAULTS = { latency: 0.1 }.freeze
 
       INCOMPATIBLE_GEM_VERSION = <<-EOS.gsub(/^ {8}/, '')
         rb-fsevent > 0.9.4 no longer supports OS X 10.6 through 10.8.
@@ -58,7 +58,7 @@ module Listen
       def _process_event(dir, event)
         _log :debug, "fsevent: processing event: #{event.inspect}"
         event.each do |path|
-          new_path = Pathname.new(path.sub(/\/$/, ''))
+          new_path = Pathname.new(path.sub(%r{\/$}, ''))
           _log :debug, "fsevent: #{new_path}"
           # TODO: does this preserve symlinks?
           rel_path = new_path.relative_path_from(dir).to_s

@@ -63,7 +63,7 @@ RSpec.describe Listen::Adapter::Config do
         end
 
         context 'when not resolved' do
-          let(:directories) { ['symlinked_dir1', 'symlinked_dir2'] }
+          let(:directories) { %w(symlinked_dir1 symlinked_dir2) }
           it 'returns array of resolved pathnames' do
             expect(subject.directories).to eq([real_path1, real_path2])
           end

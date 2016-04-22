@@ -10,7 +10,7 @@ module Listen
         # Backend selecting options
         force_polling: false,
         polling_fallback_message: nil
-      }
+      }.freeze
 
       def initialize(opts)
         @options = DEFAULTS.merge(opts)
@@ -23,13 +23,9 @@ module Listen
         @relative
       end
 
-      def min_delay_between_events
-        @min_delay_between_events
-      end
+      attr_reader :min_delay_between_events
 
-      def silencer_rules
-        @silencer_rules
-      end
+      attr_reader :silencer_rules
 
       def adapter_instance_options(klass)
         valid_keys = klass.const_get('DEFAULTS').keys

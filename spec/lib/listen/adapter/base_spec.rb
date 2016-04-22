@@ -1,5 +1,4 @@
 RSpec.describe Listen::Adapter::Base do
-
   class FakeAdapter < described_class
     def initialize(config)
       @my_callbacks = {}

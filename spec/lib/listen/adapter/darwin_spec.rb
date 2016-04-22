@@ -160,9 +160,7 @@ RSpec.describe Adapter::Darwin do
 
         Timeout.timeout(max_test_time) do
           subject.start
-          until started.size == expectations.size
-            sleep 0.1
-          end
+          sleep 0.1 until started.size == expectations.size
         end
 
         running << started.pop until started.empty?

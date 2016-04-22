@@ -14,8 +14,8 @@ Gem::Specification.new do |s|
   s.description = 'The Listen gem listens to file modifications and '\
     'notifies you about the changes. Works everywhere!'
 
-  s.files        = `git ls-files -z`.split("\x0").select do |f|
-    /^(?:bin|lib)\// =~ f
+  s.files = `git ls-files -z`.split("\x0").select do |f|
+    %r{^(?:bin|lib)\/} =~ f
   end + %w(CHANGELOG.md CONTRIBUTING.md LICENSE.txt README.md)
 
   s.test_files   = []

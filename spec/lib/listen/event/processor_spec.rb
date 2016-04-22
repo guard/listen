@@ -61,9 +61,9 @@ RSpec.describe Listen::Event::Processor do
 
         it 'does not sleep' do
           expect(config).to_not receive(:sleep)
-          t = Time.now
+          t = Time.now.to_f
           subject.loop_for(1)
-          diff = Time.now.to_f - t.to_f
+          diff = Time.now.to_f - t
           expect(diff).to be < 0.01
         end
       end

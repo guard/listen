@@ -74,9 +74,7 @@ module Listen
       Hash.new { |h, k| h[k] = Hash.new }
     end
 
-    def tree
-      @tree
-    end
+    attr_reader :tree
 
     def _fast_update_file(dirname, basename, data)
       if [nil, '', '.'].include? dirname

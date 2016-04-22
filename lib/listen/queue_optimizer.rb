@@ -88,7 +88,7 @@ module Listen
     # editor rename() call (e.g. Kate and Sublime)
     def _reinterpret_related_changes(cookies)
       table = { moved_to: :added, moved_from: :removed }
-      cookies.map do |_, changes|
+      cookies.flat_map do |_, changes|
         data = _detect_possible_editor_save(changes)
         if data
           to_dir, to_file = data
@@ -101,7 +101,7 @@ module Listen
             [table.fetch(change, change), dir, path]
           end
         end
-      end.flatten(1)
+      end
     end
 
     def _detect_possible_editor_save(changes)
@@ -113,9 +113,9 @@ module Listen
       changes.each do |data|
         case data[1]
         when :moved_from
-          from_type, from_change, _, from, _ = data
+          from_type, from_change, _, from, = data
         when :moved_to
-          to_type, to_change, to_dir, to, _ = data
+          to_type, to_change, to_dir, to, = data
         else
           return nil
         end

@@ -4,9 +4,9 @@ module Listen
   # @private api
   class Record
     class SymlinkDetector
-      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'
+      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'.freeze
 
-      SYMLINK_LOOP_ERROR = <<-EOS
+      SYMLINK_LOOP_ERROR = <<-EOS.freeze
         ** ERROR: directory is already being watched! **
 
         Directory: %s

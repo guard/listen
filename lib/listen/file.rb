@@ -26,7 +26,7 @@ module Listen
       end
 
       return if /1|true/ =~ ENV['LISTEN_GEM_DISABLE_HASHING']
-      return unless self.inaccurate_mac_time?(lstat)
+      return unless inaccurate_mac_time?(lstat)
 
       # Check if change happened within 1 second (maybe it's even
       # too much, e.g. 0.3-0.5 could be sufficient).

@@ -35,7 +35,7 @@ module Listen
       cookie = options[:cookie]
 
       if !cookie && config.silenced?(rel_path, type)
-        Listen::Logger.debug {  "(silenced): #{rel_path.inspect}" }
+        Listen::Logger.debug { "(silenced): #{rel_path.inspect}" }
         return
       end
 
@@ -49,16 +49,14 @@ module Listen
       if change
         options = cookie ? { cookie: cookie } : {}
         config.queue(type, change, watched_dir, rel_path, options)
+      elsif type == :dir
+        # NOTE: POSSIBLE RECURSION
+        # TODO: fix - use a queue instead
+        Directory.scan(self, rel_path, options)
       else
-        if type == :dir
-          # NOTE: POSSIBLE RECURSION
-          # TODO: fix - use a queue instead
-          Directory.scan(self, rel_path, options)
-        else
-          change = File.change(record, rel_path)
-          return if !change || options[:silence]
-          config.queue(:file, change, watched_dir, rel_path)
-        end
+        change = File.change(record, rel_path)
+        return if !change || options[:silence]
+        config.queue(:file, change, watched_dir, rel_path)
       end
     rescue RuntimeError => ex
       msg = format(

@@ -27,9 +27,7 @@ module Listen
         Time.now.to_f
       end
 
-      def event_queue
-        @event_queue
-      end
+      attr_reader :event_queue
 
       def callable?
         @block
@@ -39,9 +37,7 @@ module Listen
         @queue_optimizer.smoosh_changes(changes)
       end
 
-      def min_delay_between_events
-        @min_delay_between_events
-      end
+      attr_reader :min_delay_between_events
 
       def stopped?
         listener.state == :stopped

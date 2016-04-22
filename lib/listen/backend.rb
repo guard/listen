@@ -6,6 +6,8 @@ require 'listen/adapter/config'
 # from exploding with huge test setup blocks
 module Listen
   class Backend
+    extend Forwardable
+
     def initialize(directories, queue, silencer, config)
       adapter_select_opts = config.adapter_select_options
 
@@ -22,17 +24,10 @@ module Listen
       @adapter = adapter_class.new(aconfig)
     end
 
-    def start
-      adapter.start
-    end
+    delegate start: :adapter
+    delegate stop: :adapter
 
-    def stop
-      adapter.stop
-    end
-
-    def min_delay_between_events
-      @min_delay_between_events
-    end
+    attr_reader :min_delay_between_events
 
     private
 

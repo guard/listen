@@ -6,7 +6,9 @@ module Listen
       # file: "/home/me/watched_dir", "app/models", "foo.rb"
       # dir, "/home/me/watched_dir", "."
       def initialize(root, relative, name = nil)
-        @root, @relative, @name = root, relative, name
+        @root = root
+        @relative = relative
+        @name = name
       end
 
       attr_reader :root, :relative, :name

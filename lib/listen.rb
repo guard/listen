@@ -45,10 +45,7 @@ module Listen
       @listeners ||= []
 
       # TODO: should use a mutex for this
-      @listeners.each do |listener|
-        # call stop to halt the main loop
-        listener.stop
-      end
+      @listeners.each(&:stop)
       @listeners = nil
     end
   end

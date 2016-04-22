@@ -16,7 +16,7 @@ module Listen
           :rename
           # :link, :revoke
         ]
-      }
+      }.freeze
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
@@ -38,9 +38,9 @@ module Listen
 
       private
 
-      def _configure(directory, &_callback)
+      def _configure(directory, &callback)
         @worker ||= KQueue::Queue.new
-        @callback = _callback
+        @callback = callback
         # use Record to make a snapshot of dir, so we
         # can detect new files
         _find(directory.to_s) { |path| _watch_file(path, @worker) }

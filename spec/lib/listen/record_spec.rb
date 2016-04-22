@@ -32,7 +32,7 @@ RSpec.describe Listen::Record do
   end
 
   def symlink(hash_or_dir)
-    if String === hash_or_dir
+    if hash_or_dir.is_a?(String)
       allow(::File).to receive(:realpath).with(hash_or_dir).
         and_return(hash_or_dir)
     else
@@ -277,14 +277,14 @@ RSpec.describe Listen::Record do
         real_directory('/dir/dir2' => [])
       end
 
-      it 'builds record'  do
+      it 'builds record' do
         record.build
         expect(record_tree(record)).
           to eq(
             'dir1' => {},
             'dir1/foo' => { 'bar' => { mtime: 2.3, mode: 0755 } },
             'dir2' => {},
-        )
+          )
       end
     end
 
@@ -300,7 +300,7 @@ RSpec.describe Listen::Record do
         allow(::File).to receive(:realpath) { |path| path }
       end
 
-      it 'builds record'  do
+      it 'builds record' do
         record.build
         expect(record_tree(record)).
           to eq(
@@ -309,7 +309,7 @@ RSpec.describe Listen::Record do
             'dir1/foo/bar' => {},
             'dir1/foo/baz' => {},
             'dir2' => {},
-        )
+          )
       end
     end
 
