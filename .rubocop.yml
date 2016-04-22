@@ -4,10 +4,11 @@ inherit_from:
 
 # Rails cops
 AllCops:
-  RunRailsCops: true
+  RunRailsCops: false
 
 # Files you want to exclude
 AllCops:
+  TargetRubyVersion: 2.2
   Exclude:
     - db/schema.rb
     - Gemfile

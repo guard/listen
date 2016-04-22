@@ -48,7 +48,7 @@ RSpec.describe Listen::Event::Loop do
 
     allow(subject).to receive(:_nice_error) do |ex|
       indent = "\n -- "
-      backtrace = ex.backtrace.reject { |line| line =~ /\/gems\// }
+      backtrace = ex.backtrace.reject { |line| line =~ %r{\/gems\/} }
       fail "error called: #{ex}: #{indent}#{backtrace * indent}"
     end
   end

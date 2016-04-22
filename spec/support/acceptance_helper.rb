@@ -5,7 +5,6 @@
   queued_modification: :modified,
   queued_addition: :added
 }.each do |description, type|
-
   RSpec::Matchers.define "process_#{description}_of".to_sym do |expected|
     match do |actual|
       # Use cases:
@@ -94,7 +93,7 @@ end
 def _sleep_until_next_second(path)
   Listen::File.inaccurate_mac_time?(path)
 
-  t = Time.now
+  t = Time.now.utc
   diff = t.to_f - t.to_i
 
   sleep(1.05 - diff)
@@ -165,7 +164,7 @@ class ListenerWrapper
     @timed_changes = TimedChanges.new
 
     if callback
-      @listener = Listen.send(*args) do  |modified, added, removed|
+      @listener = Listen.send(*args) do |modified, added, removed|
         # Add changes to trigger frozen Hash error, making sure lag is enough
         _add_changes(:modified, modified, changes)
         _add_changes(:added, added, changes)
@@ -190,7 +189,6 @@ class ListenerWrapper
     sleep lag
 
     @timed_changes.allow_changes(reset_queue) do
-
       yield
 
       # Polling sleep (default: 1s)
@@ -234,8 +232,8 @@ class ListenerWrapper
     changes.map do |change|
       unfrozen_copy = change.dup
       [@paths].flatten.each do |path|
-        sub = path.sub(/\/$/, '').to_s
-        unfrozen_copy.gsub!(/^#{sub}\//, '')
+        sub = path.sub(%r{\/$}, '').to_s
+        unfrozen_copy.gsub!(%r{^#{sub}\/}, '')
       end
       unfrozen_copy
     end

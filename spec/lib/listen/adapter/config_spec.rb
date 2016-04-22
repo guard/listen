@@ -15,7 +15,10 @@ RSpec.describe Listen::Adapter::Config do
   # Here's what may be  passed to initializer
   let(:path1) { fake_path('/real/path1', realpath: real_path1) }
   let(:path2) { fake_path('/real/path2', realpath: real_path2) }
-  let(:current_path) { fake_path('/real/current_path', realpath: real_current_path) }
+
+  let(:current_path) do
+    fake_path('/real/current_path', realpath: real_current_path)
+  end
 
   let(:symlinked_dir1) { fake_path('symlinked_dir1', realpath: real_path1) }
   let(:symlinked_dir2) { fake_path('symlinked_dir1', realpath: real_path2) }
@@ -44,7 +47,9 @@ RSpec.describe Listen::Adapter::Config do
       and_return(symlinked_dir2)
 
     allow(Dir).to receive(:pwd).and_return('/real/current_path')
-    allow(Pathname).to receive(:new).with('/real/current_path').and_return(current_path)
+
+    allow(Pathname).to receive(:new).
+      with('/real/current_path').and_return(current_path)
   end
 
   describe '#initialize' do
@@ -58,7 +63,7 @@ RSpec.describe Listen::Adapter::Config do
         end
 
         context 'when not resolved' do
-          let(:directories) { ['symlinked_dir1', 'symlinked_dir2'] }
+          let(:directories) { %w(symlinked_dir1 symlinked_dir2) }
           it 'returns array of resolved pathnames' do
             expect(subject.directories).to eq([real_path1, real_path2])
           end

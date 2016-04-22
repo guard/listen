@@ -24,21 +24,21 @@ module Listen
 
       private
 
-      def _configure(dir, &callback)
+      def _configure(dir)
         require 'wdm'
         _log :debug, 'wdm - starting...'
         @worker ||= WDM::Monitor.new
         @worker.watch_recursively(dir.to_s, :files) do |change|
-          callback.call([:file, change])
+          yield([:file, change])
         end
 
         @worker.watch_recursively(dir.to_s, :directories) do |change|
-          callback.call([:dir, change])
+          yield([:dir, change])
         end
 
         events = [:attributes, :last_write]
         @worker.watch_recursively(dir.to_s, *events) do |change|
-          callback.call([:attr, change])
+          yield([:attr, change])
         end
       end
 
@@ -70,7 +70,6 @@ module Listen
             _queue_change(:dir, dir, Pathname(rel_path).dirname.to_s, {})
           elsif change.type == :added
             _queue_change(:dir, dir, rel_path, {})
-          else
             # do nothing - changed directory means either:
             #   - removed subdirs (handled above)
             #   - added subdirs (handled above)
@@ -81,7 +80,7 @@ module Listen
         end
       rescue
         details = event.inspect
-        _log :error, format('wdm - callback (%): %s:%s', details, $ERROR_INFO,
+        _log :error, format('wdm - callback (%s): %s:%s', details, $ERROR_INFO,
                             $ERROR_POSITION * "\n")
         raise
       end

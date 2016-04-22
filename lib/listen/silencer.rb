@@ -15,7 +15,7 @@ module Listen
     )(/|$)}x
 
     # The default list of files that get ignored.
-    DEFAULT_IGNORED_EXTENSIONS  = /(?:
+    DEFAULT_IGNORED_EXTENSIONS = %r{(?:
       # Kate's tmp\/swp files
       \..*\d+\.new
       | \.kate-swp
@@ -50,7 +50,7 @@ module Listen
       | \.DS_Store
       | \.tmp
       | ~
-    )$/x
+    )$}x
 
     attr_accessor :only_patterns, :ignore_patterns
 

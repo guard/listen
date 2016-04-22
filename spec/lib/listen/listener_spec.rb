@@ -1,7 +1,6 @@
 include Listen
 
 RSpec.describe Listener do
-
   let(:realdir1) { fake_path('/foo/dir1', children: []) }
   let(:realdir2) { fake_path('/foo/dir2', children: []) }
 
@@ -85,7 +84,7 @@ RSpec.describe Listener do
 
     context 'with a block' do
       let(:myblock) { instance_double(Proc) }
-      let(:block) { proc { myblock.call }  }
+      let(:block) { proc { myblock.call } }
       subject do
         described_class.new('dir1') do |*args|
           myblock.call(*args)
@@ -108,7 +107,7 @@ RSpec.describe Listener do
 
       it 'passes directories to backend' do
         allow(Backend).to receive(:new).
-          with(['dir1', 'dir2'], anything, anything, anything).
+          with(%w(dir1 dir2), anything, anything, anything).
           and_return(backend)
         subject
       end

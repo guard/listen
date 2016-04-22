@@ -12,7 +12,7 @@ RSpec.describe Listen::Listener::Config do
 
       it 'extracts adapter options' do
         klass = Class.new do
-          DEFAULTS = { latency: 5.4321 }
+          DEFAULTS = { latency: 5.4321 }.freeze
         end
         expected = { latency: 1.234 }
         expect(subject.adapter_instance_options(klass)).to eq(expected)

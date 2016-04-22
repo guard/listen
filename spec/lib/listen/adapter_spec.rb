@@ -1,5 +1,4 @@
 RSpec.describe Listen::Adapter do
-
   let(:listener) { instance_double(Listen::Listener, options: {}) }
   before do
     allow(Listen::Adapter::BSD).to receive(:usable?) { false }

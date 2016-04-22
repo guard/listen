@@ -111,7 +111,8 @@ module Listen
       attr_reader :name, :transitions
 
       def initialize(name, transitions = nil, &block)
-        @name, @block = name, block
+        @name = name
+        @block = block
         @transitions = nil
         @transitions = Array(transitions).map(&:to_sym) if transitions
       end

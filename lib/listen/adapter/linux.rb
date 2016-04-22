@@ -14,12 +14,12 @@ module Listen
           :close_write
         ],
         wait_for_delay: 0.1
-      }
+      }.freeze
 
       private
 
       WIKI_URL = 'https://github.com/guard/listen'\
-        '/wiki/Increasing-the-amount-of-inotify-watchers'
+        '/wiki/Increasing-the-amount-of-inotify-watchers'.freeze
 
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
         FATAL: Listen error: unable to monitor directories for changes.
@@ -50,10 +50,8 @@ module Listen
         if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
           if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)
             rel_path = path.dirname.relative_path_from(dir).to_s
-            _queue_change(:dir, dir, rel_path, {})
-          else
-            _queue_change(:dir, dir, rel_path, {})
           end
+          _queue_change(:dir, dir, rel_path, {})
           return
         end
 

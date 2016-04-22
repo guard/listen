@@ -14,15 +14,15 @@ Gem::Specification.new do |s|
   s.description = 'The Listen gem listens to file modifications and '\
     'notifies you about the changes. Works everywhere!'
 
-  s.files        = `git ls-files -z`.split("\x0").select do |f|
-    /^(?:bin|lib)\// =~ f
+  s.files = `git ls-files -z`.split("\x0").select do |f|
+    %r{^(?:bin|lib)\/} =~ f
   end + %w(CHANGELOG.md CONTRIBUTING.md LICENSE.txt README.md)
 
   s.test_files   = []
   s.executable   = 'listen'
   s.require_path = 'lib'
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '~> 2.2'
 
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
   s.add_dependency 'rb-inotify', '>= 0.9.7'

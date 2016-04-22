@@ -42,7 +42,6 @@ RSpec.describe Listen::Change do
       end
 
       context 'with unknown change' do
-
         it 'calls Listen::File#change' do
           expect(Listen::File).to receive(:change).with(record, 'file.rb')
           subject.invalidate(:file, 'file.rb', {})

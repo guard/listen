@@ -65,7 +65,6 @@ RSpec.describe 'Listen', acceptance: true do
 
         context 'with default ignore options' do
           context 'with nothing in listen dir' do
-
             it { is_expected.to process_addition_of('file.rb') }
             it { is_expected.to process_addition_of('.hidden') }
 

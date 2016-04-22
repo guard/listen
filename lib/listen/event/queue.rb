@@ -3,6 +3,8 @@ require 'thread'
 module Listen
   module Event
     class Queue
+      extend Forwardable
+
       class Config
         def initialize(relative)
           @relative = relative
@@ -31,13 +33,8 @@ module Listen
         block.call(args) if block
       end
 
-      def empty?
-        event_queue.empty?
-      end
-
-      def pop
-        event_queue.pop
-      end
+      delegate empty?: :event_queue
+      delegate pop: :event_queue
 
       private
 
