@@ -1,3 +1,3 @@
 module Listen
-  VERSION = '3.0.6'.freeze
+  VERSION = '3.1.0'.freeze
 end
