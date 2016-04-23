@@ -2,6 +2,8 @@ require 'listen/adapter'
 require 'listen/adapter/base'
 require 'listen/adapter/config'
 
+require 'forwardable'
+
 # This class just aggregates configuration object to avoid Listener specs
 # from exploding with huge test setup blocks
 module Listen
