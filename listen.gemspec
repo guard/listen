@@ -33,6 +33,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'rb-fsevent', '>= 0.9.3'
   s.add_dependency 'rb-inotify', '>= 0.9.7'
 
+  # Used to show warnings at runtime
+  s.add_dependency 'ruby_dep', '~> 1.1'
+
   s.add_development_dependency 'bundler', '>= 1.3.5'
-  s.add_development_dependency 'ruby_dep', '~> 1.0'
+  s.add_development_dependency 'ruby_dep', '~> 1.1'
 end
