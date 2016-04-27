@@ -1,6 +1,5 @@
 inherit_from:
   - vendor/hound/config/style_guides/ruby.yml
-  - .rubocop_todo.yml
 
 # Rails cops
 AllCops:
