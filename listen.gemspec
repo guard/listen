@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   begin
     # TODO: should this be vendored instead?
-    require "ruby_dep/travis"
+    require 'ruby_dep/travis'
     s.required_ruby_version = RubyDep::Travis.new.version_constraint
   rescue LoadError
     abort "Install 'ruby_dep' gem before building this gem"
