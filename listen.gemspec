@@ -37,5 +37,4 @@ Gem::Specification.new do |s|
   s.add_dependency 'ruby_dep', '~> 1.1'
 
   s.add_development_dependency 'bundler', '>= 1.3.5'
-  s.add_development_dependency 'ruby_dep', '~> 1.1'
 end
