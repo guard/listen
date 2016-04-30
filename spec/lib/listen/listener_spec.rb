@@ -304,17 +304,4 @@ RSpec.describe Listener do
       end
     end
   end
-
-  describe 'processing changes' do
-    before do
-      allow(backend).to receive(:start)
-    end
-  end
-
-  context 'when listener is stopped' do
-    before do
-      subject.stop
-      allow(silencer).to receive(:silenced?) { true }
-    end
-  end
 end
