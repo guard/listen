@@ -19,6 +19,7 @@ require 'listen/listener/config'
 
 module Listen
   class Listener
+    # TODO: move the state machine's methods private
     include Listen::FSM
 
     # Initializes the directories listener.
@@ -63,11 +64,11 @@ module Listen
 
     state :initializing, to: :backend_started
 
-    state :backend_started, to: [:frontend_ready] do
+    state :backend_started, to: [:frontend_ready, :stopped] do
       backend.start
     end
 
-    state :frontend_ready, to: [:processing_events] do
+    state :frontend_ready, to: [:processing_events, :stopped] do
       processor.setup
     end
 
