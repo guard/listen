@@ -63,11 +63,11 @@ module Listen
 
     state :initializing, to: :backend_started
 
-    state :backend_started, to: [:frontend_ready] do
+    state :backend_started, to: [:frontend_ready, :stopped] do
       backend.start
     end
 
-    state :frontend_ready, to: [:processing_events] do
+    state :frontend_ready, to: [:processing_events, :stopped] do
       processor.setup
     end
 
