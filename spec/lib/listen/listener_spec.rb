@@ -140,13 +140,43 @@ RSpec.describe Listener do
       allow(backend).to receive(:start)
       allow(processor).to receive(:setup)
       allow(processor).to receive(:resume)
-      subject.start
     end
 
-    it 'terminates' do
-      allow(backend).to receive(:stop)
-      allow(processor).to receive(:teardown)
-      subject.stop
+    context 'when fully started' do
+      before do
+        subject.start
+      end
+
+      it 'terminates' do
+        allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
+        subject.stop
+      end
+    end
+
+    context 'when frontend is ready' do
+      before do
+        subject.transition :backend_started
+        subject.transition :frontend_ready
+      end
+
+      it 'terminates' do
+        allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
+        subject.stop
+      end
+    end
+
+    context 'when only backend is already started' do
+      before do
+        subject.transition :backend_started
+      end
+
+      it 'terminates' do
+        allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
+        subject.stop
+      end
     end
   end
 
