@@ -11,6 +11,16 @@ RSpec.describe Directory do
     instance_double(::File::Stat, name, defaults.merge(options))
   end
 
+  def fake_children(ex, dir, *args, &block)
+    if block_given?
+      ex.send(:allow, dir).to receive(:children, &block)
+    else
+      ex.send(:allow, dir).to receive(:children).and_return(*args)
+    end
+    ex.send(:allow, dir).to receive(:exist?).and_return(true)
+    ex.send(:allow, dir).to receive(:directory?).and_return(true)
+  end
+
   let(:dir) { double(:dir) }
   let(:file) { fake_path('file.rb') }
   let(:file2) { fake_path('file2.rb') }
@@ -53,7 +63,7 @@ RSpec.describe Directory do
       end
 
       context 'with empty dir' do
-        before { allow(dir).to receive(:children) { [] } }
+        before { fake_children(self, dir, []) }
 
         it 'sets record dir path' do
           expect(record).to receive(:add_dir).with('.')
@@ -71,9 +81,8 @@ RSpec.describe Directory do
       end
 
       context 'when subdir is removed' do
-        before  do
-          allow(dir).to receive(:children) { [file] }
-
+        before do
+          fake_children(self, dir, [file])
           allow(::File).to receive(:lstat).with('file.rb').
             and_return(fake_file_stat('file.rb'))
         end
@@ -88,7 +97,7 @@ RSpec.describe Directory do
 
       context 'when file.rb removed' do
         before do
-          allow(dir).to receive(:children) { [subdir] }
+          fake_children(self, dir, [subdir])
 
           allow(::File).to receive(:lstat).with('subdir').
             and_return(fake_dir_stat('subdir'))
@@ -102,7 +111,7 @@ RSpec.describe Directory do
 
       context 'when file.rb no longer exists after scan' do
         before do
-          allow(dir).to receive(:children).and_return([file], [file2])
+          fake_children(self, dir, [file], [file2])
 
           allow(::File).to receive(:lstat).with('file.rb').
             and_raise(Errno::ENOENT)
@@ -119,7 +128,7 @@ RSpec.describe Directory do
 
       context 'when file2.rb is added' do
         before do
-          allow(dir).to receive(:children) { [file, file2, subdir] }
+          fake_children(self, dir, [file, file2, subdir])
 
           allow(::File).to receive(:lstat).with('file.rb').
             and_return(fake_file_stat('file.rb'))
@@ -142,7 +151,7 @@ RSpec.describe Directory do
       let(:record_entries) { {} }
 
       context 'with non-existing dir path' do
-        before { allow(dir).to receive(:children) { fail Errno::ENOENT } }
+        before { fake_children(self, dir) { fail Errno::ENOENT } }
 
         it 'reports no changes' do
           expect(snapshot).to_not receive(:invalidate)
@@ -156,7 +165,7 @@ RSpec.describe Directory do
       end
 
       context 'when network share is disconnected' do
-        before { allow(dir).to receive(:children) { fail Errno::EHOSTDOWN } }
+        before { fake_children(self, dir) { fail Errno::EHOSTDOWN } }
 
         it 'reports no changes' do
           expect(snapshot).to_not receive(:invalidate)
@@ -171,7 +180,7 @@ RSpec.describe Directory do
 
       context 'with file.rb in dir' do
         before do
-          allow(dir).to receive(:children) { [file] }
+          fake_children(self, dir, [file])
 
           allow(::File).to receive(:lstat).with('file.rb').
             and_return(fake_file_stat('file.rb'))
@@ -202,9 +211,7 @@ RSpec.describe Directory do
       end
 
       context 'with empty dir' do
-        before do
-          allow(dir).to receive(:children) { [] }
-        end
+        before { fake_children(self, dir, []) }
 
         it 'snapshots changes for file & subdir path' do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
@@ -220,7 +227,7 @@ RSpec.describe Directory do
         let(:subdir2) { fake_path('subdir2', children: []) }
 
         before do
-          allow(dir).to receive(:children) { [subdir2] }
+          fake_children(self, dir, [subdir2])
           allow(subdir2).to receive(:relative_path_from).with(dir) { 'subdir2' }
 
           allow(::File).to receive(:lstat).with('subdir2').
@@ -246,7 +253,7 @@ RSpec.describe Directory do
 
       context 'with non-existing dir' do
         before do
-          allow(dir).to receive(:children) { fail Errno::ENOENT }
+          fake_children(self, dir) { fail Errno::ENOENT }
         end
 
         it 'reports no changes' do
@@ -257,8 +264,8 @@ RSpec.describe Directory do
 
       context 'with subdir present in dir' do
         before do
-          allow(dir).to receive(:children) { [subdir] }
-          allow(subdir).to receive(:children) { [] }
+          fake_children(self, dir, [subdir])
+          fake_children(self, subdir, [])
           allow(::File).to receive(:lstat).with('subdir').
             and_return(fake_dir_stat('subdir'))
         end

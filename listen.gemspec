@@ -30,11 +30,11 @@ Gem::Specification.new do |s|
     abort "Install 'ruby_dep' gem before building this gem"
   end
 
-  s.add_dependency 'rb-fsevent', '>= 0.9.3'
-  s.add_dependency 'rb-inotify', '>= 0.9.7'
+  s.add_dependency 'rb-fsevent', '~> 0.9', '>= 0.9.7'
+  s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.7'
 
   # Used to show warnings at runtime
-  s.add_dependency 'ruby_dep', '~> 1.1'
+  s.add_dependency 'ruby_dep', '~> 1.2'
 
-  s.add_development_dependency 'bundler', '>= 1.3.5'
+  s.add_development_dependency 'bundler', '~> 1.12'
 end
