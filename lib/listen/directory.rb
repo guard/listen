@@ -80,7 +80,7 @@ module Listen
       # https://github.com/jruby/jruby/issues/3840
       exists = path.exist?
       directory = path.directory?
-      return path.children unless (exists && !directory)
+      return path.children unless exists && !directory
       raise Errno::ENOTDIR, path.to_s
     end
   end

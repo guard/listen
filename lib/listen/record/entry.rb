@@ -56,7 +56,7 @@ module Listen
         # https://github.com/jruby/jruby/issues/3840
         exists = ::File.exist?(dir)
         directory = ::File.directory?(dir)
-        return Dir.entries(dir) unless (exists && !directory)
+        return Dir.entries(dir) unless exists && !directory
         raise Errno::ENOTDIR, dir
       end
     end
