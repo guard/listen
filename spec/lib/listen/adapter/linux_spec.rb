@@ -131,24 +131,37 @@ RSpec.describe Listen::Adapter::Linux do
       let(:adapter_options) { { events: [:recursive, :close_write] } }
 
       before do
-        events = [:recursive, :close_write]
-        allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
-
-        fake_notifier = double(:fake_notifier, new: fake_worker)
-        stub_const('INotify::Notifier', fake_notifier)
-
         allow(config).to receive(:directories).and_return(directories)
         allow(config).to receive(:adapter_options).and_return(adapter_options)
-        allow(config).to receive(:queue).and_return(queue)
-        allow(config).to receive(:silencer).and_return(silencer)
-
-        allow(subject).to receive(:require).with('rb-inotify')
-        subject.configure
       end
 
-      it 'stops the worker' do
-        expect(fake_worker).to receive(:close)
-        subject.stop
+      context 'when configured' do
+        before do
+          events = [:recursive, :close_write]
+          allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
+
+          fake_notifier = double(:fake_notifier, new: fake_worker)
+          stub_const('INotify::Notifier', fake_notifier)
+
+          allow(config).to receive(:queue).and_return(queue)
+          allow(config).to receive(:silencer).and_return(silencer)
+
+          allow(subject).to receive(:require).with('rb-inotify')
+          subject.configure
+        end
+
+        it 'stops the worker' do
+          expect(fake_worker).to receive(:close)
+          subject.stop
+        end
+      end
+
+      context 'when not even initialized' do
+        it 'does not crash' do
+          expect do
+            subject.stop
+          end.to_not raise_error
+        end
       end
     end
   end
