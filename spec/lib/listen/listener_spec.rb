@@ -175,6 +175,18 @@ RSpec.describe Listener do
         subject.stop
       end
     end
+
+    context 'when only initialized' do
+      before do
+        subject
+      end
+
+      it 'terminates' do
+        allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
+        subject.stop
+      end
+    end
   end
 
   describe '#pause' do
