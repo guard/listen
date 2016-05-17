@@ -101,7 +101,7 @@ module Listen
       end
 
       def _stop
-        @worker.close
+        @worker && @worker.close
       end
     end
   end
