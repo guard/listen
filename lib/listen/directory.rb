@@ -12,7 +12,7 @@ module Listen
 
       # TODO: use children(with_directory: false)
       path = dir + rel_path
-      current = Set.new(path.children)
+      current = Set.new(_children(path))
 
       Listen::Logger.debug do
         format('%s: %s(%s): %s -> %s',
@@ -28,7 +28,7 @@ module Listen
         end
       rescue Errno::ENOENT
         # The directory changed meanwhile, so rescan it
-        current = Set.new(path.children)
+        current = Set.new(_children(path))
         retry
       end
 
@@ -71,6 +71,17 @@ module Listen
       opts = options.dup
       opts.delete(:recursive)
       snapshot.invalidate(type, path, opts)
+    end
+
+    def self._children(path)
+      return path.children unless RUBY_ENGINE == 'jruby'
+
+      # JRuby inconsistency workaround, see:
+      # https://github.com/jruby/jruby/issues/3840
+      exists = path.exist?
+      directory = path.directory?
+      return path.children unless (exists && !directory)
+      raise Errno::ENOTDIR, path.to_s
     end
   end
 end

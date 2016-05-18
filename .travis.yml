@@ -16,6 +16,7 @@ matrix:
 os:
   - linux
   - osx
+osx_image: xcode7.1
 env:
   # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
   - LISTEN_TESTS_DEFAULT_LAG=2

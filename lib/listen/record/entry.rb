@@ -13,7 +13,7 @@ module Listen
 
       def children
         child_relative = _join
-        (Dir.entries(sys_path) - %w(. ..)).map do |name|
+        (_entries(sys_path) - %w(. ..)).map do |name|
           Entry.new(@root, child_relative, name)
         end
       end
@@ -45,6 +45,17 @@ module Listen
       def _join
         args = [@relative, @name].compact
         args.empty? ? nil : ::File.join(*args)
+      end
+
+      def _entries(dir)
+        return Dir.entries(dir) unless RUBY_ENGINE == 'jruby'
+
+        # JRuby inconsistency workaround, see:
+        # https://github.com/jruby/jruby/issues/3840
+        exists = ::File.exist?(dir)
+        directory = ::File.directory?(dir)
+        return Dir.entries(dir) unless (exists && !directory)
+        raise Errno::ENOTDIR, dir
       end
     end
   end

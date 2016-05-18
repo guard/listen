@@ -61,7 +61,7 @@ module Listen
 
     default_state :initializing
 
-    state :initializing, to: :backend_started
+    state :initializing, to: [:backend_started, :stopped]
 
     state :backend_started, to: [:frontend_ready, :stopped] do
       backend.start

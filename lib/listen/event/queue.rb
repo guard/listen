@@ -1,5 +1,7 @@
 require 'thread'
 
+require 'forwardable'
+
 module Listen
   module Event
     class Queue

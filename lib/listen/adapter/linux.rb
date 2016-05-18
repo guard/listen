@@ -35,7 +35,9 @@ module Listen
       end
 
       def _run
+        Thread.current[:listen_blocking_read_thread] = true
         @worker.run
+        Thread.current[:listen_blocking_read_thread] = false
       end
 
       def _process_event(dir, event)
@@ -99,7 +101,7 @@ module Listen
       end
 
       def _stop
-        @worker.close
+        @worker && @worker.close
       end
     end
   end
