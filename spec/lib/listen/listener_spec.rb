@@ -85,8 +85,8 @@ RSpec.describe Listener do
 
     context 'with a block' do
       let(:myblock) { instance_double(Proc) }
-      let(:block) { proc { myblock.call }  }
-      subject { described_class.new('dir1', &block) }
+      let(:real_block) { proc { myblock.call }  }
+      subject { described_class.new('dir1', &real_block) }
 
       it 'passes the block to the event processor' do
         allow(Event::Config).to receive(:new) do |*_args, &some_block|
