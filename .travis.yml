@@ -9,16 +9,19 @@ rvm:
   - 2.2.4
   - jruby-head
   - rbx-2
-  - rbx-3.36
+  - rbx-3
   - jruby-9.0.5.0
 matrix:
   allow_failures:
     - rvm: jruby-head
     - rvm: rbx-2
+    - rvm: rbx-3
   exclude:
     - rvm: jruby-head
       os: osx
     - rvm: rbx-2
+      os: osx
+    - rvm: rbx-3
       os: osx
 os:
   - linux
