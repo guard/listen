@@ -9,6 +9,7 @@ rvm:
   - 2.2.4
   - jruby-head
   - rbx-2
+  - rbx-3.36
   - jruby-9.0.5.0
 matrix:
   allow_failures:
