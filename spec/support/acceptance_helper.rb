@@ -218,7 +218,7 @@ class ListenerWrapper
     dst[type].sort!
 
   rescue RuntimeError => e
-    raise unless e.message == "can't modify frozen Hash" || e.message == "can't modify frozen instance of Hash"
+    raise unless /can't modify frozen(?: instance of)? Hash/ =~ e.message
 
     # Show how by much the changes missed the timeout
     change_offset = @timed_changes.change_offset
