@@ -1,6 +1,6 @@
-## IMPORTANT: [Ruby 2.1 is officially outdated and unsupported!](https://www.ruby-lang.org/en/news/2016/03/30/ruby-2-1-9-released/) Please upgrade to Ruby 2.2 before installing Listen!
+## IMPORTANT: [Ruby 2.1 is officially outdated and unsupported!](https://www.ruby-lang.org/en/news/2016/03/30/ruby-2-1-9-released/) Please upgrade to Ruby 2.2.5 before installing Listen!
 
-### (To install for older versions, update Bundler to a prerelease version: `gem install bundler --pre` and Bundler should correctly resolve to an earlier gems for your given Ruby version).
+## IMPORTANT: If you cannot install Listen (e.g. on Travis/CI builds), [a workaround is here] (https://github.com/guard/listen/wiki/Ruby-version-requirements)
 
 :exclamation: Listen is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
 
