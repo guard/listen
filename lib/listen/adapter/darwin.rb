@@ -37,6 +37,7 @@ module Listen
 
       # NOTE: each directory gets a DIFFERENT callback!
       def _configure(dir, &callback)
+        require 'rb-fsevent'
         opts = { latency: options.latency }
 
         @workers ||= ::Queue.new
