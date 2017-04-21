@@ -3,22 +3,30 @@ bundler_args: --without development
 before_install:
   - gem install bundler
   - gem update bundler
-  - gem install ruby_dep
-  - gem update ruby_dep
+  - bundle install --gemfile=Gemfile.ruby_dep --path vendor/bundle
 rvm:
-  - 2.2.5
+  - 2.2.7
+  - 2.3.4
+  - 2.4.1
+  - ruby-head
   - jruby-head
   - rbx-2
   - jruby-9.1.2.0
 matrix:
   allow_failures:
+    - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-2
   exclude:
+    - rvm: 2.3.4
+      os: osx
+    - rvm: 2.4.1
+      os: osx
     - rvm: jruby-head
       os: osx
     - rvm: rbx-2
       os: osx
+  fast_finish: true
 os:
   - linux
   - osx
