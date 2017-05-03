@@ -11,6 +11,7 @@ bundle
 .rvmrc
 .vagrant
 Gemfile.lock
+Gemfile.ruby_dep.lock
 spec/.fixtures
 coverage
 .ruby-version
