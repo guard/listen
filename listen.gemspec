@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.7'
 
   # Used to show warnings at runtime
-  s.add_dependency 'ruby_dep', '~> 1.2'
+  s.add_dependency 'ruby_dep', '~> 1.2.0'
 
   s.add_development_dependency 'bundler', '~> 1.12'
 end
