@@ -270,7 +270,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 
 * [Michael Kessler (netzpirat)][] for having written the [initial specs](https://github.com/guard/listen/commit/1e457b13b1bb8a25d2240428ce5ed488bafbed1f).
 * [Travis Tilley (ttilley)][] for this awesome work on [fssm][] & [rb-fsevent][].
-* [Nathan Weizenbaum (nex3)][] for [rb-inotify][], a thorough inotify wrapper.
+* [Natalie Weizenbaum (nex3)][] for [rb-inotify][], a thorough inotify wrapper.
 * [Mathieu Arnold (mat813)][] for [rb-kqueue][], a simple kqueue wrapper.
 * [Maher Sallam][] for [wdm][], windows support wouldn't exist without him.
 * [Yehuda Katz (wycats)][] for [vigilo][], that has been a great source of inspiration.
@@ -290,7 +290,7 @@ For questions please join us in our [Google group](http://groups.google.com/grou
 [fssm]: https://github.com/ttilley/fssm
 [rb-fsevent]: https://github.com/thibaudgg/rb-fsevent
 [Mathieu Arnold (mat813)]: https://github.com/mat813
-[Nathan Weizenbaum (nex3)]: https://github.com/nex3
+[Natalie Weizenbaum (nex3)]: https://github.com/nex3
 [rb-inotify]: https://github.com/nex3/rb-inotify
 [stereobooster]: https://github.com/stereobooster
 [rb-fchange]: https://github.com/stereobooster/rb-fchange
