@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
     abort "Install 'ruby_dep' gem before building this gem"
   end
 
-  s.add_dependency 'rb-fsevent', '~> 0.9.0', '>= 0.9.4'
+  s.add_dependency 'rb-fsevent', '~> 0.10', '>= 0.10.2'
   s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.7'
 
   # Used to show warnings at runtime
