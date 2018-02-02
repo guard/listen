@@ -5,22 +5,23 @@ before_install:
   - gem update bundler
   - bundle install --path vendor/bundle
 rvm:
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
+  - 2.2.9
+  - 2.3.6
+  - 2.4.3
+  - 2.5.0
   - ruby-head
   - jruby-head
   - rbx-2
-  - jruby-9.1.2.0
+  - jruby-9.1.15.0
 matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-2
   exclude:
-    - rvm: 2.3.4
+    - rvm: 2.3.6
       os: osx
-    - rvm: 2.4.1
+    - rvm: 2.4.3
       os: osx
     - rvm: jruby-head
       os: osx
