@@ -22,19 +22,10 @@ Gem::Specification.new do |s|
   s.executable   = 'listen'
   s.require_path = 'lib'
 
-  begin
-    # TODO: should this be vendored instead?
-    require 'ruby_dep/travis'
-    s.required_ruby_version = RubyDep::Travis.new.version_constraint
-  rescue LoadError
-    abort "Install 'ruby_dep' gem before building this gem"
-  end
+  s.required_ruby_version = "~> 2.2"
 
   s.add_dependency 'rb-fsevent', '~> 0.9', '>= 0.9.4'
   s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.7'
-
-  # Used to show warnings at runtime
-  s.add_dependency 'ruby_dep', '~> 1.2'
 
   s.add_development_dependency 'bundler', '~> 1.12'
 end

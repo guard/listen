@@ -3,7 +3,7 @@ bundler_args: --without development
 before_install:
   - gem install bundler
   - gem update bundler
-  - bundle install --gemfile=Gemfile.ruby_dep --path vendor/bundle
+  - bundle install --path vendor/bundle
 rvm:
   - 2.2.7
   - 2.3.4
