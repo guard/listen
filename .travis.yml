@@ -1,6 +1,7 @@
 language: ruby
 bundler_args: --without development
 before_install:
+  - gem update --system
   - gem install bundler
   - gem update bundler
   - bundle install --gemfile=Gemfile.ruby_dep --path vendor/bundle
@@ -8,6 +9,7 @@ rvm:
   - 2.2.7
   - 2.3.4
   - 2.4.1
+  - 2.5.0
   - ruby-head
   - jruby-head
   - rbx-2
