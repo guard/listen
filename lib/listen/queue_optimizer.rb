@@ -107,15 +107,15 @@ module Listen
     def _detect_possible_editor_save(changes)
       return unless changes.size == 2
 
-      from_type = from_change = from = nil
-      to_type = to_change = to_dir = to = nil
+      from_type = from = nil
+      to_type = to_dir = to = nil
 
       changes.each do |data|
         case data[1]
         when :moved_from
-          from_type, from_change, _, from, = data
+          from_type, _from_change, _, from, = data
         when :moved_to
-          to_type, to_change, to_dir, to, = data
+          to_type, _to_change, to_dir, to, = data
         else
           return nil
         end
