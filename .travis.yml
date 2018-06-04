@@ -6,10 +6,10 @@ before_install:
   - gem update bundler
   - bundle install
 rvm:
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
-  - 2.5.0
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
   - ruby-head
   - jruby-head
   - rbx-3
