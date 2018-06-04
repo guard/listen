@@ -14,7 +14,7 @@ RSpec.describe Listen::Event::Loop do
   let(:blocks) do
     {
       thread_block: proc { fail 'thread block stub called' },
-      timer_block: proc { fail 'thread block stub called' },
+      timer_block: proc { fail 'thread block stub called' }
     }
   end
 

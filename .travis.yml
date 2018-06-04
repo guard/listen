@@ -1,22 +1,24 @@
 language: ruby
-bundler_args: --without development
+bundler_args: --without development --path vendor/bundle
 before_install:
+  - gem update --system
   - gem install bundler
   - gem update bundler
-  - bundle install --gemfile=Gemfile.ruby_dep --path vendor/bundle
+  - bundle install
 rvm:
-  - 2.2.7
-  - 2.3.4
-  - 2.4.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
   - ruby-head
   - jruby-head
-  - rbx-2
-  - jruby-9.1.2.0
+  - rbx-3
+  - jruby-9.2.0.0
 matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
-    - rvm: rbx-2
+    - rvm: rbx-3
   exclude:
     - rvm: 2.3.4
       os: osx
@@ -24,7 +26,7 @@ matrix:
       os: osx
     - rvm: jruby-head
       os: osx
-    - rvm: rbx-2
+    - rvm: rbx-3
       os: osx
   fast_finish: true
 os:
