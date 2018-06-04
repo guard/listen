@@ -1,9 +1,9 @@
 language: ruby
-bundler_args: --without development
+bundler_args: --without development --path vendor/bundle
 before_install:
   - gem install bundler
   - gem update bundler
-  - bundle install --gemfile=Gemfile.ruby_dep --path vendor/bundle
+  - bundle install
 rvm:
   - 2.2.7
   - 2.3.4

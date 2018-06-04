@@ -4,11 +4,6 @@ require 'listen/listener'
 
 require 'listen/internals/thread_pool'
 
-# Show warnings about vulnerabilities, bugs and outdated Rubies, since previous
-# versions aren't tested or officially supported.
-require 'ruby_dep/warning'
-RubyDep::Warning.new.show_warnings
-
 # Always set up logging by default first time file is required
 #
 # NOTE: If you need to clear the logger completely, do so *after*
