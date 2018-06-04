@@ -27,7 +27,7 @@ end
 group :development do
   gem 'yard', require: false
   gem 'guard-rspec', require: false
-  gem 'rubocop', '0.38.0' # TODO: should match Gemfile HoundCi
+  gem 'rubocop', '~> 0.49.0' # TODO: should match Gemfile HoundCi
   gem 'guard-rubocop'
   gem 'pry-rescue'
   gem 'pry-stack_explorer', platforms: [:mri, :rbx]
