@@ -19,13 +19,20 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
+  include:
+    - rvm: jruby-9.2.0.0
+      os: linux
+      env: LISTEN_TESTS_DEFAULT_LAG=6
   exclude:
-    - rvm: 2.3.4
+    - rvm: 2.3
       os: osx
-    - rvm: 2.4.1
+    - rvm: 2.4
       os: osx
     - rvm: jruby-head
       os: osx
+    - rvm: jruby-9.2.0.0
+      os: linux
+      env: LISTEN_TESTS_DEFAULT_LAG=2
     - rvm: rbx-3
       os: osx
   fast_finish: true
