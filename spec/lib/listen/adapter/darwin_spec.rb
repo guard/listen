@@ -1,11 +1,9 @@
 # This is just so stubs work
-require 'rb-fsevent'
-
 require 'listen/adapter/darwin'
 
 include Listen
 
-RSpec.describe Adapter::Darwin do
+RSpec.describe Adapter::Darwin, if: RUBY_PLATFORM === /darwin/i do
   describe 'class' do
     subject { described_class }
 
