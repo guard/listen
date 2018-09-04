@@ -24,8 +24,12 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = ['~> 2.2', '>= 2.2.7']
 
-  s.add_dependency 'rb-fsevent', '~> 0.10', '>= 0.10.3'
-  s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.10'
+  case RUBY_PLATFORM
+  when /darwin/i
+    s.add_dependency 'rb-fsevent', '~> 0.10', '>= 0.10.3'
+  when /linux/i
+    s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.10'
+  end
 
   s.add_development_dependency 'bundler', '~> 1.12'
 end
