@@ -1,18 +1,21 @@
 language: ruby
 cache: bundler
 
-rvm:
-  - 2.3
-  - 2.4
-  - 2.5
-  - 2.6
-  - ruby-head
-  - truffleruby
-  - jruby
-  - jruby-head
-  - rbx-3
-
 matrix:
+  include:
+    - rvm: 2.3
+    - rvm: 2.4
+    - rvm: 2.5
+    - rvm: 2.6
+    - rvm: 2.5
+      os: osx
+    - rvm: 2.6
+      os: osx
+    - rvm: jruby
+    - rvm: truffleruby
+    - rvm: jruby-head
+    - rvm: ruby-head
+    - rvm: rbx-3
   allow_failures:
     - rvm: truffleruby
     - rvm: jruby
@@ -31,10 +34,6 @@ matrix:
     - rvm: rbx-3
       os: osx
   fast_finish: true
-
-os:
-  - linux
-  - osx
 
 env:
   # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
