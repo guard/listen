@@ -2,25 +2,29 @@ language: ruby
 cache: bundler
 
 rvm:
-  - 2.2
   - 2.3
   - 2.4
   - 2.5
   - 2.6
   - ruby-head
+  - truffleruby
+  - jruby
   - jruby-head
   - rbx-3
-  - jruby-9.2.0.0
 
 matrix:
   allow_failures:
+    - rvm: truffleruby
+    - rvm: jruby
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
   exclude:
-    - rvm: 2.3.4
+    - rvm: 2.3
       os: osx
-    - rvm: 2.4.1
+    - rvm: 2.4
+      os: osx
+    - rvm: 2.5
       os: osx
     - rvm: jruby-head
       os: osx
@@ -31,7 +35,6 @@ matrix:
 os:
   - linux
   - osx
-osx_image: xcode7.1
 
 env:
   # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
