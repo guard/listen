@@ -9,8 +9,9 @@ matrix:
     - rvm: 2.6
     - rvm: 2.5
       os: osx
-    - rvm: 2.6
-      os: osx
+      env:
+        # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
+        - LISTEN_TESTS_DEFAULT_LAG=2
     - rvm: jruby
     - rvm: truffleruby
     - rvm: jruby-head
@@ -22,19 +23,4 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: rbx-3
-  exclude:
-    - rvm: 2.3
-      os: osx
-    - rvm: 2.4
-      os: osx
-    - rvm: 2.5
-      os: osx
-    - rvm: jruby-head
-      os: osx
-    - rvm: rbx-3
-      os: osx
   fast_finish: true
-
-env:
-  # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
-  - LISTEN_TESTS_DEFAULT_LAG=2
