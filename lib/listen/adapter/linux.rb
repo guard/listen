@@ -45,7 +45,7 @@ module Listen
         # will need to have a custom recursion implemented
         # to properly match events to configured directories
         path = Pathname.new(event.watcher.path) + event.name
-        rel_path = path.relative_path_from(dir.to_s).to_s
+        rel_path = path.relative_path_from(dir).to_s
 
         _log(:debug) { "inotify: #{rel_path} (#{event.flags.inspect})" }
 

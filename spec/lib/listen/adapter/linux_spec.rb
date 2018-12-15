@@ -10,17 +10,7 @@ RSpec.describe Listen::Adapter::Linux do
   end
 
   if linux?
-    let(:dir1) do
-      instance_double(
-        Pathname,
-        'dir1',
-        to_s: '/foo/dir1',
-        cleanpath: real_dir1
-      )
-    end
-
-    # just so cleanpath works in above double
-    let(:real_dir1) { instance_double(Pathname, 'dir1', to_s: '/foo/dir1') }
+    let(:dir1) {Pathname.new("/foo/dir1")}
 
     let(:config) { instance_double(Listen::Adapter::Config) }
     let(:queue) { instance_double(Queue) }
