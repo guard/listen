@@ -98,15 +98,29 @@ module Listen
     end
 
     def _fast_build_dir(remaining, symlink_detector)
-      entry = remaining.pop
-      children = entry.children # NOTE: children() implicitly tests if dir
-      symlink_detector.verify_unwatched!(entry)
-      children.each { |child| remaining << child }
-      add_dir(entry.record_dir_key)
-    rescue Errno::ENOTDIR
-      _fast_try_file(entry)
-    rescue SystemCallError, SymlinkDetector::Error
-      _fast_unset_path(entry.relative, entry.name)
+      thr_arr = []
+      5.times do
+        thr_arr << Thread.new(rm, sd) do |remaining, symlink_detector|
+          begin
+            entry = remaining.pop(true)
+          rescue Exception
+            return
+          end
+          begin
+            children = entry.children # NOTE: children() implicitly tests if dir
+            symlink_detector.verify_unwatched!(entry)
+            children.each {|child| remaining << child}
+            add_dir(entry.record_dir_key)
+          rescue Errno::ENOTDIR
+            _fast_try_file(entry)
+          rescue SystemCallError, SymlinkDetector::Error
+            _fast_unset_path(entry.relative, entry.name)
+          end
+        end
+      end
+      thr_arr.each do |one|
+        one.join
+      end
     end
 
     def _fast_try_file(entry)
