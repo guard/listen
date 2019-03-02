@@ -104,7 +104,7 @@ module Listen
           begin
             entry = remaining.pop(true)
           rescue StandardError
-            return nil
+            next
           end
           begin
             children = entry.children # NOTE: children() implicitly tests if dir
