@@ -97,10 +97,10 @@ module Listen
       end
     end
 
-    def _fast_build_dir(remaining, symlink_detector)
+    def _fast_build_dir(remaining_, symlink_detector_)
       thr_arr = []
       5.times do
-        thr_arr << Thread.new(rm, sd) do |remaining, symlink_detector|
+        thr_arr << Thread.new(remaining_, symlink_detector_) do |remaining, symlink_detector|
           begin
             entry = remaining.pop(true)
           rescue Exception
