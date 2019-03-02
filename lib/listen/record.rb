@@ -103,13 +103,13 @@ module Listen
         thr_arr << Thread.new(remaining_, symlink_detector_) do |remaining, symlink_detector|
           begin
             entry = remaining.pop(true)
-          rescue Exception
-            return
+          rescue StandardError
+            return nil
           end
           begin
             children = entry.children # NOTE: children() implicitly tests if dir
             symlink_detector.verify_unwatched!(entry)
-            children.each {|child| remaining << child}
+            children.each { |child| remaining << child }
             add_dir(entry.record_dir_key)
           rescue Errno::ENOTDIR
             _fast_try_file(entry)
@@ -118,9 +118,7 @@ module Listen
           end
         end
       end
-      thr_arr.each do |one|
-        one.join
-      end
+      thr_arr.each &:join
     end
 
     def _fast_try_file(entry)
