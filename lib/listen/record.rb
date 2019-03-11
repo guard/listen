@@ -45,8 +45,7 @@ module Listen
         if [nil, '', '.'].include? rel_path.to_s
           tree
         else
-          tree[rel_path.to_s] ||= _auto_hash
-          tree[rel_path.to_s]
+          _sub_tree(rel_path)
         end
 
       result = {}
@@ -55,6 +54,19 @@ module Listen
         result[key] = values.key?(:mtime) ? values : {}
       end
       result
+    end
+
+    def _sub_tree(rel_path)
+      tree.each_with_object({}) do |(path, meta), result|
+        next if !path.start_with?(rel_path)
+
+        if path == rel_path
+          result.merge!(meta)
+        else
+          sub_path         = path.sub(%r{\A#{rel_path}/?}, '')
+          result[sub_path] = meta
+        end
+      end
     end
 
     def build
