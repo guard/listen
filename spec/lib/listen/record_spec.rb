@@ -217,6 +217,11 @@ RSpec.describe Listen::Record do
         before { record.update_file('path/file.rb', mtime: 1.1) }
         it { should eq('file.rb' => { mtime: 1.1 }) }
       end
+
+      context 'with path/subdir' do
+        before {record.add_dir('path/subdir')}
+        it { should eq('subdir' =>{}) }
+      end
     end
   end
 
