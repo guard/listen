@@ -195,6 +195,29 @@ RSpec.describe 'Listen', acceptance: true do
             end
           end
 
+          context 'listens to subdirectory removed' do
+            around do |example|
+              mkdir_p 'dir1'
+              mkdir_p 'dir1/subdir1'
+              mkdir_p 'dir1/subdir1/subdir2'
+              touch 'dir1/subdir1/file1.rb'
+              touch 'dir1/subdir1/subdir2/file2.rb'
+              example.run
+            end
+
+            it 'listen to the files of a removed directory' do
+              expected = {
+                modified: [],
+                added: [],
+                removed: ['dir1/subdir1/file1.rb', 'dir1/subdir1/subdir2/file2.rb']
+              }
+
+              expect(wrapper.listen do
+                rm_rf 'dir1'
+              end).to eq expected
+            end
+          end
+
           context 'with .bundle dir ignored by default' do
             around do |example|
               mkdir_p '.bundle'
