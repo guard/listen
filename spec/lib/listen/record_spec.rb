@@ -219,8 +219,8 @@ RSpec.describe Listen::Record do
       end
 
       context 'with path/subdir' do
-        before {record.add_dir('path/subdir')}
-        it { should eq('subdir' =>{}) }
+        before { record.add_dir('path/subdir') }
+        it { should eq('subdir' => {}) }
       end
     end
   end

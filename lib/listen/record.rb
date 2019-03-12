@@ -58,7 +58,7 @@ module Listen
 
     def _sub_tree(rel_path)
       tree.each_with_object({}) do |(path, meta), result|
-        next if !path.start_with?(rel_path)
+        next unless path.start_with?(rel_path)
 
         if path == rel_path
           result.merge!(meta)

@@ -200,16 +200,16 @@ RSpec.describe 'Listen', acceptance: true do
               mkdir_p 'dir1'
               mkdir_p 'dir1/subdir1'
               mkdir_p 'dir1/subdir1/subdir2'
-              touch 'dir1/subdir1/file1.rb'
-              touch 'dir1/subdir1/subdir2/file2.rb'
+              touch 'dir1/subdir1/file.rb'
+              touch 'dir1/subdir1/subdir2/file.rb'
               example.run
             end
 
             it 'listen to the files of a removed directory' do
               expected = {
                 modified: [],
-                added: [],
-                removed: ['dir1/subdir1/file1.rb', 'dir1/subdir1/subdir2/file2.rb']
+                added:    [],
+                removed:  %w(dir1/subdir1/file.rb dir1/subdir1/subdir2/file.rb)
               }
 
               expect(wrapper.listen do
