@@ -4,7 +4,7 @@
 
 # Listen
 
-[![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen) [![Build Status](https://travis-ci.org/guard/listen.svg)](https://travis-ci.org/guard/listen) [![Dependency Status](https://gemnasium.com/guard/listen.svg)](https://gemnasium.com/guard/listen) [![Code Climate](https://codeclimate.com/github/guard/listen.svg)](https://codeclimate.com/github/guard/listen) [![Coverage Status](https://coveralls.io/repos/guard/listen/badge.svg?branch=master)](https://coveralls.io/r/guard/listen)
+[![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen) [![Build Status](https://travis-ci.org/guard/listen.svg)](https://travis-ci.org/guard/listen) [![Code Climate](https://codeclimate.com/github/guard/listen.svg)](https://codeclimate.com/github/guard/listen) [![Coverage Status](https://coveralls.io/repos/guard/listen/badge.svg?branch=master)](https://coveralls.io/r/guard/listen)
 
 The Listen gem listens to file modifications and notifies you about the changes.
 
