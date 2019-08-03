@@ -4,10 +4,11 @@ require 'listen/adapter/darwin'
 require 'listen/adapter/linux'
 require 'listen/adapter/polling'
 require 'listen/adapter/windows'
+require 'listen/adapter/jruby'
 
 module Listen
   module Adapter
-    OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows].freeze
+    OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows, Jruby].freeze
     POLLING_FALLBACK_MESSAGE = 'Listen will be polling for changes.'\
       'Learn more at https://github.com/guard/listen#listen-adapters.'.freeze
 

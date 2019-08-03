@@ -5,6 +5,7 @@ RSpec.describe Listen::Adapter do
     allow(Listen::Adapter::Darwin).to receive(:usable?) { false }
     allow(Listen::Adapter::Linux).to receive(:usable?) { false }
     allow(Listen::Adapter::Windows).to receive(:usable?) { false }
+    allow(Listen::Adapter::Jruby).to receive(:usable?) { false }
   end
 
   describe '.select' do
@@ -35,6 +36,12 @@ RSpec.describe Listen::Adapter do
       allow(Listen::Adapter::Windows).to receive(:usable?) { true }
       klass = Listen::Adapter.select
       expect(klass).to eq Listen::Adapter::Windows
+    end
+
+    it 'returns JRuby adapter when usable' do
+      allow(Listen::Adapter::Jruby).to receive(:usable?) { true }
+      klass = Listen::Adapter.select
+      expect(klass).to eq Listen::Adapter::Jruby
     end
 
     context 'no usable adapters' do

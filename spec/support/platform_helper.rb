@@ -13,3 +13,7 @@ end
 def windows?
   RbConfig::CONFIG['target_os'] =~ /mswin|mingw|cygwin/i
 end
+
+def jruby?
+  RUBY_ENGINE == 'jruby'
+end
