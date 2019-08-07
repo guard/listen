@@ -21,6 +21,7 @@ module Listen
         ]
 
         @watcher ||= FileSystems.getDefault.newWatchService
+        p @watcher.class.name
         @keys ||= {}
         path = Paths.get(directory.to_s)
         key = path.register(@watcher, *event_kinds)

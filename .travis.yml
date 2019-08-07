@@ -13,6 +13,10 @@ matrix:
         # TODO: 0.8 is enough on Linux, but 2 seems needed for Travis/OSX
         - LISTEN_TESTS_DEFAULT_LAG=2
     - rvm: jruby
+      env:
+        - LISTEN_TESTS_DEFAULT_LAG=10
+        - TEST_LISTEN_ADAPTER_MODES=native
+        - LISTEN_GEM_DEBUGGING=2
     - rvm: truffleruby
     - rvm: jruby-head
     - rvm: ruby-head

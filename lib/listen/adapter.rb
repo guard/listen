@@ -17,7 +17,11 @@ module Listen
         _log :debug, 'Adapter: considering polling ...'
         return Polling if options[:force_polling]
         _log :debug, 'Adapter: considering optimized backend...'
-        return _usable_adapter_class if _usable_adapter_class
+        _log :debug, "Adapter: RUBY_ENGINE=#{RUBY_ENGINE}"
+        if _usable_adapter_class
+          _log :debug, "Adapter: using #{_usable_adapter_class}"
+          return _usable_adapter_class
+        end
         _log :debug, 'Adapter: falling back to polling...'
         _warn_polling_fallback(options)
         Polling
