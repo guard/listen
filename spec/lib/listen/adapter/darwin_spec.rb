@@ -89,10 +89,13 @@ RSpec.describe Adapter::Darwin do
       expectations.each do |dir, obj|
         allow(obj).to receive(:watch).with(dir.to_s, latency: 0.1)
       end
-      subject.configure
     end
 
     describe 'configuration' do
+      before do
+        subject.configure
+      end
+
       context 'with 1 directory' do
         let(:directories) { expectations.keys.map { |p| Pathname(p.to_s) } }
 
