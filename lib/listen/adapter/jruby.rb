@@ -38,6 +38,7 @@ module Listen
               next if kind == StandardWatchEventKinds::OVERFLOW
               name = event.context
               child = dir.resolve(name)
+p child.to_s
               pathname = Pathname.new(child.to_s).dirname
               _queue_change(:dir, pathname, '.', recursive: true)
             end
