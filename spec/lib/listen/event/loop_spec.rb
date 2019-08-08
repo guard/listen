@@ -64,8 +64,8 @@ RSpec.describe Listen::Event::Loop do
     it 'sets up the thread in a resumable state' do
       subject.setup
 
-      expect(subject).to receive(:sleep).with(no_args).ordered
-      allow(processor).to receive(:loop_for).with(1.234).ordered
+      expect(subject).to receive(:sleep).with(no_args)
+      allow(processor).to receive(:loop_for).with(1.234)
 
       blocks[:thread_block].call
     end
@@ -91,8 +91,8 @@ RSpec.describe Listen::Event::Loop do
       subject.setup
 
       allow(thread).to receive(:wakeup) do
-        allow(subject).to receive(:sleep).with(no_args).ordered
-        allow(processor).to receive(:loop_for).with(1.234).ordered
+        allow(subject).to receive(:sleep).with(no_args)
+        allow(processor).to receive(:loop_for).with(1.234)
         allow(ready).to receive(:<<).with(:ready)
         blocks[:thread_block].call
       end
@@ -153,7 +153,7 @@ RSpec.describe Listen::Event::Loop do
 
       subject.setup
 
-      allow(subject).to receive(:sleep).with(no_args).ordered do
+      allow(subject).to receive(:sleep).with(no_args) do
         allow(processor).to receive(:loop_for).with(1.234)
         blocks[:timer_block].call
       end
