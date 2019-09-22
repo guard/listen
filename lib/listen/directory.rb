@@ -53,6 +53,12 @@ module Listen
       raise
     end
 
+    def self.ascendant_of?(base, other)
+      other.ascend do |ascendant|
+        break true if base == ascendant
+      end
+    end
+
     def self._async_changes(snapshot, path, previous, options)
       fail "Not a Pathname: #{path.inspect}" unless path.respond_to?(:children)
       previous.each do |entry, data|

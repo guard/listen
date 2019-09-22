@@ -35,58 +35,44 @@ module Listen
 
       private
 
-      # NOTE: each directory gets a DIFFERENT callback!
       def _configure(dir, &callback)
-        require 'rb-fsevent'
-        opts = { latency: options.latency }
-
-        @workers ||= ::Queue.new
-        @workers << FSEvent.new.tap do |worker|
-          _log :debug, "fsevent: watching: #{dir.to_s.inspect}"
-          worker.watch(dir.to_s, opts, &callback)
-        end
+        @callbacks[dir] = callback
       end
 
       def _run
-        first = @workers.pop
-
-        # NOTE: _run is called within a thread, so run every other
-        # worker in it's own thread
-        _run_workers_in_background(_to_array(@workers))
-        _run_worker(first)
+        require 'rb-fsevent'
+        worker = FSEvent.new
+        dirs_to_watch = @callbacks.keys.map(&:to_s)
+        _log(:info) { "fsevent: watching: #{dirs_to_watch.inspect}" }
+        worker.watch(dirs_to_watch, { latency: options.latency }, &method(:_process_changes))
+        Listen::Internals::ThreadPool.add { _run_worker(worker) }
       end
 
-      def _process_event(dir, event)
-        _log :debug, "fsevent: processing event: #{event.inspect}"
-        event.each do |path|
-          new_path = Pathname.new(path.sub(%r{\/$}, ''))
-          _log :debug, "fsevent: #{new_path}"
-          # TODO: does this preserve symlinks?
-          rel_path = new_path.relative_path_from(dir).to_s
-          _queue_change(:dir, dir, rel_path, recursive: true)
+      def _process_changes(dirs)
+        dirs.each do |dir|
+          dir = Pathname.new(dir.sub(%r{\/$}, ''))
+
+          @callbacks.each do |watched_dir, callback|
+            if watched_dir.eql?(dir) || Listen::Directory.ascendant_of?(watched_dir, dir)
+              callback.call(dir)
+            end
+          end
         end
       end
 
+      def _process_event(dir, path)
+        _log(:debug) { "fsevent: processing path: #{path.inspect}" }
+        # TODO: does this preserve symlinks?
+        rel_path = path.relative_path_from(dir).to_s
+        _queue_change(:dir, dir, rel_path, recursive: true)
+      end
+
       def _run_worker(worker)
-        _log :debug, "fsevent: running worker: #{worker.inspect}"
+        _log(:debug) { "fsevent: running worker: #{worker.inspect}" }
         worker.run
       rescue
         format_string = 'fsevent: running worker failed: %s:%s called from: %s'
         _log_exception format_string, caller
-      end
-
-      def _run_workers_in_background(workers)
-        workers.each do |worker|
-          # NOTE: while passing local variables to the block below is not
-          # thread safe, using 'worker' from the enumerator above is ok
-          Listen::Internals::ThreadPool.add { _run_worker(worker) }
-        end
-      end
-
-      def _to_array(queue)
-        workers = []
-        workers << queue.pop until queue.empty?
-        workers
       end
     end
   end
