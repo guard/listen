@@ -262,6 +262,24 @@ Pull requests are very welcome! Please try to follow these simple rules if appli
 For questions please join us in our [Google group](http://groups.google.com/group/guard-dev) or on
 `#guard` (irc.freenode.net).
 
+## Releasing
+
+### Prerequisites
+
+* You must have commit rights to the GitHub repository.
+* You must have push rights for rubygems.org.
+
+### How to release
+
+1. Run `bundle install` to make sure that you have all the gems necessary for testing and releasing.
+2.  **Ensure all tests are passing by running `bundle exec rake`.**
+3. Determine which would be the correct next version number according to [semver](http://semver.org/).
+4. Update the version in `./lib/listen/version.rb`.
+5. Update the version in the Install section of `./README.md` (`gem 'listen', '~> X.Y'`).
+6. Commit the version in a single commit, the message should be "Preparing vX.Y.Z"
+7. Run `bundle exec rake release:full`; this will tag, push to GitHub, and publish to rubygems.org.
+8. Update and publish the release notes on the [GitHub releases page](https://github.com/guard/listen/releases) if necessary
+
 ## Acknowledgments
 
 * [Michael Kessler (netzpirat)][] for having written the [initial specs](https://github.com/guard/listen/commit/1e457b13b1bb8a25d2240428ce5ed488bafbed1f).

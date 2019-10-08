@@ -31,8 +31,15 @@ Pull requests are very welcome! Please try to follow these simple rules if appli
 * Make sure your patches are well tested. All specs run with `rake spec` must pass.
 * Update the [Yard](http://yardoc.org/) documentation.
 * Update the [README](https://github.com/guard/listen/blob/master/README.md).
-* Update the [CHANGELOG](https://github.com/guard/listen/blob/master/CHANGELOG.md) for noteworthy changes.
 * Please **do not change** the version number.
+
+The title of your PR will automatically be included in the release notes for the next version of the gem. A maintainer can add one of the following GitHub labels to the PR to automatically categorize it when the release notes are generated:
+
+- ⚠️ Breaking
+- ✨ Feature
+- 🐛 Bug Fix
+- 📚 Docs
+- 🏠 Housekeeping
 
 For questions please join us in our [Google group](http://groups.google.com/group/guard-dev) or on
 `#guard` (irc.freenode.net).
