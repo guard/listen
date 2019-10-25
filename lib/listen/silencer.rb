@@ -46,6 +46,9 @@ module Listen
          )
         )
 
+      # Mutagen sync temporary files
+      | \.mutagen-temporary.*
+
       # other files
       | \.DS_Store
       | \.tmp
