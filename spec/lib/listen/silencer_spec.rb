@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 RSpec::Matchers.define :accept do |type, path|
   match { |actual| !actual.silenced?(Pathname(path), type) }
 end
@@ -34,6 +36,12 @@ RSpec.describe Listen::Silencer do
 
       # sed temp files
       ignored += %w(sedq7eVAR sed86w1kB)
+
+      # mutagen temp files
+      ignored += %w(
+        .mutagen-temporary-cross-device-rename0
+        .mutagen-temporary-unicode-test-éntry0
+      )
 
       ignored.each do |path|
         it { should_not accept(:file, path) }
