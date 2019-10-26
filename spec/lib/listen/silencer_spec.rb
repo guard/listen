@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 RSpec::Matchers.define :accept do |type, path|
   match { |actual| !actual.silenced?(Pathname(path), type) }
 end
