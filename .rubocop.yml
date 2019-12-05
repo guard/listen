@@ -7,7 +7,7 @@ AllCops:
 
 # Files you want to exclude
 AllCops:
-  TargetRubyVersion: 2.2
+  TargetRubyVersion: 2.3
   Exclude:
     - db/schema.rb
     - Gemfile
