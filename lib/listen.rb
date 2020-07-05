@@ -1,4 +1,5 @@
 require 'logger'
+require 'weakref'
 require 'listen/logger'
 require 'listen/listener'
 
@@ -18,6 +19,8 @@ Listen::Logger.info "Listen loglevel set to: #{Listen.logger.level}"
 Listen::Logger.info "Listen version: #{Listen::VERSION}"
 
 module Listen
+  @listeners = []
+
   class << self
     # Listens to file system modifications on a either single directory or
     # multiple directories.
@@ -32,9 +35,8 @@ module Listen
     # @return [Listen::Listener] the listener
     #
     def to(*args, &block)
-      @listeners ||= []
       Listener.new(*args, &block).tap do |listener|
-        @listeners << listener
+        @listeners << WeakRef.new(listener)
       end
     end
 
@@ -42,11 +44,14 @@ module Listen
     #
     def stop
       Internals::ThreadPool.stop
-      @listeners ||= []
 
       # TODO: should use a mutex for this
-      @listeners.each(&:stop)
-      @listeners = nil
+      while (listener = @listeners.pop)
+        begin
+          listener.stop
+        rescue WeakRef::RefError
+        end
+      end
     end
   end
 end
