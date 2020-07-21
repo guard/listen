@@ -19,7 +19,7 @@ Listen::Logger.info "Listen loglevel set to: #{Listen.logger.level}"
 Listen::Logger.info "Listen version: #{Listen::VERSION}"
 
 module Listen
-  @listeners = []
+  @listeners = Queue.new
 
   class << self
     # Listens to file system modifications on a either single directory or
@@ -36,7 +36,7 @@ module Listen
     #
     def to(*args, &block)
       Listener.new(*args, &block).tap do |listener|
-        @listeners << WeakRef.new(listener)
+        @listeners.enq(WeakRef.new(listener))
       end
     end
 
@@ -45,13 +45,13 @@ module Listen
     def stop
       Internals::ThreadPool.stop
 
-      # TODO: should use a mutex for this
-      while (listener = @listeners.pop)
+      while (listener = @listeners.deq(true))
         begin
           listener.stop
         rescue WeakRef::RefError
         end
       end
+    rescue ThreadError
     end
   end
 end
