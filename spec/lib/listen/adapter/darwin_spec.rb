@@ -17,6 +17,14 @@ RSpec.describe Adapter::Darwin do
       it { should be_usable }
     end
 
+    context 'on darwin20 (macOS Big Sur)' do
+      before do
+        allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin20')
+      end
+
+      it { should be_usable }
+    end
+
     context 'on darwin10.0 (OS X Snow Leopard)' do
       before do
         allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin10.0')
