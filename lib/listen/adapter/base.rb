@@ -70,7 +70,7 @@ module Listen
         @started = true
 
         calling_stack = caller.dup
-        Listen::Internals::ThreadPool.add do
+        @run_thread = Thread.new do
           begin
             @snapshots.values.each do |snapshot|
               _timed('Record.build()') { snapshot.record.build }
@@ -96,6 +96,7 @@ module Listen
       private
 
       def _stop
+        @run_thread.kill.join if (@run_thread ||= nil)
       end
 
       def _timed(title)

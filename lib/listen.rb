@@ -3,8 +3,6 @@ require 'weakref'
 require 'listen/logger'
 require 'listen/listener'
 
-require 'listen/internals/thread_pool'
-
 # Always set up logging by default first time file is required
 #
 # NOTE: If you need to clear the logger completely, do so *after*
@@ -43,8 +41,6 @@ module Listen
     # This is used by the `listen` binary to handle Ctrl-C
     #
     def stop
-      Internals::ThreadPool.stop
-
       while (listener = @listeners.deq(true))
         begin
           listener.stop

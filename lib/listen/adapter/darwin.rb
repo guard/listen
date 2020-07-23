@@ -1,5 +1,4 @@
 require 'thread'
-require 'listen/internals/thread_pool'
 
 module Listen
   module Adapter
@@ -45,7 +44,7 @@ module Listen
         dirs_to_watch = @callbacks.keys.map(&:to_s)
         _log(:info) { "fsevent: watching: #{dirs_to_watch.inspect}" }
         worker.watch(dirs_to_watch, { latency: options.latency }, &method(:_process_changes))
-        Listen::Internals::ThreadPool.add { _run_worker(worker) }
+        @worker_thread = Thread.new { _run_worker(worker) }
       end
 
       def _process_changes(dirs)
@@ -73,6 +72,11 @@ module Listen
       rescue
         format_string = 'fsevent: running worker failed: %s:%s called from: %s'
         _log_exception format_string, caller
+      end
+
+      def _stop
+        @worker_thread.kill.join if (@worker_thread ||= nil)
+        super
       end
     end
   end
