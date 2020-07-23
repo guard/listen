@@ -3,8 +3,6 @@ require 'listen'
 
 Listen.logger.level = Logger::WARN unless ENV['LISTEN_GEM_DEBUGGING']
 
-require 'listen/internals/thread_pool'
-
 def ci?
   ENV['CI']
 end
@@ -45,11 +43,3 @@ RSpec.configure do |config|
 end
 
 Thread.abort_on_exception = true
-
-RSpec.configuration.before(:each) do
-  Listen::Internals::ThreadPool.stop
-end
-
-RSpec.configuration.after(:each) do
-  Listen::Internals::ThreadPool.stop
-end

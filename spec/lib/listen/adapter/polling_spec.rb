@@ -47,6 +47,10 @@ RSpec.describe Adapter::Polling do
         allow(record).to receive(:build)
       end
 
+      after do
+        subject.stop
+      end
+
       it 'notifies change on every listener directories path' do
         expect(snapshot).to receive(:invalidate).
           with(:dir, '.', recursive: true)
