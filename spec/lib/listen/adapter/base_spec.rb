@@ -41,8 +41,7 @@ RSpec.describe Listen::Adapter::Base do
     allow(config).to receive(:silencer).and_return(silencer)
     allow(config).to receive(:adapter_options).and_return(adapter_options)
 
-    allow(Listen::Internals::ThreadPool).
-      to receive(:add) { |&block| block.call }
+    allow(Thread).to receive(:new) { |&block| block.call }
 
     # Stuff that happens in configure()
     allow(Listen::Record).to receive(:new).with(dir1).and_return(record)

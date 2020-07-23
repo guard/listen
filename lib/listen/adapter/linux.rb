@@ -35,9 +35,7 @@ module Listen
       end
 
       def _run
-        Thread.current[:listen_blocking_read_thread] = true
         @worker.run
-        Thread.current[:listen_blocking_read_thread] = false
       end
 
       def _process_event(dir, event)
@@ -99,7 +97,15 @@ module Listen
       end
 
       def _stop
-        @worker && @worker.close
+        @worker.close if (@worker ||= nil)
+
+        # You can't kill a thread that is doing a sysread in JRuby, so
+        # skip `join` and pray thread dies fast...
+        if RUBY_ENGINE == 'jruby'
+          @run_thread.kill if (@run_thread ||= nil)
+        else
+          super
+        end
       end
     end
   end

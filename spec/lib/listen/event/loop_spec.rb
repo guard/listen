@@ -1,7 +1,6 @@
 require 'thread'
 require 'listen/event/config'
 require 'listen/event/loop'
-require 'listen/internals/thread_pool'
 
 RSpec.describe Listen::Event::Loop do
   let(:config) { instance_double(Listen::Event::Config, 'config') }
@@ -26,14 +25,14 @@ RSpec.describe Listen::Event::Loop do
     allow(Listen::Event::Processor).to receive(:new).with(config, reasons).
       and_return(processor)
 
-    allow(Listen::Internals::ThreadPool).to receive(:add) do |*args, &block|
+    allow(Thread).to receive(:new) do |*args, &block|
       fail 'Unstubbed call:'\
-        " ThreadPool.add(#{args.map(&:inspect) * ','},&#{block.inspect})"
+        " Thread.new(#{args.map(&:inspect) * ','},&#{block.inspect})"
     end
 
     allow(config).to receive(:min_delay_between_events).and_return(1.234)
 
-    allow(Listen::Internals::ThreadPool).to receive(:add) do |*_, &block|
+    allow(Thread).to receive(:new) do |*_, &block|
       blocks[:thread_block] = block
       thread
     end
@@ -184,7 +183,7 @@ RSpec.describe Listen::Event::Loop do
     describe '#teardown' do
       before do
         allow(reasons).to receive(:<<)
-        allow(thread).to receive(:join)
+        allow(thread).to receive_message_chain(:join, :kill)
       end
 
       it 'frees the thread' do
@@ -192,7 +191,7 @@ RSpec.describe Listen::Event::Loop do
       end
 
       it 'waits for the thread to finish' do
-        expect(thread).to receive(:join)
+        expect(thread).to receive_message_chain(:join, :kill)
         subject.teardown
       end
 

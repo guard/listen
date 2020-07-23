@@ -38,7 +38,7 @@ module Listen
       def setup
         # TODO: use a Fiber instead?
         q = ::Queue.new
-        @wait_thread = Internals::ThreadPool.add do
+        @wait_thread = Thread.new do
           _wait_for_changes(q, config)
         end
 
@@ -61,7 +61,7 @@ module Listen
         return unless wait_thread
         if wait_thread.alive?
           _wakeup(:teardown)
-          wait_thread.join
+          wait_thread.join.kill
         end
         @wait_thread = nil
       end

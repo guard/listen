@@ -71,7 +71,7 @@ RSpec.describe Listener do
     allow(Pathname).to receive(:new).with('dir1').and_return(dir1)
     allow(Pathname).to receive(:new).with('dir2').and_return(dir2)
 
-    allow(Internals::ThreadPool).to receive(:add).and_return(processing_thread)
+    allow(Thread).to receive(:new).and_return(processing_thread)
     allow(processing_thread).to receive(:alive?).and_return(true)
     allow(processing_thread).to receive(:wakeup)
     allow(processing_thread).to receive(:join)
