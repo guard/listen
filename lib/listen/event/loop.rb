@@ -14,32 +14,26 @@ module Listen
       def initialize(config)
         @config = config
         @wait_thread = nil
-        @state = :paused
+        @state = :pre_start # ... :starting, :started, :stopped
         @reasons = ::Queue.new
       end
 
       def wakeup_on_event
-        return if stopped?
-        return unless processing?
-        return unless wait_thread.alive?
-        _wakeup(:event)
+        if started? && @wait_thread.alive?
+          _wakeup(:event)
+        end
       end
 
-      def paused?
-        wait_thread && state == :paused
+      def started?
+        @state == :started
       end
 
-      def processing?
-        return false if stopped?
-        return false if paused?
-        state == :processing
-      end
-
-      def setup
+      def start
         # TODO: use a Fiber instead?
+        @state = :starting
         q = ::Queue.new
         @wait_thread = Thread.new do
-          _wait_for_changes(q, config)
+          _wait_for_changes(q)
         end
 
         Listen::Logger.debug('Waiting for processing to start...')
@@ -47,8 +41,8 @@ module Listen
       end
 
       def resume
-        fail Error::NotStarted if stopped?
-        return unless wait_thread
+        fail Error::NotStarted if @state == :pre_start
+        return unless @wait_thread
         _wakeup(:resume)
       end
 
@@ -58,30 +52,26 @@ module Listen
       end
 
       def teardown
-        return unless wait_thread
-        if wait_thread.alive?
+        return if stopped?
+        if @wait_thread.alive?
           _wakeup(:teardown)
-          wait_thread.join.kill
+          @wait_thread.join.kill
         end
         @wait_thread = nil
+        @state = :stopped
       end
 
       def stopped?
-        !wait_thread
+        @state == :stopped
       end
 
       private
 
-      attr_reader :config
-      attr_reader :wait_thread
-
-      attr_accessor :state
-
-      def _wait_for_changes(ready_queue, config)
-        processor = Event::Processor.new(config, @reasons)
+      def _wait_for_changes(ready_queue)
+        processor = Event::Processor.new(@config, @reasons)
 
         _wait_until_resumed(ready_queue)
-        processor.loop_for(config.min_delay_between_events)
+        processor.loop_for(@config.min_delay_between_events)
       rescue StandardError => ex
         _nice_error(ex)
       end
@@ -91,10 +81,9 @@ module Listen
       end
 
       def _wait_until_resumed(ready_queue)
-        self.state = :paused
         ready_queue << :ready
         sleep
-        self.state = :processing
+        @state = :started
       end
 
       def _nice_error(ex)
@@ -110,7 +99,7 @@ module Listen
 
       def _wakeup(reason)
         @reasons << reason
-        wait_thread.wakeup
+        @wait_thread.wakeup
       end
     end
   end

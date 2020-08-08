@@ -69,7 +69,7 @@ module Listen
     end
 
     state :frontend_ready, to: [:processing_events, :stopped] do
-      processor.setup
+      processor.start
     end
 
     state :processing_events, to: [:paused, :stopped] do
