@@ -7,19 +7,21 @@ module Listen
   module Event
     class Loop
       class Error < RuntimeError
-        class NotStarted < Error
-        end
+        class ThreadFailedToStart < Error; end
+        class AlreadyStarted < Error; end
       end
 
       def initialize(config)
         @config = config
         @wait_thread = nil
+        @mutex = ::Mutex.new
+        @state_changed = ::ConditionVariable.new
         @state = :pre_start # ... :starting, :started, :stopped
         @reasons = ::Queue.new
       end
 
       def wakeup_on_event
-        if started? && @wait_thread.alive?
+        if started? && @wait_thread&.alive?
           _wakeup(:event)
         end
       end
@@ -28,22 +30,23 @@ module Listen
         @state == :started
       end
 
+      MAX_STARTUP_SECONDS = 5.0
+
       def start
-        # TODO: use a Fiber instead?
-        @state = :starting
-        q = ::Queue.new
-        @wait_thread = Thread.new do
-          _process_changes(q)
+       # TODO: use a Fiber instead?
+      _transition!(:starting) do
+          @state == :pre_start or raise Error::AlreadyStarted
         end
 
-        Listen::Logger.debug('Waiting for processing to start...')
-        Timeout.timeout(5) { q.pop }
-      end
+        @wait_thread = Thread.new do
+          _process_changes
+        end
 
-      def resume
-        fail Error::NotStarted if @state == :pre_start
-        return unless @wait_thread
-        _wakeup(:resume)
+        Listen::Logger.debug("Waiting for processing to start...")
+
+        _wait_for_state(:started, MAX_STARTUP_SECONDS) or raise Error::ThreadFailedToStart, "thread didn't start in #{MAX_STARTUP_SECONDS} seconds (in state: #{@state.inspect})"
+
+        Listen::Logger.debug('Processing started.')
       end
 
       def pause
@@ -53,12 +56,13 @@ module Listen
 
       def teardown
         return if stopped?
+        _transition!(:stopped)
+
         if @wait_thread.alive?
           _wakeup(:teardown)
           @wait_thread.join.kill
         end
         @wait_thread = nil
-        @state = :stopped
       end
 
       def stopped?
@@ -67,24 +71,35 @@ module Listen
 
       private
 
-      def _process_changes(ready_queue)
+      def _transition!(new_state)
+        @mutex.synchronize do
+          yield if block_given?
+          @state = new_state
+          @state_changed.signal
+        end
+      end
+
+      # checks for the given state
+      # if not in it, waits for a state change (up to timeout_seconds--`nil` means infinite)
+      # returns truthy iff the transition to the desired state has occurred
+      def _wait_for_state(state, timeout_seconds = nil)
+        @mutex.synchronize do
+          if @state != state
+            @state_changed.wait(@mutex, timeout_seconds)
+          end
+          @state == state
+        end
+      end
+
+      def _process_changes
         processor = Event::Processor.new(@config, @reasons)
 
-        _wait_until_resumed(ready_queue)
+        _transition!(:started)
+
         processor.loop_for(@config.min_delay_between_events)
 
       rescue StandardError => ex
         _nice_error(ex)
-      end
-
-      def _sleep(*args)
-        Kernel.sleep(*args)
-      end
-
-      def _wait_until_resumed(ready_queue)
-        ready_queue << :ready
-        sleep
-        @state = :started
       end
 
       def _nice_error(ex)

@@ -73,7 +73,7 @@ module Listen
     end
 
     state :processing_events, to: [:paused, :stopped] do
-      processor.resume
+      # nothing to do--already started
     end
 
     state :paused, to: [:processing_events, :stopped] do
