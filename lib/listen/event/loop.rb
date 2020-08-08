@@ -33,7 +33,7 @@ module Listen
         @state = :starting
         q = ::Queue.new
         @wait_thread = Thread.new do
-          _wait_for_changes(q)
+          _process_changes(q)
         end
 
         Listen::Logger.debug('Waiting for processing to start...')
@@ -67,11 +67,12 @@ module Listen
 
       private
 
-      def _wait_for_changes(ready_queue)
+      def _process_changes(ready_queue)
         processor = Event::Processor.new(@config, @reasons)
 
         _wait_until_resumed(ready_queue)
         processor.loop_for(@config.min_delay_between_events)
+
       rescue StandardError => ex
         _nice_error(ex)
       end
