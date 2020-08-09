@@ -121,16 +121,14 @@ RSpec.describe Listener do
     end
 
     it 'sets paused to false' do
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
       subject.start
       expect(subject).to_not be_paused
     end
 
     it 'starts adapter' do
       expect(backend).to receive(:start)
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
       subject.start
     end
   end
@@ -138,38 +136,12 @@ RSpec.describe Listener do
   describe '#stop' do
     before do
       allow(backend).to receive(:start)
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
     end
 
     context 'when fully started' do
       before do
         subject.start
-      end
-
-      it 'terminates' do
-        allow(backend).to receive(:stop)
-        allow(processor).to receive(:teardown)
-        subject.stop
-      end
-    end
-
-    context 'when frontend is ready' do
-      before do
-        subject.transition :backend_started
-        subject.transition :frontend_ready
-      end
-
-      it 'terminates' do
-        allow(backend).to receive(:stop)
-        allow(processor).to receive(:teardown)
-        subject.stop
-      end
-    end
-
-    context 'when only backend is already started' do
-      before do
-        subject.transition :backend_started
       end
 
       it 'terminates' do
@@ -195,8 +167,7 @@ RSpec.describe Listener do
   describe '#pause' do
     before do
       allow(backend).to receive(:start)
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
       subject.start
     end
     it 'sets paused to true' do
@@ -209,8 +180,7 @@ RSpec.describe Listener do
   describe 'unpause with start' do
     before do
       allow(backend).to receive(:start)
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
       subject.start
       allow(processor).to receive(:pause)
       subject.pause
@@ -225,8 +195,7 @@ RSpec.describe Listener do
   describe '#paused?' do
     before do
       allow(backend).to receive(:start)
-      allow(processor).to receive(:setup)
-      allow(processor).to receive(:resume)
+      allow(processor).to receive(:start)
       subject.start
     end
 
@@ -245,8 +214,7 @@ RSpec.describe Listener do
     context 'when processing' do
       before do
         allow(backend).to receive(:start)
-        allow(processor).to receive(:setup)
-        allow(processor).to receive(:resume)
+        allow(processor).to receive(:start)
         subject.start
       end
       it { should be_processing }
@@ -259,8 +227,7 @@ RSpec.describe Listener do
     context 'when paused' do
       before do
         allow(backend).to receive(:start)
-        allow(processor).to receive(:setup)
-        allow(processor).to receive(:resume)
+        allow(processor).to receive(:start)
         subject.start
         allow(processor).to receive(:pause)
         subject.pause
