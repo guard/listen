@@ -224,8 +224,7 @@ class ListenerWrapper
     change_offset = @timed_changes.change_offset
     freeze_offset = @timed_changes.freeze_offset
 
-    msg = "Changes took #{change_offset}s (allowed lag: #{freeze_offset})s"
-    abort(msg)
+    raise "Changes took #{change_offset}s (allowed lag: #{freeze_offset})s"
   end
 
   def _relative_path(changes)
