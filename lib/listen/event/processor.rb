@@ -13,10 +13,11 @@ module Listen
         @latency = latency
 
         loop do
-          _wait_until_events
+          event = _wait_until_events
+          _check_stopped
           _wait_until_events_calm_down
           _wait_until_no_longer_paused
-          _process_changes
+          _process_changes(event)
         end
       rescue Stopped
         Listen::Logger.debug('Processing stopped')
@@ -60,8 +61,9 @@ module Listen
         _check_stopped
 
         _flush_wakeup_reasons do |reason|
-          next unless reason == :event
-          _remember_time_of_first_unprocessed_event unless config.paused?
+          if reason == :event && !config.paused?
+            _remember_time_of_first_unprocessed_event
+          end
         end
 
         sleep_duration
@@ -79,16 +81,17 @@ module Listen
         @first_unprocessed_event_time + @latency
       end
 
+      # blocks until event is popped
+      # returns the event or `nil` when the event_queue is closed
       def _wait_until_events
-        # TODO: long sleep may not be a good idea?
-        _sleep(:waiting_for_events) while config.event_queue.empty?
-        @first_unprocessed_event_time ||= _timestamp
+        config.event_queue.pop.tap do |_event|
+          @first_unprocessed_event_time ||= _timestamp
+        end
       end
 
       def _flush_wakeup_reasons
-        reasons = @reasons
-        until reasons.empty?
-          reason = reasons.pop
+        until @reasons.empty?
+          reason = @reasons.pop
           yield reason if block_given?
         end
       end
@@ -98,14 +101,13 @@ module Listen
       end
 
       # for easier testing without sleep loop
-      def _process_changes
+      def _process_changes(event)
         _reset_no_unprocessed_events
 
-        changes = []
+        changes = [event]
         changes << config.event_queue.pop until config.event_queue.empty?
 
-        callable = config.callable?
-        return unless callable
+        return unless config.callable?
 
         hash = config.optimize_changes(changes)
         result = [hash[:modified], hash[:added], hash[:removed]]
