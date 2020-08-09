@@ -38,7 +38,7 @@ module Listen
       @config = Config.new(options)
 
       eq_config = Event::Queue::Config.new(@config.relative?)
-      queue = Event::Queue.new(eq_config) { @processor.wakeup_on_event }
+      queue = Event::Queue.new(eq_config)
 
       silencer = Silencer.new
       rules = @config.silencer_rules
