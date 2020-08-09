@@ -129,9 +129,7 @@ RSpec.describe Listen::Event::Loop do
 
     describe '#teardown' do
       before do
-        allow(reasons).to receive(:<<)
         allow(thread).to receive_message_chain(:join, :kill)
-        expect(thread).to receive(:wakeup)
       end
 
       it 'frees the thread' do
@@ -144,7 +142,6 @@ RSpec.describe Listen::Event::Loop do
       end
 
       it 'sets the reason for waking up' do
-        expect(reasons).to receive(:<<).with(:teardown)
         subject.teardown
       end
     end
