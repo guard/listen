@@ -64,16 +64,12 @@ module Listen
 
     state :initializing, to: [:backend_started, :stopped]
 
-    state :backend_started, to: [:frontend_ready, :stopped] do
+    state :backend_started, to: [:processing_events, :stopped] do
       backend.start
     end
 
-    state :frontend_ready, to: [:processing_events, :stopped] do
-      processor.start
-    end
-
     state :processing_events, to: [:paused, :stopped] do
-      # nothing to do--already started
+      processor.start
     end
 
     state :paused, to: [:processing_events, :stopped] do
@@ -88,10 +84,15 @@ module Listen
     # Starts processing events and starts adapters
     # or resumes invoking callbacks if paused
     def start
-      transition :backend_started if state == :initializing
-      transition :frontend_ready if state == :backend_started
-      transition :processing_events if state == :frontend_ready
-      transition :processing_events if state == :paused
+      case state
+      when :initializing
+        transition :backend_started
+        transition :processing_events
+      when :paused
+        transition :processing_events
+      else
+        raise ArgumentError, "cannot start from state #{state.inspect}"
+      end
     end
 
     # Stops both listening for events and processing them
