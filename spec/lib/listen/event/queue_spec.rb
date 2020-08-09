@@ -8,9 +8,7 @@ RSpec.describe Listen::Event::Queue do
 
   let(:relative) { false }
 
-  let(:block) { proc {} }
-
-  subject { described_class.new(config, &block) }
+  subject { described_class.new(config) }
 
   before do
     allow(config).to receive(:relative?).and_return(relative)
@@ -54,26 +52,6 @@ RSpec.describe Listen::Event::Queue do
     let(:watched_dir) { fake_path('watched_dir') }
     before do
       allow(queue).to receive(:<<)
-    end
-
-    context 'when a block is given' do
-      let(:calls) { [] }
-      let(:block) { proc { calls << 'called!' } }
-
-      it 'calls the provided block' do
-        subject.<<([:file, :modified, watched_dir, 'foo', {}])
-        expect(calls).to eq(['called!'])
-      end
-    end
-
-    context 'when no block is given' do
-      let(:calls) { [] }
-      let(:block) { nil }
-
-      it 'calls the provided block' do
-        subject.<<([:file, :modified, watched_dir, 'foo', {}])
-        expect(calls).to eq([])
-      end
     end
 
     context 'when relative option is true' do
