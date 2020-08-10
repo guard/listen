@@ -16,56 +16,57 @@ module Listen
       # Passing a state name sets the start state
       def start_state(new_start_state = nil)
         if new_start_state
-          @start_state = new_start_state.to_sym
+          new_start_state.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_start_state.inspect})"
+          @start_state = new_start_state
         else
           defined?(@start_state) ? @start_state : START_STATE
         end
       end
 
-      # Obtain the valid states for this FSM
+      # The valid states for this FSM, as a hash with state name symbols as keys and State objects as values.
       def states
         @states ||= {}
       end
 
       # Declare an FSM state and optionally provide a callback block to fire on state entry
       # Options:
-      # * start: make this the start state
       # * to: a state or array of states this state can transition to
-      def state(*args, start: nil, to: nil, &block)
-        args.each do |name|
-          name = name.to_sym
-          start_state(name) if start
-          states[name] = State.new(name, to, &block)
-        end
+      def state(state_name, to: nil, &block)
+        state_name.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{state_name.inspect})"
+        states[state_name] = State.new(state_name, to, &block)
       end
     end
 
-    # Be kind and call super if you must redefine initialize
+    # Note: you must call super() from including classes so this code will run
     def initialize
       @state = self.class.start_state
       @mutex = ::Mutex.new
       @state_changed = ::ConditionVariable.new
+      super
     end
 
-    # Current state of the FSM
+    # Current state of the FSM, stored as a symbol
     attr_reader :state
 
-    def transition(state_name)
-      if (new_state = validate_and_sanitize_new_state(state_name))
+    def transition(new_state_name)
+      new_state_name.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_state_name.inspect})"
+      if (new_state = validate_and_sanitize_new_state(new_state_name))
         transition_with_callbacks!(new_state)
       end
     end
 
     # Low-level, immediate state transition with no checks or callbacks.
-    def transition!(new_state)
+    def transition!(new_state_name)
+      new_state_name.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_state_name.inspect})"
+      @mutex or raise ArgumentError, "FSM not initialized. You must call super() from initialize!"
       @mutex.synchronize do
         yield if block_given?
-        @state = new_state
+        @state = new_state_name
         @state_changed.signal
       end
     end
 
-    # checks for one of the given states
+    # checks for one of the given states to wait for
     # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
     # returns truthy iff the transition to one of the desired state has occurred
     def wait_for_state(*wait_for_states, timeout: nil)
@@ -79,49 +80,35 @@ module Listen
 
     protected
 
-    def validate_and_sanitize_new_state(state_name)
-      state_name = state_name.to_sym
+    def validate_and_sanitize_new_state(new_state_name)
+      return nil if @state == new_state_name
 
-      return if current_state_name == state_name
-
-      if current_state && !current_state.valid_transition?(state_name)
+      if current_state && !current_state.valid_transition?(new_state_name)
         valid = current_state.transitions.map(&:to_s).join(', ')
-        msg = "#{self.class} can't change state from '#{@state}' to '#{state_name}', only to: #{valid}"
+        msg = "#{self.class} can't change state from '#{@state}' to '#{new_state_name}', only to: #{valid}"
         raise ArgumentError, msg
       end
 
-      unless (new_state = states[state_name])
-        state_name == start_state or raise ArgumentError, "invalid state for #{self.class}: #{state_name}"
+      unless (new_state = self.class.states[new_state_name])
+        new_state_name == self.class.start_state or raise ArgumentError, "invalid state for #{self.class}: #{new_state_name}"
       end
 
       new_state
     end
 
-    def transition_with_callbacks!(state_name)
-      transition! state_name.name
-      state_name.call(self)
-    end
-
-    def states
-      self.class.states
-    end
-
-    def start_state
-      self.class.start_state
+    def transition_with_callbacks!(new_state)
+      transition! new_state.name
+      new_state.call(self)
     end
 
     def current_state
-      states[@state]
-    end
-
-    def current_state_name
-      current_state && current_state.name || ''
+      self.class.states[@state]
     end
 
     class State
       attr_reader :name, :transitions
 
-      def initialize(name, transitions = nil, &block)
+      def initialize(name, transitions, &block)
         @name = name
         @block = block
         @transitions = if transitions
