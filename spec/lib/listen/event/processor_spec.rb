@@ -4,7 +4,8 @@ require 'listen/event/config'
 RSpec.describe Listen::Event::Processor do
   let(:event_queue) { instance_double(::Queue, 'event_queue') }
   let(:event) { instance_double(::Array, 'event') }
-  let(:config) { instance_double(Listen::Event::Config) }
+  let(:listener) { instance_double(Listen::Listener, 'listener') }
+  let(:config) { instance_double(Listen::Event::Config, listener: listener) }
   let(:reasons) { instance_double(::Queue, 'reasons') }
 
   subject { described_class.new(config, reasons) }
@@ -28,11 +29,11 @@ RSpec.describe Listen::Event::Processor do
   before do
     allow(config).to receive(:event_queue).and_return(event_queue)
 
-    allow(config).to receive(:stopped?) do
+    allow(listener).to receive(:stopped?) do
       status_for_time(state[:time]) == :stopped
     end
 
-    allow(config).to receive(:paused?) do
+    allow(listener).to receive(:paused?) do
       status_for_time(state[:time]) == :paused
     end
 

@@ -114,6 +114,10 @@ module Listen
       state == :paused
     end
 
+    def stopped?
+      state == :stopped
+    end
+
     def ignore(regexps)
       @silencer_controller.append_ignores(regexps)
     end

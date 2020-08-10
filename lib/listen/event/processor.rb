@@ -3,6 +3,7 @@ module Listen
     class Processor
       def initialize(config, reasons)
         @config = config
+        @listener = config.listener
         @reasons = reasons
         _reset_no_unprocessed_events
       end
@@ -45,11 +46,11 @@ module Listen
 
       def _wait_until_no_longer_paused
         # TODO: may not be a good idea?
-        _sleep(:waiting_for_unpause) while config.paused?
+        _sleep(:waiting_for_unpause) while @listener.paused?
       end
 
       def _check_stopped
-        return unless config.stopped?
+        return unless @listener.stopped?
 
         _flush_wakeup_reasons
         raise Stopped
@@ -61,7 +62,7 @@ module Listen
         _check_stopped
 
         _flush_wakeup_reasons do |reason|
-          if reason == :event && !config.paused?
+          if reason == :event && !@listener.paused?
             _remember_time_of_first_unprocessed_event
           end
         end
