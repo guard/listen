@@ -5,7 +5,7 @@ RSpec.describe Listen::Event::Processor do
   let(:event_queue) { instance_double(::Queue, 'event_queue') }
   let(:event) { instance_double(::Array, 'event') }
   let(:listener) { instance_double(Listen::Listener, 'listener') }
-  let(:config) { instance_double(Listen::Event::Config, listener: listener) }
+  let(:config) { instance_double(Listen::Event::Config, 'config', listener: listener) }
   let(:reasons) { instance_double(::Queue, 'reasons') }
 
   subject { described_class.new(config, reasons) }
@@ -136,11 +136,14 @@ RSpec.describe Listen::Event::Processor do
               # processing coz paused
 
               # pretend we were woken up at 3.6 seconds since start
-              allow(config).to receive(:sleep).
-                with(no_args) { |*_args| state[:time] += 3.0 }
+              allow(listener).to receive(:wait_for_state).
+                with(:processing_events, :stopped) do |*_args|
+                  state[:time] += 3.0
+                  raise ScriptError, 'done'
+                end
 
               expect(event_queue).to receive(:pop).and_return(event)
-              subject.loop_for(1)
+              expect { subject.loop_for(1) }.to raise_exception(ScriptError, 'done')
             end
           end
         end
@@ -206,16 +209,13 @@ RSpec.describe Listen::Event::Processor do
                 expect(changes).to eq(final_changes)
               end
 
+              allow(listener).to receive(:wait_for_state).
+                with(:processing_events, :stopped)
+
               subject.instance_variable_set(:@first_unprocessed_event_time, -3)
               subject.loop_for(1)
             end
           end
-
-          #  context "when stopped after sleeping" do
-          #    it "breaks from the loop" do
-          #      pending "todo"
-          #    end
-          #  end
         end
       end
     end
