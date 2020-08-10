@@ -77,8 +77,8 @@ module Listen
     end
 
     state :stopped, to: [:backend_started] do
-      backend.stop # should be before processor.teardown to halt events ASAP
-      processor.teardown
+      backend.stop # should be before processor.stop to halt events ASAP
+      processor.stop
     end
 
     # Starts processing events and starts adapters
