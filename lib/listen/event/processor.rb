@@ -40,7 +40,7 @@ module Listen
 
           # give events a bit of time to accumulate so they can be
           # compressed/optimized
-          _sleep(:waiting_until_latency, diff)
+          _sleep(diff)
         end
       end
 
@@ -55,9 +55,9 @@ module Listen
         raise Stopped
       end
 
-      def _sleep(_local_reason, *args)
+      def _sleep(seconds)
         _check_stopped
-        sleep_duration = config.sleep(*args)
+        config.sleep(seconds)
         _check_stopped
 
         _flush_wakeup_reasons do |reason|
@@ -65,8 +65,6 @@ module Listen
             _remember_time_of_first_unprocessed_event
           end
         end
-
-        sleep_duration
       end
 
       def _remember_time_of_first_unprocessed_event
