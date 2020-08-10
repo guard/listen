@@ -17,8 +17,7 @@ module Listen
         end
       end
 
-      def initialize(config, &block)
-        block and raise ArgumentError, "&block no longer needed"
+      def initialize(config)
         @event_queue = ::Queue.new
         @config = config
       end
