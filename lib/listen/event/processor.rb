@@ -45,7 +45,7 @@ module Listen
       end
 
       def _wait_until_no_longer_paused
-        @listener.wait_for_state(:processing_events, :stopped)
+        @listener.wait_for_state(*(Listener.states.keys - [:paused]))
       end
 
       def _check_stopped

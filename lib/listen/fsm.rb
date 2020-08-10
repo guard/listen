@@ -68,12 +68,12 @@ module Listen
     # checks for one of the given states
     # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
     # returns truthy iff the transition to one of the desired state has occurred
-    def wait_for_state(*states, timeout: nil)
+    def wait_for_state(*wait_for_states, timeout: nil)
       @mutex.synchronize do
-        if !states.include?(@state)
+        if !wait_for_states.include?(@state)
           @state_changed.wait(@mutex, timeout)
         end
-        states.include?(@state)
+        wait_for_states.include?(@state)
       end
     end
 

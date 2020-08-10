@@ -137,7 +137,7 @@ RSpec.describe Listen::Event::Processor do
 
               # pretend we were woken up at 3.6 seconds since start
               allow(listener).to receive(:wait_for_state).
-                with(:processing_events, :stopped) do |*_args|
+                with(:initializing, :backend_started, :processing_events, :stopped) do |*_args|
                   state[:time] += 3.0
                   raise ScriptError, 'done'
                 end
@@ -210,7 +210,7 @@ RSpec.describe Listen::Event::Processor do
               end
 
               allow(listener).to receive(:wait_for_state).
-                with(:processing_events, :stopped)
+                with(:initializing, :backend_started, :processing_events, :stopped)
 
               subject.instance_variable_set(:@first_unprocessed_event_time, -3)
               subject.loop_for(1)
