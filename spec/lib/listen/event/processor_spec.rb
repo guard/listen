@@ -111,7 +111,7 @@ RSpec.describe Listen::Event::Processor do
             it 'sleeps for latency to possibly later optimize some events' do
               # pretend we were woken up at 0.6 seconds since start
               allow(config).to receive(:sleep).
-                with(no_args) { |*_args| state[:time] += 0.6 }
+                with(anything) { |*_args| state[:time] += 0.6 }
 
               # pretend we slept for latency (now: 1.6 seconds since start)
               allow(config).to receive(:sleep).
@@ -130,7 +130,7 @@ RSpec.describe Listen::Event::Processor do
             it 'still does not process events because it is paused' do
               # pretend we were woken up at 0.6 seconds since start
               allow(config).to receive(:sleep).
-                with(1) { |*_args| state[:time] += 2.0 }
+                with(anything) { |*_args| state[:time] += 2.0 }
 
               # second loop starts here (no sleep, coz recent events, but no
               # processing coz paused

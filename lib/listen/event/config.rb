@@ -19,8 +19,8 @@ module Listen
         @block = block
       end
 
-      def sleep(*args)
-        Kernel.sleep(*args)
+      def sleep(seconds)
+        Kernel.sleep(seconds)
       end
 
       def call(*args)
