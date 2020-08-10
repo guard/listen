@@ -146,6 +146,7 @@ RSpec.describe Listener do
 
       it 'terminates' do
         allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
         subject.stop
       end
     end
@@ -157,6 +158,7 @@ RSpec.describe Listener do
 
       it 'terminates' do
         allow(backend).to receive(:stop)
+        allow(processor).to receive(:teardown)
         subject.stop
       end
     end

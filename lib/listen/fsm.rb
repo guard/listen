@@ -1,7 +1,10 @@
 # Code copied from https://github.com/celluloid/celluloid-fsm
+
+require 'thread'
+
 module Listen
   module FSM
-    DEFAULT_STATE = :default # Default state name unless one is explicitly set
+    START_STATE = :default # Start state name unless one is explicitly set
 
     # Included hook to extend class methods
     def self.included(klass)
@@ -9,13 +12,13 @@ module Listen
     end
 
     module ClassMethods
-      # Obtain or set the default state
-      # Passing a state name sets the default state
-      def default_state(new_default = nil)
-        if new_default
-          @default_state = new_default.to_sym
+      # Obtain or set the start state
+      # Passing a state name sets the start state
+      def start_state(new_start_state = nil)
+        if new_start_state
+          @start_state = new_start_state.to_sym
         else
-          defined?(@default_state) ? @default_state : DEFAULT_STATE
+          defined?(@start_state) ? @start_state : START_STATE
         end
       end
 
@@ -24,42 +27,54 @@ module Listen
         @states ||= {}
       end
 
-      # Declare an FSM state and optionally provide a callback block to fire
+      # Declare an FSM state and optionally provide a callback block to fire on state entry
       # Options:
+      # * start: make this the start state
       # * to: a state or array of states this state can transition to
-      def state(*args, &block)
-        if args.last.is_a? Hash
-          # Stringify keys :/
-          options = args.pop.each_with_object({}) { |(k, v), h| h[k.to_s] = v }
-        else
-          options = {}
-        end
-
+      def state(*args, start: nil, to: nil, &block)
         args.each do |name|
           name = name.to_sym
-          default_state name if options['default']
-          states[name] = State.new(name, options['to'], &block)
+          start_state(name) if start
+          states[name] = State.new(name, to, &block)
         end
       end
     end
 
     # Be kind and call super if you must redefine initialize
     def initialize
-      @state = self.class.default_state
+      @state = self.class.start_state
+      @mutex = ::Mutex.new
+      @state_changed = ::ConditionVariable.new
     end
 
-    # Obtain the current state of the FSM
+    # Current state of the FSM
     attr_reader :state
 
     def transition(state_name)
-      new_state = validate_and_sanitize_new_state(state_name)
-      return unless new_state
-      transition_with_callbacks!(new_state)
+      if (new_state = validate_and_sanitize_new_state(state_name))
+        transition_with_callbacks!(new_state)
+      end
     end
 
-    # Immediate state transition with no checks, or callbacks. "Dangerous!"
-    def transition!(state_name)
-      @state = state_name
+    # Low-level, immediate state transition with no checks or callbacks.
+    def transition!(new_state)
+      @mutex.synchronize do
+        yield if block_given?
+        @state = new_state
+        @state_changed.signal
+      end
+    end
+
+    # checks for one of the given states
+    # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
+    # returns truthy iff the transition to one of the desired state has occurred
+    def wait_for_state(*states, timeout: nil)
+      @mutex.synchronize do
+        if !states.include?(@state)
+          @state_changed.wait(@mutex, timeout)
+        end
+        states.include?(@state)
+      end
     end
 
     protected
@@ -71,16 +86,12 @@ module Listen
 
       if current_state && !current_state.valid_transition?(state_name)
         valid = current_state.transitions.map(&:to_s).join(', ')
-        msg = "#{self.class} can't change state from '#{@state}'"\
-          " to '#{state_name}', only to: #{valid}"
-        fail ArgumentError, msg
+        msg = "#{self.class} can't change state from '#{@state}' to '#{state_name}', only to: #{valid}"
+        raise ArgumentError, msg
       end
 
-      new_state = states[state_name]
-
-      unless new_state
-        return if state_name == default_state
-        fail ArgumentError, "invalid state for #{self.class}: #{state_name}"
+      unless (new_state = states[state_name])
+        state_name == start_state or raise ArgumentError, "invalid state for #{self.class}: #{state_name}"
       end
 
       new_state
@@ -95,8 +106,8 @@ module Listen
       self.class.states
     end
 
-    def default_state
-      self.class.default_state
+    def start_state
+      self.class.start_state
     end
 
     def current_state
@@ -113,8 +124,9 @@ module Listen
       def initialize(name, transitions = nil, &block)
         @name = name
         @block = block
-        @transitions = nil
-        @transitions = Array(transitions).map(&:to_sym) if transitions
+        @transitions = if transitions
+                         Array(transitions).map(&:to_sym)
+                       end
       end
 
       def call(obj)
@@ -122,10 +134,8 @@ module Listen
       end
 
       def valid_transition?(new_state)
-        # All transitions are allowed unless expressly
-        return true unless @transitions
-
-        @transitions.include? new_state.to_sym
+        # All transitions are allowed if none are expressly declared
+        !@transitions || @transitions.include?(new_state.to_sym)
       end
     end
   end
