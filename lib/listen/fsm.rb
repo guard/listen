@@ -62,7 +62,7 @@ module Listen
       @mutex.synchronize do
         yield if block_given?
         @state = new_state_name
-        @state_changed.signal
+        @state_changed.broadcast
       end
     end
 
