@@ -60,7 +60,7 @@ module Listen
       super() # FSM
     end
 
-    default_state :initializing
+    start_state :initializing
 
     state :initializing, to: [:backend_started, :stopped]
 
