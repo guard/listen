@@ -60,7 +60,7 @@ module Listen
         # fail NotImplementedError
       end
 
-      def teardown
+      def stop
         return if stopped?
         transition! :stopped
 
