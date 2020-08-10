@@ -45,8 +45,7 @@ module Listen
       end
 
       def _wait_until_no_longer_paused
-        # TODO: may not be a good idea?
-        _sleep(:waiting_for_unpause) while @listener.paused?
+        @listener.wait_for_state(:processing_events, :stopped)
       end
 
       def _check_stopped
