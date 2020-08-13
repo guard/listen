@@ -10,13 +10,13 @@ RSpec.describe Listen::Adapter::Linux do
   end
 
   if linux?
-    let(:dir1) {Pathname.new("/foo/dir1")}
+    let(:dir1) { Pathname.new("/foo/dir1") }
 
-    let(:config) { instance_double(Listen::Adapter::Config) }
-    let(:queue) { instance_double(Queue) }
-    let(:silencer) { instance_double(Listen::Silencer) }
-    let(:snapshot) { instance_double(Listen::Change) }
-    let(:record) { instance_double(Listen::Record) }
+    let(:config) { instance_double(Listen::Adapter::Config, "config") }
+    let(:queue) { instance_double(Queue, "queue") }
+    let(:silencer) { instance_double(Listen::Silencer, "silencer") }
+    let(:snapshot) { instance_double(Listen::Change, "snapshot") }
+    let(:record) { instance_double(Listen::Record, "record") }
 
     # TODO: fix other adapters too!
     subject { described_class.new(config) }
@@ -134,6 +134,7 @@ RSpec.describe Listen::Adapter::Linux do
           stub_const('INotify::Notifier', fake_notifier)
 
           allow(config).to receive(:queue).and_return(queue)
+          allow(queue).to receive(:close)
           allow(config).to receive(:silencer).and_return(silencer)
 
           allow(subject).to receive(:require).with('rb-inotify')
@@ -147,6 +148,11 @@ RSpec.describe Listen::Adapter::Linux do
       end
 
       context 'when not even initialized' do
+        before do
+          allow(config).to receive(:queue).and_return(queue)
+          allow(queue).to receive(:close)
+        end
+
         it 'does not crash' do
           expect do
             subject.stop
