@@ -96,7 +96,9 @@ module Listen
       private
 
       def _stop
-        @run_thread.kill.join if (@run_thread ||= nil)
+        if thread = @run_thread
+          thread.kill.join
+        end
       end
 
       def _timed(title)

@@ -97,15 +97,9 @@ module Listen
       end
 
       def _stop
-        @worker.close if (@worker ||= nil)
+        @worker&.close
 
-        # You can't kill a thread that is doing a sysread in JRuby, so
-        # skip `join` and pray thread dies fast...
-        if RUBY_ENGINE == 'jruby'
-          @run_thread.kill if (@run_thread ||= nil)
-        else
-          super
-        end
+        super
       end
     end
   end
