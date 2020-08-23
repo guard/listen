@@ -1,12 +1,13 @@
-## IMPORTANT: If you cannot install Listen (e.g. on Travis/CI builds), [a workaround is here](https://github.com/guard/listen/wiki/Ruby-version-requirements)
+# Listen
+
+The Listen gem listens to file modifications and notifies you about the changes.
 
 :exclamation: Listen is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
 
-# Listen
-
-[![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen) [![Build Status](https://travis-ci.org/guard/listen.svg)](https://travis-ci.org/guard/listen) [![Code Climate](https://codeclimate.com/github/guard/listen.svg)](https://codeclimate.com/github/guard/listen) [![Coverage Status](https://coveralls.io/repos/guard/listen/badge.svg?branch=master)](https://coveralls.io/r/guard/listen)
-
-The Listen gem listens to file modifications and notifies you about the changes.
+[![Development Status](https://github.com/guard/listen/workflows/Development/badge.svg)](https://github.com/guard/listen/actions?workflow=Development)
+[![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen)
+[![Code Climate](https://codeclimate.com/github/guard/listen.svg)](https://codeclimate.com/github/guard/listen)
+[![Coverage Status](https://coveralls.io/repos/guard/listen/badge.svg?branch=master)](https://coveralls.io/r/guard/listen)
 
 ## Features
 
