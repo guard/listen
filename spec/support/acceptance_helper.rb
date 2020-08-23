@@ -156,7 +156,7 @@ class ListenerWrapper
     #
     # The value should be 2-3 x wait_for_delay + time between fs operation and
     # notification, which for polling and FSEvent means the configured latency
-    @lag = Float(ENV['LISTEN_TESTS_DEFAULT_LAG'] || 0.2)
+    @lag = Float(ENV['LISTEN_TESTS_DEFAULT_LAG'] || 1.0)
 
     @paths = paths
 
