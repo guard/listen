@@ -49,7 +49,7 @@ RSpec.describe Listen::Event::Loop do
 
   describe '#start' do
     before do
-      expect(Listen::Internals::ThreadPool).to receive(:add) do |*_, &block|
+      expect(Thread).to receive(:new) do |&block|
         block.call
         thread
       end
@@ -68,40 +68,6 @@ RSpec.describe Listen::Event::Loop do
         expect { subject.start }.to raise_exception(Listen::Event::Loop::Error::AlreadyStarted)
       end
     end
-
-    context 'when wakeup_on_event is called' do
-      let(:epoch) { 1234 }
-
-      context 'when thread is alive' do
-        before do
-          allow(reasons).to receive(:<<)
-          allow(thread).to receive(:alive?).and_return(true)
-        end
-
-        it 'wakes up the thread' do
-          expect(thread).to receive(:wakeup)
-          expect(subject.instance_variable_get(:@state)).to eq(:started)
-          subject.wakeup_on_event
-        end
-
-        it 'sets the reason for waking up' do
-          expect(thread).to receive(:wakeup)
-          expect(reasons).to receive(:<<).with(:event)
-          subject.wakeup_on_event
-        end
-      end
-
-      context 'when thread is dead' do
-        before do
-          allow(thread).to receive(:alive?).and_return(false)
-        end
-
-        it 'does not wake up the thread' do
-          expect(thread).to_not receive(:wakeup)
-          subject.wakeup_on_event
-        end
-      end
-    end
   end
 
   context 'when set up / started' do
@@ -111,7 +77,7 @@ RSpec.describe Listen::Event::Loop do
 
       allow(processor).to receive(:loop_for).with(1.234)
 
-      expect(Listen::Internals::ThreadPool).to receive(:add) do |*_, &block|
+      expect(Thread).to receive(:new) do |&block|
         block.call
         thread
       end
