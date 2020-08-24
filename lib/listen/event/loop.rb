@@ -23,7 +23,7 @@ module Listen
         @config = config
         @wait_thread = nil
         @reasons = ::Queue.new
-        super()
+        initialize_fsm
       end
 
       def wakeup_on_event
