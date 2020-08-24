@@ -57,7 +57,7 @@ module Listen
 
       @processor = Event::Loop.new(pconfig)
 
-      super() # FSM
+      initialize_fsm
     end
 
     start_state :initializing
@@ -65,20 +65,20 @@ module Listen
     state :initializing, to: [:backend_started, :stopped]
 
     state :backend_started, to: [:processing_events, :stopped] do
-      backend.start
+      @backend.start
     end
 
     state :processing_events, to: [:paused, :stopped] do
-      processor.start
+      @processor.start
     end
 
     state :paused, to: [:processing_events, :stopped] do
-      processor.pause
+      @processor.pause
     end
 
     state :stopped, to: [:backend_started] do
-      backend.stop # should be before processor.stop to halt events ASAP
-      processor.stop
+      @backend.stop # halt events ASAP
+      @processor.stop
     end
 
     # Starts processing events and starts adapters
@@ -129,10 +129,5 @@ module Listen
     def only(regexps)
       @silencer_controller.replace_with_only(regexps)
     end
-
-    private
-
-    attr_reader :processor
-    attr_reader :backend
   end
 end

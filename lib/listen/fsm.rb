@@ -37,12 +37,12 @@ module Listen
       end
     end
 
-    # Note: you must call super() from including classes so this code will run
-    def initialize
+    # Note: including classes must call initialize_fsm from their initialize method.
+    def initialize_fsm
+      @fsm_initialized = true
       @state = self.class.start_state
       @mutex = ::Mutex.new
       @state_changed = ::ConditionVariable.new
-      super
     end
 
     # Current state of the FSM, stored as a symbol
@@ -58,7 +58,7 @@ module Listen
     # Low-level, immediate state transition with no checks or callbacks.
     def transition!(new_state_name)
       new_state_name.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_state_name.inspect})"
-      @mutex or raise ArgumentError, "FSM not initialized. You must call super() from initialize!"
+      @fsm_initialized or raise ArgumentError, "FSM not initialized. You must call initialize_fsm from initialize!"
       @mutex.synchronize do
         yield if block_given?
         @state = new_state_name
