@@ -19,7 +19,6 @@ require 'listen/listener/config'
 
 module Listen
   class Listener
-    # TODO: move the state machine's methods private
     include Listen::FSM
 
     # Initializes the directories listener.
