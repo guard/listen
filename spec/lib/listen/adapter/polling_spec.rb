@@ -17,12 +17,12 @@ RSpec.describe Adapter::Polling do
   # just so cleanpath works in above double
   let(:real_dir1) { instance_double(Pathname, 'dir1', to_s: '/foo/dir1') }
 
-  let(:config) { instance_double(Listen::Adapter::Config) }
+  let(:config) { instance_double(Listen::Adapter::Config, "config") }
   let(:directories) { [dir1] }
   let(:options) { {} }
-  let(:queue) { instance_double(Queue) }
-  let(:silencer) { instance_double(Listen::Silencer) }
-  let(:snapshot) { instance_double(Listen::Change) }
+  let(:queue) { instance_double(Queue, "queue") }
+  let(:silencer) { instance_double(Listen::Silencer, "silencer") }
+  let(:snapshot) { instance_double(Listen::Change, "snapshot") }
 
   let(:record) { instance_double(Listen::Record) }
 
@@ -48,6 +48,7 @@ RSpec.describe Adapter::Polling do
       end
 
       after do
+        allow(queue).to receive(:close)
         subject.stop
       end
 
