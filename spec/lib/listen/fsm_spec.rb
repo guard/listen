@@ -1,5 +1,5 @@
 RSpec.describe Listen::FSM do
-  context "simple FSM" do
+  context 'simple FSM' do
     class SpecSimpleFsm
       include Listen::FSM
 
@@ -34,30 +34,33 @@ RSpec.describe Listen::FSM do
 
     subject(:fsm) { SpecSimpleFsm.new }
 
-    it "starts in start_state" do
+    it 'starts in start_state' do
       expect(subject.state).to eq(:initial)
     end
 
-    it "allows transitions" do
+    it 'allows transitions' do
       subject.start
       expect(subject.state).to eq(:started)
       expect(subject.entered_started).to eq(true)
     end
 
-    it "raises on disallowed transitions" do
+    it 'raises on disallowed transitions' do
       subject.fail
-      expect { subject.start }.to raise_exception(ArgumentError, "SpecSimpleFsm can't change state from 'failed' to 'started', only to: stopped")
+      expect do
+        subject.start
+      end.to raise_exception(ArgumentError,
+                             "SpecSimpleFsm can't change state from 'failed' to 'started', only to: stopped")
       expect(subject.state).to eq(:failed)
       expect(subject.entered_started).to eq(nil)
     end
 
-    it "declares transition and transition! private" do
+    it 'declares transition and transition! private' do
       expect { subject.transition(:started) }.to raise_exception(NoMethodError, /private.*transition/)
       expect { subject.transition!(:started) }.to raise_exception(NoMethodError, /private.*transition!/)
     end
   end
 
-  context "FSM with no start state" do
+  context 'FSM with no start state' do
     class SpecFsmWithNoStartState
       include Listen::FSM
 
@@ -74,20 +77,21 @@ RSpec.describe Listen::FSM do
 
     subject(:fsm) { SpecFsmWithNoStartState.new }
 
-    it "raises ArgumentError on new" do
-      expect { subject }.to raise_exception(ArgumentError, /`start_state :<state>` must be declared before `new`/)
+    it 'raises ArgumentError on new' do
+      expect { subject }.to raise_exception(ArgumentError,
+                                            /`start_state :<state>` must be declared before `new`/)
     end
   end
 
-  context "FSM with string states" do
+  context 'FSM with string state name' do
     subject(:fsm) do
       instance_exec do
         class SpecFsmWithStringState
           include Listen::FSM
 
-          state "started", to: "stopped"
+          state 'started', to: 'stopped'
 
-          state "stopped"
+          state 'stopped'
 
           def initialize
             initialize_fsm
@@ -96,7 +100,7 @@ RSpec.describe Listen::FSM do
       end
     end
 
-    it "raises ArgumentError on new" do
+    it 'raises ArgumentError on new' do
       expect { subject }.to raise_exception(ArgumentError, /state name must be a Symbol/)
     end
   end
