@@ -47,14 +47,6 @@ RSpec.describe Listen::Event::Loop do
     end
   end
 
-  context 'when stopped' do
-    context 'when wakeup_on_event is called' do
-      it 'does nothing' do
-        subject.wakeup_on_event
-      end
-    end
-  end
-
   describe '#start' do
     before do
       expect(Listen::Internals::ThreadPool).to receive(:add) do |*_, &block|
