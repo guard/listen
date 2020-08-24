@@ -4,8 +4,6 @@ require 'thread'
 
 module Listen
   module FSM
-    START_STATE = :default # Start state name unless one is explicitly set
-
     # Included hook to extend class methods
     def self.included(klass)
       klass.send :extend, ClassMethods
@@ -19,7 +17,8 @@ module Listen
           new_start_state.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_start_state.inspect})"
           @start_state = new_start_state
         else
-          defined?(@start_state) ? @start_state : START_STATE
+          defined?(@start_state) or raise ArgumentError, "`start_state :<state>` must be declared before `new`"
+          @start_state
         end
       end
 
@@ -48,6 +47,20 @@ module Listen
     # Current state of the FSM, stored as a symbol
     attr_reader :state
 
+    # checks for one of the given states to wait for
+    # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
+    # returns truthy iff the transition to one of the desired state has occurred
+    def wait_for_state(*wait_for_states, timeout: nil)
+      @mutex.synchronize do
+        if !wait_for_states.include?(@state)
+          @state_changed.wait(@mutex, timeout)
+        end
+        wait_for_states.include?(@state)
+      end
+    end
+
+    private
+
     def transition(new_state_name)
       new_state_name.is_a?(Symbol) or raise ArgumentError, "state name must be a Symbol (got #{new_state_name.inspect})"
       if (new_state = validate_and_sanitize_new_state(new_state_name))
@@ -65,20 +78,6 @@ module Listen
         @state_changed.broadcast
       end
     end
-
-    # checks for one of the given states to wait for
-    # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
-    # returns truthy iff the transition to one of the desired state has occurred
-    def wait_for_state(*wait_for_states, timeout: nil)
-      @mutex.synchronize do
-        if !wait_for_states.include?(@state)
-          @state_changed.wait(@mutex, timeout)
-        end
-        wait_for_states.include?(@state)
-      end
-    end
-
-    protected
 
     def validate_and_sanitize_new_state(new_state_name)
       return nil if @state == new_state_name
