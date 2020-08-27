@@ -64,8 +64,8 @@ RSpec.describe Listen::Event::Loop do
     end
 
     context 'when start is called again' do
-      it 'raises AlreadyStarted' do
-        expect { subject.start }.to raise_exception(Listen::Event::Loop::Error::AlreadyStarted)
+      it 'returns silently' do
+        expect { subject.start }.to_not raise_exception
       end
     end
   end
