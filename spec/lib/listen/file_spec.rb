@@ -19,7 +19,7 @@ RSpec.describe Listen::File do
 
   describe '#change' do
     let(:expected_data) do
-      { mtime: kind_of(Float), mode: kind_of(Integer) }
+      { mtime: kind_of(Float), mode: kind_of(Integer), size: 1 }
     end
 
     context 'with file record' do
@@ -28,7 +28,7 @@ RSpec.describe Listen::File do
       let(:record_mode) { nil }
 
       let(:record_data) do
-        { mtime: record_mtime, md5: record_md5, mode: record_mode }
+        { mtime: record_mtime, md5: record_md5, mode: record_mode, size: 1 }
       end
 
       context 'with non-existing file' do
@@ -55,7 +55,8 @@ RSpec.describe Listen::File do
             mtime: stat_mtime,
             atime: stat_atime,
             ctime: stat_ctime,
-            mode: stat_mode
+            mode: stat_mode,
+            size: 1
           )
         end
 
@@ -104,7 +105,7 @@ RSpec.describe Listen::File do
             end
           end
 
-          context 'with indentical mtime in record' do
+          context 'with identical mtime in record' do
             let(:record_mtime) { stat_mtime.to_f }
 
             context 'with accurate stat times' do
@@ -193,7 +194,8 @@ RSpec.describe Listen::File do
           instance_double(
             File::Stat,
             mtime: 1234,
-            mode: 0645
+            mode: 0645,
+            size: 1
           )
         end
 
@@ -216,7 +218,7 @@ RSpec.describe Listen::File do
 
   describe '#inaccurate_mac_time?' do
     let(:stat) do
-      instance_double(File::Stat, mtime: mtime, atime: atime, ctime: ctime)
+      instance_double(File::Stat, mtime: mtime, atime: atime, ctime: ctime, size: 1)
     end
 
     subject { Listen::File.inaccurate_mac_time?(stat) }
