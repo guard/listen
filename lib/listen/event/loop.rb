@@ -9,8 +9,7 @@ module Listen
       include Listen::FSM
 
       class Error < RuntimeError
-        class ThreadFailedToStart < Error; end
-        class AlreadyStarted < Error; end
+        class NotStarted < Error; end
       end
 
       start_state :pre_start
@@ -40,9 +39,9 @@ module Listen
 
       def start
         # TODO: use a Fiber instead?
-        transition! :starting do
-          state == :pre_start or raise Error::AlreadyStarted
-        end
+        return unless state == :pre_start
+
+        transition! :starting
 
         @wait_thread = Thread.new do
           _process_changes
@@ -50,7 +49,8 @@ module Listen
 
         Listen::Logger.debug("Waiting for processing to start...")
 
-        wait_for_state(:started, MAX_STARTUP_SECONDS) or raise Error::ThreadFailedToStart, "thread didn't start in #{MAX_STARTUP_SECONDS} seconds (in state: #{state.inspect})"
+        wait_for_state(:started, MAX_STARTUP_SECONDS) or
+          raise Error::NotStarted, "thread didn't start in #{MAX_STARTUP_SECONDS} seconds (in state: #{state.inspect})"
 
         Listen::Logger.debug('Processing started.')
       end
