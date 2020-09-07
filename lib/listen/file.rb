@@ -24,12 +24,12 @@ module Listen
         record.update_file(rel_path, data)
         return :modified
       end
-      
+
       if data[:size] != record_data[:size]
         record.update_file(rel_path, data)
         return :modified
       end
-      
+
       return if /1|true/ =~ ENV['LISTEN_GEM_DISABLE_HASHING']
       return unless inaccurate_mac_time?(lstat)
 
