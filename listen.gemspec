@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.executable   = 'listen'
   s.require_path = 'lib'
 
-  s.required_ruby_version = ['~> 2.2', '>= 2.2.7']
+  s.required_ruby_version = '>= 2.2.7'
 
   s.add_dependency 'rb-fsevent', '~> 0.10', '>= 0.10.3'
   s.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.10'
