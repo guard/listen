@@ -110,7 +110,7 @@ RSpec.describe Listen::File do
             end
           end
 
-          context 'with indentical mtime in record' do
+          context 'with identical mtime in record' do
             let(:record_mtime) { stat_mtime.to_f }
 
             context 'with accurate stat times' do
