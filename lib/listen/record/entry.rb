@@ -22,7 +22,7 @@ module Listen
 
       def meta
         lstat = ::File.lstat(sys_path)
-        { mtime: lstat.mtime.to_f, mode: lstat.mode }
+        { mtime: lstat.mtime.to_f, mode: lstat.mode, size: lstat.size }
       end
 
       # record hash is e.g.

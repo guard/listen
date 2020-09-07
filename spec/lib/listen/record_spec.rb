@@ -21,7 +21,7 @@ RSpec.describe Listen::Record do
   end
 
   def lstat(path, stat = nil)
-    stat ||= instance_double(::File::Stat, mtime: 2.3, mode: 0755)
+    stat ||= instance_double(::File::Stat, mtime: 2.3, mode: 0755, size: 42)
     allow(::File).to receive(:lstat).with(path).and_return(stat)
     stat
   end
@@ -253,8 +253,8 @@ RSpec.describe Listen::Record do
       expect(record.file_data('path/file.rb')).to be_empty
     end
 
-    let(:foo_stat) { instance_double(::File::Stat, mtime: 1.0, mode: 0644) }
-    let(:bar_stat) { instance_double(::File::Stat, mtime: 2.3, mode: 0755) }
+    let(:foo_stat) { instance_double(::File::Stat, mtime: 1.0, mode: 0644, size: 42) }
+    let(:bar_stat) { instance_double(::File::Stat, mtime: 2.3, mode: 0755, size: 42) }
 
     context 'with no subdirs' do
       before do
@@ -268,8 +268,8 @@ RSpec.describe Listen::Record do
         record.build
         expect(record_tree(record)).
           to eq(
-            'foo' => { mtime: 1.0, mode: 0644 },
-            'bar' => { mtime: 2.3, mode: 0755 })
+            'foo' => { mtime: 1.0, mode: 0644, size: 42 },
+            'bar' => { mtime: 2.3, mode: 0755, size: 42 })
       end
     end
 
@@ -287,7 +287,7 @@ RSpec.describe Listen::Record do
         expect(record_tree(record)).
           to eq(
             'dir1' => {},
-            'dir1/foo' => { 'bar' => { mtime: 2.3, mode: 0755 } },
+            'dir1/foo' => { 'bar' => { mtime: 2.3, mode: 0755, size: 42 } },
             'dir2' => {},
           )
       end
