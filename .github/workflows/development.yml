@@ -23,7 +23,7 @@ jobs:
         
         include:
           - os: ubuntu
-            ruby: truffleruby
+            ruby: truffleruby-head
             experimental: true
           - os: ubuntu
             ruby: jruby
