@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen do
   let(:listener) { instance_double(Listen::Listener, stop: nil) }
 

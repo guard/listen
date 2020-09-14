@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::File do
   let(:record) do
     instance_double(

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Listen
   class Options
     def initialize(opts, defaults)

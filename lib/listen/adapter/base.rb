@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/options'
 require 'listen/record'
 require 'listen/change'

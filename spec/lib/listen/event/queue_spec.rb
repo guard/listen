@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/event/queue'
 
 # TODO: not part of listener really

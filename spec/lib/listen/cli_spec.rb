@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/cli'
 
 RSpec.describe Listen::CLI do

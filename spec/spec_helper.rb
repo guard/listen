@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # TODO: reduce requires everwhere and be more strict about it
 require 'listen'
 

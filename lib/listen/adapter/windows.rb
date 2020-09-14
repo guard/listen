@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Listen
   module Adapter
     # Adapter implementation for Windows `wdm`.

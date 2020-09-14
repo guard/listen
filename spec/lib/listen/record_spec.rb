@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::Record do
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
   let(:record) { Listen::Record.new(dir) }

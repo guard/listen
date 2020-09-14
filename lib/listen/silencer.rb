@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Listen
   class Silencer
     # The default list of directories that get ignored.

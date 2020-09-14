@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/silencer/controller'
 
 RSpec.describe Listen::Silencer::Controller do

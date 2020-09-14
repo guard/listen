@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::FSM do
   context 'simple FSM' do
     class SpecSimpleFsm

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::Adapter::Windows do
   describe 'class' do
     subject { described_class }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Listen
   module Adapter
     # Polling Adapter that works cross-platform and

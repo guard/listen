@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Listen
   module Adapter
     # @see https://github.com/nex3/rb-inotify

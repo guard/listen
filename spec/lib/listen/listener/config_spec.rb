@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/listener/config'
 RSpec.describe Listen::Listener::Config do
   describe 'options' do
