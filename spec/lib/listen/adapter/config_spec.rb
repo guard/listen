@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/adapter/config'
 
 RSpec.describe Listen::Adapter::Config do

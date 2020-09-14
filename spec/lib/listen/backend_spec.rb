@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/backend'
 
 RSpec.describe Listen::Backend do

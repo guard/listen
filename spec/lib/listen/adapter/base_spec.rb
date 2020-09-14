@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::Adapter::Base do
   class FakeAdapter < described_class
     def initialize(config)

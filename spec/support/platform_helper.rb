@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def darwin?
   RbConfig::CONFIG['target_os'] =~ /darwin/i
 end

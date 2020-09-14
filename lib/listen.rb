@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logger'
 require 'weakref'
 require 'listen/logger'

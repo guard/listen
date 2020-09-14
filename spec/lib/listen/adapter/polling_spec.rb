@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 include Listen
 
 RSpec.describe Adapter::Polling do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::QueueOptimizer do
   let(:config) { instance_double(Listen::QueueOptimizer::Config) }
   subject { described_class.new(config) }

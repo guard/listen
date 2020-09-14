@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/event/config'
 
 RSpec.describe Listen::Event::Config do

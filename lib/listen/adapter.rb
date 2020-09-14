@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'listen/adapter/base'
 require 'listen/adapter/bsd'
 require 'listen/adapter/darwin'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This is just so stubs work
 require 'rb-fsevent'
 

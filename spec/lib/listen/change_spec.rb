@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe Listen::Change do
   let(:config) { instance_double(Listen::Change::Config) }
   let(:dir) { instance_double(Pathname) }
