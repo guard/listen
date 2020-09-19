@@ -7,7 +7,7 @@ require 'listen/event/loop'
 RSpec.describe Listen::Event::Loop do
   let(:config) { instance_double(Listen::Event::Config, 'config') }
   let(:processor) { instance_double(Listen::Event::Processor, 'processor') }
-  let(:thread) { instance_double(Thread) }
+  let(:thread) { instance_double(Thread, 'thread') }
 
   let(:reasons) { instance_double(::Queue, 'reasons') }
   let(:ready) { instance_double(::Queue, 'ready') }
@@ -33,6 +33,7 @@ RSpec.describe Listen::Event::Loop do
 
     allow(config).to receive(:min_delay_between_events).and_return(1.234)
 
+    allow(thread).to receive(:name=)
     allow(Thread).to receive(:new) do |*_, &block|
       blocks[:thread_block] = block
       thread
@@ -40,12 +41,6 @@ RSpec.describe Listen::Event::Loop do
 
     allow(Kernel).to receive(:sleep) do |*args|
       fail "stub called: sleep(#{args.map(&:inspect) * ','})"
-    end
-
-    allow(subject).to receive(:_nice_error) do |ex|
-      indent = "\n -- "
-      backtrace = ex.backtrace.reject { |line| line =~ %r{\/gems\/} }
-      fail "error called: #{ex}: #{indent}#{backtrace * indent}"
     end
   end
 

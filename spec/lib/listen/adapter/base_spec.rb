@@ -25,6 +25,7 @@ RSpec.describe Listen::Adapter::Base do
     end
   end
 
+  let(:thread) { instance_double(Thread, "thread") }
   let(:dir1) { instance_double(Pathname, 'dir1', to_s: '/foo/dir1') }
 
   let(:config) { instance_double(Listen::Adapter::Config) }
@@ -43,7 +44,11 @@ RSpec.describe Listen::Adapter::Base do
     allow(config).to receive(:silencer).and_return(silencer)
     allow(config).to receive(:adapter_options).and_return(adapter_options)
 
-    allow(Thread).to receive(:new) { |&block| block.call }
+    allow(Thread).to receive(:new) do |&block|
+      block.call
+      allow(thread).to receive(:name=)
+      thread
+    end
 
     # Stuff that happens in configure()
     allow(Listen::Record).to receive(:new).with(dir1).and_return(record)

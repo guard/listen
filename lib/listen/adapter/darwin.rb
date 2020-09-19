@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'thread'
+require 'listen/thread'
 
 module Listen
   module Adapter
@@ -46,7 +46,10 @@ module Listen
         dirs_to_watch = @callbacks.keys.map(&:to_s)
         Listen.logger.info { "fsevent: watching: #{dirs_to_watch.inspect}" }
         worker.watch(dirs_to_watch, { latency: options.latency }, &method(:_process_changes))
-        @worker_thread = Thread.new { _run_worker(worker) }
+        @worker_thread = Listen::Thread.new("worker_thread") do
+          _log(:debug) { "fsevent: running worker: #{worker.inspect}" }
+          worker.run
+        end
       end
 
       def _process_changes(dirs)

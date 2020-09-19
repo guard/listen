@@ -3,6 +3,7 @@
 require 'listen/options'
 require 'listen/record'
 require 'listen/change'
+require 'listen/thread'
 
 module Listen
   module Adapter
@@ -71,18 +72,11 @@ module Listen
 
         @started = true
 
-        calling_stack = caller.dup
-        @run_thread = Thread.new do
-          begin
-            @snapshots.values.each do |snapshot|
-              _timed('Record.build()') { snapshot.record.build }
-            end
-            _run
-          rescue
-            msg = 'run() in thread failed: %s:\n'\
-              ' %s\n\ncalled from:\n %s'
-            _log_exception(msg, calling_stack)
+        @run_thread = Listen::Thread.new("run_thread") do
+          @snapshots.values.each do |snapshot|
+            _timed('Record.build()') { snapshot.record.build }
           end
+          _run
         end
       end
 

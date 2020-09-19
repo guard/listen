@@ -4,6 +4,7 @@ require 'thread'
 
 require 'timeout'
 require 'listen/event/processor'
+require 'listen/thread'
 
 module Listen
   module Event
@@ -45,7 +46,7 @@ module Listen
 
         transition! :starting
 
-        @wait_thread = Thread.new do
+        @wait_thread = Listen::Thread.new("wait_thread") do
           _process_changes
         end
 
@@ -97,7 +98,7 @@ module Listen
           indent,
           ex.backtrace * indent
         )
-        Listen.logger.error(msg)
+        Listen::Logger.error(msg)
       end
 
       def _wakeup(reason)
