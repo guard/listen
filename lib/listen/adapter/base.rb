@@ -82,7 +82,6 @@ module Listen
             msg = 'run() in thread failed: %s:\n'\
               ' %s\n\ncalled from:\n %s'
             _log_exception(msg, calling_stack)
-            raise # for unit tests mostly
           end
         end
       end
