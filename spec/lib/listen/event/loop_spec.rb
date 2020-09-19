@@ -84,7 +84,7 @@ RSpec.describe Listen::Event::Loop do
 
     describe '#stop' do
       before do
-        allow(thread).to receive_message_chain(:join, :kill)
+        allow(thread).to receive(:join)
       end
 
       it 'frees the thread' do
@@ -92,7 +92,7 @@ RSpec.describe Listen::Event::Loop do
       end
 
       it 'waits for the thread to finish' do
-        expect(thread).to receive_message_chain(:join, :kill)
+        expect(thread).to receive(:join)
         subject.stop
       end
 

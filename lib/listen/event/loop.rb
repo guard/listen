@@ -68,7 +68,7 @@ module Listen
         transition! :stopped
 
         if @wait_thread.alive?
-          @wait_thread.join.kill
+          @wait_thread.join
         end
         @wait_thread = nil
       end
