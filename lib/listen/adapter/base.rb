@@ -32,7 +32,7 @@ module Listen
       # TODO: it's a separate method as a temporary workaround for tests
       def configure
         if @configured
-          _log(:warn, 'Adapter already configured!')
+          Listen.logger.warn('Adapter already configured!')
           return
         end
 
@@ -65,7 +65,7 @@ module Listen
         configure
 
         if started?
-          _log(:warn, 'Adapter already started!')
+          Listen.logger.warn('Adapter already started!')
           return
         end
 
@@ -104,9 +104,9 @@ module Listen
         start = Time.now.to_f
         yield
         diff = Time.now.to_f - start
-        Listen::Logger.info format('%s: %.05f seconds', title, diff)
+        Listen.logger.info format('%s: %.05f seconds', title, diff)
       rescue
-        Listen::Logger.warn "#{title} crashed: #{$ERROR_INFO.inspect}"
+        Listen.logger.warn "#{title} crashed: #{$ERROR_INFO.inspect}"
         raise
       end
 
@@ -114,10 +114,6 @@ module Listen
       # e.g. Darwin -> DirRescan, INotify -> MoveScan, etc.
       def _queue_change(type, dir, rel_path, options)
         @snapshots[dir].invalidate(type, rel_path, options)
-      end
-
-      def _log(*args, &block)
-        self.class.send(:_log, *args, &block)
       end
 
       def _log_exception(msg, caller_stack)
@@ -128,18 +124,12 @@ module Listen
           caller_stack * "\n"
         )
 
-        _log(:error, formatted)
+        Listen.logger.error(formatted)
       end
 
       class << self
         def usable?
           const_get('OS_REGEXP') =~ RbConfig::CONFIG['target_os']
-        end
-
-        private
-
-        def _log(*args, &block)
-          Listen::Logger.send(*args, &block)
         end
       end
     end

@@ -71,7 +71,7 @@ module Listen
       record.unset_path(rel_path)
       :removed
     rescue
-      Listen::Logger.debug "lstat failed for: #{rel_path} (#{$ERROR_INFO})"
+      Listen.logger.debug "lstat failed for: #{rel_path} (#{$ERROR_INFO})"
       raise
     end
 

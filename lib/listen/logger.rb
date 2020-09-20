@@ -1,34 +1,35 @@
 # frozen_string_literal: true
 
 module Listen
-  def self.logger
-    @logger ||= nil
-  end
+  @logger = nil
 
-  def self.logger=(logger)
-    @logger = logger
-  end
+  # Listen.logger will always be present.
+  # If you don't want logging, set Listen.logger = ::Logger.new('/dev/null', level: ::Logger::UNKNOWN)
 
-  def self.setup_default_logger_if_unset
-    self.logger ||= ::Logger.new(STDERR).tap do |logger|
-      debugging = ENV['LISTEN_GEM_DEBUGGING']
-      logger.level =
-        case debugging.to_s
-        when /2/
-          ::Logger::DEBUG
-        when /true|yes|1/i
-          ::Logger::INFO
-        else
-          ::Logger::ERROR
-        end
+  class << self
+    attr_writer :logger
+
+    def logger
+      @logger ||= default_logger
     end
-  end
 
-  class Logger
-    [:fatal, :error, :warn, :info, :debug].each do |meth|
-      define_singleton_method(meth) do |*args, &block|
-        Listen.logger.public_send(meth, *args, &block) if Listen.logger
-      end
+    private
+
+    def default_logger
+      level = case ENV['LISTEN_GEM_DEBUGGING'].to_s
+              when /debug|2/i
+                ::Logger::DEBUG
+              when /info|true|yes|1/i
+                ::Logger::INFO
+              when /warn/i
+                ::Logger::WARN
+              when /fatal/i
+                ::Logger::FATAL
+              else
+                ::Logger::ERROR
+              end
+
+      ::Logger.new(STDERR, level: level)
     end
   end
 end

@@ -49,12 +49,12 @@ module Listen
           _process_changes
         end
 
-        Listen::Logger.debug("Waiting for processing to start...")
+        Listen.logger.debug("Waiting for processing to start...")
 
         wait_for_state(:started, MAX_STARTUP_SECONDS) or
           raise Error::NotStarted, "thread didn't start in #{MAX_STARTUP_SECONDS} seconds (in state: #{state.inspect})"
 
-        Listen::Logger.debug('Processing started.')
+        Listen.logger.debug('Processing started.')
       end
 
       def pause
@@ -97,7 +97,7 @@ module Listen
           indent,
           ex.backtrace * indent
         )
-        Listen::Logger.error(msg)
+        Listen.logger.error(msg)
       end
 
       def _wakeup(reason)

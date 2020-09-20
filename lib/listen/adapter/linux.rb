@@ -47,7 +47,7 @@ module Listen
         path = Pathname.new(event.watcher.path) + event.name
         rel_path = path.relative_path_from(dir).to_s
 
-        _log(:debug) { "inotify: #{rel_path} (#{event.flags.inspect})" }
+        Listen.logger.debug { "inotify: #{rel_path} (#{event.flags.inspect})" }
 
         if /1|true/ =~ ENV['LISTEN_GEM_SIMULATE_FSEVENT']
           if (event.flags & [:moved_to, :moved_from]) || _dir_event?(event)

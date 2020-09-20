@@ -44,7 +44,7 @@ module Listen
         require 'rb-fsevent'
         worker = FSEvent.new
         dirs_to_watch = @callbacks.keys.map(&:to_s)
-        _log(:info) { "fsevent: watching: #{dirs_to_watch.inspect}" }
+        Listen.logger.info { "fsevent: watching: #{dirs_to_watch.inspect}" }
         worker.watch(dirs_to_watch, { latency: options.latency }, &method(:_process_changes))
         @worker_thread = Thread.new { _run_worker(worker) }
       end
@@ -62,14 +62,14 @@ module Listen
       end
 
       def _process_event(dir, path)
-        _log(:debug) { "fsevent: processing path: #{path.inspect}" }
+        Listen.logger.debug { "fsevent: processing path: #{path.inspect}" }
         # TODO: does this preserve symlinks?
         rel_path = path.relative_path_from(dir).to_s
         _queue_change(:dir, dir, rel_path, recursive: true)
       end
 
       def _run_worker(worker)
-        _log(:debug) { "fsevent: running worker: #{worker.inspect}" }
+        Listen.logger.debug { "fsevent: running worker: #{worker.inspect}" }
         worker.run
       rescue
         format_string = 'fsevent: running worker failed: %s:%s called from: %s'
