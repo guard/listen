@@ -36,12 +36,14 @@ RSpec.describe Listen::Thread do
     let(:block) do
       -> do
         begin
-          raise ArgumentError, 'boom!'
+          begin
+            raise ArgumentError, 'boom!'
+          rescue
+            raise 'nested inner'
+          end
         rescue
-          raise 'nested inner'
+          raise 'nested outer'
         end
-      rescue
-        raise 'nested outer'
       end
     end
 
