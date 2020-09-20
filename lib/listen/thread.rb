@@ -12,10 +12,12 @@ module Listen
 
         caller_stack = caller
         ::Thread.new do
-          yield
-        rescue Exception => ex
-          _log_exception(ex, thread_name, caller_stack)
-          nil
+          begin
+            yield
+          rescue Exception => ex
+            _log_exception(ex, thread_name, caller_stack)
+            nil
+          end
         end.tap do |thread|
           thread.name = thread_name
         end
