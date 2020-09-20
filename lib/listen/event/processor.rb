@@ -23,7 +23,7 @@ module Listen
           _process_changes(event)
         end
       rescue Stopped
-        Listen::Logger.debug('Processing stopped')
+        Listen.logger.debug('Processing stopped')
       end
 
       private
@@ -115,7 +115,7 @@ module Listen
 
         block_start = _timestamp
         config.call(*result)
-        Listen::Logger.debug "Callback took #{_timestamp - block_start} sec"
+        Listen.logger.debug "Callback took #{_timestamp - block_start} sec"
       end
 
       attr_reader :config

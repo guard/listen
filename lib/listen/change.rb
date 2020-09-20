@@ -37,13 +37,13 @@ module Listen
       cookie = options[:cookie]
 
       if !cookie && config.silenced?(rel_path, type)
-        Listen::Logger.debug { "(silenced): #{rel_path.inspect}" }
+        Listen.logger.debug { "(silenced): #{rel_path.inspect}" }
         return
       end
 
       path = watched_dir + rel_path
 
-      Listen::Logger.debug do
+      Listen.logger.debug do
         log_details = options[:silence] && 'recording' || change || 'unknown'
         "#{log_details}: #{type}:#{path} (#{options.inspect})"
       end
@@ -67,7 +67,7 @@ module Listen
         __method__,
         exinspect,
         ex.backtrace * "\n")
-      Listen::Logger.error(msg)
+      Listen.logger.error(msg)
       raise
     end
 

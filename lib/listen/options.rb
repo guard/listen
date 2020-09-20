@@ -12,7 +12,7 @@ module Listen
       return if given_options.empty?
 
       msg = "Unknown options: #{given_options.inspect}"
-      Listen::Logger.warn msg
+      Listen.logger.warn msg
       fail msg
     end
 

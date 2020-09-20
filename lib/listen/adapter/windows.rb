@@ -17,7 +17,7 @@ module Listen
         require 'wdm'
         true
       rescue LoadError
-        _log :debug, format('wdm - load failed: %s:%s', $ERROR_INFO,
+        Listen.logger.debug format('wdm - load failed: %s:%s', $ERROR_INFO,
                             $ERROR_POSITION * "\n")
 
         Kernel.warn BUNDLER_DECLARE_GEM
@@ -28,7 +28,7 @@ module Listen
 
       def _configure(dir)
         require 'wdm'
-        _log :debug, 'wdm - starting...'
+        Listen.logger.debug 'wdm - starting...'
         @worker ||= WDM::Monitor.new
         @worker.watch_recursively(dir.to_s, :files) do |change|
           yield([:file, change])
@@ -49,7 +49,7 @@ module Listen
       end
 
       def _process_event(dir, event)
-        _log :debug, "wdm - callback: #{event.inspect}"
+        Listen.logger.debug "wdm - callback: #{event.inspect}"
 
         type, change = event
 
@@ -82,7 +82,7 @@ module Listen
         end
       rescue
         details = event.inspect
-        _log :error, format('wdm - callback (%s): %s:%s', details, $ERROR_INFO,
+        Listen.logger.error format('wdm - callback (%s): %s:%s', details, $ERROR_INFO,
                             $ERROR_POSITION * "\n")
         raise
       end
