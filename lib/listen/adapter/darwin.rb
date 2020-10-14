@@ -46,10 +46,7 @@ module Listen
         dirs_to_watch = @callbacks.keys.map(&:to_s)
         Listen.logger.info { "fsevent: watching: #{dirs_to_watch.inspect}" }
         worker.watch(dirs_to_watch, { latency: options.latency }, &method(:_process_changes))
-        @worker_thread = Listen::Thread.new("worker_thread") do
-          _log(:debug) { "fsevent: running worker: #{worker.inspect}" }
-          worker.run
-        end
+        @worker_thread = Listen::Thread.new("worker_thread") { worker.run }
       end
 
       def _process_changes(dirs)
