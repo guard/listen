@@ -19,7 +19,7 @@ RSpec.describe 'Listen', acceptance: true do
     around { |example| fixtures { example.run } }
 
     context 'with change block raising' do
-      let(:callback) { ->(_, _, _) { fail 'foo' } }
+      let(:callback) { ->(_, _, _) { raise 'foo' } }
       let(:wrapper) { setup_listener(all_options, callback) }
 
       it 'warns the backtrace' do

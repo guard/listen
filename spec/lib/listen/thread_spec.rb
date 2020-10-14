@@ -20,13 +20,13 @@ RSpec.describe Listen::Thread do
     end
 
     it "rescues and logs exceptions" do
-      expect(Listen::Logger).to receive(:error)
+      expect(Listen.logger).to receive(:error)
         .with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread_spec\.rb/)
       subject.join
     end
 
     it "rescues and logs backtrace + exception backtrace" do
-      expect(Listen::Logger).to receive(:error)
+      expect(Listen.logger).to receive(:error)
         .with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread\.rb.*--- Thread.new ---.*\/listen\/thread_spec\.rb/m)
       subject.join
     end
@@ -48,7 +48,7 @@ RSpec.describe Listen::Thread do
     end
 
     it "details exception causes" do
-      expect(Listen::Logger).to receive(:error)
+      expect(Listen.logger).to receive(:error)
         .with(/RuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/)
       subject.join
     end

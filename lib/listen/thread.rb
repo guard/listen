@@ -28,7 +28,7 @@ module Listen
       def _log_exception(ex, thread_name, caller_stack)
         complete_backtrace = [*ex.backtrace, "--- Thread.new ---", *caller_stack]
         message = "Exception rescued in #{thread_name}:\n#{_exception_with_causes(ex)}\n#{complete_backtrace * "\n"}"
-        Listen::Logger.error(message)
+        Listen.logger.error(message)
       end
 
       def _exception_with_causes(ex)
