@@ -85,20 +85,6 @@ module Listen
         transition! :started
 
         processor.loop_for(@config.min_delay_between_events)
-
-      rescue StandardError => ex
-        _nice_error(ex)
-      end
-
-      def _nice_error(ex)
-        indent = "\n -- "
-        msg = format(
-          'exception while processing events: %s Backtrace:%s%s',
-          ex,
-          indent,
-          ex.backtrace * indent
-        )
-        Listen::Logger.error(msg)
       end
 
       def _wakeup(reason)
