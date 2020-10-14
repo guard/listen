@@ -26,6 +26,9 @@ jobs:
             ruby: truffleruby-head
             experimental: true
           - os: ubuntu
+            ruby: truffleruby-head
+            experimental: true
+          - os: ubuntu
             ruby: jruby
             experimental: true
           - os: ubuntu
@@ -40,7 +43,7 @@ jobs:
         bundler-cache: true
     
     - name: Run tests
-      timeout-minutes: 5
+      timeout-minutes: 6
       env:  
         TRUFFLERUBYOPT: '--experimental-options --engine.MultiTier --engine.Mode=latency'
       run: |
