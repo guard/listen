@@ -16,5 +16,4 @@ AllCops:
 
 # TODO: put your overrides here:
 Style/StringLiterals:
-  EnforcedStyle: single_quotes
-  Enabled: true
+  Enabled: false
