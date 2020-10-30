@@ -68,14 +68,6 @@ module Listen
         _queue_change(:dir, dir, rel_path, recursive: true)
       end
 
-      def _run_worker(worker)
-        Listen.logger.debug { "fsevent: running worker: #{worker.inspect}" }
-        worker.run
-      rescue
-        format_string = 'fsevent: running worker failed: %s:%s called from: %s'
-        _log_exception format_string, caller
-      end
-
       def _stop
         @worker_thread&.kill
         super
