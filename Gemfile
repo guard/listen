@@ -21,18 +21,19 @@ when /bsd|dragonfly/i
 end
 
 group :test do
+  gem 'coveralls'
   gem 'rake'
   gem 'rspec', '~> 3.3'
-  gem 'coveralls'
 end
 
 group :development do
-  gem 'yard', require: false
-  gem 'guard-rspec', require: false
-  gem 'rubocop', '~> 0.49.0' # TODO: should match Gemfile HoundCi
-  gem 'guard-rubocop'
-  gem 'pry-rescue'
+  gem 'bundler'
   gem 'gems', require: false
+  gem 'guard-rspec', require: false
+  gem 'guard-rubocop'
   gem 'netrc', require: false
   gem 'octokit', require: false
+  gem 'pry-rescue'
+  gem 'rubocop', '~> 0.49.0' # TODO: should match Gemfile HoundCi
+  gem 'yard', require: false
 end
