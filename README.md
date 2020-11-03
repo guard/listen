@@ -1,8 +1,8 @@
 # Listen
 
-The Listen gem listens to file modifications and notifies you about the changes.
+The `listen` gem listens to file modifications and notifies you about the changes.
 
-:exclamation: Listen is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
+:exclamation: `Listen` is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
 
 [![Development Status](https://github.com/guard/listen/workflows/Development/badge.svg)](https://github.com/guard/listen/actions?workflow=Development)
 [![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen)
@@ -25,37 +25,80 @@ The Listen gem listens to file modifications and notifies you about the changes.
   * Symlinked directories pointing within a watched directory are not supported ([#273](https://github.com/guard/listen/pull/273)- see [Duplicate directory errors](https://github.com/guard/listen/wiki/Duplicate-directory-errors)).
 * No directory/adapter-specific configuration options.
 * Support for plugins planned for future.
-* TCP functionality was removed in Listen [3.0.0](https://github.com/guard/listen/releases/tag/v3.0.0) ([#319](https://github.com/guard/listen/issues/319), [#218](https://github.com/guard/listen/issues/218)). There are plans to extract this feature to separate gems ([#258](https://github.com/guard/listen/issues/258)), until this is finished, you can use by locking the `listen` gem to version `'~> 2.10'`.
+* TCP functionality was removed in `listen` [3.0.0](https://github.com/guard/listen/releases/tag/v3.0.0) ([#319](https://github.com/guard/listen/issues/319), [#218](https://github.com/guard/listen/issues/218)). There are plans to extract this feature to separate gems ([#258](https://github.com/guard/listen/issues/258)), until this is finished, you can use by locking the `listen` gem to version `'~> 2.10'`.
 * Some filesystems won't work without polling (VM/Vagrant Shared folders, NFS, Samba, sshfs, etc.).
 * Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 * Windows and \*BSD adapter aren't continuously and automatically tested.
 * OSX adapter has some performance limitations ([#342](https://github.com/guard/listen/issues/342)).
-* Ruby < 2.2.x is no longer supported - upgrade to Ruby 2.2 or 2.3.
 * Listeners do not notify across forked processes, if you wish for multiple processes to receive change notifications you must [listen inside of each process](https://github.com/guard/listen/issues/398#issuecomment-223957952).
 
 Pull requests or help is very welcome for these.
 
 ## Install
 
-The simplest way to install Listen is to use [Bundler](http://bundler.io).
+The simplest way to install `listen` is to use [Bundler](http://bundler.io).
 
 ```ruby
-gem 'listen', '~> 3.0' # NOTE: for TCP functionality, use '~> 2.10' for now
+gem 'listen', '~> 3.3' # NOTE: for TCP functionality, use '~> 2.10' for now
+```
+
+## Complete Example
+Here is a complete example of using the `listen` gem:
+```ruby
+require 'listen'
+
+listener = Listen.to('/srv/app') do |modified, added, removed|
+  puts(modified: modified, added: added, removed: removed)
+end
+listener.start
+sleep
+```
+Running the above in the background, you can see the callback block being called in response to each command:
+```
+$ cd /srv/app
+$ touch a.txt
+{:modified=>[], :added=>["/srv/app/a.txt"], :removed=>[]}
+
+$ echo more >> a.txt
+{:modified=>["/srv/app/a.txt"], :added=>[], :removed=>[]}
+
+$ mv a.txt b.txt
+{:modified=>[], :added=>["/srv/app/b.txt"], :removed=>["/srv/app/a.txt"]}
+
+$ vi b.txt
+# add a line to this new file and press ZZ to save and exit
+{:modified=>["/srv/app/b.txt"], :added=>[], :removed=>[]}
+
+$ vi c.txt
+# add a line and press ZZ to save and exit
+{:modified=>[], :added=>["/srv/app/c.txt"], :removed=>[]}
+
+$ rm b.txt c.txt
+{:modified=>[], :added=>[], :removed=>["/srv/app/b.txt", "/srv/app/c.txt"]}
 ```
 
 ## Usage
 
-Call `Listen.to` with either a single directory or multiple directories, then define the "changes" callback in a block.
+Call `Listen.to` with one or more directories and the "changes" callback passed as a block.
 
 ``` ruby
 listener = Listen.to('dir/to/listen', 'dir/to/listen2') do |modified, added, removed|
-  puts "modified absolute path: #{modified}"
-  puts "added absolute path: #{added}"
-  puts "removed absolute path: #{removed}"
+  puts "modified absolute path array: #{modified}"
+  puts "added absolute path array: #{added}"
+  puts "removed absolute path array: #{removed}"
 end
-listener.start # not blocking
+listener.start # starts a listener thread--does not block
+
+# do whatever you want here...just don't exit the process :)
+
 sleep
 ```
+## Changes Callback
+
+Changes to the listened-to directories are reported by the listener thread in a callback.
+The callback receives **three** array parameters: `modified`, `added` and `removed`, in that order.
+Each of these three is always an array with 0 or more entries.
+Each array entry is an absolute path.
 
 ### Pause / unpause / stop
 
@@ -76,13 +119,14 @@ listener.unpause # resumes processing changes ("start" would do the same)
 listener.stop    # stop both listening to changes and processing them
 ```
 
-  Note: While paused, Listen keeps on collecting changes in the background - to clear them, call "stop"
+  Note: While paused, `listen` keeps on collecting changes in the background - to clear them, call `stop`.
 
-  Note: You should keep track of all started listeners and stop them properly on finish.
+  Note: You should keep track of all started listeners and `stop` them properly on finish.
 
 ### Ignore / ignore!
 
-Listen ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer), you can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
+`Listen` ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer).
+You can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen', ignore: /\.txt/) { |modified, added, removed| # ... }
@@ -94,11 +138,11 @@ sleep
 
 Note: `:ignore` regexp patterns are evaluated against relative paths.
 
-Note: Ignoring paths does not improve performance, except when Polling ([#274](https://github.com/guard/listen/issues/274))
+Note: Ignoring paths does not improve performance, except when Polling ([#274](https://github.com/guard/listen/issues/274)).
 
 ### Only
 
-Listen catches all files (less the ignored ones) by default. If you want to only listen to a specific type of file (i.e., just `.rb` extension), you should use the `only` option/method.
+`Listen` watches all files (less the ignored ones) by default. If you want to only listen to a specific type of file (i.e., just `.rb` extension), you should use the `only` option/method.
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen', only: /\.rb$/) { |modified, added, removed| # ... }
@@ -109,35 +153,6 @@ sleep
 
 Note: `:only` regexp patterns are evaluated only against relative **file** paths.
 
-
-## Changes callback
-
-Changes to the listened-to directories gets reported back to the user in a callback.
-The registered callback gets invoked, when there are changes, with **three** parameters:
-`modified`, `added` and `removed` paths, in that particular order.
-Paths are always returned in their absolute form.
-
-Example:
-
-```ruby
-listener = Listen.to('path/to/app') do |modified, added, removed|
-  # This block will be called when there are changes.
-end
-listener.start
-sleep
-```
-
-or ...
-
-```ruby
-# Create a callback
-callback = Proc.new do |modified, added, removed|
-  # This proc will be called when there are changes.
-end
-listener = Listen.to('dir', &callback)
-listener.start
-sleep
-```
 
 ## Options
 
@@ -168,16 +183,42 @@ polling_fallback_message: 'custom message'      # Set a custom polling fallback 
                                                 # default: "Listen will be polling for changes. Learn more at https://github.com/guard/listen#listen-adapters."
 ```
 
-## Debugging
+## Logging and Debugging
 
-Setting the environment variable `LISTEN_GEM_DEBUGGING=1` sets up the INFO level logger, while `LISTEN_GEM_DEBUGGING=2` sets up the DEBUG level logger.
+`Listen` logs its activity to `Listen.logger`.
+This is the primary method of debugging.
 
-You can also set `Listen.logger` to a custom logger.
+### Custom Logger
+You can call `Listen.logger =` to set a custom `listen` logger for the process. For example:
+```
+Listen.logger = Rails.logger
+```
 
+### Default Logger
+If no custom logger is set, a default `listen` logger which logs to to `STDERR` will be created and assigned to `Listen.logger`.
 
-## Listen adapters
+The default logger defaults to the `error` logging level (severity).
+You can override the logging level by setting the environment variable `LISTEN_GEM_DEBUGGING=<level>`.
+For `<level>`, all standard `::Logger` levels are supported, with any mix of upper-/lower-case:
+```
+export LISTEN_GEM_DEBUGGING=debug # or 2 [deprecated]
+export LISTEN_GEM_DEBUGGING=info  # or 1 or true or yes [deprecated]
+export LISTEN_GEM_DEBUGGING=warn
+export LISTEN_GEM_DEBUGGING=fatal
+export LISTEN_GEM_DEBUGGING=error
+```
+The default of `error` will be used if an unsupported value is set.
 
-The Listen gem has a set of adapters to notify it when there are changes.
+Note: The alternate values `1`, `2`, `true` and `yes` shown above are deprecated and will be removed from `listen` v4.0.
+
+### Disabling Logging
+If you want to disable `listen` logging, set
+```
+Listen.logger = ::Logger.new('/dev/null')
+```
+## Listen Adapters
+
+The `Listen` gem has a set of adapters to notify it when there are changes.
 
 There are 4 OS-specific adapters to support Darwin, Linux, \*BSD and Windows.
 These adapters are fast as they use some system-calls to implement the notifying function.
@@ -185,9 +226,9 @@ These adapters are fast as they use some system-calls to implement the notifying
 There is also a polling adapter - although it's much slower than other adapters,
 it works on every platform/system and scenario (including network filesystems such as VM shared folders).
 
-The Darwin and Linux adapters are dependencies of the Listen gem so they work out of the box. For other adapters a specific gem will have to be added to your Gemfile, please read below.
+The Darwin and Linux adapters are dependencies of the `listen` gem so they work out of the box. For other adapters a specific gem will have to be added to your Gemfile, please read below.
 
-The Listen gem will choose the best adapter automatically, if present. If you
+The `listen` gem will choose the best adapter automatically, if present. If you
 want to force the use of the polling adapter, use the `:force_polling` option
 while initializing the listener.
 
@@ -219,31 +260,33 @@ end
 
 Please visit the [installation section of the Listen WIKI](https://github.com/guard/listen/wiki#installation) for more information and options for potential fixes.
 
-### Issues and troubleshooting
+### Issues and Troubleshooting
 
-*NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=1` environment variable, it can be almost impossible to guess why listen is not working as expected.*
+If the gem doesn't work as expected, start by setting `LISTEN_GEM_DEBUGGING=debug` or `LISTEN_GEM_DEBUGGING=info` as described above in [Logging and Debugging](#logging-and-debugging).
+
+*NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=debug` environment variable, it is usually impossible to guess why `listen` is not working as expected.*
 
 See [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting)
 
 ## Performance
 
-If Listen seems slow or unresponsive, make sure you're not using the Polling adapter (you should see a warning upon startup if you are).
+If `listen` seems slow or unresponsive, make sure you're not using the Polling adapter (you should see a warning upon startup if you are).
 
 Also, if the directories you're watching contain many files, make sure you're:
 
 * not using Polling (ideally)
 * using `:ignore` and `:only` options to avoid tracking directories you don't care about (important with Polling and on MacOS)
-* running Listen with the `:latency` and `:wait_for_delay` options not too small or too big (depends on needs)
+* running `listen` with the `:latency` and `:wait_for_delay` options not too small or too big (depends on needs)
 * not watching directories with log files, database files or other frequently changing files
-* not using a version of Listen prior to 2.7.7
-* not getting silent crashes within Listen (see LISTEN_GEM_DEBUGGING=2)
-* not running multiple instances of Listen in the background
+* not using a version of `listen` prior to 2.7.7
+* not getting silent crashes within `listen` (see `LISTEN_GEM_DEBUGGING=debug`)
+* not running multiple instances of `listen` in the background
 * using a file system with atime modification disabled (ideally)
 * not using a filesystem with inaccurate file modification times (ideally), e.g. HFS, VFAT
 * not buffering to a slow terminal (e.g. transparency + fancy font + slow gfx card + lots of output)
 * ideally not running a slow encryption stack, e.g. btrfs + ecryptfs
 
-When in doubt, LISTEN_GEM_DEBUGGING=2 can help discover the actual events and time they happened.
+When in doubt, `LISTEN_GEM_DEBUGGING=debug` can help discover the actual events and time they happened.
 
 See also [Tips and Techniques](https://github.com/guard/listen/wiki/Tips-and-Techniques).
 
