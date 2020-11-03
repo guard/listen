@@ -11,6 +11,7 @@ module Listen
           :recursive,
           :attrib,
           :create,
+          :modify,
           :delete,
           :move,
           :close_write
