@@ -30,6 +30,7 @@ The `listen` gem listens to file modifications and notifies you about the change
 * Specs suite on JRuby and Rubinius aren't reliable on Travis CI, but should work.
 * Windows and \*BSD adapter aren't continuously and automatically tested.
 * OSX adapter has some performance limitations ([#342](https://github.com/guard/listen/issues/342)).
+* FreeBSD users need patched version of rb-kqueue (as of 2020/11). See #475 for the issue, mat813/rb-kqueue#12 for the patch, and Bug 250432 in bugzilla.
 * Listeners do not notify across forked processes, if you wish for multiple processes to receive change notifications you must [listen inside of each process](https://github.com/guard/listen/issues/398#issuecomment-223957952).
 
 Pull requests or help is very welcome for these.
