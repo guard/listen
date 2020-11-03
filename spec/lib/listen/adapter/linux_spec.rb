@@ -12,6 +12,9 @@ RSpec.describe Listen::Adapter::Linux do
   end
 
   if linux?
+    before(:all) do
+      require 'rb-inotify'
+    end
     let(:dir1) { Pathname.new("/foo/dir1") }
 
     let(:config) { instance_double(Listen::Adapter::Config, "config") }
@@ -23,12 +26,33 @@ RSpec.describe Listen::Adapter::Linux do
     # TODO: fix other adapters too!
     subject { described_class.new(config) }
 
+    describe 'watch events' do
+      let(:directories) { [Pathname.pwd] }
+      let(:adapter_options) { {} }
+      let(:default_events) { [:recursive, :attrib, :create, :modify, :delete, :move, :close_write] }
+      let(:fake_worker) { double(:fake_worker) }
+      let(:fake_notifier) { double(:fake_notifier, new: fake_worker) }
+
+      before do
+        stub_const('INotify::Notifier', fake_notifier)
+
+        allow(config).to receive(:directories).and_return(directories)
+        allow(config).to receive(:adapter_options).and_return(adapter_options)
+        allow(config).to receive(:queue).and_return(queue)
+        allow(config).to receive(:silencer).and_return(silencer)
+      end
+
+      it 'starts by calling watch with default events' do
+        expect(fake_worker).to receive(:watch).with(*directories.map(&:to_s), *default_events)
+        subject.start
+      end
+    end
+
     describe 'inotify limit message' do
       let(:directories) { [Pathname.pwd] }
       let(:adapter_options) { {} }
 
       before do
-        require 'rb-inotify'
         fake_worker = double(:fake_worker)
         allow(fake_worker).to receive(:watch).and_raise(Errno::ENOSPC)
 
