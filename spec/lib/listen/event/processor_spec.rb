@@ -222,4 +222,29 @@ RSpec.describe Listen::Event::Processor do
       end
     end
   end
+
+  describe '_process_changes' do
+    context 'when it raises an exception derived from StandardError or not' do
+      before do
+        allow(event_queue).to receive(:empty?).and_return(true)
+        allow(config).to receive(:callable?).and_return(true)
+        resulting_changes = { modified: ['foo'], added: [], removed: [] }
+        allow(config).to receive(:optimize_changes).with(anything).and_return(resulting_changes)
+        expect(config).to receive(:call).and_raise(ArgumentError, "bang!")
+        expect(config).to receive(:call).and_return(nil)
+        expect(config).to receive(:call).and_raise(ScriptError, "ruby typo!")
+      end
+
+      it 'rescues and logs exception and continues' do
+        expect(Listen.logger).to receive(:error).with(/Exception rescued in _process_changes:\nArgumentError: bang!/)
+        expect(Listen.logger).to receive(:error).with(/Exception rescued in _process_changes:\nScriptError: ruby typo!/)
+        expect(Listen.logger).to receive(:debug).with(/Callback \(exception\) took/)
+        expect(Listen.logger).to receive(:debug).with(/Callback took/)
+        expect(Listen.logger).to receive(:debug).with(/Callback \(exception\) took/)
+        subject.send(:_process_changes, event)
+        subject.send(:_process_changes, event)
+        subject.send(:_process_changes, event)
+      end
+    end
+  end
 end
