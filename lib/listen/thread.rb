@@ -21,7 +21,7 @@ module Listen
       end
 
       def rescue_and_log(method_name, *args, caller_stack: nil)
-        yield *args
+        yield(*args)
       rescue Exception => ex
         _log_exception(ex, method_name, caller_stack: caller_stack)
       end

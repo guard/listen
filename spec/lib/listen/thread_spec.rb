@@ -43,14 +43,14 @@ RSpec.describe Listen::Thread do
       end
 
       it "rescues and logs exceptions" do
-        expect(Listen.logger).to receive(:error)
-          .with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread_spec\.rb/)
+        expect(Listen.logger).to receive(:error).
+          with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread_spec\.rb/)
         subject.join
       end
 
       it "rescues and logs backtrace + exception backtrace" do
-        expect(Listen.logger).to receive(:error)
-          .with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread\.rb.*--- Thread.new ---.*\/listen\/thread_spec\.rb/m)
+        expect(Listen.logger).to receive(:error).
+          with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread\.rb.*--- Thread.new ---.*\/listen\/thread_spec\.rb/m)
         subject.join
       end
     end
@@ -59,8 +59,8 @@ RSpec.describe Listen::Thread do
       let(:block) { raise_nested_exception_block }
 
       it "details exception causes" do
-        expect(Listen.logger).to receive(:error)
-          .with(/RuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/)
+        expect(Listen.logger).to receive(:error).
+          with(/RuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/)
         subject.join
       end
     end
@@ -77,8 +77,8 @@ RSpec.describe Listen::Thread do
 
   describe '.rescue_and_log' do
     it 'rescues and logs nested exceptions' do
-      expect(Listen.logger).to receive(:error)
-       .with(/Exception rescued in method:\nRuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/) do |message|
+      expect(Listen.logger).to receive(:error).
+        with(/Exception rescued in method:\nRuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/) do |message|
         expect(message).to_not match(/Thread\.new/)
       end
       described_class.rescue_and_log("method", &raise_nested_exception_block)
