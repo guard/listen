@@ -16,7 +16,7 @@ The `listen` gem listens to file modifications and notifies you about the change
 * You can watch multiple directories.
 * Regexp-patterns for ignoring paths for more accuracy and speed
 * Increased change detection accuracy on OS X HFS and VFAT volumes.
-* Tested on selected Ruby environments via [Travis CI](https://travis-ci.org/guard/listen). (See [.travis.yml](https:///github.com/guard/listen/master/.travis.yml) for supported/tested Ruby Versions),
+* Continuous Integration: tested on selected Ruby environments via [Github Workflows](https:///github.com/guard/listen/master/.github/workflows).
 
 ## Issues / limitations
 
