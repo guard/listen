@@ -114,8 +114,12 @@ module Listen
         return if result.all?(&:empty?)
 
         block_start = _timestamp
-        config.call(*result)
-        Listen.logger.debug "Callback took #{_timestamp - block_start} sec"
+        exception_note = " (exception)"
+        ::Listen::Thread.rescue_and_log('_process_changes') do
+          config.call(*result)
+          exception_note = nil
+        end
+        Listen.logger.debug "Callback#{exception_note} took #{_timestamp - block_start} sec"
       end
 
       attr_reader :config
