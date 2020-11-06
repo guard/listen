@@ -6,9 +6,9 @@ module Listen
   # @private api
   class Record
     class SymlinkDetector
-      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'.freeze
+      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'
 
-      SYMLINK_LOOP_ERROR = <<-EOS.freeze
+      SYMLINK_LOOP_ERROR = <<-EOS
         ** ERROR: directory is already being watched! **
 
         Directory: %s
@@ -33,7 +33,7 @@ module Listen
       private
 
       def _fail(symlinked, real_path)
-        STDERR.puts format(SYMLINK_LOOP_ERROR, symlinked, real_path)
+        warn format(SYMLINK_LOOP_ERROR, symlinked, real_path)
         fail Error, 'Failed due to looped symlinks'
       end
     end

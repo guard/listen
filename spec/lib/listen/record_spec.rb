@@ -36,7 +36,7 @@ RSpec.describe Listen::Record do
   def symlink(hash_or_dir)
     if hash_or_dir.is_a?(String)
       allow(::File).to receive(:realpath).with(hash_or_dir).
-        and_return(hash_or_dir)
+                         and_return(hash_or_dir)
     else
       hash_or_dir.each do |dir, real_path|
         allow(::File).to receive(:realpath).with(dir).and_return(real_path)
@@ -333,7 +333,7 @@ RSpec.describe Listen::Record do
 
       it 'shows a warning' do
         expect(STDERR).to receive(:puts).
-          with(/directory is already being watched/)
+                            with(/directory is already being watched/)
 
         record.build
         # expect { record.build }.

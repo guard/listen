@@ -38,9 +38,9 @@ RSpec.describe Adapter::Polling do
       allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
 
       allow(Listen::Change).to receive(:new).with(config, record).
-        and_return(snapshot)
+                                 and_return(snapshot)
       allow(Listen::Change::Config).to receive(:new).with(queue, silencer).
-        and_return(config)
+                                         and_return(config)
     end
 
     describe '#start' do
@@ -56,7 +56,7 @@ RSpec.describe Adapter::Polling do
 
       it 'notifies change on every listener directories path' do
         expect(snapshot).to receive(:invalidate).
-          with(:dir, '.', recursive: true)
+                              with(:dir, '.', recursive: true)
 
         t = Thread.new { subject.start }
         sleep 0.25

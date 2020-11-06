@@ -33,33 +33,33 @@ RSpec.describe Listen::Backend do
     stub_const('Listen::Adapter::Config', adapter_config_class)
 
     allow(adapter_config_class).to receive(:new).
-      with([dir1], queue, silencer, adapter_options).
-      and_return(adapter_config)
+                                     with([dir1], queue, silencer, adapter_options).
+                                     and_return(adapter_config)
 
     allow(Listen::Adapter).to receive(:select).
-      with(select_options).and_return(adapter_class)
+                                with(select_options).and_return(adapter_class)
 
     allow(adapter_class).to receive(:new).
-      with(adapter_config).and_return(adapter)
+                              with(adapter_config).and_return(adapter)
 
     allow(Listen::Adapter::Polling).to receive(:new).with(adapter_config).
-      and_return(adapter)
+                                         and_return(adapter)
 
     allow(config).to receive(:adapter_select_options).
-      and_return(select_options)
+                       and_return(select_options)
 
     allow(config).to receive(:adapter_instance_options).
-      and_return(adapter_options)
+                       and_return(adapter_options)
 
     allow(config).to receive(:min_delay_between_events).
-      and_return(config_min_delay_between_events)
+                       and_return(config_min_delay_between_events)
   end
 
   describe '#initialize' do
     context 'with config' do
       it 'sets up an adapter class' do
         expect(adapter_class).to receive(:new).
-          with(adapter_config).and_return(adapter)
+                                   with(adapter_config).and_return(adapter)
 
         subject
       end

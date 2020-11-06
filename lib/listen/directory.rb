@@ -38,11 +38,9 @@ module Listen
       previous = previous.reject { |entry, _| current.include? path + entry }
 
       _async_changes(snapshot, Pathname.new(rel_path), previous, options)
-
     rescue Errno::ENOENT, Errno::EHOSTDOWN
       record.unset_path(rel_path)
       _async_changes(snapshot, Pathname.new(rel_path), previous, options)
-
     rescue Errno::ENOTDIR
       # TODO: path not tested
       record.unset_path(rel_path)

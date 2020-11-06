@@ -12,7 +12,8 @@ module Listen
         event_queue,
         queue_optimizer,
         wait_for_delay,
-        &block)
+        &block
+      )
 
         @listener = listener
         @event_queue = event_queue
@@ -26,7 +27,7 @@ module Listen
       end
 
       def call(*args)
-        @block.call(*args) if @block
+        @block&.call(*args)
       end
 
       def timestamp

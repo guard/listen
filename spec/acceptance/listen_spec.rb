@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# encoding: UTF-8
-
 RSpec.describe 'Listen', acceptance: true do
   let(:base_options) { { latency: 0.1 } }
   let(:polling_options) { {} }
@@ -143,11 +141,10 @@ RSpec.describe 'Listen', acceptance: true do
                 example.run
               end
 
-              it 'listens to file move' do
-                expected = { modified: [],
-                             added: %w(file.rb),
-                             removed: %w(dir/file.rb)
-                }
+            it 'listens to file move' do
+              expected = { modified: [],
+                           added: %w(file.rb),
+                           removed: %w(dir/file.rb) }
 
                 expect(wrapper.listen do
                   mv 'dir/file.rb', 'file.rb'

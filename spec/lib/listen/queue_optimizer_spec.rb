@@ -20,13 +20,13 @@ RSpec.describe Listen::QueueOptimizer do
     allow(dir).to receive(:+).with('ignored') { ignored }
 
     allow(config).to receive(:silenced?).
-      with(Pathname('ignored'), :file) { true }
+                       with(Pathname('ignored'), :file) { true }
 
     allow(config).to receive(:silenced?).
-      with(Pathname('foo'), :file) { false }
+                       with(Pathname('foo'), :file) { false }
 
     allow(config).to receive(:silenced?).
-      with(Pathname('bar'), :file) { false }
+                       with(Pathname('bar'), :file) { false }
 
     allow(config).to receive(:exist?).with(foo).and_return(true)
     allow(config).to receive(:exist?).with(bar).and_return(true)

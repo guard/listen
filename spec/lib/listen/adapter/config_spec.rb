@@ -43,15 +43,15 @@ RSpec.describe Listen::Adapter::Config do
     allow(Pathname).to receive(:new).with(path2).and_return(path2)
 
     allow(Pathname).to receive(:new).with('symlinked_dir1').
-      and_return(symlinked_dir1)
+                         and_return(symlinked_dir1)
 
     allow(Pathname).to receive(:new).with('symlinked_dir2').
-      and_return(symlinked_dir2)
+                         and_return(symlinked_dir2)
 
     allow(Dir).to receive(:pwd).and_return('/real/current_path')
 
     allow(Pathname).to receive(:new).
-      with('/real/current_path').and_return(current_path)
+                         with('/real/current_path').and_return(current_path)
   end
 
   describe '#initialize' do
@@ -85,7 +85,7 @@ RSpec.describe Listen::Adapter::Config do
     end
 
     context 'with no directories' do
-      let(:directories) {}
+      let(:directories) { }
       it 'returns the current path in array' do
         expect(subject.directories).to eq([real_current_path])
       end
