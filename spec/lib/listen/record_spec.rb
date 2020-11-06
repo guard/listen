@@ -332,8 +332,8 @@ RSpec.describe Listen::Record do
       end
 
       it 'shows a warning' do
-        expect(STDERR).to receive(:puts).
-                            with(/directory is already being watched/)
+        expect_any_instance_of(Listen::Record::SymlinkDetector).to receive(:warn).
+                                                                     with(/directory is already being watched/)
 
         record.build
         # expect { record.build }.
