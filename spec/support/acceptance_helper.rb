@@ -162,20 +162,20 @@ class ListenerWrapper
     # Isolate collected changes between tests/listener instances
     @timed_changes = TimedChanges.new
 
-    if callback
-      @listener = Listen.send(*args) do |modified, added, removed|
-        # Add changes to trigger frozen Hash error, making sure lag is enough
-        _add_changes(:modified, modified, changes)
-        _add_changes(:added, added, changes)
-        _add_changes(:removed, removed, changes)
+    @listener = if callback
+                  Listen.send(*args) do |modified, added, removed|
+                    # Add changes to trigger frozen Hash error, making sure lag is enough
+                    _add_changes(:modified, modified, changes)
+                    _add_changes(:added, added, changes)
+                    _add_changes(:removed, removed, changes)
 
-        unless callback == :track_changes
-          callback.call(modified, added, removed)
-        end
-      end
-    else
-      @listener = Listen.send(*args)
-    end
+                    unless callback == :track_changes
+                      callback.call(modified, added, removed)
+                    end
+                  end
+                else
+                  Listen.send(*args)
+                end
   end
 
   def changes
@@ -215,7 +215,6 @@ class ListenerWrapper
     dst[type] += _relative_path(changes)
     dst[type].uniq!
     dst[type].sort!
-
   rescue RuntimeError => e
     raise unless e.message == "can't modify frozen Hash"
 

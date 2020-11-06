@@ -31,7 +31,7 @@ RSpec.describe Listen::Change do
       context 'with known change' do
         it 'notifies change directly to listener' do
           expect(config).to receive(:queue).
-            with(:file, :modified, Pathname.new('/dir'), 'file.rb', {})
+                              with(:file, :modified, Pathname.new('/dir'), 'file.rb', {})
 
           subject.invalidate(:file, 'file.rb', change: :modified)
         end
@@ -51,7 +51,7 @@ RSpec.describe Listen::Change do
 
         it "doesn't call Listen::File#change if path is silenced" do
           expect(config).to receive(:silenced?).
-            with('file.rb', :file).and_return(true)
+                              with('file.rb', :file).and_return(true)
 
           expect(Listen::File).to_not receive(:change)
           subject.invalidate(:file, 'file.rb', {})
@@ -63,7 +63,7 @@ RSpec.describe Listen::Change do
           context 'listener listen' do
             it 'notifies change to listener' do
               expect(config).to receive(:queue).
-                with(:file, :modified, Pathname.new('/dir'), 'file.rb')
+                                  with(:file, :modified, Pathname.new('/dir'), 'file.rb')
 
               subject.invalidate(:file, 'file.rb', {})
             end
@@ -93,7 +93,7 @@ RSpec.describe Listen::Change do
 
       it 'calls Listen::Directory#new' do
         expect(Listen::Directory).to receive(:scan).
-          with(subject, 'dir1', dir_options)
+                                       with(subject, 'dir1', dir_options)
 
         subject.invalidate(:dir, 'dir1', dir_options)
       end

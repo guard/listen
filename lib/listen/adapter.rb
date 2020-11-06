@@ -11,7 +11,7 @@ module Listen
   module Adapter
     OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows].freeze
     POLLING_FALLBACK_MESSAGE = 'Listen will be polling for changes.'\
-      'Learn more at https://github.com/guard/listen#listen-adapters.'.freeze
+      'Learn more at https://github.com/guard/listen#listen-adapters.'
 
     class << self
       def select(options = {})
@@ -24,7 +24,7 @@ module Listen
         Polling
       rescue
         Listen.logger.warn format('Adapter: failed: %s:%s', $ERROR_POSITION.inspect,
-                           $ERROR_POSITION * "\n")
+                                  $ERROR_POSITION * "\n")
         raise
       end
 

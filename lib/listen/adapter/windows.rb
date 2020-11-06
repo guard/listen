@@ -5,7 +5,7 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Base
-      OS_REGEXP = /mswin|mingw|cygwin/i
+      OS_REGEXP = /mswin|mingw|cygwin/i.freeze
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
@@ -18,7 +18,7 @@ module Listen
         true
       rescue LoadError
         Listen.logger.debug format('wdm - load failed: %s:%s', $ERROR_INFO,
-                            $ERROR_POSITION * "\n")
+                                   $ERROR_POSITION * "\n")
 
         Kernel.warn BUNDLER_DECLARE_GEM
         false
@@ -83,7 +83,7 @@ module Listen
       rescue
         details = event.inspect
         Listen.logger.error format('wdm - callback (%s): %s:%s', details, $ERROR_INFO,
-                            $ERROR_POSITION * "\n")
+                                   $ERROR_POSITION * "\n")
         raise
       end
 

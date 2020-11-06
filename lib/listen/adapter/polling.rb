@@ -8,7 +8,7 @@ module Listen
     # file IO than the other implementations.
     #
     class Polling < Base
-      OS_REGEXP = // # match every OS
+      OS_REGEXP = //.freeze # match every OS
 
       DEFAULTS = { latency: 1.0, wait_for_delay: 0.05 }.freeze
 

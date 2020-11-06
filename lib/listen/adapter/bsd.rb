@@ -7,7 +7,7 @@
 module Listen
   module Adapter
     class BSD < Base
-      OS_REGEXP = /bsd|dragonfly/i
+      OS_REGEXP = /bsd|dragonfly/i.freeze
 
       DEFAULTS = {
         events: [
@@ -73,8 +73,7 @@ module Listen
       def _change(event_flags)
         { modified: [:attrib, :extend],
           added:    [:write],
-          removed:  [:rename, :delete]
-        }.each do |change, flags|
+          removed:  [:rename, :delete] }.each do |change, flags|
           return change unless (flags & event_flags).empty?
         end
         nil

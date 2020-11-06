@@ -4,7 +4,7 @@ module Listen
   module Adapter
     # @see https://github.com/nex3/rb-inotify
     class Linux < Base
-      OS_REGEXP = /linux/i
+      OS_REGEXP = /linux/i.freeze
 
       DEFAULTS = {
         events: [
@@ -22,7 +22,7 @@ module Listen
       private
 
       WIKI_URL = 'https://github.com/guard/listen'\
-        '/wiki/Increasing-the-amount-of-inotify-watchers'.freeze
+        '/wiki/Increasing-the-amount-of-inotify-watchers'
 
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
         FATAL: Listen error: unable to monitor directories for changes.

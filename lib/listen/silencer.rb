@@ -14,7 +14,7 @@ module Listen
       | log
       | tmp
       |vendor/ruby
-    )(/|$)}x
+    )(/|$)}x.freeze
 
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS = %r{(?:
@@ -55,7 +55,7 @@ module Listen
       | \.DS_Store
       | \.tmp
       | ~
-    )$}x
+    )$}x.freeze
 
     attr_accessor :only_patterns, :ignore_patterns
 
