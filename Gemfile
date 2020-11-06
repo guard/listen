@@ -34,6 +34,6 @@ group :development do
   gem 'netrc', require: false
   gem 'octokit', require: false
   gem 'pry-rescue'
-  gem 'rubocop', '~> 0.49.0' # TODO: should match Gemfile HoundCi
+  gem 'rubocop', '0.91.0'
   gem 'yard', require: false
 end
