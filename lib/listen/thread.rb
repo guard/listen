@@ -38,12 +38,12 @@ module Listen
         Listen.logger.error(message)
       end
 
-      def _exception_with_causes(ex)
-        result = +"#{ex.class}: #{ex}"
-        if ex.cause
+      def _exception_with_causes(exception)
+        result = +"#{exception.class}: #{exception}"
+        if exception.cause
           result << "\n"
           result << "--- Caused by: ---\n"
-          result << _exception_with_causes(ex.cause)
+          result << _exception_with_causes(exception.cause)
         end
         result
       end

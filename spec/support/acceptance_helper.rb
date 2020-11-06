@@ -143,7 +143,7 @@ end
 
 # Conveniently wrap a Listener instance for testing
 class ListenerWrapper
-  attr_reader :listener, :changes
+  attr_reader :listener
   attr_accessor :lag
 
   def initialize(callback, paths, *args)

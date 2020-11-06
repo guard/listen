@@ -70,22 +70,22 @@ module Listen
       end
 
       def _remember_time_of_first_unprocessed_event
-        @first_unprocessed_event_time ||= _timestamp
+        @_remember_time_of_first_unprocessed_event ||= _timestamp
       end
 
       def _reset_no_unprocessed_events
-        @first_unprocessed_event_time = nil
+        @_remember_time_of_first_unprocessed_event = nil
       end
 
       def _deadline
-        @first_unprocessed_event_time + @latency
+        @_remember_time_of_first_unprocessed_event + @latency
       end
 
       # blocks until event is popped
       # returns the event or `nil` when the event_queue is closed
       def _wait_until_events
         config.event_queue.pop.tap do |_event|
-          @first_unprocessed_event_time ||= _timestamp
+          @_remember_time_of_first_unprocessed_event ||= _timestamp
         end
       end
 

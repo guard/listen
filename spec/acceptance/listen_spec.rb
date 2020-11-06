@@ -18,15 +18,15 @@ RSpec.describe 'Listen', acceptance: true do
       let(:paths) { Pathname.new(Dir.pwd) }
       around { |example| fixtures { example.run } }
 
-      modes =
-        case ENV['TEST_LISTEN_ADAPTER_MODES'] || 'both'
-        when 'polling'
-          [true]
-        when 'native'
-          [false]
-        else
-          [false, true]
-        end
+    modes =
+      case ENV['TEST_LISTEN_ADAPTER_MODES']
+      when 'polling'
+        [true]
+      when 'native'
+        [false]
+      else
+        [false, true]
+      end
 
       # TODO: make it configurable
       # TODO: restore
