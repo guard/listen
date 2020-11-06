@@ -13,14 +13,14 @@ RSpec.describe Directory do
     instance_double(::File::Stat, name, defaults.merge(options))
   end
 
-  def fake_children(ex, dir, *args, &block)
+  def fake_children(exception, dir, *args, &block)
     if block_given?
-      ex.send(:allow, dir).to receive(:children, &block)
+      exception.send(:allow, dir).to receive(:children, &block)
     else
-      ex.send(:allow, dir).to receive(:children).and_return(*args)
+      exception.send(:allow, dir).to receive(:children).and_return(*args)
     end
-    ex.send(:allow, dir).to receive(:exist?).and_return(true)
-    ex.send(:allow, dir).to receive(:directory?).and_return(true)
+    exception.send(:allow, dir).to receive(:exist?).and_return(true)
+    exception.send(:allow, dir).to receive(:directory?).and_return(true)
   end
 
   let(:dir) { double(:dir) }

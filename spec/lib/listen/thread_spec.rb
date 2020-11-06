@@ -42,25 +42,39 @@ RSpec.describe Listen::Thread do
         -> { raise ArgumentError, 'boom!' }
       end
 
-      it "rescues and logs exceptions" do
-        expect(Listen.logger).to receive(:error).
-          with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread_spec\.rb/)
-        subject.join
-      end
-
-      it "rescues and logs backtrace + exception backtrace" do
-        expect(Listen.logger).to receive(:error).
-          with(/Exception rescued in listen-worker_thread:\nArgumentError: boom!\n.*\/listen\/thread\.rb.*--- Thread.new ---.*\/listen\/thread_spec\.rb/m)
-        subject.join
-      end
+    it "rescues and logs exceptions" do
+      pattern = <<~EOS.strip
+        Exception rescued in listen-worker_thread:
+        ArgumentError: boom!
+        .*\\/listen\\/thread_spec\\.rb
+      EOS
+      expect(Listen.logger).to receive(:error).with(/#{pattern}/)
+      subject.join
     end
+
+    it "rescues and logs backtrace + exception backtrace" do
+      pattern = <<~EOS.strip
+        Exception rescued in listen-worker_thread:
+        ArgumentError: boom!
+        .*\\/listen\\/thread\\.rb.*--- Thread.new ---.*\\/listen\\/thread_spec\\.rb
+      EOS
+      expect(Listen.logger).to receive(:error).with(/#{pattern}/m)
+      subject.join
+    end
+  end
 
     context "when nested exceptions raised" do
       let(:block) { raise_nested_exception_block }
 
       it "details exception causes" do
-        expect(Listen.logger).to receive(:error).
-          with(/RuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/)
+        pattern = <<~EOS
+          RuntimeError: nested outer
+          --- Caused by: ---
+          RuntimeError: nested inner
+          --- Caused by: ---
+          ArgumentError: boom!
+        EOS
+        expect(Listen.logger).to receive(:error).with(/#{pattern}/)
         subject.join
       end
     end
@@ -77,10 +91,15 @@ RSpec.describe Listen::Thread do
 
   describe '.rescue_and_log' do
     it 'rescues and logs nested exceptions' do
-      expect(Listen.logger).to receive(:error).
-        with(/Exception rescued in method:\nRuntimeError: nested outer\n--- Caused by: ---\nRuntimeError: nested inner\n--- Caused by: ---\nArgumentError: boom!/) do |message|
-        expect(message).to_not match(/Thread\.new/)
-      end
+      pattern = <<~EOS
+        Exception rescued in method:
+        RuntimeError: nested outer
+        --- Caused by: ---
+        RuntimeError: nested inner
+        --- Caused by: ---
+        ArgumentError: boom!
+      EOS
+      expect(Listen.logger).to receive(:error).with(/#{pattern}/)
       described_class.rescue_and_log("method", &raise_nested_exception_block)
     end
 
