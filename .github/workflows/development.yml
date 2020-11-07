@@ -44,7 +44,5 @@ jobs:
     
     - name: Run tests
       timeout-minutes: 6
-      env:  
-        TRUFFLERUBYOPT: '--experimental-options --engine.MultiTier --engine.Mode=latency'
       run: |
         ${{matrix.env}} bundle exec rspec
