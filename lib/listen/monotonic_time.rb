@@ -3,14 +3,24 @@
 module Listen
   module MonotonicTime
     class << self
-      def now
-        if defined?(Process::CLOCK_MONOTONIC)
+      if defined?(Process::CLOCK_MONOTONIC)
+
+        def now
           Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        elsif defined?(Process::CLOCK_MONOTONIC_RAW)
+        end
+
+      elsif defined?(Process::CLOCK_MONOTONIC_RAW)
+
+        def now
           Process.clock_gettime(Process::CLOCK_MONOTONIC_RAW)
-        else
+        end
+
+      else
+
+        def now
           Time.now.to_f
         end
+
       end
     end
   end
