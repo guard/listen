@@ -18,7 +18,7 @@ RSpec.describe Listen::Event::Processor do
   end
 
   let(:state) do
-    { time: 0.0 }
+    { monotonic_time: 0.0 }
   end
 
   def status_for_time(time)
@@ -32,15 +32,15 @@ RSpec.describe Listen::Event::Processor do
     allow(config).to receive(:event_queue).and_return(event_queue)
 
     allow(listener).to receive(:stopped?) do
-      status_for_time(state[:time]) == :stopped
+      status_for_time(state[:monotonic_time]) == :stopped
     end
 
     allow(listener).to receive(:paused?) do
-      status_for_time(state[:time]) == :paused
+      status_for_time(state[:monotonic_time]) == :paused
     end
 
-    allow(Time).to receive(:now) do
-      state[:time]
+    allow(Listen::MonotonicTime).to receive(:now) do
+      state[:monotonic_time]
     end
   end
 
@@ -91,14 +91,14 @@ RSpec.describe Listen::Event::Processor do
           end
 
           it 'sleeps, waiting to be woken up' do
-            expect(config).to receive(:sleep).once { state[:time] = 0.6 }
+            expect(config).to receive(:sleep).once { state[:monotonic_time] = 0.6 }
             expect(event_queue).to receive(:pop).and_return(event)
             subject.loop_for(1)
           end
 
           it 'breaks' do
             expect(event_queue).to receive(:pop).and_return(event)
-            allow(config).to receive(:sleep).once { state[:time] = 0.6 }
+            allow(config).to receive(:sleep).once { state[:monotonic_time] = 0.6 }
             expect(config).to_not receive(:call)
             subject.loop_for(1)
           end
@@ -113,11 +113,11 @@ RSpec.describe Listen::Event::Processor do
             it 'sleeps for latency to possibly later optimize some events' do
               # pretend we were woken up at 0.6 seconds since start
               allow(config).to receive(:sleep).
-                with(anything) { |*_args| state[:time] += 0.6 }
+                with(anything) { |*_args| state[:monotonic_time] += 0.6 }
 
               # pretend we slept for latency (now: 1.6 seconds since start)
               allow(config).to receive(:sleep).
-                with(1.0) { |*_args| state[:time] += 1.0 }
+                with(1.0) { |*_args| state[:monotonic_time] += 1.0 }
 
               expect(event_queue).to receive(:pop).and_return(event)
               subject.loop_for(1)
@@ -132,7 +132,7 @@ RSpec.describe Listen::Event::Processor do
             it 'still does not process events because it is paused' do
               # pretend we were woken up at 0.6 seconds since start
               allow(config).to receive(:sleep).
-                with(anything) { |*_args| state[:time] += 2.0 }
+                with(anything) { |*_args| state[:monotonic_time] += 2.0 }
 
               # second loop starts here (no sleep, coz recent events, but no
               # processing coz paused
@@ -140,7 +140,7 @@ RSpec.describe Listen::Event::Processor do
               # pretend we were woken up at 3.6 seconds since start
               allow(listener).to receive(:wait_for_state).
                 with(:initializing, :backend_started, :processing_events, :stopped) do |*_args|
-                state[:time] += 3.0
+                state[:monotonic_time] += 3.0
                 raise ScriptError, 'done'
               end
 
@@ -169,14 +169,14 @@ RSpec.describe Listen::Event::Processor do
             it 'sleeps, waiting to be woken up' do
               expect(event_queue).to receive(:pop).and_return(event)
               expect(config).to receive(:sleep).
-                once { |*_args| state[:time] = 0.6 }
+                once { |*_args| state[:monotonic_time] = 0.6 }
 
               subject.loop_for(1)
             end
 
             it 'breaks' do
               allow(config).to receive(:sleep).
-                once { |*_args| state[:time] = 0.6 }
+                once { |*_args| state[:monotonic_time] = 0.6 }
 
               expect(config).to_not receive(:call)
               expect(event_queue).to receive(:pop).and_return(event)
@@ -207,7 +207,7 @@ RSpec.describe Listen::Event::Processor do
 
               final_changes = [['foo'], [], []]
               allow(config).to receive(:call) do |*changes|
-                state[:time] = 4.0 # stopped
+                state[:monotonic_time] = 4.0 # stopped
                 expect(changes).to eq(final_changes)
               end
 
