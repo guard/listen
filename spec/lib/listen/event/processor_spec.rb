@@ -18,7 +18,7 @@ RSpec.describe Listen::Event::Processor do
   end
 
   let(:state) do
-    { time: 0 }
+    { time: 0.0 }
   end
 
   def status_for_time(time)
@@ -39,7 +39,7 @@ RSpec.describe Listen::Event::Processor do
       status_for_time(state[:time]) == :paused
     end
 
-    allow(config).to receive(:timestamp) do
+    allow(Time).to receive(:now) do
       state[:time]
     end
   end
@@ -67,9 +67,9 @@ RSpec.describe Listen::Event::Processor do
         it 'does not sleep' do
           expect(config).to_not receive(:sleep)
           expect(event_queue).to receive(:pop).and_return(event)
-          t = Time.now.to_f
+          t = Listen::MonotonicTime.now
           subject.loop_for(1)
-          diff = Time.now.to_f - t
+          diff = Listen::MonotonicTime.now - t
           expect(diff).to be < 0.02
         end
       end

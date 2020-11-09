@@ -93,9 +93,9 @@ module Listen
       end
 
       def _timed(title)
-        start = Time.now.to_f
+        start = MonotonicTime.now
         yield
-        diff = Time.now.to_f - start
+        diff = MonotonicTime.now - start
         Listen.logger.info format('%s: %.05f seconds', title, diff)
       rescue
         Listen.logger.warn "#{title} crashed: #{$ERROR_INFO.inspect}"

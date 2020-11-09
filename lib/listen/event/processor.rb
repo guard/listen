@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'listen/monotonic_time'
+
 module Listen
   module Event
     class Processor
@@ -33,7 +35,7 @@ module Listen
 
       def _wait_until_events_calm_down
         loop do
-          now = _timestamp
+          now = MonotonicTime.now
 
           # Assure there's at least latency between callbacks to allow
           # for accumulating changes
@@ -70,7 +72,7 @@ module Listen
       end
 
       def _remember_time_of_first_unprocessed_event
-        @_remember_time_of_first_unprocessed_event ||= _timestamp
+        @_remember_time_of_first_unprocessed_event ||= MonotonicTime.now
       end
 
       def _reset_no_unprocessed_events
@@ -85,7 +87,7 @@ module Listen
       # returns the event or `nil` when the event_queue is closed
       def _wait_until_events
         config.event_queue.pop.tap do |_event|
-          @_remember_time_of_first_unprocessed_event ||= _timestamp
+          @_remember_time_of_first_unprocessed_event ||= MonotonicTime.now
         end
       end
 
@@ -94,10 +96,6 @@ module Listen
           reason = @reasons.pop
           yield reason if block_given?
         end
-      end
-
-      def _timestamp
-        config.timestamp
       end
 
       # for easier testing without sleep loop
@@ -113,13 +111,13 @@ module Listen
         result = [hash[:modified], hash[:added], hash[:removed]]
         return if result.all?(&:empty?)
 
-        block_start = _timestamp
+        block_start = MonotonicTime.now
         exception_note = " (exception)"
         ::Listen::Thread.rescue_and_log('_process_changes') do
           config.call(*result)
           exception_note = nil
         end
-        Listen.logger.debug "Callback#{exception_note} took #{_timestamp - block_start} sec"
+        Listen.logger.debug "Callback#{exception_note} took #{MonotonicTime.now - block_start} sec"
       end
 
       attr_reader :config

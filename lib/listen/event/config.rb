@@ -28,10 +28,6 @@ module Listen
         @block&.call(*args)
       end
 
-      def timestamp
-        Time.now.to_f
-      end
-
       def callable?
         @block
       end

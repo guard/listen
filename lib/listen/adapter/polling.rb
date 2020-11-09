@@ -21,12 +21,13 @@ module Listen
 
       def _run
         loop do
-          start = Time.now.to_f
+          start = MonotonicTime.now
           @polling_callbacks.each do |callback|
             callback.call(nil)
-            nap_time = options.latency - (Time.now.to_f - start)
-            # TODO: warn if nap_time is negative (polling too slow)
-            sleep(nap_time) if nap_time > 0
+            if (nap_time = options.latency - (MonotonicTime.now - start)) > 0
+              # TODO: warn if nap_time is negative (polling too slow)
+              sleep(nap_time)
+            end
           end
         end
       end
