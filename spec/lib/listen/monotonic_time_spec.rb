@@ -3,6 +3,11 @@
 require 'listen/monotonic_time'
 
 RSpec.describe Listen::MonotonicTime do
+  after(:all) do
+    # load once more with constants unstubbed/unhidden
+    load './lib/listen/monotonic_time.rb'
+  end
+
   context 'module methods' do
     describe '.now' do
       subject { described_class.now }
@@ -11,6 +16,7 @@ RSpec.describe Listen::MonotonicTime do
       context 'when CLOCK_MONOTONIC defined' do
         before do
           stub_const('Process::CLOCK_MONOTONIC', 10)
+          load './lib/listen/monotonic_time.rb'
         end
 
         it 'returns the CLOCK_MONOTONIC tick count' do
@@ -23,6 +29,7 @@ RSpec.describe Listen::MonotonicTime do
         before do
           hide_const('Process::CLOCK_MONOTONIC')
           stub_const('Process::CLOCK_MONOTONIC_RAW', 11)
+          load './lib/listen/monotonic_time.rb'
         end
 
         it 'returns the floating point Time.now' do
@@ -37,6 +44,7 @@ RSpec.describe Listen::MonotonicTime do
         before do
           hide_const('Process::CLOCK_MONOTONIC')
           hide_const('Process::CLOCK_MONOTONIC_RAW')
+          load './lib/listen/monotonic_time.rb'
         end
 
         it 'returns the floating point Time.now' do
