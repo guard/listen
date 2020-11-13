@@ -67,7 +67,7 @@ module Listen
         return if stopped?
         transition! :stopped
 
-        if @wait_thread.alive?
+        if @wait_thread&.alive?
           @wait_thread.join
         end
         @wait_thread = nil
