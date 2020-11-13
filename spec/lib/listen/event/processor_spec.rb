@@ -70,7 +70,7 @@ RSpec.describe Listen::Event::Processor do
           t = Time.now.to_f
           subject.loop_for(1)
           diff = Time.now.to_f - t
-          expect(diff).to be < 0.01
+          expect(diff).to be < 0.02
         end
       end
     end
