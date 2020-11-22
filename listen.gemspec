@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.homepage    = 'https://github.com/guard/listen'
   gem.summary     = 'Listen to file modifications'
   gem.description = 'The Listen gem listens to file modifications and '\
-    'notifies you about the changegem. Works everywhere!'
+    'notifies you about the changes. Works everywhere!'
   gem.metadata = {
     'allowed_push_host' => 'https://rubygems.org'
   }
