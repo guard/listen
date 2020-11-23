@@ -33,6 +33,7 @@ module Listen
     # @yieldparam [Array<String>] added the list of added files
     # @yieldparam [Array<String>] removed the list of removed files
     #
+    # rubocop:disable Metrics/MethodLength
     def initialize(*dirs, &block)
       options = dirs.last.is_a?(Hash) ? dirs.pop : {}
 
@@ -60,6 +61,7 @@ module Listen
 
       initialize_fsm
     end
+    # rubocop:enable Metrics/MethodLength
 
     start_state :initializing
 

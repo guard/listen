@@ -43,19 +43,16 @@ module Listen
     end
 
     def dir_entries(rel_path)
-      subtree =
-        if [nil, '', '.'].include? rel_path.to_s
-          tree
-        else
-          _sub_tree(rel_path)
-        end
+      subtree = if [nil, '', '.'].include? rel_path.to_s
+                  tree
+                else
+                  _sub_tree(rel_path)
+                end
 
-      result = {}
-      subtree.each do |key, values|
+      subtree.each_with_object({}) do |(key, values), result|
         # only get data for file entries
         result[key] = values.key?(:mtime) ? values : {}
       end
-      result
     end
 
     def _sub_tree(rel_path)

@@ -38,8 +38,7 @@ module Listen
           yield([:dir, change])
         end
 
-        events = [:attributes, :last_write]
-        @worker.watch_recursively(dir.to_s, *events) do |change|
+        @worker.watch_recursively(dir.to_s, [:attributes, :last_write]) do |change|
           yield([:attr, change])
         end
       end
@@ -48,6 +47,7 @@ module Listen
         @worker.run!
       end
 
+      # rubocop:disable Metrics/MethodLength
       def _process_event(dir, event)
         Listen.logger.debug "wdm - callback: #{event.inspect}"
 
@@ -80,20 +80,15 @@ module Listen
             # so what's left?
           end
         end
-      rescue
-        details = event.inspect
-        Listen.logger.error format('wdm - callback (%s): %s:%s', details, $ERROR_INFO,
-                                   $ERROR_POSITION * "\n")
-        raise
       end
+      # rubocop:enable Metrics/MethodLength
 
       def _change(type)
         { modified: [:modified, :attrib], # TODO: is attrib really passed?
           added:    [:added, :renamed_new_file],
-          removed:  [:removed, :renamed_old_file] }.each do |change, types|
-          return change if types.include?(type)
+          removed:  [:removed, :renamed_old_file] }.find do |change, types|
+          types.include?(type) and break change
         end
-        nil
       end
     end
   end

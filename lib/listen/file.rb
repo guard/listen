@@ -4,6 +4,7 @@ require 'digest/md5'
 
 module Listen
   class File
+    # rubocop:disable Metrics/MethodLength
     def self.change(record, rel_path)
       path = Pathname.new(record.root) + rel_path
       lstat = path.lstat
@@ -74,6 +75,7 @@ module Listen
       Listen.logger.debug "lstat failed for: #{rel_path} (#{$ERROR_INFO})"
       raise
     end
+    # rubocop:enable Metrics/MethodLength
 
     def self.inaccurate_mac_time?(stat)
       # 'mac' means Modified/Accessed/Created

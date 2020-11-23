@@ -5,6 +5,7 @@ require 'set'
 module Listen
   # TODO: refactor (turn it into a normal object, cache the stat, etc)
   class Directory
+    # rubocop:disable Metrics/MethodLength
     def self.scan(snapshot, rel_path, options)
       record = snapshot.record
       dir = Pathname.new(record.root)
@@ -47,11 +48,10 @@ module Listen
       _async_changes(snapshot, path, previous, options)
       _change(snapshot, :file, rel_path, options)
     rescue
-      Listen.logger.warn do
-        format('scan DIED: %s:%s', $ERROR_INFO, $ERROR_POSITION * "\n")
-      end
+      Listen.logger.warn { format('scan DIED: %s:%s', $ERROR_INFO, $ERROR_POSITION * "\n") }
       raise
     end
+    # rubocop:enable Metrics/MethodLength
 
     def self.ascendant_of?(base, other)
       other.ascend do |ascendant|
@@ -86,8 +86,8 @@ module Listen
       # https://github.com/jruby/jruby/issues/3840
       exists = path.exist?
       directory = path.directory?
-      return path.children unless exists && !directory
-      raise Errno::ENOTDIR, path.to_s
+      exists && !directory and raise Errno::ENOTDIR, path.to_s
+      path.children
     end
   end
 end

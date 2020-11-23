@@ -30,13 +30,14 @@ module Listen
     end
 
     # Invalidate some part of the snapshot/record (dir, file, subtree, etc.)
+    # rubocop:disable Metrics/MethodLength
     def invalidate(type, rel_path, options)
       watched_dir = Pathname.new(record.root)
 
       change = options[:change]
       cookie = options[:cookie]
 
-      if !cookie && config.silenced?(rel_path, type)
+      if !cookie && @config.silenced?(rel_path, type)
         Listen.logger.debug { "(silenced): #{rel_path.inspect}" }
         return
       end
@@ -50,29 +51,15 @@ module Listen
 
       if change
         options = cookie ? { cookie: cookie } : {}
-        config.queue(type, change, watched_dir, rel_path, options)
+        @config.queue(type, change, watched_dir, rel_path, options)
       elsif type == :dir
         # NOTE: POSSIBLE RECURSION
         # TODO: fix - use a queue instead
         Directory.scan(self, rel_path, options)
-      else
-        change = File.change(record, rel_path)
-        return if !change || options[:silence]
-        config.queue(:file, change, watched_dir, rel_path)
+      elsif (change = File.change(record, rel_path)) && !options[:silence]
+        @config.queue(:file, change, watched_dir, rel_path)
       end
-    rescue RuntimeError => ex
-      msg = format(
-        '%s#%s crashed %s:%s',
-        self.class,
-        __method__,
-        exinspect,
-        ex.backtrace * "\n")
-      Listen.logger.error(msg)
-      raise
     end
-
-    private
-
-    attr_reader :config
+    # rubocop:enable Metrics/MethodLength
   end
 end

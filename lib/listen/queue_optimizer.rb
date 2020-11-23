@@ -106,6 +106,7 @@ module Listen
       end
     end
 
+    # rubocop:disable Metrics/MethodLength
     def _detect_possible_editor_save(changes)
       return unless changes.size == 2
 
@@ -127,8 +128,10 @@ module Listen
 
       # Expect an ignored moved_from and non-ignored moved_to
       # to qualify as an "editor modify"
-      return unless config.silenced?(Pathname(from), from_type)
-      config.silenced?(Pathname(to), to_type) ? nil : [to_dir, to]
+      if config.silenced?(Pathname(from), from_type) && !config.silenced?(Pathname(to), to_type)
+        [to_dir, to]
+      end
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end
