@@ -75,15 +75,15 @@ RSpec.describe Listen::QueueOptimizer do
 
     context 'with cookie' do
       context 'when single moved' do
-        let(:changes) { [[:file, :moved_to, dir, 'foo', cookie: 4321]] }
+        let(:changes) { [[:file, :moved_to, dir, 'foo', { cookie: 4321 }]] }
         it { is_expected.to eq(modified: [], added: ['foo'], removed: []) }
       end
 
       context 'when related moved_to' do
         let(:changes) do
           [
-            [:file, :moved_from, dir, 'foo', cookie: 4321],
-            [:file, :moved_to, dir, 'bar', cookie: 4321]
+            [:file, :moved_from, dir, 'foo', { cookie: 4321 }],
+            [:file, :moved_to, dir, 'bar', { cookie: 4321 }]
           ]
         end
         it { is_expected.to eq(modified: [], added: ['bar'], removed: []) }
@@ -93,8 +93,8 @@ RSpec.describe Listen::QueueOptimizer do
       context 'when related moved_to with ignored moved_from' do
         let(:changes) do
           [
-            [:file, :moved_from, dir, 'ignored', cookie: 4321],
-            [:file, :moved_to, dir, 'foo', cookie: 4321]
+            [:file, :moved_from, dir, 'ignored', { cookie: 4321 }],
+            [:file, :moved_to, dir, 'foo', { cookie: 4321 }]
           ]
         end
         it { is_expected.to eq(modified: ['foo'], added: [], removed: []) }

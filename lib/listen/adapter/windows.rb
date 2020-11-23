@@ -67,10 +67,11 @@ module Listen
             _queue_change(:file, dir, rel_path, options)
           end
         when :dir
-          if change.type == :removed
+          case change.type
+          when :removed
             # TODO: check if watched dir?
             _queue_change(:dir, dir, Pathname(rel_path).dirname.to_s, {})
-          elsif change.type == :added
+          when :added
             _queue_change(:dir, dir, rel_path, {})
             # do nothing - changed directory means either:
             #   - removed subdirs (handled above)

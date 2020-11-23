@@ -179,7 +179,7 @@ RSpec.describe Listen::File do
                     it { should be :modified }
 
                     it 'sets path in record with expected data' do
-                      expected = expected_data. merge(md5: md5)
+                      expected = expected_data.merge(md5: md5)
                       expect(record).to receive(:update_file).
                         with('file.rb', expected)
                       subject

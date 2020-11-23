@@ -25,9 +25,7 @@ module Listen
         @relative
       end
 
-      attr_reader :min_delay_between_events
-
-      attr_reader :silencer_rules
+      attr_reader :min_delay_between_events, :silencer_rules
 
       def adapter_instance_options(klass)
         valid_keys = klass.const_get('DEFAULTS').keys

@@ -5,10 +5,7 @@ require 'pathname'
 module Listen
   module Adapter
     class Config
-      attr_reader :directories
-      attr_reader :silencer
-      attr_reader :queue
-      attr_reader :adapter_options
+      attr_reader :directories, :silencer, :queue, :adapter_options
 
       def initialize(directories, queue, silencer, adapter_options)
         # Default to current directory if no directories are supplied

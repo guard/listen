@@ -8,12 +8,10 @@ require 'listen/thread'
 module Listen
   module Adapter
     class Base
-      attr_reader :options
+      attr_reader :options, :config
 
       # TODO: only used by tests
       DEFAULTS = {}.freeze
-
-      attr_reader :config
 
       def initialize(config)
         @started = false
@@ -75,7 +73,7 @@ module Listen
         @started = true
 
         @run_thread = Listen::Thread.new("run_thread") do
-          @snapshots.values.each do |snapshot|
+          @snapshots.each_value do |snapshot|
             _timed('Record.build()') { snapshot.record.build }
           end
           _run

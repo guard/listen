@@ -51,7 +51,7 @@ module Listen
 
       def _process_changes(dirs)
         dirs.each do |dir|
-          dir = Pathname.new(dir.sub(%r{\/$}, ''))
+          dir = Pathname.new(dir.sub(%r{/$}, ''))
 
           @callbacks.each do |watched_dir, callback|
             if watched_dir.eql?(dir) || Listen::Directory.ascendant_of?(watched_dir, dir)

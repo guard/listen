@@ -75,16 +75,18 @@ module Listen
     def silenced?(relative_path, type)
       path = relative_path.to_s
 
-      if only_patterns && type == :file
-        return true unless only_patterns.any? { |pattern| path =~ pattern }
-      end
-
-      ignore_patterns.any? { |pattern| path =~ pattern }
+      _ignore?(path) || (only_patterns && type == :file && !_only?(path))
     end
 
     private
 
-    attr_reader :options
+    def _ignore?(path)
+      ignore_patterns.any? { |pattern| path =~ pattern }
+    end
+
+    def _only?(path)
+      only_patterns.any? { |pattern| path =~ pattern }
+    end
 
     def _init_ignores(ignores, overrides)
       patterns = []

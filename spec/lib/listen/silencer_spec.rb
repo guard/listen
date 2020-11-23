@@ -9,7 +9,7 @@ RSpec.describe Listen::Silencer do
   before { subject.configure(options) }
 
   describe '#silenced?' do
-    it { should accept(:file, Pathname('some_dir') + 'some_file.rb') }
+    it { should accept(:file, Pathname('some_dir').join("some_file.rb")) }
 
     context 'with default ignore' do
       hidden_ignored = %w[.git .svn .hg .rbx .bundle]
@@ -69,7 +69,7 @@ RSpec.describe Listen::Silencer do
     end
 
     context 'when ignoring foo/bar* and *.pid' do
-      let(:options) { { ignore: [%r{^foo\/bar}, /\.pid$/] } }
+      let(:options) { { ignore: [%r{^foo/bar}, /\.pid$/] } }
       it { should_not accept(:file, 'foo/bar/baz') }
       it { should_not accept(:file, 'foo.pid') }
     end
@@ -87,7 +87,7 @@ RSpec.describe Listen::Silencer do
     end
 
     context 'when accepting only foo/* and *.txt' do
-      let(:options) { { only: [%r{^foo\/}, /\.txt$/] } }
+      let(:options) { { only: [%r{^foo/}, /\.txt$/] } }
       it { should accept(:file, 'foo/bar.rb') }
       it { should accept(:file, 'bar.txt') }
       it { should_not accept(:file, 'bar/baz.rb') }
