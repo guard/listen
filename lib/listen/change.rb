@@ -31,6 +31,8 @@ module Listen
 
     # Invalidate some part of the snapshot/record (dir, file, subtree, etc.)
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
     def invalidate(type, rel_path, options)
       watched_dir = Pathname.new(record.root)
 
@@ -61,5 +63,7 @@ module Listen
       end
     end
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
   end
 end
