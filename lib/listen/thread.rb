@@ -22,19 +22,19 @@ module Listen
 
       def rescue_and_log(method_name, *args, caller_stack: nil)
         yield(*args)
-      rescue Exception => ex
-        _log_exception(ex, method_name, caller_stack: caller_stack)
+      rescue Exception => exception # rubocop:disable Lint/RescueException
+        _log_exception(exception, method_name, caller_stack: caller_stack)
       end
 
       private
 
-      def _log_exception(ex, thread_name, caller_stack: nil)
+      def _log_exception(exception, thread_name, caller_stack: nil)
         complete_backtrace = if caller_stack
-                               [*ex.backtrace, "--- Thread.new ---", *caller_stack]
+                               [*exception.backtrace, "--- Thread.new ---", *caller_stack]
                              else
-                               ex.backtrace
+                               exception.backtrace
                              end
-        message = "Exception rescued in #{thread_name}:\n#{_exception_with_causes(ex)}\n#{complete_backtrace * "\n"}"
+        message = "Exception rescued in #{thread_name}:\n#{_exception_with_causes(exception)}\n#{complete_backtrace * "\n"}"
         Listen.logger.error(message)
       end
 
