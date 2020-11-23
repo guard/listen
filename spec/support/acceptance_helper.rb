@@ -42,7 +42,7 @@ def change_fs(type, path)
     # event (which otherwise may not be detected every time)
     _sleep_until_next_second(Pathname.pwd)
 
-    open(path, 'a') { |f| f.write('foo') }
+    File.open(path, 'a') { |f| f.write('foo') }
 
     # separate it from upcoming modifications"
     _sleep_to_separate_events
@@ -53,7 +53,7 @@ def change_fs(type, path)
     # event (which otherwise may not be detected every time)
     _sleep_until_next_second(Pathname.pwd)
 
-    open(path, 'w') { |f| f.write('foo') }
+    File.write(path, 'foo')
 
     # separate it from upcoming modifications"
     _sleep_to_separate_events
