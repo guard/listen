@@ -40,8 +40,7 @@ module Listen
 
       private
 
-      attr_reader :event_queue
-      attr_reader :config
+      attr_reader :event_queue, :config
 
       def _safe_relative_from_cwd(dir)
         return dir unless config.relative?

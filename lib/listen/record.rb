@@ -10,6 +10,7 @@ module Listen
     # TODO: deprecate
 
     attr_reader :root
+
     def initialize(directory)
       @tree = _auto_hash
       @root = directory.to_s
@@ -49,9 +50,9 @@ module Listen
                   _sub_tree(rel_path)
                 end
 
-      subtree.each_with_object({}) do |(key, values), result|
+      subtree.transform_values do |values|
         # only get data for file entries
-        result[key] = values.key?(:mtime) ? values : {}
+        values.key?(:mtime) ? values : {}
       end
     end
 

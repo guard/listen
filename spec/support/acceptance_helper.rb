@@ -14,9 +14,7 @@
       # 2. keep the queue if we're testing for existing accumulated changes
 
       # if were testing the queue (e.g. after unpause), don't reset
-      reset_queue = /queued_/ !~ description
-
-      actual.listen(reset_queue) do
+      actual.listen(reset_queue: /queued_/ !~ description) do
         change_fs(type, expected) if reset_queue
       end
       actual.changes[type].include? expected
@@ -116,7 +114,7 @@ class TimedChanges
   end
 
   # Allow changes only during specific time wine
-  def allow_changes(reset_queue = true)
+  def allow_changes(reset_queue: true)
     @freeze_time = nil
     if reset_queue
       # Clear to prepare for collecting new FS events
@@ -178,12 +176,12 @@ class ListenerWrapper
     @timed_changes.changes
   end
 
-  def listen(reset_queue = true)
+  def listen(reset_queue: true)
     # Give previous events time to be received, queued and processed
     # so they complete and don't interfere
     sleep lag
 
-    @timed_changes.allow_changes(reset_queue) do
+    @timed_changes.allow_changes(reset_queue: reset_queue) do
       yield
 
       # Polling sleep (default: 1s)
@@ -225,8 +223,8 @@ class ListenerWrapper
     changes.map do |change|
       unfrozen_copy = change.dup
       [@paths].flatten.each do |path|
-        sub = path.sub(%r{\/$}, '').to_s
-        unfrozen_copy.gsub!(%r{^#{sub}\/}, '')
+        sub = path.sub(%r{/$}, '').to_s
+        unfrozen_copy.gsub!(%r{^#{sub}/}, '')
       end
       unfrozen_copy
     end

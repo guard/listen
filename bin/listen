@@ -4,10 +4,8 @@
 require 'listen'
 require 'listen/cli'
 
-unless defined?(JRUBY_VERSION)
-  if Signal.list.keys.include?('INT')
-    Signal.trap('INT') { Thread.new { Listen.stop } }
-  end
+if !defined?(JRUBY_VERSION) && Signal.list.keys.include?('INT')
+  Signal.trap('INT') { Thread.new { Listen.stop } }
 end
 
 Listen::CLI.start

@@ -35,6 +35,7 @@ module Listen
 
   class Forwarder
     attr_reader :logger
+
     def initialize(options)
       @options = options
       @logger = ::Logger.new(STDOUT, level: ::Logger::INFO)

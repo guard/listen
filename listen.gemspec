@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   }
 
   gem.files = `git ls-files -z`.split("\x0").select do |f|
-    %r{^(?:bin|lib)\/} =~ f
+    %r{^(?:bin|lib)/} =~ f
   end + %w[CHANGELOG.md CONTRIBUTING.md LICENSE.txt README.md]
 
   gem.test_files   = []

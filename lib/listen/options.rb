@@ -5,7 +5,7 @@ module Listen
     def initialize(opts, defaults)
       @options = {}
       given_options = opts.dup
-      defaults.keys.each do |key|
+      defaults.each_key do |key|
         @options[key] = given_options.delete(key) || defaults[key]
       end
 
@@ -17,11 +17,11 @@ module Listen
     end
 
     def respond_to_missing?(name, *_)
-      @options.has_key?(name)
+      super || @options.has_key?(name)
     end
 
     def method_missing(name, *_)
-      respond_to_missing?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
+      super || respond_to_missing?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
       @options[name]
     end
   end

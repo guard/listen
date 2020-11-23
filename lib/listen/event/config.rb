@@ -3,9 +3,7 @@
 module Listen
   module Event
     class Config
-      attr_reader :listener
-      attr_reader :event_queue
-      attr_reader :min_delay_between_events
+      attr_reader :listener, :event_queue, :min_delay_between_events
 
       def initialize(
         listener,
