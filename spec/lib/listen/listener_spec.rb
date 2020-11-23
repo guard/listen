@@ -45,28 +45,28 @@ RSpec.describe Listener do
     allow(Silencer).to receive(:new) { silencer }
 
     allow(Backend).to receive(:new).
-                        with(anything, event_queue, silencer, anything).
-                        and_return(backend)
+      with(anything, event_queue, silencer, anything).
+      and_return(backend)
 
     allow(backend).to receive(:min_delay_between_events).
-                        and_return(backend_wait_for_delay)
+      and_return(backend_wait_for_delay)
 
     # TODO: use a configuration object to clean this up
 
     allow(QueueOptimizer::Config).to receive(:new).with(backend, silencer).
-                                       and_return(optimizer_config)
+      and_return(optimizer_config)
 
     allow(QueueOptimizer).to receive(:new).with(optimizer_config).
-                               and_return(optimizer)
+      and_return(optimizer)
 
     allow(Event::Queue).to receive(:new).and_return(event_queue)
 
     allow(Event::Config).to receive(:new).
-                              with(anything, event_queue, optimizer, backend_wait_for_delay).
-                              and_return(processor_config)
+      with(anything, event_queue, optimizer, backend_wait_for_delay).
+      and_return(processor_config)
 
     allow(Event::Loop).to receive(:new).with(processor_config).
-                            and_return(processor)
+      and_return(processor)
 
     allow(Record).to receive(:new).and_return(record)
 
@@ -109,8 +109,8 @@ RSpec.describe Listener do
 
       it 'passes directories to backend' do
         allow(Backend).to receive(:new).
-                            with(%w(dir1 dir2), anything, anything, anything).
-                            and_return(backend)
+          with(%w(dir1 dir2), anything, anything, anything).
+          and_return(backend)
         subject
       end
     end
@@ -250,7 +250,7 @@ RSpec.describe Listener do
         subject
 
         expect(silencer).to receive(:configure).once.
-                              with(ignore: [/bar/, /foo/])
+          with(ignore: [/bar/, /foo/])
 
         subject.ignore(/foo/)
       end
@@ -265,7 +265,7 @@ RSpec.describe Listener do
         subject
 
         expect(silencer).to receive(:configure).once.
-                              with(ignore: [/bar/, /foo/])
+          with(ignore: [/bar/, /foo/])
 
         subject.ignore(/foo/)
       end

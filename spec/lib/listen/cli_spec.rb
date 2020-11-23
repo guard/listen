@@ -108,8 +108,8 @@ RSpec.describe Listen::Forwarder do
   it 'passes relative option to Listen' do
     value = double('value')
     expect(Listen).to receive(:to).
-                        with(nil, hash_including(relative: value)).
-                        and_return(listener)
+      with(nil, hash_including(relative: value)).
+      and_return(listener)
 
     described_class.new(relative: value).start
   end

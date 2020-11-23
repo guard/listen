@@ -24,7 +24,7 @@ RSpec.describe Listen::Event::Loop do
   before do
     allow(::Queue).to receive(:new).and_return(reasons, ready)
     allow(Listen::Event::Processor).to receive(:new).with(config, reasons).
-                                         and_return(processor)
+      and_return(processor)
 
     allow(Thread).to receive(:new) do |*args, &block|
       fail 'Unstubbed call:'\

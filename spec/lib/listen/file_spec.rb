@@ -79,7 +79,7 @@ RSpec.describe Listen::File do
 
           it 'sets path in record with expected data' do
             expect(record).to receive(:update_file).
-                                with('file.rb', expected_data)
+              with('file.rb', expected_data)
             subject
           end
         end
@@ -95,7 +95,7 @@ RSpec.describe Listen::File do
 
             it 'sets path in record with expected data' do
               expect(record).to receive(:update_file).
-                                  with('file.rb', expected_data)
+                with('file.rb', expected_data)
               subject
             end
           end
@@ -107,7 +107,7 @@ RSpec.describe Listen::File do
 
             it 'sets path in record with expected data' do
               expect(record).to receive(:update_file).
-                                  with('file.rb', expected_data)
+                with('file.rb', expected_data)
               subject
             end
           end
@@ -181,7 +181,7 @@ RSpec.describe Listen::File do
                     it 'sets path in record with expected data' do
                       expected = expected_data. merge(md5: md5)
                       expect(record).to receive(:update_file).
-                                          with('file.rb', expected)
+                        with('file.rb', expected)
                       subject
                     end
                   end
@@ -216,7 +216,7 @@ RSpec.describe Listen::File do
 
         it 'sets path in record with expected data' do
           expect(record).to receive(:update_file).
-                              with('file.rb', expected_data)
+            with('file.rb', expected_data)
           subject
         end
       end

@@ -34,13 +34,13 @@ Layout/ExtraSpacing:
   Enabled: false
 
 Layout/HeredocIndentation:
-  EnforcedStyle: unindent
+  Enabled: true
 
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 
 Layout/MultilineMethodCallIndentation:
-  EnforcedStyle: indented_relative_to_receiver
+  EnforcedStyle: indented
 
 Layout/SpaceBeforeFirstArg:
   Enabled: false

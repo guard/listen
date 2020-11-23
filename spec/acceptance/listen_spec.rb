@@ -18,15 +18,15 @@ RSpec.describe 'Listen', acceptance: true do
       let(:paths) { Pathname.new(Dir.pwd) }
       around { |example| fixtures { example.run } }
 
-    modes =
-      case ENV['TEST_LISTEN_ADAPTER_MODES']
-      when 'polling'
-        [true]
-      when 'native'
-        [false]
-      else
-        [false, true]
-      end
+      modes =
+        case ENV['TEST_LISTEN_ADAPTER_MODES']
+        when 'polling'
+          [true]
+        when 'native'
+          [false]
+        else
+          [false, true]
+        end
 
       # TODO: make it configurable
       # TODO: restore
@@ -141,10 +141,10 @@ RSpec.describe 'Listen', acceptance: true do
                 example.run
               end
 
-            it 'listens to file move' do
-              expected = { modified: [],
-                           added: %w(file.rb),
-                           removed: %w(dir/file.rb) }
+              it 'listens to file move' do
+                expected = { modified: [],
+                             added: %w(file.rb),
+                             removed: %w(dir/file.rb) }
 
                 expect(wrapper.listen do
                   mv 'dir/file.rb', 'file.rb'

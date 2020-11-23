@@ -76,7 +76,7 @@ RSpec.describe Directory do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir', recursive: false)
+            with(:dir, 'subdir', recursive: false)
 
           described_class.scan(snapshot, '.', options)
         end
@@ -86,12 +86,12 @@ RSpec.describe Directory do
         before do
           fake_children(self, dir, [file])
           allow(::File).to receive(:lstat).with('file.rb').
-                             and_return(fake_file_stat('file.rb'))
+            and_return(fake_file_stat('file.rb'))
         end
 
         it 'notices subdir does not exist' do
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir', recursive: false)
+            with(:dir, 'subdir', recursive: false)
 
           described_class.scan(snapshot, '.', options)
         end
@@ -102,7 +102,7 @@ RSpec.describe Directory do
           fake_children(self, dir, [subdir])
 
           allow(::File).to receive(:lstat).with('subdir').
-                             and_return(fake_dir_stat('subdir'))
+            and_return(fake_dir_stat('subdir'))
         end
 
         it 'notices file was removed' do
@@ -116,10 +116,10 @@ RSpec.describe Directory do
           fake_children(self, dir, [file], [file2])
 
           allow(::File).to receive(:lstat).with('file.rb').
-                             and_raise(Errno::ENOENT)
+            and_raise(Errno::ENOENT)
 
           allow(::File).to receive(:lstat).with('file2.rb').
-                             and_return(fake_file_stat('file2.rb'))
+            and_return(fake_file_stat('file2.rb'))
         end
 
         it 'rescans' do
@@ -133,13 +133,13 @@ RSpec.describe Directory do
           fake_children(self, dir, [file, file2, subdir])
 
           allow(::File).to receive(:lstat).with('file.rb').
-                             and_return(fake_file_stat('file.rb'))
+            and_return(fake_file_stat('file.rb'))
 
           allow(::File).to receive(:lstat).with('file2.rb').
-                             and_return(fake_file_stat('file2.rb'))
+            and_return(fake_file_stat('file2.rb'))
 
           allow(::File).to receive(:lstat).with('subdir').
-                             and_return(fake_dir_stat('subdir'))
+            and_return(fake_dir_stat('subdir'))
         end
 
         it 'notices file removed and file2 changed' do
@@ -185,18 +185,18 @@ RSpec.describe Directory do
           fake_children(self, dir, [file])
 
           allow(::File).to receive(:lstat).with('file.rb').
-                             and_return(fake_file_stat('file.rb'))
+            and_return(fake_file_stat('file.rb'))
         end
 
         it 'snapshots changes for file & file2 paths' do
           expect(snapshot).to receive(:invalidate).
-                                with(:file, 'file.rb', {})
+            with(:file, 'file.rb', {})
 
           expect(snapshot).to_not receive(:invalidate).
-                                    with(:file, 'file2.rb', {})
+            with(:file, 'file2.rb', {})
 
           expect(snapshot).to_not receive(:invalidate).
-                                    with(:dir, 'subdir', recursive: false)
+            with(:dir, 'subdir', recursive: false)
 
           described_class.scan(snapshot, '.', options)
         end
@@ -219,7 +219,7 @@ RSpec.describe Directory do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', recursive: true)
 
           described_class.scan(snapshot, '.', options)
         end
@@ -233,17 +233,17 @@ RSpec.describe Directory do
           allow(subdir2).to receive(:relative_path_from).with(dir) { 'subdir2' }
 
           allow(::File).to receive(:lstat).with('subdir2').
-                             and_return(fake_dir_stat('subdir2'))
+            and_return(fake_dir_stat('subdir2'))
         end
 
         it 'snapshots changes for file, file2 & subdir paths' do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', recursive: true)
 
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir2', recursive: true)
+            with(:dir, 'subdir2', recursive: true)
 
           described_class.scan(snapshot, '.', options)
         end
@@ -269,12 +269,12 @@ RSpec.describe Directory do
           fake_children(self, dir, [subdir])
           fake_children(self, subdir, [])
           allow(::File).to receive(:lstat).with('subdir').
-                             and_return(fake_dir_stat('subdir'))
+            and_return(fake_dir_stat('subdir'))
         end
 
         it 'snapshots changes for subdir' do
           expect(snapshot).to receive(:invalidate).
-                                with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', recursive: true)
 
           described_class.scan(snapshot, '.', options)
         end

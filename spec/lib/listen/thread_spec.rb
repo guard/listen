@@ -42,26 +42,26 @@ RSpec.describe Listen::Thread do
         -> { raise ArgumentError, 'boom!' }
       end
 
-    it "rescues and logs exceptions" do
-      pattern = <<~EOS.strip
-        Exception rescued in listen-worker_thread:
-        ArgumentError: boom!
-        .*\\/listen\\/thread_spec\\.rb
-      EOS
-      expect(Listen.logger).to receive(:error).with(/#{pattern}/)
-      subject.join
-    end
+      it "rescues and logs exceptions" do
+        pattern = <<~EOS.strip
+          Exception rescued in listen-worker_thread:
+          ArgumentError: boom!
+          .*\\/listen\\/thread_spec\\.rb
+        EOS
+        expect(Listen.logger).to receive(:error).with(/#{pattern}/)
+        subject.join
+      end
 
-    it "rescues and logs backtrace + exception backtrace" do
-      pattern = <<~EOS.strip
-        Exception rescued in listen-worker_thread:
-        ArgumentError: boom!
-        .*\\/listen\\/thread\\.rb.*--- Thread.new ---.*\\/listen\\/thread_spec\\.rb
-      EOS
-      expect(Listen.logger).to receive(:error).with(/#{pattern}/m)
-      subject.join
+      it "rescues and logs backtrace + exception backtrace" do
+        pattern = <<~EOS.strip
+          Exception rescued in listen-worker_thread:
+          ArgumentError: boom!
+          .*\\/listen\\/thread\\.rb.*--- Thread.new ---.*\\/listen\\/thread_spec\\.rb
+        EOS
+        expect(Listen.logger).to receive(:error).with(/#{pattern}/m)
+        subject.join
+      end
     end
-  end
 
     context "when nested exceptions raised" do
       let(:block) { raise_nested_exception_block }

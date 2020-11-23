@@ -69,11 +69,11 @@ RSpec.describe Listen::Event::Queue do
           allow(dir_rel_path).to receive(:+).with('foo') { foo_rel_path }
 
           allow(watched_dir).to receive(:relative_path_from).
-                                  with(Pathname.pwd).
-                                  and_return(dir_rel_path)
+            with(Pathname.pwd).
+            and_return(dir_rel_path)
 
           expect(queue).to receive(:<<).
-                             with([:file, :modified, dir_rel_path, 'foo', {}])
+            with([:file, :modified, dir_rel_path, 'foo', {}])
 
           subject.<<([:file, :modified, watched_dir, 'foo', {}])
         end
@@ -86,11 +86,11 @@ RSpec.describe Listen::Event::Queue do
 
         it 'registers relative path' do
           allow(watched_dir).to receive(:relative_path_from).
-                                  with(Pathname.pwd).
-                                  and_return(dir_rel_path)
+            with(Pathname.pwd).
+            and_return(dir_rel_path)
 
           expect(queue).to receive(:<<).
-                             with([:file, :modified, dir_rel_path, 'foo', {}])
+            with([:file, :modified, dir_rel_path, 'foo', {}])
 
           subject.<<([:file, :modified, watched_dir, 'foo', {}])
         end
@@ -102,13 +102,13 @@ RSpec.describe Listen::Event::Queue do
 
         it 'registers full path' do
           allow(watched_dir).to receive(:relative_path_from).
-                                  with(Pathname.pwd).
-                                  and_raise(ArgumentError)
+            with(Pathname.pwd).
+            and_raise(ArgumentError)
 
           allow(watched_dir).to receive(:+).with('foo') { foo_rel_path }
 
           expect(queue).to receive(:<<).
-                             with([:file, :modified, watched_dir, 'foo', {}])
+            with([:file, :modified, watched_dir, 'foo', {}])
 
           subject.<<([:file, :modified, watched_dir, 'foo', {}])
         end
