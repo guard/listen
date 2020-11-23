@@ -16,10 +16,13 @@ module Listen
       fail msg
     end
 
+    def method_defined?(name, *_)
+      @options.has_key?(name)
+    end
+
     def method_missing(name, *_)
-      return @options[name] if @options.key?(name)
-      msg = "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
-      fail NameError, msg
+      method_defined?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
+      @options[name]
     end
   end
 end
