@@ -14,12 +14,6 @@ Layout/DotPosition:
   EnforcedStyle: trailing
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
-Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-Layout/EndOfLine:
-  Enabled: false
-Layout/ExtraSpacing:
-  Enabled: false
 Layout/HashAlignment:
   Enabled: false
 Layout/HeredocIndentation:
@@ -28,8 +22,6 @@ Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
-Layout/SpaceBeforeFirstArg:
-  Enabled: false
 Layout/SpaceInsideBlockBraces:
   EnforcedStyleForEmptyBraces: space
 Lint/AmbiguousBlockAssociation:
@@ -37,10 +29,8 @@ Lint/AmbiguousBlockAssociation:
 Lint/AmbiguousRegexpLiteral:
   Enabled: false
 Lint/AssignmentInCondition:
-  Enabled: false
-  AllowSafeAssignment: true
-Lint/EachWithObjectArgument:
   Enabled: true
+  AllowSafeAssignment: true
 Lint/EmptyWhen:
   Enabled: false
 Lint/LiteralInInterpolation:
@@ -51,23 +41,18 @@ Lint/SuppressedException:
   Enabled: false
 Metrics/AbcSize:
   Enabled: false
-  Max: 15
 Metrics/BlockLength:
   Exclude:
     - Rakefile
     - "**/*.rake"
     - "**/*_test.rb"
     - "**/*_spec.rb"
-Metrics/ClassLength:
-  Enabled: false
-  CountComments: false
-  Max: 100
 Metrics/CyclomaticComplexity:
   Max: 10
 Metrics/LineLength:
   Max: 150
 Metrics/MethodLength:
-  Max: 20
+  Max: 15
 Metrics/ModuleLength:
   CountComments: false
   Max: 200
