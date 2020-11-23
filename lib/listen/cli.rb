@@ -43,6 +43,7 @@ module Listen
 
     def start
       logger.info 'Starting listen...'
+
       directory = @options[:directory]
       relative = @options[:relative]
       callback = proc do |modified, added, removed|
@@ -53,10 +54,7 @@ module Listen
         end
       end
 
-      listener = Listen.to(
-        directory,
-        relative: relative,
-        &callback)
+      listener = Listen.to(directory, relative: relative, &callback)
 
       listener.start
 

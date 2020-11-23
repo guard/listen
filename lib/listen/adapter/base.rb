@@ -31,6 +31,7 @@ module Listen
       end
 
       # TODO: it's a separate method as a temporary workaround for tests
+      # rubocop:disable Metrics/MethodLength
       def configure
         if @configured
           Listen.logger.warn('Adapter already configured!')
@@ -57,6 +58,7 @@ module Listen
           @snapshots[dir] = snapshot
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       def started?
         @started

@@ -32,6 +32,7 @@
   end
 end
 
+# rubocop:disable Metrics/MethodLength
 def change_fs(type, path)
   case type
   when :modified
@@ -63,6 +64,7 @@ def change_fs(type, path)
     fail "bad test: unknown type: #{type.inspect}"
   end
 end
+# rubocop:enable Metrics/MethodLength
 
 # Used by change_fs() above so that the FS change (e.g. file created) happens
 # as close to the start of a new second (time) as possible.

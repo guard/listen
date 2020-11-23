@@ -41,6 +41,7 @@ module Listen
         @worker.run
       end
 
+      # rubocop:disable Metrics/MethodLength
       def _process_event(dir, event)
         # NOTE: avoid using event.absolute_name since new API
         # will need to have a custom recursion implemented
@@ -73,6 +74,7 @@ module Listen
 
         _queue_change(:file, dir, rel_path, params)
       end
+      # rubocop:enable Metrics/MethodLength
 
       def _skip_event?(event)
         # Event on root directory
