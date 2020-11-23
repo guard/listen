@@ -12,42 +12,42 @@ RSpec.describe Listen::Silencer do
     it { should accept(:file, Pathname('some_dir') + 'some_file.rb') }
 
     context 'with default ignore' do
-      hidden_ignored = %w(.git .svn .hg .rbx .bundle)
-      other_ignored = %w(bundle vendor/bundle log tmp vendor/ruby)
+      hidden_ignored = %w[.git .svn .hg .rbx .bundle]
+      other_ignored = %w[bundle vendor/bundle log tmp vendor/ruby]
       (hidden_ignored + other_ignored).each do |dir|
         it { should_not accept(:dir, dir) }
         it { should accept(:dir, "#{dir}foo") }
         it { should accept(:dir, "foo#{dir}") }
       end
 
-      ignored = %w(.DS_Store foo.tmp foo~)
+      ignored = %w[.DS_Store foo.tmp foo~]
 
       # Gedit swap files
-      ignored += %w(.goutputstream-S3FBGX)
+      ignored += %w[.goutputstream-S3FBGX]
 
       # Kate editor swap files
-      ignored += %w(foo.rbo54321.new foo.rbB22583.new foo.rb.kate-swp)
+      ignored += %w[foo.rbo54321.new foo.rbB22583.new foo.rb.kate-swp]
 
       # Intellij swap files
-      ignored += %w(foo.rb___jb_bak___ foo.rb___jb_old___)
+      ignored += %w[foo.rb___jb_bak___ foo.rb___jb_old___]
 
       # Vim swap files
-      ignored += %w(foo.swp foo.swx foo.swpx 4913)
+      ignored += %w[foo.swp foo.swx foo.swpx 4913]
 
       # sed temp files
-      ignored += %w(sedq7eVAR sed86w1kB)
+      ignored += %w[sedq7eVAR sed86w1kB]
 
       # mutagen temp files
-      ignored += %w(
+      ignored += %w[
         .mutagen-temporary-cross-device-rename0
         .mutagen-temporary-unicode-test-éntry0
-      )
+      ]
 
       ignored.each do |path|
         it { should_not accept(:file, path) }
       end
 
-      %w(
+      %w[
         foo.tmpl file.new file54321.new a.swf 14913 49131
 
         sed_ABCDE
@@ -58,7 +58,7 @@ RSpec.describe Listen::Silencer do
         sediments
         sedan2014
 
-      ).each do |path|
+      ].each do |path|
         it { should accept(:file, path) }
       end
     end

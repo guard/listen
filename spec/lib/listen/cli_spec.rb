@@ -37,7 +37,7 @@ RSpec.describe Listen::CLI do
       let(:options) { %w[-d app spec] }
       it 'is set to an array of the directories' do
         expect(Listen::Forwarder).to receive(:new) do |options|
-          expect(options[:directory]).to eq(%w(app spec))
+          expect(options[:directory]).to eq(%w[app spec])
           forwarder
         end
         described_class.start(options)

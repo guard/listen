@@ -108,7 +108,7 @@ RSpec.describe Listen::Record do
 
       watched = record_tree(record)
       expect(watched.keys).to eq ['path/subdir']
-      expect(watched['path/subdir'].keys).to eq %w(file.rb file2.rb)
+      expect(watched['path/subdir'].keys).to eq %w[file.rb file2.rb]
 
       subdir = watched['path/subdir']
       expect(subdir['file.rb']).to eq(mtime: 1.1)
@@ -232,8 +232,8 @@ RSpec.describe Listen::Record do
 
     before do
       stubs = {
-        ::File => %w(lstat realpath),
-        ::Dir => %w(entries exist?)
+        ::File => %w[lstat realpath],
+        ::Dir => %w[entries exist?]
       }
 
       stubs.each do |klass, meths|
@@ -260,7 +260,7 @@ RSpec.describe Listen::Record do
 
     context 'with no subdirs' do
       before do
-        real_directory('/dir' => %w(foo bar))
+        real_directory('/dir' => %w[foo bar])
         lstat(file('/dir/foo'), foo_stat)
         lstat(file('/dir/bar'), bar_stat)
         real_directory('/dir2' => [])
@@ -277,9 +277,9 @@ RSpec.describe Listen::Record do
 
     context 'with subdir containing files' do
       before do
-        real_directory('/dir' => %w(dir1 dir2))
-        real_directory('/dir/dir1' => %w(foo))
-        real_directory('/dir/dir1/foo' => %w(bar))
+        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir/dir1' => %w[foo])
+        real_directory('/dir/dir1/foo' => %w[bar])
         lstat(file('/dir/dir1/foo/bar'))
         real_directory('/dir/dir2' => [])
       end
@@ -290,16 +290,16 @@ RSpec.describe Listen::Record do
           to eq(
             'dir1' => {},
             'dir1/foo' => { 'bar' => { mtime: 2.3, mode: 0755, size: 42 } },
-            'dir2' => {},
+            'dir2' => {}
           )
       end
     end
 
     context 'with subdir containing dirs' do
       before do
-        real_directory('/dir' => %w(dir1 dir2))
-        real_directory('/dir/dir1' => %w(foo))
-        real_directory('/dir/dir1/foo' => %w(bar baz))
+        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir/dir1' => %w[foo])
+        real_directory('/dir/dir1/foo' => %w[bar baz])
         real_directory('/dir/dir1/foo/bar' => [])
         real_directory('/dir/dir1/foo/baz' => [])
         real_directory('/dir/dir2' => [])
@@ -315,7 +315,7 @@ RSpec.describe Listen::Record do
             'dir1/foo' => {},
             'dir1/foo/bar' => {},
             'dir1/foo/baz' => {},
-            'dir2' => {},
+            'dir2' => {}
           )
       end
     end
@@ -323,9 +323,9 @@ RSpec.describe Listen::Record do
     context 'with subdir containing symlink to parent' do
       subject { record.paths }
       before do
-        real_directory('/dir' => %w(dir1 dir2))
-        real_directory('/dir/dir1' => %w(foo))
-        dir_entries_for('/dir/dir1/foo' => %w(dir1))
+        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir/dir1' => %w[foo])
+        dir_entries_for('/dir/dir1/foo' => %w[dir1])
         symlink('/dir/dir1/foo' => '/dir/dir1')
 
         real_directory('/dir/dir2' => [])
@@ -345,14 +345,14 @@ RSpec.describe Listen::Record do
       subject { record.paths }
 
       before do
-        real_directory('/dir' => %w(dir1))
-        real_directory('/dir/dir1' => %w(foo))
+        real_directory('/dir' => %w[dir1])
+        real_directory('/dir/dir1' => %w[foo])
 
         symlink('/dir/dir1/foo' => '/dir/dir2')
-        dir_entries_for('/dir/dir1/foo' => %w(bar))
+        dir_entries_for('/dir/dir1/foo' => %w[bar])
         lstat(realpath(file('/dir/dir1/foo/bar')))
 
-        real_directory('/dir/dir2' => %w(bar))
+        real_directory('/dir/dir2' => %w[bar])
         lstat(file('/dir/dir2/bar'))
       end
 
@@ -365,8 +365,8 @@ RSpec.describe Listen::Record do
     context 'with subdir containing symlinked file' do
       subject { record.paths }
       before do
-        real_directory('/dir' => %w(dir1 dir2))
-        real_directory('/dir/dir1' => %w(foo))
+        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir/dir1' => %w[foo])
         lstat(file('/dir/dir1/foo'))
         real_directory('/dir/dir2' => [])
       end

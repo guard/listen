@@ -88,10 +88,10 @@ RSpec.describe Listen::Adapter::Linux do
         allow(config).to receive(:silencer).and_return(silencer)
 
         allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
-        allow(Listen::Change::Config).to receive(:new).with(queue, silencer).
-          and_return(config)
-        allow(Listen::Change).to receive(:new).with(config, record).
-          and_return(snapshot)
+        allow(Listen::Change::Config).to receive(:new).with(queue, silencer)
+          .and_return(config)
+        allow(Listen::Change).to receive(:new).with(config, record)
+          .and_return(snapshot)
 
         allow(subject).to receive(:require).with('rb-inotify')
         subject.configure

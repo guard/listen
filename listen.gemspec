@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.executable   = 'listen'
   gem.require_path = 'lib'
 
-  gem.required_ruby_version = '>= 2.2.7'
+  gem.required_ruby_version = '>= 2.2.7' # rubocop:disable Gemspec/RequiredRubyVersion
 
   gem.add_dependency 'rb-fsevent', '~> 0.10', '>= 0.10.3'
   gem.add_dependency 'rb-inotify', '~> 0.9', '>= 0.9.10'

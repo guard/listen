@@ -1,10 +1,3 @@
-inherit_from:
-  - vendor/hound/config/style_guides/ruby.yml
-
-# Rails cops
-AllCops:
-  RunRailsCops: false
-
 # Files you want to exclude
 AllCops:
   TargetRubyVersion: 2.7
@@ -12,8 +5,100 @@ AllCops:
     - Gemfile
     - Guardfile
     - Rakefile
+    - "vendor/**/*"
+  UseCache: false
 
 # TODO: put your overrides here:
+
+Layout/DotPosition:
+  Enabled: true
+  EnforcedStyle: trailing
+Naming/FileName:
+  Enabled: false
+  Exclude: []
+Style/PercentLiteralDelimiters:
+  Enabled: false
+  PreferredDelimiters:
+    "%": "()"
+    "%i": "()"
+    "%q": "()"
+    "%Q": "()"
+    "%r": "{}"
+    "%s": "()"
+    "%w": "()"
+    "%W": "()"
+    "%x": "()"
+Naming/PredicateName:
+  Enabled: true
+  NamePrefix:
+    - is_
+    - has_
+    - have_
+  ForbiddenPrefixes:
+    - is_
+  Exclude:
+    - spec/**/*
+Style/RaiseArgs:
+  Enabled: false
+  EnforcedStyle: exploded
+Style/SingleLineBlockParams:
+  Enabled: false
+Style/SingleLineMethods:
+  Enabled: false
+  AllowIfMethodIsEmpty: true
+Style/StringLiterals:
+  Enabled: false
+Style/StringLiteralsInInterpolation:
+  Enabled: true
+  EnforcedStyle: single_quotes
+Style/TrailingCommaInArguments:
+  Enabled: false
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+  EnforcedStyleForMultiline: no_comma
+Metrics/AbcSize:
+  Enabled: false
+  Max: 15
+Metrics/ClassLength:
+  Enabled: false
+  CountComments: false
+  Max: 100
+Metrics/ModuleLength:
+  CountComments: false
+  Max: 200
+  Enabled: true
+Metrics/ParameterLists:
+  Enabled: true
+  Max: 6
+Metrics/PerceivedComplexity:
+  Max: 10
+Lint/AssignmentInCondition:
+  Enabled: false
+  AllowSafeAssignment: true
+Style/InlineComment:
+  Enabled: false
+Naming/AccessorMethodName:
+  Enabled: false
+Style/Alias:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/ModuleFunction:
+  Enabled: false
+Style/OneLineConditional:
+  Enabled: false
+Style/Send:
+  Enabled: false
+Style/VariableInterpolation:
+  Enabled: false
+Style/WhenThen:
+  Enabled: false
+Lint/EachWithObjectArgument:
+  Enabled: true
+Lint/SuppressedException:
+  Enabled: false
+Lint/LiteralInInterpolation:
+  Enabled: false
 
 Layout/AccessModifierIndentation:
   IndentationWidth: 2
@@ -60,18 +145,12 @@ Lint/EmptyWhen:
 Lint/RedundantRequireStatement:
   Enabled: false
 
-Metrics/AbcSize:
-  Max: 25
-
 Metrics/BlockLength:
   Exclude:
     - 'Rakefile'
     - '**/*.rake'
     - '**/*_test.rb'
     - '**/*_spec.rb'
-
-Metrics/ClassLength:
-  Max: 200
 
 Metrics/CyclomaticComplexity:
   Max: 10
@@ -81,15 +160,6 @@ Metrics/LineLength:
 
 Metrics/MethodLength:
   Max: 20
-
-Metrics/ModuleLength:
-  Max: 200
-
-Metrics/ParameterLists:
-  Max: 10
-
-Metrics/PerceivedComplexity:
-  Max: 10
 
 Naming/HeredocDelimiterNaming:
   Enabled: false
@@ -118,9 +188,6 @@ Style/CollectionMethods:
     length: 'size'
 
 Style/CommentedKeyword:
-  Enabled: false
-
-Style/Documentation:
   Enabled: false
 
 Style/DoubleNegation:
@@ -175,9 +242,6 @@ Style/RescueStandardError:
   Enabled: false
 
 Style/SignalException:
-  Enabled: false
-
-Style/StringLiterals:
   Enabled: false
 
 Style/SymbolArray:

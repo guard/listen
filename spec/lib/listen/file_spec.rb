@@ -8,7 +8,7 @@ RSpec.describe Listen::File do
       file_data: record_data,
       add_dir: true,
       update_file: true,
-      unset_path: true,
+      unset_path: true
     )
   end
 

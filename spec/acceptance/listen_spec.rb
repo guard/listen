@@ -66,7 +66,7 @@ RSpec.describe 'Listen', acceptance: true do
                 end
 
                 expect(result).to eq(modified: [],
-                                     added: %w(file1.rb file2.rb),
+                                     added: %w[file1.rb file2.rb],
                                      removed: [])
               end
 
@@ -143,8 +143,8 @@ RSpec.describe 'Listen', acceptance: true do
 
               it 'listens to file move' do
                 expected = { modified: [],
-                             added: %w(file.rb),
-                             removed: %w(dir/file.rb) }
+                             added: %w[file.rb],
+                             removed: %w[dir/file.rb] }
 
                 expect(wrapper.listen do
                   mv 'dir/file.rb', 'file.rb'
@@ -199,7 +199,7 @@ RSpec.describe 'Listen', acceptance: true do
                 expected = {
                   modified: [],
                   added:    [],
-                  removed:  %w(dir1/subdir1/file.rb dir1/subdir1/subdir2/file.rb)
+                  removed:  %w[dir1/subdir1/file.rb dir1/subdir1/subdir2/file.rb]
                 }
 
                 expect(wrapper.listen do
