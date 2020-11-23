@@ -35,9 +35,7 @@ end
 def change_fs(type, path)
   case type
   when :modified
-    unless File.exist?(path)
-      fail "Bad test: cannot modify #{path.inspect} (it doesn't exist)"
-    end
+    File.exist?(path) or fail "Bad test: cannot modify #{path.inspect} (it doesn't exist)"
 
     # wait until full second, because this might be followed by a modification
     # event (which otherwise may not be detected every time)
@@ -48,9 +46,7 @@ def change_fs(type, path)
     # separate it from upcoming modifications"
     _sleep_to_separate_events
   when :added
-    if File.exist?(path)
-      fail "Bad test: cannot add #{path.inspect} (it already exists)"
-    end
+    File.exist?(path) and fail "Bad test: cannot add #{path.inspect} (it already exists)"
 
     # wait until full second, because this might be followed by a modification
     # event (which otherwise may not be detected every time)
@@ -61,9 +57,7 @@ def change_fs(type, path)
     # separate it from upcoming modifications"
     _sleep_to_separate_events
   when :removed
-    unless File.exist?(path)
-      fail "Bad test: cannot remove #{path.inspect} (it doesn't exist)"
-    end
+    File.exist?(path) or fail "Bad test: cannot remove #{path.inspect} (it doesn't exist)"
     File.unlink(path)
   else
     fail "bad test: unknown type: #{type.inspect}"
