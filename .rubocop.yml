@@ -9,11 +9,15 @@ AllCops:
 
 Layout/AccessModifierIndentation:
   IndentationWidth: 2
+Layout/BeginEndAlignment:
+  Enabled: true
 Layout/DotPosition:
   Enabled: true
   EnforcedStyle: trailing
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
 Layout/HashAlignment:
   Enabled: false
 Layout/HeredocIndentation:
@@ -22,6 +26,8 @@ Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
 Layout/SpaceInsideBlockBraces:
   EnforcedStyleForEmptyBraces: space
 Lint/AmbiguousBlockAssociation:
@@ -31,14 +37,58 @@ Lint/AmbiguousRegexpLiteral:
 Lint/AssignmentInCondition:
   Enabled: true
   AllowSafeAssignment: true
+Lint/BinaryOperatorWithIdenticalOperands:
+  Enabled: true
+Lint/ConstantDefinitionInBlock:
+  Enabled: true
+  Exclude:
+    - "**/*_spec.rb"
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+Lint/DuplicateElsifCondition:
+  Enabled: true
+Lint/DuplicateRequire:
+  Enabled: true
+Lint/DuplicateRescueException:
+  Enabled: true
+Lint/EmptyConditionalBody:
+  Enabled: true
+Lint/EmptyFile:
+  Enabled: true
 Lint/EmptyWhen:
   Enabled: false
+Lint/FloatComparison:
+  Enabled: true
+Lint/IdentityComparison:
+  Enabled: true
 Lint/LiteralInInterpolation:
   Enabled: false
+Lint/MissingSuper:
+  Enabled: true
+Lint/MixedRegexpCaptureTypes:
+  Enabled: false
+Lint/OutOfRangeRegexpRef:
+  Enabled: true
+Lint/RaiseException:
+  Enabled: true
 Lint/RedundantRequireStatement:
   Enabled: false
+Lint/SelfAssignment:
+  Enabled: true
+Lint/StructNewOverride:
+  Enabled: true
 Lint/SuppressedException:
   Enabled: false
+Lint/TopLevelReturnWithArgument:
+  Enabled: true
+Lint/TrailingCommaInAttributeDeclaration:
+  Enabled: true
+Lint/UnreachableLoop:
+  Enabled: true
+Lint/UselessMethodDefinition:
+  Enabled: true
+Lint/UselessTimes:
+  Enabled: true
 Metrics/AbcSize:
   Enabled: false
 Metrics/BlockLength:
@@ -83,10 +133,18 @@ Naming/RescuedExceptionsVariableName:
   Enabled: false
 Naming/VariableNumber:
   Enabled: false
+Style/AccessorGrouping:
+  Enabled: true
 Style/Alias:
   Enabled: false
 Style/AndOr:
   EnforcedStyle: conditionals
+Style/ArrayCoercion:
+  Enabled: true
+Style/BisectedAttrAccessor:
+  Enabled: true
+Style/CaseLikeIf:
+  Enabled: true
 Style/ClassAndModuleChildren:
   Enabled: true
 Style/CollectionMethods:
@@ -98,6 +156,8 @@ Style/CollectionMethods:
     detect: find
     find_all: select
     length: size
+Style/CombinableLoops:
+  Enabled: true
 Style/CommentedKeyword:
   Enabled: false
 Style/Documentation:
@@ -108,16 +168,34 @@ Style/EachWithObject:
   Enabled: false
 Style/EmptyMethod:
   Enabled: false
+Style/ExplicitBlockArgument:
+  Enabled: true
+Style/ExponentialNotation:
+  Enabled: true
 Style/FormatStringToken:
+  Enabled: false
+Style/GlobalStdStream:
   Enabled: false
 Style/GuardClause:
   Enabled: false
+Style/HashAsLastArrayItem:
+  Enabled: true
+Style/HashEachMethods:
+  Enabled: true
+Style/HashLikeCase:
+  Enabled: true
 Style/HashSyntax:
   EnforcedStyle: ruby19_no_mixed_keys
+Style/HashTransformKeys:
+  Enabled: true
+Style/HashTransformValues:
+  Enabled: true
 Style/IfUnlessModifier:
   Enabled: false
 Style/InlineComment:
   Enabled: false
+Style/KeywordParametersOrder:
+  Enabled: true
 Style/Lambda:
   Enabled: false
 Style/ModuleFunction:
@@ -134,6 +212,8 @@ Style/NumericPredicate:
   Enabled: false
 Style/OneLineConditional:
   Enabled: false
+Style/OptionalBooleanParameter:
+  Enabled: true
 Style/ParallelAssignment:
   Enabled: false
 Style/PercentLiteralDelimiters:
@@ -143,6 +223,18 @@ Style/PreferredHashMethods:
 Style/RaiseArgs:
   Enabled: false
   EnforcedStyle: exploded
+Style/RedundantAssignment:
+  Enabled: true
+Style/RedundantFetchBlock:
+  Enabled: true
+Style/RedundantFileExtensionInRequire:
+  Enabled: true
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+Style/RedundantRegexpEscape:
+  Enabled: true
+Style/RedundantSelfAssignment:
+  Enabled: true
 Style/RegexpLiteral:
   Enabled: false
 Style/RescueStandardError:
@@ -151,11 +243,19 @@ Style/Send:
   Enabled: false
 Style/SignalException:
   Enabled: false
+Style/SingleArgumentDig:
+  Enabled: true
 Style/SingleLineBlockParams:
   Enabled: false
 Style/SingleLineMethods:
   Enabled: false
   AllowIfMethodIsEmpty: true
+Style/SlicingWithRange:
+  Enabled: true
+Style/SoleNestedConditional:
+  Enabled: true
+Style/StringConcatenation:
+  Enabled: true
 Style/StringLiterals:
   Enabled: false
 Style/StringLiteralsInInterpolation:
