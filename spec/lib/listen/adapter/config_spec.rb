@@ -42,16 +42,16 @@ RSpec.describe Listen::Adapter::Config do
     allow(Pathname).to receive(:new).with(path1).and_return(path1)
     allow(Pathname).to receive(:new).with(path2).and_return(path2)
 
-    allow(Pathname).to receive(:new).with('symlinked_dir1').
-      and_return(symlinked_dir1)
+    allow(Pathname).to receive(:new).with('symlinked_dir1')
+      .and_return(symlinked_dir1)
 
-    allow(Pathname).to receive(:new).with('symlinked_dir2').
-      and_return(symlinked_dir2)
+    allow(Pathname).to receive(:new).with('symlinked_dir2')
+      .and_return(symlinked_dir2)
 
     allow(Dir).to receive(:pwd).and_return('/real/current_path')
 
-    allow(Pathname).to receive(:new).
-      with('/real/current_path').and_return(current_path)
+    allow(Pathname).to receive(:new)
+      .with('/real/current_path').and_return(current_path)
   end
 
   describe '#initialize' do
@@ -65,7 +65,7 @@ RSpec.describe Listen::Adapter::Config do
         end
 
         context 'when not resolved' do
-          let(:directories) { %w(symlinked_dir1 symlinked_dir2) }
+          let(:directories) { %w[symlinked_dir1 symlinked_dir2] }
           it 'returns array of resolved pathnames' do
             expect(subject.directories).to eq([real_path1, real_path2])
           end

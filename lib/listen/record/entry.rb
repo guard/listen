@@ -17,7 +17,7 @@ module Listen
 
       def children
         child_relative = _join
-        (_entries(sys_path) - %w(. ..)).map do |name|
+        (_entries(sys_path) - %w[. ..]).map do |name|
           Entry.new(@root, child_relative, name)
         end
       end

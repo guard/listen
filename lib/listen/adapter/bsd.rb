@@ -86,7 +86,7 @@ module Listen
       def _watch_for_new_file(event)
         queue = event.watcher.queue
         _find(_event_path(event).to_s) do |file_path|
-          unless queue.watchers.detect { |_, v| v.path == file_path.to_s }
+          unless queue.watchers.find { |_, v| v.path == file_path.to_s }
             _watch_file(file_path, queue)
           end
         end

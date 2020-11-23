@@ -35,7 +35,7 @@ module Listen
       end
 
       def adapter_select_options
-        valid_keys = %w(force_polling polling_fallback_message).map(&:to_sym)
+        valid_keys = %w[force_polling polling_fallback_message].map(&:to_sym)
         Hash[@options.select { |key, _| valid_keys.include?(key) }]
       end
     end

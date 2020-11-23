@@ -85,7 +85,7 @@ module Listen
     private
 
     def _auto_hash
-      Hash.new { |h, k| h[k] = Hash.new }
+      Hash.new { |h, k| h[k] = {} }
     end
 
     attr_reader :tree

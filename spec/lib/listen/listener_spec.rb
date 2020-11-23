@@ -109,7 +109,7 @@ RSpec.describe Listener do
 
       it 'passes directories to backend' do
         allow(Backend).to receive(:new).
-          with(%w(dir1 dir2), anything, anything, anything).
+          with(%w[dir1 dir2], anything, anything, anything).
           and_return(backend)
         subject
       end

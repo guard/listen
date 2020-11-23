@@ -31,7 +31,7 @@ module Listen
       private
 
       def _usable_adapter_class
-        OPTIMIZED_ADAPTERS.detect(&:usable?)
+        OPTIMIZED_ADAPTERS.find(&:usable?)
       end
 
       def _warn_polling_fallback(options)
