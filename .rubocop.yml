@@ -1,33 +1,89 @@
-# Files you want to exclude
 AllCops:
   TargetRubyVersion: 2.7
   Exclude:
     - Gemfile
     - Guardfile
     - Rakefile
-    - "vendor/**/*"
+    - vendor/**/*
   UseCache: false
 
-# TODO: put your overrides here:
-
+Layout/AccessModifierIndentation:
+  IndentationWidth: 2
 Layout/DotPosition:
   Enabled: true
   EnforcedStyle: trailing
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+Layout/EndOfLine:
+  Enabled: false
+Layout/ExtraSpacing:
+  Enabled: false
+Layout/HashAlignment:
+  Enabled: false
+Layout/HeredocIndentation:
+  Enabled: true
+Layout/MultilineMethodCallBraceLayout:
+  Enabled: false
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+Layout/SpaceBeforeFirstArg:
+  Enabled: false
+Layout/SpaceInsideBlockBraces:
+  EnforcedStyleForEmptyBraces: space
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+Lint/AssignmentInCondition:
+  Enabled: false
+  AllowSafeAssignment: true
+Lint/EachWithObjectArgument:
+  Enabled: true
+Lint/EmptyWhen:
+  Enabled: false
+Lint/LiteralInInterpolation:
+  Enabled: false
+Lint/RedundantRequireStatement:
+  Enabled: false
+Lint/SuppressedException:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+  Max: 15
+Metrics/BlockLength:
+  Exclude:
+    - Rakefile
+    - "**/*.rake"
+    - "**/*_test.rb"
+    - "**/*_spec.rb"
+Metrics/ClassLength:
+  Enabled: false
+  CountComments: false
+  Max: 100
+Metrics/CyclomaticComplexity:
+  Max: 10
+Metrics/LineLength:
+  Max: 150
+Metrics/MethodLength:
+  Max: 20
+Metrics/ModuleLength:
+  CountComments: false
+  Max: 200
+  Enabled: true
+Metrics/ParameterLists:
+  Enabled: true
+  Max: 6
+Metrics/PerceivedComplexity:
+  Max: 10
+Naming/AccessorMethodName:
+  Enabled: false
 Naming/FileName:
   Enabled: false
   Exclude: []
-Style/PercentLiteralDelimiters:
+Naming/HeredocDelimiterNaming:
   Enabled: false
-  PreferredDelimiters:
-    "%": "()"
-    "%i": "()"
-    "%q": "()"
-    "%Q": "()"
-    "%r": "{}"
-    "%s": "()"
-    "%w": "()"
-    "%W": "()"
-    "%x": "()"
 Naming/PredicateName:
   Enabled: true
   NamePrefix:
@@ -38,9 +94,78 @@ Naming/PredicateName:
     - is_
   Exclude:
     - spec/**/*
+Naming/RescuedExceptionsVariableName:
+  Enabled: false
+Naming/VariableNumber:
+  Enabled: false
+Style/Alias:
+  Enabled: false
+Style/AndOr:
+  EnforcedStyle: conditionals
+Style/ClassAndModuleChildren:
+  Enabled: true
+Style/CollectionMethods:
+  Enabled: true
+  PreferredMethods:
+    collect: map
+    collect!: map!
+    inject: reduce
+    detect: find
+    find_all: select
+    length: size
+Style/CommentedKeyword:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/DoubleNegation:
+  Enabled: false
+Style/EachWithObject:
+  Enabled: false
+Style/EmptyMethod:
+  Enabled: false
+Style/FormatStringToken:
+  Enabled: false
+Style/GuardClause:
+  Enabled: false
+Style/HashSyntax:
+  EnforcedStyle: ruby19_no_mixed_keys
+Style/IfUnlessModifier:
+  Enabled: false
+Style/InlineComment:
+  Enabled: false
+Style/Lambda:
+  Enabled: false
+Style/ModuleFunction:
+  Enabled: false
+Style/NegatedIf:
+  Enabled: false
+Style/Next:
+  Enabled: false
+Style/NumericLiteralPrefix:
+  Enabled: false
+Style/NumericLiterals:
+  MinDigits: 9
+Style/NumericPredicate:
+  Enabled: false
+Style/OneLineConditional:
+  Enabled: false
+Style/ParallelAssignment:
+  Enabled: false
+Style/PercentLiteralDelimiters:
+  Enabled: false
+Style/PreferredHashMethods:
+  Enabled: false
 Style/RaiseArgs:
   Enabled: false
   EnforcedStyle: exploded
+Style/RegexpLiteral:
+  Enabled: false
+Style/RescueStandardError:
+  Enabled: false
+Style/Send:
+  Enabled: false
+Style/SignalException:
+  Enabled: false
 Style/SingleLineBlockParams:
   Enabled: false
 Style/SingleLineMethods:
@@ -51,210 +176,19 @@ Style/StringLiterals:
 Style/StringLiteralsInInterpolation:
   Enabled: true
   EnforcedStyle: single_quotes
+Style/SymbolArray:
+  Enabled: false
 Style/TrailingCommaInArguments:
+  Enabled: false
+Style/TrailingCommaInArrayLiteral:
   Enabled: false
 Style/TrailingCommaInHashLiteral:
   Enabled: false
-  EnforcedStyleForMultiline: no_comma
-Metrics/AbcSize:
-  Enabled: false
-  Max: 15
-Metrics/ClassLength:
-  Enabled: false
-  CountComments: false
-  Max: 100
-Metrics/ModuleLength:
-  CountComments: false
-  Max: 200
-  Enabled: true
-Metrics/ParameterLists:
-  Enabled: true
-  Max: 6
-Metrics/PerceivedComplexity:
-  Max: 10
-Lint/AssignmentInCondition:
-  Enabled: false
-  AllowSafeAssignment: true
-Style/InlineComment:
-  Enabled: false
-Naming/AccessorMethodName:
-  Enabled: false
-Style/Alias:
-  Enabled: false
-Style/Documentation:
-  Enabled: false
-Style/ModuleFunction:
-  Enabled: false
-Style/OneLineConditional:
-  Enabled: false
-Style/Send:
+Style/TrailingUnderscoreVariable:
   Enabled: false
 Style/VariableInterpolation:
   Enabled: false
 Style/WhenThen:
   Enabled: false
-Lint/EachWithObjectArgument:
-  Enabled: true
-Lint/SuppressedException:
-  Enabled: false
-Lint/LiteralInInterpolation:
-  Enabled: false
-
-Layout/AccessModifierIndentation:
-  IndentationWidth: 2
-
-Layout/HashAlignment:
-  Enabled: false
-
-Layout/EmptyLineAfterGuardClause:
-  Enabled: false
-
-Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-
-Layout/EndOfLine:
-  Enabled: false
-
-Layout/ExtraSpacing:
-  Enabled: false
-
-Layout/HeredocIndentation:
-  Enabled: true
-
-Layout/MultilineMethodCallBraceLayout:
-  Enabled: false
-
-Layout/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-Layout/SpaceBeforeFirstArg:
-  Enabled: false
-
-Layout/SpaceInsideBlockBraces:
-  EnforcedStyleForEmptyBraces: space
-
-Lint/AmbiguousRegexpLiteral:
-  Enabled: false
-
-Lint/AmbiguousBlockAssociation:
-  Enabled: false
-
-Lint/EmptyWhen:
-  Enabled: false
-
-Lint/RedundantRequireStatement:
-  Enabled: false
-
-Metrics/BlockLength:
-  Exclude:
-    - 'Rakefile'
-    - '**/*.rake'
-    - '**/*_test.rb'
-    - '**/*_spec.rb'
-
-Metrics/CyclomaticComplexity:
-  Max: 10
-
-Metrics/LineLength:
-  Max: 150
-
-Metrics/MethodLength:
-  Max: 20
-
-Naming/HeredocDelimiterNaming:
-  Enabled: false
-
-Naming/RescuedExceptionsVariableName:
-  Enabled: false
-
-Naming/VariableNumber:
-  Enabled: false
-
-Style/AndOr:
-  EnforcedStyle: conditionals
-
-Style/ClassAndModuleChildren:
-  Enabled: true
-
-# Mapping of methods to prefer, alternate => preferred
-Style/CollectionMethods:
-  Enabled: true
-  PreferredMethods:
-    collect: 'map'
-    collect!: 'map!'
-    inject: 'reduce'
-    detect: 'find'
-    find_all: 'select'
-    length: 'size'
-
-Style/CommentedKeyword:
-  Enabled: false
-
-Style/DoubleNegation:
-  Enabled: false
-
-Style/EachWithObject:
-  Enabled: false
-
-Style/EmptyMethod:
-  Enabled: false
-
-Style/FormatStringToken:
-  Enabled: false
-
-Style/GuardClause:
-  Enabled: false
-
-Style/HashSyntax:
-  EnforcedStyle: ruby19_no_mixed_keys
-
-Style/IfUnlessModifier:
-  Enabled: false
-
-Style/NegatedIf:
-  Enabled: false
-
-Style/Lambda:
-  Enabled: false
-
-Style/Next:
-  Enabled: false
-
-Style/NumericLiteralPrefix:
-  Enabled: false
-
-Style/NumericLiterals:
-  MinDigits: 9
-
-Style/NumericPredicate:
-  Enabled: false
-
-Style/ParallelAssignment:
-  Enabled: false
-
-Style/PreferredHashMethods:
-  Enabled: false
-
-Style/RegexpLiteral:
-  Enabled: false
-
-Style/RescueStandardError:
-  Enabled: false
-
-Style/SignalException:
-  Enabled: false
-
-Style/SymbolArray:
-  Enabled: false
-
-Style/TrailingCommaInArrayLiteral:
-  Enabled: false
-
-Style/TrailingCommaInHashLiteral:
-  Enabled: false
-
-Style/TrailingUnderscoreVariable:
-  Enabled: false
-
 Style/WordArray:
   Enabled: false
