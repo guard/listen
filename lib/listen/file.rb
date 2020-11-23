@@ -5,6 +5,8 @@ require 'digest/md5'
 module Listen
   class File
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
     def self.change(record, rel_path)
       path = Pathname.new(record.root) + rel_path
       lstat = path.lstat
@@ -76,6 +78,8 @@ module Listen
       raise
     end
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def self.inaccurate_mac_time?(stat)
       # 'mac' means Modified/Accessed/Created

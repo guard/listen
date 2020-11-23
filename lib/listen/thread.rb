@@ -9,6 +9,7 @@ module Listen
     class << self
       # Creates a new thread with the given name.
       # Any exceptions raised by the thread will be logged with the thread name and complete backtrace.
+      # rubocop:disable Style/MultilineBlockChain
       def new(name, &block)
         thread_name = "listen-#{name}"
         caller_stack = caller
@@ -19,6 +20,7 @@ module Listen
           thread.name = thread_name
         end
       end
+      # rubocop:enable Style/MultilineBlockChain
 
       def rescue_and_log(method_name, *args, caller_stack: nil)
         yield(*args)
