@@ -214,7 +214,7 @@ RSpec.describe Listen::Event::Processor do
               allow(listener).to receive(:wait_for_state).
                 with(:initializing, :backend_started, :processing_events, :stopped)
 
-              subject.instance_variable_set(:@first_unprocessed_event_time, -3)
+              subject.instance_variable_set(:@_remember_time_of_first_unprocessed_event, -3)
               subject.loop_for(1)
             end
           end
