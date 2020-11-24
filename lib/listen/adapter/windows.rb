@@ -38,7 +38,7 @@ module Listen
           yield([:dir, change])
         end
 
-        @worker.watch_recursively(dir.to_s, [:attributes, :last_write]) do |change|
+        @worker.watch_recursively(dir.to_s, :attributes, :last_write) do |change|
           yield([:attr, change])
         end
       end
