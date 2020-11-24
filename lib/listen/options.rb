@@ -9,11 +9,7 @@ module Listen
         @options[key] = given_options.delete(key) || defaults[key]
       end
 
-      return if given_options.empty?
-
-      msg = "Unknown options: #{given_options.inspect}"
-      Listen.logger.warn msg
-      fail msg
+      given_options.empty? or raise ArgumentError, "Unknown options: #{given_options.inspect}"
     end
 
     # rubocop:disable Lint/MissingSuper

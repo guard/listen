@@ -91,10 +91,8 @@ module Listen
     def _reinterpret_related_changes(cookies)
       table = { moved_to: :added, moved_from: :removed }
       cookies.flat_map do |_, changes|
-        data = _detect_possible_editor_save(changes)
-        if data
-          to_dir, to_file = data
-          [[:modified, to_dir, to_file]]
+        if (editor_modified = editor_modified?(changes))
+          [[:modified, *editor_modified]]
         else
           not_silenced = changes.reject do |type, _, _, path, _|
             config.silenced?(Pathname(path), type)
@@ -106,8 +104,7 @@ module Listen
       end
     end
 
-    # rubocop:disable Metrics/MethodLength
-    def _detect_possible_editor_save(changes)
+    def editor_modified?(changes)
       return unless changes.size == 2
 
       from_type = from = nil
@@ -119,19 +116,14 @@ module Listen
           from_type, _from_change, _, from, = data
         when :moved_to
           to_type, _to_change, to_dir, to, = data
-        else
-          return nil
         end
       end
 
-      return unless from && to
-
       # Expect an ignored moved_from and non-ignored moved_to
       # to qualify as an "editor modify"
-      if config.silenced?(Pathname(from), from_type) && !config.silenced?(Pathname(to), to_type)
+      if from && to && config.silenced?(Pathname(from), from_type) && !config.silenced?(Pathname(to), to_type)
         [to_dir, to]
       end
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end
