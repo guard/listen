@@ -17,8 +17,9 @@ module Listen
     end
 
     def add_dir(rel_path)
-      return if [nil, '', '.'].include? rel_path
-      @tree[rel_path] ||= {}
+      if ![nil, '', '.'].include?(rel_path)
+        @tree[rel_path] ||= {}
+      end
     end
 
     def update_file(rel_path, data)
@@ -34,18 +35,18 @@ module Listen
     def file_data(rel_path)
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
       if [nil, '', '.'].include? dirname
-        tree[basename] ||= {}
-        tree[basename].dup
+        @tree[basename] ||= {}
+        @tree[basename].dup
       else
-        tree[dirname] ||= {}
-        tree[dirname][basename] ||= {}
-        tree[dirname][basename].dup
+        @tree[dirname] ||= {}
+        @tree[dirname][basename] ||= {}
+        @tree[dirname][basename].dup
       end
     end
 
     def dir_entries(rel_path)
       subtree = if [nil, '', '.'].include? rel_path.to_s
-                  tree
+                  @tree
                 else
                   _sub_tree(rel_path)
                 end
@@ -57,7 +58,7 @@ module Listen
     end
 
     def _sub_tree(rel_path)
-      tree.each_with_object({}) do |(path, meta), result|
+      @tree.each_with_object({}) do |(path, meta), result|
         next unless path.start_with?(rel_path)
 
         if path == rel_path
@@ -86,26 +87,24 @@ module Listen
       Hash.new { |h, k| h[k] = {} }
     end
 
-    attr_reader :tree
-
     def _fast_update_file(dirname, basename, data)
-      if [nil, '', '.'].include? dirname
-        tree[basename] = (tree[basename] || {}).merge(data)
+      if [nil, '', '.'].include?(dirname)
+        @tree[basename] = (@tree[basename] || {}).merge(data)
       else
-        tree[dirname] ||= {}
-        tree[dirname][basename] = (tree[dirname][basename] || {}).merge(data)
+        @tree[dirname] ||= {}
+        @tree[dirname][basename] = (@tree[dirname][basename] || {}).merge(data)
       end
     end
 
     def _fast_unset_path(dirname, basename)
       # this may need to be reworked to properly remove
       # entries from a tree, without adding non-existing dirs to the record
-      if [nil, '', '.'].include? dirname
-        return unless tree.key?(basename)
-        tree.delete(basename)
-      else
-        return unless tree.key?(dirname)
-        tree[dirname].delete(basename)
+      if [nil, '', '.'].include?(dirname)
+        if @tree.key?(basename)
+          @tree.delete(basename)
+        end
+      elsif @tree.key?(dirname)
+        @tree[dirname].delete(basename)
       end
     end
 
