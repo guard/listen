@@ -14,7 +14,9 @@
       # 2. keep the queue if we're testing for existing accumulated changes
 
       # if were testing the queue (e.g. after unpause), don't reset
-      actual.listen(reset_queue: /queued_/ !~ description) do
+      reset_queue = /queued_/ !~ description
+
+      actual.listen(reset_queue: reset_queue) do
         change_fs(type, expected) if reset_queue
       end
       actual.changes[type].include? expected
