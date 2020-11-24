@@ -158,20 +158,19 @@ class ListenerWrapper
     # Isolate collected changes between tests/listener instances
     @timed_changes = TimedChanges.new
 
-    @listener = if callback
-                  Listen.send(*args) do |modified, added, removed|
-                    # Add changes to trigger frozen Hash error, making sure lag is enough
-                    _add_changes(:modified, modified, changes)
-                    _add_changes(:added, added, changes)
-                    _add_changes(:removed, removed, changes)
+    @listener =
+      if callback
+        Listen.send(*args) do |modified, added, removed|
+          # Add changes to trigger frozen Hash error, making sure lag is enough
+          _add_changes(:modified, modified, changes)
+          _add_changes(:added, added, changes)
+          _add_changes(:removed, removed, changes)
 
-                    unless callback == :track_changes
-                      callback.call(modified, added, removed)
-                    end
-                  end
-                else
-                  Listen.send(*args)
-                end
+          callback.call(modified, added, removed) unless callback == :track_changes
+        end
+      else
+        Listen.send(*args)
+      end
   end
 
   def changes
@@ -181,7 +180,7 @@ class ListenerWrapper
   def listen(reset_queue: true)
     # Give previous events time to be received, queued and processed
     # so they complete and don't interfere
-    sleep lag
+    sleep(lag)
 
     @timed_changes.allow_changes(reset_queue: reset_queue) do
       yield
@@ -194,13 +193,13 @@ class ListenerWrapper
       # Lag should include:
       #  0.1s - 0.2s if the test needs Listener queue to be processed
       #  0.1s in case the system is busy
-      sleep lag
+      sleep(lag)
     end
 
     # Keep this to detect a lag too small (changes during this sleep
     # will trigger "frozen hash" error caught below (and displaying timeout
     # details)
-    sleep 1
+    sleep(1)
 
     changes
   end
@@ -258,5 +257,5 @@ def _sleep_to_separate_events
   # - Polling Adapter
   # - Linux Adapter in FSEvent emulation mode
   # - maybe Windows adapter (probably not)
-  sleep 0.4
+  sleep(0.4)
 end
