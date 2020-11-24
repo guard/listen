@@ -16,13 +16,15 @@ module Listen
       fail msg
     end
 
+    # rubocop:disable Lint/MissingSuper
     def respond_to_missing?(name, *_)
-      super || @options.has_key?(name)
+      @options.has_key?(name)
     end
 
     def method_missing(name, *_)
-      super || respond_to_missing?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
+      respond_to_missing?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
       @options[name]
     end
+    # rubocop:enable Lint/MissingSuper
   end
 end
