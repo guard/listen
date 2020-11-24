@@ -51,10 +51,10 @@ module Listen
       end
 
       def _check_stopped
-        return unless @listener.stopped?
-
-        _flush_wakeup_reasons
-        raise Stopped
+        if @listener.stopped?
+          _flush_wakeup_reasons
+          raise Stopped
+        end
       end
 
       def _sleep(seconds)
