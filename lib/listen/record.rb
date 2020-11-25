@@ -46,10 +46,10 @@ module Listen
 
     def dir_entries(rel_path)
       subtree = if [nil, '', '.'].include? rel_path.to_s
-                  @tree
-                else
-                  _sub_tree(rel_path)
-                end
+        @tree
+      else
+        _sub_tree(rel_path)
+      end
 
       subtree.transform_values do |values|
         # only get data for file entries

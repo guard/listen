@@ -158,19 +158,18 @@ class ListenerWrapper
     # Isolate collected changes between tests/listener instances
     @timed_changes = TimedChanges.new
 
-    @listener =
-      if callback
-        Listen.send(*args) do |modified, added, removed|
-          # Add changes to trigger frozen Hash error, making sure lag is enough
-          _add_changes(:modified, modified, changes)
-          _add_changes(:added, added, changes)
-          _add_changes(:removed, removed, changes)
+    @listener = if callback
+      Listen.send(*args) do |modified, added, removed|
+        # Add changes to trigger frozen Hash error, making sure lag is enough
+        _add_changes(:modified, modified, changes)
+        _add_changes(:added, added, changes)
+        _add_changes(:removed, removed, changes)
 
-          callback.call(modified, added, removed) unless callback == :track_changes
-        end
-      else
-        Listen.send(*args)
+        callback.call(modified, added, removed) unless callback == :track_changes
       end
+    else
+      Listen.send(*args)
+    end
   end
 
   def changes

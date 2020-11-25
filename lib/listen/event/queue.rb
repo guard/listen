@@ -31,10 +31,10 @@ module Listen
         fail "Invalid path: #{path.inspect}" unless path.is_a?(String)
 
         dir = if @config.relative?
-                _safe_relative_from_cwd(dir)
-              else
-                dir
-              end
+          _safe_relative_from_cwd(dir)
+        else
+          dir
+        end
         @event_queue << [type, change, dir, path, options]
       end
 

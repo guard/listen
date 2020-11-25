@@ -18,10 +18,14 @@ Layout/EmptyLineAfterGuardClause:
   Enabled: false
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
 Layout/HashAlignment:
   Enabled: false
 Layout/HeredocIndentation:
   Enabled: true
+Layout/LineLength:
+  Max: 150
 Layout/MultilineMethodCallBraceLayout:
   Enabled: false
 Layout/MultilineMethodCallIndentation:
@@ -99,8 +103,6 @@ Metrics/BlockLength:
     - "**/*_spec.rb"
 Metrics/CyclomaticComplexity:
   Max: 10
-Metrics/LineLength:
-  Max: 150
 Metrics/MethodLength:
   Max: 15
 Metrics/ModuleLength:
