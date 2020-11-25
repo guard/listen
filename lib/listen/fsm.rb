@@ -113,8 +113,8 @@ module Listen
         @name = name
         @block = block
         @transitions = if transitions
-                         Array(transitions).map(&:to_sym)
-                       end
+          Array(transitions).map(&:to_sym)
+        end
       end
 
       def call(obj)

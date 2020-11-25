@@ -16,18 +16,19 @@ module Listen
     private
 
     def default_logger
-      level = case ENV['LISTEN_GEM_DEBUGGING'].to_s
-              when /debug|2/i
-                ::Logger::DEBUG
-              when /info|true|yes|1/i
-                ::Logger::INFO
-              when /warn/i
-                ::Logger::WARN
-              when /fatal/i
-                ::Logger::FATAL
-              else
-                ::Logger::ERROR
-              end
+      level =
+        case ENV['LISTEN_GEM_DEBUGGING'].to_s
+        when /debug|2/i
+          ::Logger::DEBUG
+        when /info|true|yes|1/i
+          ::Logger::INFO
+        when /warn/i
+          ::Logger::WARN
+        when /fatal/i
+          ::Logger::FATAL
+        else
+          ::Logger::ERROR
+        end
 
       ::Logger.new(STDERR, level: level)
     end

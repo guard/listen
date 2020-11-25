@@ -32,10 +32,10 @@ module Listen
 
       def _log_exception(exception, thread_name, caller_stack: nil)
         complete_backtrace = if caller_stack
-                               [*exception.backtrace, "--- Thread.new ---", *caller_stack]
-                             else
-                               exception.backtrace
-                             end
+          [*exception.backtrace, "--- Thread.new ---", *caller_stack]
+        else
+          exception.backtrace
+        end
         message = "Exception rescued in #{thread_name}:\n#{_exception_with_causes(exception)}\n#{complete_backtrace * "\n"}"
         Listen.logger.error(message)
       end
