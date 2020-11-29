@@ -16,7 +16,13 @@ Gem::Specification.new do |gem|
   gem.description = 'The Listen gem listens to file modifications and '\
     'notifies you about the changes. Works everywhere!'
   gem.metadata = {
-    'allowed_push_host' => 'https://rubygems.org'
+    'allowed_push_host' => 'https://rubygems.org',
+    'bug_tracker_uri' => "#{gem.homepage}/issues",
+    'changelog_uri' => "#{gem.homepage}/releases",
+    'documentation_uri' => "https://www.rubydoc.info/gems/listen/#{gem.version}",
+    'homepage_uri' => gem.homepage,
+    'source_code_uri' => "#{gem.homepage}/tree/v#{gem.version}",
+    'wiki_uri' => "#{gem.homepage}/wiki"
   }
 
   gem.files = `git ls-files -z`.split("\x0").select do |f|
