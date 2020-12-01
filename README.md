@@ -240,7 +240,7 @@ If you are on Windows, it's recommended to use the [`wdm`](https://github.com/Ma
 Please add the following to your Gemfile:
 
 ```ruby
-gem 'wdm', '>= 0.1.0' if Gem.win_platform?
+gem 'wdm', '>= 0.1.0', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 ```
 
 ### On \*BSD
