@@ -295,13 +295,19 @@ $ bundle exec sass --watch # ... or whatever app is using Listen.
 
 If you are running Debian, RedHat, or another similar Linux distribution, run the following in a terminal:
 ```
-echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+$ sudo echo fs.inotify.max_user_watches=524288 >> /etc/sysctl.conf
+$ sudo sysctl -p
 ```
-If you are running ArchLinux, run the following command instead (see [here](https://www.archlinux.org/news/deprecation-of-etcsysctlconf/) for why):
+If you are running ArchLinux, search the `/etc/sysctl.d/` directory for config files with the setting:
 ```
-echo fs.inotify.max_user_watches=524288 | sudo tee /etc/sysctl.d/40-max-user-watches.conf && sudo sysctl --system
+$ grep -H -s "fs.inotify.max_user_watches" /etc/sysctl.d/*
+/etc/sysctl.d/40-max_user_watches.conf:fs.inotify.max_user_watches=100000
 ```
-Then paste it in your terminal and press on enter to run it.
+Then change the setting in the file you found above to a higher value (see [here](https://www.archlinux.org/news/deprecation-of-etcsysctlconf/) for why):
+```
+$ sudo echo fs.inotify.max_user_watches=524288 > /etc/sysctl.d/40-max-user-watches.conf
+$ sudo sysctl --system
+```
 
 #### The technical details
 Listen uses `inotify` by default on Linux to monitor directories for changes.
