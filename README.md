@@ -22,7 +22,7 @@ The `listen` gem listens to file modifications and notifies you about the change
 
 * Limited support for symlinked directories ([#279](https://github.com/guard/listen/issues/279)):
   * Symlinks are always followed ([#25](https://github.com/guard/listen/issues/25)).
-  * Symlinked directories pointing within a watched directory are not supported ([#273](https://github.com/guard/listen/pull/273)- see [Duplicate directory errors](https://github.com/guard/listen/wiki/Duplicate-directory-errors)).
+  * Symlinked directories pointing within a watched directory are not supported ([#273](https://github.com/guard/listen/pull/273).
 * No directory/adapter-specific configuration options.
 * Support for plugins planned for future.
 * TCP functionality was removed in `listen` [3.0.0](https://github.com/guard/listen/releases/tag/v3.0.0) ([#319](https://github.com/guard/listen/issues/319), [#218](https://github.com/guard/listen/issues/218)). There are plans to extract this feature to separate gems ([#258](https://github.com/guard/listen/issues/258)), until this is finished, you can use by locking the `listen` gem to version `'~> 2.10'`.
@@ -40,7 +40,7 @@ Pull requests or help is very welcome for these.
 The simplest way to install `listen` is to use [Bundler](http://bundler.io).
 
 ```ruby
-gem 'listen', '~> 3.3' # NOTE: for TCP functionality, use '~> 2.10' for now
+gem 'listen'
 ```
 
 ## Complete Example
@@ -259,7 +259,76 @@ end
 
 ### Getting the [polling fallback message](#options)?
 
-Please visit the [installation section of the Listen WIKI](https://github.com/guard/listen/wiki#installation) for more information and options for potential fixes.
+If you see:
+```
+Listen will be polling for changes.
+```
+
+This means the Listen gem can’t find an optimized adapter. Typically this is caused by:
+
+- You’re on Windows and WDM gem isn’t installed.
+- You’re running the app without Bundler or RubyGems.
+- Using Sass which includes an ancient (the “dinosaur” type of ancient) version of the Listen gem.
+
+Possible solutions:
+
+1. Suppress the message by using the :force_polling option. Or, you could just ignore the message since it’s harmless.
+2. Windows users: Install the WDM gem.
+3. Upgrade Ruby (use RubyInstaller for Windows or RVM/rbenv for Mac) and RubyGems.
+3. Run your apps using Bundler.
+4. Sass users: Install the latest version of Listen and try again.
+
+#### Simplified Bundler and Sass example
+Create a Gemfile with these lines:
+```
+source 'https://rubygems.org'
+gem 'listen'
+gem 'sass'
+```
+Next, use Bundler to update gems:
+```
+$ bundle update
+$ bundle exec sass --watch # ... or whatever app is using Listen.
+```
+
+### Increasing the amount of inotify watchers
+
+If you are running Debian, RedHat, or another similar Linux distribution, run the following in a terminal:
+```
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+```
+If you are running ArchLinux, run the following command instead (see [here](https://www.archlinux.org/news/deprecation-of-etcsysctlconf/) for why):
+```
+echo fs.inotify.max_user_watches=524288 | sudo tee /etc/sysctl.d/40-max-user-watches.conf && sudo sysctl --system
+```
+Then paste it in your terminal and press on enter to run it.
+
+#### The technical details
+Listen uses `inotify` by default on Linux to monitor directories for changes.
+It's not uncommon to encounter a system limit on the number of files you can monitor.
+For example, Ubuntu Lucid's (64bit) `inotify` limit is set to 8192.
+
+You can get your current inotify file watch limit by executing:
+```
+$ cat /proc/sys/fs/inotify/max_user_watches
+```
+When this limit is not enough to monitor all files inside a directory, the limit must be increased for Listen to work properly.
+
+You can set a new limit temporarily with:
+```
+$ sudo sysctl fs.inotify.max_user_watches=524288
+$ sudo sysctl -p
+```
+If you like to make your limit permanent, use:
+```
+$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+$ sudo sysctl -p
+```
+You may also need to pay attention to the values of `max_queued_events` and `max_user_instances` if Listen keeps on complaining.
+
+#### More info
+Man page for [inotify(7)](https://linux.die.net/man/7/inotify).
+Blog post: [limit of inotify](https://blog.sorah.jp/2012/01/24/inotify-limitation).
 
 ### Issues and Troubleshooting
 
@@ -267,7 +336,35 @@ If the gem doesn't work as expected, start by setting `LISTEN_GEM_DEBUGGING=debu
 
 *NOTE: without providing the output after setting the `LISTEN_GEM_DEBUGGING=debug` environment variable, it is usually impossible to guess why `listen` is not working as expected.*
 
-See [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting)
+#### 3 steps before you start diagnosing problems
+These 3 steps will:
+
+- help quickly troubleshoot obscure problems (trust me, most of them are obscure)
+- help quickly identify the area of the problem (a full list is below)
+- help you get familiar with listen's diagnostic mode (it really comes in handy, trust me)
+- help you create relevant output before you submit an issue (so we can respond with answers instead of tons of questions)
+
+Step 1 - The most important option in Listen
+For effective troubleshooting set the `LISTEN_GEM_DEBUGGING=info` variable before starting `listen`.
+
+Step 2 - Verify polling works
+Polling has to work ... or something is really wrong (and we need to know that before anything else).
+
+(see force_polling option).
+
+After starting `listen`, you should see something like:
+```
+INFO -- : Record.build(): 0.06773114204406738 seconds
+```
+Step 3 - Trigger some changes directly without using editors or apps
+Make changes e.g. touch foo or echo "a" >> foo (for troubleshooting, avoid using an editor which could generate too many misleading events).
+
+You should see something like:
+```
+INFO -- : listen: raw changes: [[:added, "/home/me/foo"]]
+INFO -- : listen: final changes: {:modified=>[], :added=>["/home/me/foo"], :removed=>[]}
+```
+"raw changes" contains changes collected during the :wait_for_delay and :latency intervals, while "final changes" is what listen decided are relevant changes (for better editor support).
 
 ## Performance
 
@@ -289,7 +386,11 @@ Also, if the directories you're watching contain many files, make sure you're:
 
 When in doubt, `LISTEN_GEM_DEBUGGING=debug` can help discover the actual events and time they happened.
 
-See also [Tips and Techniques](https://github.com/guard/listen/wiki/Tips-and-Techniques).
+## Tips and Techniques
+- Watch only directories you're interested in.
+- Set your editor to save quickly (e.g. without backup files, without atomic-save)
+- Tweak the `:latency` and `:wait_for_delay` options until you get good results (see [options](#options)).
+- Add `:ignore` rules to silence all events you don't care about (reduces a lot of noise, especially if you use it on directories)
 
 ## Development
 
