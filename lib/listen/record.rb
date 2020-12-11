@@ -59,13 +59,13 @@ module Listen
 
     def _sub_tree(rel_path)
       @tree.each_with_object({}) do |(path, meta), result|
-        next unless path.start_with?(rel_path)
-
-        if path == rel_path
-          result.merge!(meta)
-        else
-          sub_path         = path.sub(%r{\A#{rel_path}/?}, '')
-          result[sub_path] = meta
+        parts = path.split(::File::SEPARATOR)
+        if parts.shift == rel_path
+          if parts.empty?
+            result.merge!(meta)
+          else
+            result[parts.join(::File::SEPARATOR)] = meta
+          end
         end
       end
     end

@@ -208,6 +208,29 @@ RSpec.describe Listen::Record do
       end
     end
 
+    context 'when there is a file with the same name as a dir' do
+      subject { record.dir_entries('cypress') }
+
+      before do
+        record.update_file('cypress.json', mtime: 1.1)
+        record.update_file('cypress/README.md', mtime: 1.2)
+        record.update_file('a/b/cypress/d', mtime: 1.3)
+        record.update_file('a/b/c/cypress', mtime: 1.3)
+      end
+      it { should eq('README.md' => { mtime: 1.2 }) }
+    end
+
+    context 'when there is a file with a similar name to a dir' do
+      subject { record.dir_entries('app') }
+
+      before do
+        record.update_file('appspec.yml', mtime: 1.1)
+        record.update_file('app/README.md', mtime: 1.2)
+        record.update_file('spec/app/foo', mtime: 1.3)
+      end
+      it { should eq('README.md' => { mtime: 1.2 }) }
+    end
+
     context 'in subdir /path' do
       subject { record.dir_entries('path') }
 
