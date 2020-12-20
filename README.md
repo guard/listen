@@ -295,7 +295,7 @@ $ bundle exec sass --watch # ... or whatever app is using Listen.
 
 If you are running Debian, RedHat, or another similar Linux distribution, run the following in a terminal:
 ```
-$ sudo echo fs.inotify.max_user_watches=524288 >> /etc/sysctl.conf
+$ sudo sh -c "echo fs.inotify.max_user_watches=524288 >> /etc/sysctl.conf"
 $ sudo sysctl -p
 ```
 If you are running ArchLinux, search the `/etc/sysctl.d/` directory for config files with the setting:
@@ -305,7 +305,7 @@ $ grep -H -s "fs.inotify.max_user_watches" /etc/sysctl.d/*
 ```
 Then change the setting in the file you found above to a higher value (see [here](https://www.archlinux.org/news/deprecation-of-etcsysctlconf/) for why):
 ```
-$ sudo echo fs.inotify.max_user_watches=524288 > /etc/sysctl.d/40-max-user-watches.conf
+$ sudo sh -c "echo fs.inotify.max_user_watches=524288 > /etc/sysctl.d/40-max-user-watches.conf"
 $ sudo sysctl --system
 ```
 
@@ -327,7 +327,7 @@ $ sudo sysctl -p
 ```
 If you like to make your limit permanent, use:
 ```
-$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+$ sudo sh -c "echo fs.inotify.max_user_watches=524288 >> /etc/sysctl.conf"
 $ sudo sysctl -p
 ```
 You may also need to pay attention to the values of `max_queued_events` and `max_user_instances` if Listen keeps on complaining.
