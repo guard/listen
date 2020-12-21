@@ -48,7 +48,8 @@ module Listen
       subtree = if [nil, '', '.'].include? rel_path.to_s
         @tree
       else
-        _sub_tree(rel_path)
+        @tree[rel_path.to_s] ||= _auto_hash
+        @tree[rel_path.to_s]
       end
 
       subtree.transform_values do |values|
