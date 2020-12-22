@@ -58,19 +58,6 @@ module Listen
       end
     end
 
-    def _sub_tree(rel_path)
-      @tree.each_with_object({}) do |(path, meta), result|
-        next unless path.start_with?(rel_path)
-
-        if path == rel_path
-          result.merge!(meta)
-        else
-          sub_path         = path.sub(%r{\A#{rel_path}/?}, '')
-          result[sub_path] = meta
-        end
-      end
-    end
-
     def build
       @tree = _auto_hash
       # TODO: test with a file name given
