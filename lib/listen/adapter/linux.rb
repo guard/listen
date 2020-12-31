@@ -21,8 +21,9 @@ module Listen
 
       private
 
+      
       WIKI_URL = 'https://github.com/guard/listen'\
-        '/wiki/Increasing-the-amount-of-inotify-watchers'
+        '/blob/master/README.md#increasing-the-amount-of-inotify-watchers'
 
       INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
         FATAL: Listen error: unable to monitor directories for changes.
