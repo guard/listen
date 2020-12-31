@@ -21,7 +21,6 @@ module Listen
 
       private
 
-      
       WIKI_URL = 'https://github.com/guard/listen'\
         '/blob/master/README.md#increasing-the-amount-of-inotify-watchers'
 
