@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Listen
-  VERSION = '3.3.4'
+  VERSION = '3.4.0'
 end
