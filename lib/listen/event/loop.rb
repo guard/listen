@@ -52,7 +52,7 @@ module Listen
 
         Listen.logger.debug("Waiting for processing to start...")
 
-        wait_for_state(:started, MAX_STARTUP_SECONDS) or
+        wait_for_state(:started, timeout: MAX_STARTUP_SECONDS) or
           raise Error::NotStarted, "thread didn't start in #{MAX_STARTUP_SECONDS} seconds (in state: #{state.inspect})"
 
         Listen.logger.debug('Processing started.')
