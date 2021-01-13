@@ -60,6 +60,44 @@ RSpec.describe Listen::FSM do
       expect { subject.transition(:started) }.to raise_exception(NoMethodError, /private.*transition/)
       expect { subject.transition!(:started) }.to raise_exception(NoMethodError, /private.*transition!/)
     end
+
+    describe '#wait_for_state' do
+      it 'returns truthy immediately if already in the desired state' do
+        expect(subject.instance_variable_get(:@state_changed)).to_not receive(:wait)
+        result = subject.wait_for_state(:initial)
+        expect(result).to be_truthy
+      end
+
+      it 'waits for the next state change and returns truthy if then in the desired state' do
+        expect(subject.instance_variable_get(:@state_changed)).to receive(:wait).with(anything, anything) do
+          subject.instance_variable_set(:@state, :started)
+        end
+        result = subject.wait_for_state(:started)
+        expect(result).to be_truthy
+      end
+
+      it 'waits for the next state change and returns falsey if then not the desired state' do
+        expect(subject.instance_variable_get(:@state_changed)).to receive(:wait).with(anything, anything)
+        result = subject.wait_for_state(:started)
+        expect(result).to be_falsey
+      end
+
+      it 'passes the timeout: down to wait, if given' do
+        expect(subject.instance_variable_get(:@state_changed)).to receive(:wait).with(anything, 5.0)
+        subject.wait_for_state(:started, timeout: 5.0)
+      end
+
+      it 'passes nil (infinite) timeout: down to wait, if none given' do
+        expect(subject.instance_variable_get(:@state_changed)).to receive(:wait).with(anything, nil)
+        subject.wait_for_state(:started)
+      end
+
+      it 'enforces precondition that states must be symbols' do
+        expect do
+          subject.wait_for_state(:started, 'stopped')
+        end.to raise_exception(ArgumentError, /states must be symbols .*got "stopped"/)
+      end
+    end
   end
 
   context 'FSM with no start state' do

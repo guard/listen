@@ -53,6 +53,9 @@ module Listen
     # if not already, waits for a state change (up to timeout seconds--`nil` means infinite)
     # returns truthy iff the transition to one of the desired state has occurred
     def wait_for_state(*wait_for_states, timeout: nil)
+      wait_for_states.each do |state|
+        state.is_a?(Symbol) or raise ArgumentError, "states must be symbols (got #{state.inspect})"
+      end
       @mutex.synchronize do
         if !wait_for_states.include?(@state)
           @state_changed.wait(@mutex, timeout)
