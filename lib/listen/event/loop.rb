@@ -12,7 +12,7 @@ module Listen
     class Loop
       include Listen::FSM
 
-      class Error < RuntimeError
+      module Error
         NotStarted = ::Listen::Error::NotStarted # for backward compatibility
       end
 
