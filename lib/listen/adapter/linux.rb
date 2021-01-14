@@ -21,12 +21,12 @@ module Listen
 
       private
 
-      WIKI_URL = 'https://github.com/guard/listen'\
+      README_URL = 'https://github.com/guard/listen'\
         '/blob/master/README.md#increasing-the-amount-of-inotify-watchers'
 
-      INOTIFY_LIMIT_MESSAGE = <<-EOS.gsub(/^\s*/, '')
+      INOTIFY_LIMIT_MESSAGE = <<-EOS
         FATAL: Listen error: unable to monitor directories for changes.
-        Visit #{WIKI_URL} for info on how to fix this.
+        Visit #{README_URL} for info on how to fix this.
       EOS
 
       def _configure(directory, &callback)

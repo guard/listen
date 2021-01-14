@@ -4,7 +4,7 @@ Contribute to Listen
 File an issue
 -------------
 
-If you haven't already, first see [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting) for known issues, solutions and workarounds.
+If you haven't already, first see [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/README.md#Issues-and-Troubleshooting) for known issues, solutions and workarounds.
 
 You can report bugs and feature requests to [GitHub Issues](https://github.com/guard/listen/issues).
 
@@ -16,7 +16,7 @@ Try to figure out where the issue belongs to: Is it an issue with Listen itself 
 
 **It's most likely that your bug gets resolved faster if you provide as much information as possible!**
 
-The MOST useful information is debugging output from Listen (`LISTEN_GEM_DEBUGGING=1`) - see [TROUBLESHOOTING](https://github.com/guard/listen/wiki/Troubleshooting) for details.
+The MOST useful information is debugging output from Listen (`LISTEN_GEM_DEBUGGING=1`) - see [TROUBLESHOOTING](https://github.com/guard/listen/blob/master/README.md#Issues-and-Troubleshooting) for details.
 
 
 Development
