@@ -12,9 +12,8 @@ module Listen
     class Loop
       include Listen::FSM
 
-      module Error
-        NotStarted = ::Listen::Error::NotStarted # for backward compatibility
-      end
+      Error = ::Listen::Error
+      NotStarted = ::Listen::Error::NotStarted # for backward compatibility
 
       start_state :pre_start
       state :pre_start
