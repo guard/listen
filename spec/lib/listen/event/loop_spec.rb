@@ -45,24 +45,38 @@ RSpec.describe Listen::Event::Loop do
   end
 
   describe '#start' do
-    before do
+    it 'is started' do
+      expect(processor).to receive(:loop_for).with(1.234)
       expect(Thread).to receive(:new) do |&block|
         block.call
         thread
       end
-
-      expect(processor).to receive(:loop_for).with(1.234)
-
       subject.start
-    end
-
-    it 'is started' do
       expect(subject).to be_started
     end
 
     context 'when start is called again' do
       it 'returns silently' do
+        expect(processor).to receive(:loop_for).with(1.234)
+        expect(Thread).to receive(:new) do |&block|
+          block.call
+          thread
+        end
+        subject.start
         expect { subject.start }.to_not raise_exception
+      end
+    end
+
+    context 'when state change to :started takes longer than 5 seconds' do
+      before do
+        expect(Thread).to receive(:new) { thread }
+        expect_any_instance_of(::ConditionVariable).to receive(:wait) { } # return immediately
+      end
+
+      it 'raises Error::NotStarted' do
+        expect do
+          subject.start
+        end.to raise_exception(::Listen::Error::NotStarted, "thread didn't start in 5.0 seconds (in state: :starting)")
       end
     end
   end

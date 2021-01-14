@@ -5,6 +5,7 @@ require 'thread'
 require 'timeout'
 require 'listen/event/processor'
 require 'listen/thread'
+require 'listen/error'
 
 module Listen
   module Event
@@ -12,7 +13,7 @@ module Listen
       include Listen::FSM
 
       class Error < RuntimeError
-        class NotStarted < Error; end
+        NotStarted = ::Listen::Error::NotStarted # for backward compatibility
       end
 
       start_state :pre_start
@@ -40,6 +41,7 @@ module Listen
 
       MAX_STARTUP_SECONDS = 5.0
 
+      # @raises Error::NotStarted if background thread hasn't started in MAX_STARTUP_SECONDS
       def start
         # TODO: use a Fiber instead?
         return unless state == :pre_start
