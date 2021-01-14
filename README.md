@@ -2,8 +2,6 @@
 
 The `listen` gem listens to file modifications and notifies you about the changes.
 
-:exclamation: `Listen` is currently accepting more maintainers. Please [read this](https://github.com/guard/guard/wiki/Maintainers) if you're interested in joining the team.
-
 [![Development Status](https://github.com/guard/listen/workflows/Development/badge.svg)](https://github.com/guard/listen/actions?workflow=Development)
 [![Gem Version](https://badge.fury.io/rb/listen.svg)](http://badge.fury.io/rb/listen)
 [![Code Climate](https://codeclimate.com/github/guard/listen.svg)](https://codeclimate.com/github/guard/listen)

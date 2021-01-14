@@ -21,8 +21,7 @@ Gem::Specification.new do |gem|
     'changelog_uri' => "#{gem.homepage}/releases",
     'documentation_uri' => "https://www.rubydoc.info/gems/listen/#{gem.version}",
     'homepage_uri' => gem.homepage,
-    'source_code_uri' => "#{gem.homepage}/tree/v#{gem.version}",
-    'wiki_uri' => "#{gem.homepage}/wiki"
+    'source_code_uri' => "#{gem.homepage}/tree/v#{gem.version}"
   }
 
   gem.files = `git ls-files -z`.split("\x0").select do |f|

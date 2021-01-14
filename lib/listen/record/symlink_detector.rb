@@ -7,7 +7,7 @@ module Listen
   # @private api
   class Record
     class SymlinkDetector
-      WIKI = 'https://github.com/guard/listen/wiki/Duplicate-directory-errors'
+      README_URL = 'https://github.com/guard/listen/blob/master/README.md'
 
       SYMLINK_LOOP_ERROR = <<-EOS
         ** ERROR: directory is already being watched! **
@@ -16,7 +16,7 @@ module Listen
 
         is already being watched through: %s
 
-        MORE INFO: #{WIKI}
+        MORE INFO: #{README_URL}
       EOS
 
       Error = ::Listen::Error # for backward compatibility
