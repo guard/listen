@@ -31,6 +31,8 @@ module Listen
       private
 
       def _log_exception(exception, thread_name, caller_stack: nil)
+        return if exception.is_a? SystemExit
+
         complete_backtrace = if caller_stack
           [*exception.backtrace, "--- Thread.new ---", *caller_stack]
         else
