@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'listen/version'
 
-Gem::Specification.new do |gem|
+Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.name        = 'listen'
   gem.version     = Listen::VERSION
   gem.license     = 'MIT'
