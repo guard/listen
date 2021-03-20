@@ -30,7 +30,7 @@ RSpec.describe Listen::Adapter::Linux do
       let(:directories) { [Pathname.pwd] }
       let(:adapter_options) { {} }
       let(:default_events) { [:recursive, :attrib, :create, :modify, :delete, :move, :close_write] }
-      let(:fake_worker) { double(:fake_worker) }
+      let(:fake_worker) { double(:fake_worker_for_watch_events) }
       let(:fake_notifier) { double(:fake_notifier, new: fake_worker) }
 
       before do
@@ -53,7 +53,7 @@ RSpec.describe Listen::Adapter::Linux do
       let(:adapter_options) { {} }
 
       before do
-        fake_worker = double(:fake_worker)
+        fake_worker = double(:fake_worker_for_inotify_limit_message)
         allow(fake_worker).to receive(:watch).and_raise(Errno::ENOSPC)
 
         fake_notifier = double(:fake_notifier, new: fake_worker)
@@ -75,7 +75,7 @@ RSpec.describe Listen::Adapter::Linux do
       let(:adapter_options) { { events: [:recursive, :close_write] } }
 
       before do
-        fake_worker = double(:fake_worker)
+        fake_worker = double(:fake_worker_for_callback)
         events = [:recursive, :close_write]
         allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
 
@@ -142,7 +142,7 @@ RSpec.describe Listen::Adapter::Linux do
     end
 
     describe '#stop' do
-      let(:fake_worker) { double(:fake_worker, close: true) }
+      let(:fake_worker) { double(:fake_worker_for_stop, close: true) }
       let(:directories) { [dir1] }
       let(:adapter_options) { { events: [:recursive, :close_write] } }
 
