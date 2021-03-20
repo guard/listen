@@ -63,6 +63,32 @@ RSpec.describe Listen::Thread do
       end
     end
 
+    class TestExceptionDerivedFromException < Exception; end # rubocop:disable Lint/InheritException
+
+    context "when exception raised that is not derived from StandardError" do
+      [SystemExit, SystemStackError, NoMemoryError, SecurityError, TestExceptionDerivedFromException].each do |exception|
+        context exception.name do
+          let(:block) do
+            -> { raise exception, 'boom!' }
+          end
+
+          it "does not rescue" do
+            expect(Thread).to receive(:new) do |&block|
+              expect do
+                block.call
+              end.to raise_exception(exception, 'boom!')
+
+              thread = instance_double(Thread, "thread")
+              allow(thread).to receive(:name=).with(any_args)
+              thread
+            end
+
+            subject
+          end
+        end
+      end
+    end
+
     context "when nested exceptions raised" do
       let(:block) { raise_nested_exception_block }
 
@@ -75,15 +101,6 @@ RSpec.describe Listen::Thread do
           ArgumentError: boom!
         EOS
         expect(Listen.logger).to receive(:error).with(/#{pattern}/)
-        subject.join
-      end
-    end
-
-    context 'when exception raised that is not derived from StandardError' do
-      let(:block) { raise_script_error_block }
-
-      it "still rescues and logs" do
-        expect(Listen.logger).to receive(:error).with(/Exception rescued in listen-worker_thread:\nScriptError: ruby typo!/)
         subject.join
       end
     end
@@ -106,9 +123,10 @@ RSpec.describe Listen::Thread do
     context 'when exception raised that is not derived from StandardError' do
       let(:block) { raise_script_error_block }
 
-      it 'still rescues and logs' do
-        expect(Listen.logger).to receive(:error).with(/Exception rescued in method:\nScriptError: ruby typo!/)
-        described_class.rescue_and_log("method", &block)
+      it "raises out" do
+        expect do
+          described_class.rescue_and_log("method", &raise_script_error_block)
+        end.to raise_exception(ScriptError, "ruby typo!")
       end
     end
   end

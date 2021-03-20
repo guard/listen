@@ -24,7 +24,7 @@ module Listen
 
       def rescue_and_log(method_name, *args, caller_stack: nil)
         yield(*args)
-      rescue Exception => exception # rubocop:disable Lint/RescueException
+      rescue => exception
         _log_exception(exception, method_name, caller_stack: caller_stack)
       end
 
