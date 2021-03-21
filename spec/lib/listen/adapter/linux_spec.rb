@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Listen::Adapter::Linux do
-  describe 'class' do
+  describe 'class methods' do
     subject { described_class }
 
     if linux?
@@ -12,19 +12,25 @@ RSpec.describe Listen::Adapter::Linux do
   end
 
   if linux?
+  describe 'instance methods' do
     before(:all) do
       require 'rb-inotify'
     end
+
     let(:dir1) { Pathname.new("/foo/dir1") }
 
-    let(:config) { instance_double(Listen::Adapter::Config, "config") }
-    let(:queue) { instance_double(Queue, "queue") }
+    let(:queue) { instance_double(Queue, "queue", close: nil) }
+    let(:config) { instance_double(Listen::Adapter::Config, "config", queue: queue) }
     let(:silencer) { instance_double(Listen::Silencer, "silencer") }
     let(:snapshot) { instance_double(Listen::Change, "snapshot") }
     let(:record) { instance_double(Listen::Record, "record") }
 
     # TODO: fix other adapters too!
     subject { described_class.new(config) }
+
+    after do
+      subject.stop
+    end
 
     describe 'watch events' do
       let(:directories) { [Pathname.pwd] }
@@ -38,8 +44,12 @@ RSpec.describe Listen::Adapter::Linux do
 
         allow(config).to receive(:directories).and_return(directories)
         allow(config).to receive(:adapter_options).and_return(adapter_options)
-        allow(config).to receive(:queue).and_return(queue)
         allow(config).to receive(:silencer).and_return(silencer)
+        allow(fake_worker).to receive(:close)
+      end
+
+      after do
+        subject.stop
       end
 
       it 'starts by calling watch with default events' do
@@ -55,6 +65,7 @@ RSpec.describe Listen::Adapter::Linux do
       before do
         fake_worker = double(:fake_worker_for_inotify_limit_message)
         allow(fake_worker).to receive(:watch).and_raise(Errno::ENOSPC)
+        allow(fake_worker).to receive(:close)
 
         fake_notifier = double(:fake_notifier, new: fake_worker)
         stub_const('INotify::Notifier', fake_notifier)
@@ -78,13 +89,13 @@ RSpec.describe Listen::Adapter::Linux do
         fake_worker = double(:fake_worker_for_callback)
         events = [:recursive, :close_write]
         allow(fake_worker).to receive(:watch).with('/foo/dir1', *events)
+        allow(fake_worker).to receive(:close)
 
         fake_notifier = double(:fake_notifier, new: fake_worker)
         stub_const('INotify::Notifier', fake_notifier)
 
         allow(config).to receive(:directories).and_return(directories)
         allow(config).to receive(:adapter_options).and_return(adapter_options)
-        allow(config).to receive(:queue).and_return(queue)
         allow(config).to receive(:silencer).and_return(silencer)
 
         allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
@@ -159,8 +170,6 @@ RSpec.describe Listen::Adapter::Linux do
           fake_notifier = double(:fake_notifier, new: fake_worker)
           stub_const('INotify::Notifier', fake_notifier)
 
-          allow(config).to receive(:queue).and_return(queue)
-          allow(queue).to receive(:close)
           allow(config).to receive(:silencer).and_return(silencer)
 
           allow(subject).to receive(:require).with('rb-inotify')
@@ -168,14 +177,12 @@ RSpec.describe Listen::Adapter::Linux do
         end
 
         it 'stops the worker' do
-          expect(fake_worker).to receive(:close)
           subject.stop
         end
       end
 
       context 'when not even initialized' do
         before do
-          allow(config).to receive(:queue).and_return(queue)
           allow(queue).to receive(:close)
         end
 
@@ -186,5 +193,6 @@ RSpec.describe Listen::Adapter::Linux do
         end
       end
     end
+  end
   end
 end
