@@ -6,21 +6,22 @@ jobs:
   test:
     runs-on: ${{matrix.os}}-latest
     continue-on-error: ${{matrix.experimental}}
-    
+
     strategy:
       matrix:
         os:
           - ubuntu
           - macos
-        
+
         ruby:
+          - 2.4
           - 2.5
           - 2.6
           - 2.7
-        
+
         experimental: [false]
         env: [""]
-        
+
         include:
           - os: macos
             ruby: truffleruby-head
@@ -34,14 +35,14 @@ jobs:
           - os: ubuntu
             ruby: head
             experimental: true
-    
+
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{matrix.ruby}}
         bundler-cache: true
-    
+
     - name: Run tests
       timeout-minutes: 6
       run: |
