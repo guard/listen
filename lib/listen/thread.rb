@@ -41,7 +41,12 @@ module Listen
       end
 
       def _exception_with_causes(exception)
-        result = +"#{exception.class}: #{exception}"
+        result =
+          if RUBY_VERSION[/\d+\.\d+/].to_f < 2.3
+            "#{exception.class}: #{exception}"
+          else
+            +"#{exception.class}: #{exception}"
+          end
         if exception.cause
           result << "\n"
           result << "--- Caused by: ---\n"
