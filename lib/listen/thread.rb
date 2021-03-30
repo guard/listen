@@ -17,7 +17,7 @@ module Listen
         ::Thread.new do
           rescue_and_log(thread_name, caller_stack: caller_stack, &block)
         end.tap do |thread|
-          thread.name = thread_name
+          thread.name = thread_name unless RUBY_VERSION[/\d+\.\d+/].to_f < 2.3
         end
       end
       # rubocop:enable Style/MultilineBlockChain
