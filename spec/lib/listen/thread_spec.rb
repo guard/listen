@@ -43,7 +43,7 @@ RSpec.describe Listen::Thread do
       end
 
       it "rescues and logs exceptions" do
-        pattern = <<~EOS.strip
+        pattern = <<-EOS.gsub(/^ +/, '').strip
           Exception rescued in listen-worker_thread:
           ArgumentError: boom!
           .*\\/listen\\/thread_spec\\.rb
@@ -53,7 +53,7 @@ RSpec.describe Listen::Thread do
       end
 
       it "rescues and logs backtrace + exception backtrace" do
-        pattern = <<~EOS.strip
+        pattern = <<-EOS.gsub(/^ +/, '').strip
           Exception rescued in listen-worker_thread:
           ArgumentError: boom!
           .*\\/listen\\/thread\\.rb.*--- Thread.new ---.*\\/listen\\/thread_spec\\.rb
@@ -93,7 +93,7 @@ RSpec.describe Listen::Thread do
       let(:block) { raise_nested_exception_block }
 
       it "details exception causes" do
-        pattern = <<~EOS
+        pattern = <<-EOS.gsub(/^ +/, '')
           RuntimeError: nested outer
           --- Caused by: ---
           RuntimeError: nested inner
@@ -108,7 +108,7 @@ RSpec.describe Listen::Thread do
 
   describe '.rescue_and_log' do
     it 'rescues and logs nested exceptions' do
-      pattern = <<~EOS
+      pattern = <<-EOS.gsub(/^ +/, '')
         Exception rescued in method:
         RuntimeError: nested outer
         --- Caused by: ---
