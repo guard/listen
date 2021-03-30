@@ -26,14 +26,16 @@ group :test do
   gem 'rspec', '~> 3.3'
 end
 
+RUBY_VERSION_FLOAT = RUBY_VERSION[/\d+\.\d+/].to_f
+
 group :development do
   gem 'bundler'
   gem 'gems', require: false
   gem 'guard-rspec', require: false
-  gem 'guard-rubocop'
+  gem 'guard-rubocop' unless RUBY_VERSION_FLOAT < 2.4
   gem 'netrc', require: false
   gem 'octokit', require: false
   gem 'pry-rescue'
-  gem 'rubocop', '0.91.0'
+  gem 'rubocop', '0.91.0' unless RUBY_VERSION_FLOAT < 2.4
   gem 'yard', require: false
 end
