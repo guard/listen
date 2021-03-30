@@ -69,7 +69,7 @@ module Listen
       end
 
       def _stop
-        @worker_thread&.kill
+        @worker_thread && @worker_thread.kill
         super
       end
     end

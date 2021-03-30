@@ -25,7 +25,7 @@ module Listen
       end
 
       def call(*args)
-        @block&.call(*args)
+        @block && @block.call(*args)
       end
 
       def callable?

@@ -88,7 +88,7 @@ module Listen
       private
 
       def _stop
-        @run_thread&.kill
+        @run_thread && @run_thread.kill
         @run_thread = nil
       end
 

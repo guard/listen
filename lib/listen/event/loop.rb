@@ -29,7 +29,7 @@ module Listen
       end
 
       def wakeup_on_event
-        if started? && @wait_thread&.alive?
+        if started? && @wait_thread && @wait_thread.alive?
           _wakeup(:event)
         end
       end
@@ -67,7 +67,7 @@ module Listen
       def stop
         transition! :stopped
 
-        @wait_thread&.join
+        @wait_thread && @wait_thread.join
         @wait_thread = nil
       end
 
