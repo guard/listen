@@ -45,7 +45,11 @@ module Listen
         @callback = callback
         # use Record to make a snapshot of dir, so we
         # can detect new files
-        _find(directory.to_s) { |path| _watch_file(path, @worker) }
+        _find(directory.to_s) do |path|
+          unless @config.silencer.silenced?(Pathname.new(path).relative_path_from(directory), FileTest.directory?(path) ? :dir : :file)
+            _watch_file(path, @worker)
+          end
+        end
       end
 
       def _run
