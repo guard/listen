@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'digest/md5'
+require 'digest'
 
 module Listen
   class File
@@ -53,7 +53,7 @@ module Listen
       # then at ???14.998, but the fstat time would be ???14.0 in
       # both cases).
       #
-      # If change happend at ???14.999997, the mtime is 14.0, so for
+      # If change happened at ???14.999997, the mtime is 14.0, so for
       # an mtime=???14.0 we assume it could even be almost ???15.0
       #
       # So if Time.now.to_f is ???15.999998 and stat reports mtime
@@ -67,9 +67,11 @@ module Listen
       #
       return if data[:mtime].to_i + 2 <= Time.now.to_f
 
-      md5 = Digest::MD5.file(path).digest
-      record.update_file(rel_path, data.merge(md5: md5))
-      :modified if record_data[:md5] && md5 != record_data[:md5]
+      sha = Digest::SHA256.file(path).digest
+      record.update_file(rel_path, data.merge(sha: sha))
+      if record_data[:sha] && sha != record_data[:sha]
+        :modified
+      end
     rescue SystemCallError
       record.unset_path(rel_path)
       :removed
