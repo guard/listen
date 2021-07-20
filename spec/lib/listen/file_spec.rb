@@ -26,12 +26,12 @@ RSpec.describe Listen::File do
 
     context 'with file record' do
       let(:record_mtime) { nil }
-      let(:record_md5) { nil }
+      let(:record_sha) { nil }
       let(:record_mode) { nil }
       let(:record_size) { nil }
 
       let(:record_data) do
-        { mtime: record_mtime, md5: record_md5, mode: record_mode, size: record_size }
+        { mtime: record_mtime, sha: record_sha, mode: record_mode, size: record_size }
       end
 
       context 'with non-existing file' do
@@ -54,7 +54,7 @@ RSpec.describe Listen::File do
         let(:record_size) { 42 }
         let(:stat_size) { record_size }
 
-        let(:md5) { fail 'stub me (md5)' }
+        let(:sha) { fail 'stub me (sha)' }
 
         let(:stat) do
           instance_double(
@@ -69,7 +69,7 @@ RSpec.describe Listen::File do
 
         before do
           allow(::File).to receive(:lstat) { stat }
-          allow(Digest::MD5).to receive(:file) { double(:md5, digest: md5) }
+          allow(Digest::SHA256).to receive(:file) { double(:sha, digest: sha) }
         end
 
         context 'with different mode in record' do
@@ -148,8 +148,8 @@ RSpec.describe Listen::File do
 
                 before { allow(Time).to receive(:now) { now } }
 
-                context 'without available md5' do
-                  let(:md5) { fail Errno::ENOENT }
+                context 'without available sha' do
+                  let(:sha) { fail Errno::ENOENT }
 
                   # Treat it as a removed file, because chances are ...
                   # whatever is listening for changes won't be able to deal
@@ -161,25 +161,25 @@ RSpec.describe Listen::File do
                   end
                 end
 
-                context 'with available md5' do
-                  let(:md5) { 'd41d8cd98f00b204e9800998ecf8427e' }
+                context 'with available sha' do
+                  let(:sha) { 'd41d8cd98f00b204e9800998ecf8427e' }
 
-                  context 'with same md5 in record' do
-                    let(:record_md5) { md5 }
+                  context 'with same sha in record' do
+                    let(:record_sha) { sha }
                     it { should be_nil }
                   end
 
-                  context 'with no md5 in record' do
-                    let(:record_md5) { nil }
+                  context 'with no sha in record' do
+                    let(:record_sha) { nil }
                     it { should be_nil }
                   end
 
-                  context 'with different md5 in record' do
-                    let(:record_md5) { 'foo' }
+                  context 'with different sha in record' do
+                    let(:record_sha) { 'foo' }
                     it { should be :modified }
 
                     it 'sets path in record with expected data' do
-                      expected = expected_data.merge(md5: md5)
+                      expected = expected_data.merge(sha: sha)
                       expect(record).to receive(:update_file).
                         with('file.rb', expected)
                       subject
