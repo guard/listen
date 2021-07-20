@@ -74,7 +74,7 @@ end
 # notification happens a little while later, e.g. at 1234568.111, now the file
 # mtime and the current time in seconds are different (1234567 vs 1234568), and
 # so the MD5 test won't kick in (see file.rb) - the file will not be considered
-# for content checking (md5), so File.change will consider the file unmodified.
+# for content checking (sha), so File.change will consider the file unmodified.
 #
 # This means, that if a file is added at 1234567.888 (and updated in Record),
 # and then its content is modified at 1234567.999, and checking for changes
