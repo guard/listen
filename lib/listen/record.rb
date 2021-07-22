@@ -11,9 +11,10 @@ module Listen
 
     attr_reader :root
 
-    def initialize(directory)
+    def initialize(directory, silencer)
       @tree = _auto_hash
       @root = directory.to_s
+      @silencer = silencer
     end
 
     def add_dir(rel_path)
@@ -98,6 +99,8 @@ module Listen
 
     def _fast_build_dir(remaining, symlink_detector)
       entry = remaining.pop
+      return if @silencer.silenced?(entry.record_dir_key, :dir)
+
       children = entry.children # NOTE: children() implicitly tests if dir
       symlink_detector.verify_unwatched!(entry)
       children.each { |child| remaining << child }

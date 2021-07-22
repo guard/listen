@@ -2,7 +2,8 @@
 
 RSpec.describe Listen::Record do
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
-  let(:record) { Listen::Record.new(dir) }
+  let(:silencer) { Listen::Silencer.new }
+  let(:record) { Listen::Record.new(dir, silencer) }
 
   def dir_entries_for(hash)
     hash.each do |dir, entries|
@@ -308,9 +309,11 @@ RSpec.describe Listen::Record do
 
     context 'with subdir containing files' do
       before do
-        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir' => %w[dir1 dir2 .git])
+        real_directory('/dir/.git' => %w[FETCH_HEAD])
         real_directory('/dir/dir1' => %w[foo])
         real_directory('/dir/dir1/foo' => %w[bar])
+        lstat(file('/dir/.git/FETCH_HEAD'))
         lstat(file('/dir/dir1/foo/bar'))
         real_directory('/dir/dir2' => [])
       end
