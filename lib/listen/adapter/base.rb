@@ -51,7 +51,7 @@ module Listen
         # TODO: separate config per directory (some day maybe)
         change_config = Change::Config.new(config.queue, config.silencer)
         config.directories.each do |dir|
-          record = Record.new(dir)
+          record = Record.new(dir, config.silencer)
           snapshot = Change.new(change_config, record)
           @snapshots[dir] = snapshot
         end
