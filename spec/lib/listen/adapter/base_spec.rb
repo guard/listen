@@ -51,7 +51,7 @@ RSpec.describe Listen::Adapter::Base do
     end
 
     # Stuff that happens in configure()
-    allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
+    allow(Listen::Record).to receive(:new).with(dir1, silencer).and_return(record)
 
     allow(Listen::Change::Config).to receive(:new).with(queue, silencer).
       and_return(config)

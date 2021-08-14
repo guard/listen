@@ -35,7 +35,7 @@ RSpec.describe Adapter::Polling do
       allow(config).to receive(:queue).and_return(queue)
       allow(config).to receive(:silencer).and_return(silencer)
 
-      allow(Listen::Record).to receive(:new).with(dir1).and_return(record)
+      allow(Listen::Record).to receive(:new).with(dir1, silencer).and_return(record)
 
       allow(Listen::Change).to receive(:new).with(config, record).
         and_return(snapshot)
