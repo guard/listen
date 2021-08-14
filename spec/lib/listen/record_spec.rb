@@ -2,7 +2,8 @@
 
 RSpec.describe Listen::Record do
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
-  let(:silencer) { Listen::Silencer.new }
+  let(:silencer_options) { { ignore!: [/\A\.ignored/] } }
+  let(:silencer) { Listen::Silencer.new(silencer_options) }
   let(:record) { Listen::Record.new(dir, silencer) }
 
   def dir_entries_for(hash)
@@ -309,16 +310,15 @@ RSpec.describe Listen::Record do
 
     context 'with subdir containing files' do
       before do
-        real_directory('/dir' => %w[dir1 dir2 .git])
-        real_directory('/dir/.git' => %w[FETCH_HEAD])
+        real_directory('/dir' => %w[dir1 dir2 .ignored])
         real_directory('/dir/dir1' => %w[foo])
         real_directory('/dir/dir1/foo' => %w[bar])
-        lstat(file('/dir/.git/FETCH_HEAD'))
+        lstat(file('/dir/.ignored/FETCH_HEAD'))
         lstat(file('/dir/dir1/foo/bar'))
         real_directory('/dir/dir2' => [])
       end
 
-      it 'builds record' do
+      it 'builds record, skipping silenced patterns' do
         record.build
         expect(record_tree(record)).
           to eq(
@@ -331,7 +331,8 @@ RSpec.describe Listen::Record do
 
     context 'with subdir containing dirs' do
       before do
-        real_directory('/dir' => %w[dir1 dir2])
+        real_directory('/dir' => %w[dir1 dir2 .ignored])
+        real_directory('/dir/.ignored' => %w[ignored_file])
         real_directory('/dir/dir1' => %w[foo])
         real_directory('/dir/dir1/foo' => %w[bar baz])
         real_directory('/dir/dir1/foo/bar' => [])
