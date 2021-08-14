@@ -57,23 +57,21 @@ module Listen
       | ~
     )$}x.freeze
 
+    # TODO: deprecate these mutators; use attr_reader instead
     attr_accessor :only_patterns, :ignore_patterns
 
-    def initialize
-      configure({})
+    def initialize(options = {})
+      configure(options)
     end
 
+    # TODO: deprecate this mutator
     def configure(options)
       @only_patterns = options[:only] ? Array(options[:only]) : nil
       @ignore_patterns = _init_ignores(options[:ignore], options[:ignore!])
     end
 
-    # Note: relative_path is temporarily expected to be a relative Pathname to
-    # make refactoring easier (ideally, it would take a string)
-
-    # TODO: switch type and path places - and verify
     def silenced?(relative_path, type)
-      path = relative_path.to_s
+      path = relative_path.to_s   # in case it is a Pathname
 
       _ignore?(path) || (only_patterns && type == :file && !_only?(path))
     end

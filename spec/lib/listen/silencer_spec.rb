@@ -6,7 +6,7 @@ end
 
 RSpec.describe Listen::Silencer do
   let(:options) { {} }
-  before { subject.configure(options) }
+  subject { described_class.new(options) }
 
   describe '#silenced?' do
     it { should accept(:file, Pathname('some_dir').join("some_file.rb")) }
