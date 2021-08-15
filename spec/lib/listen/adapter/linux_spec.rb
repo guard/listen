@@ -58,7 +58,7 @@ RSpec.describe Listen::Adapter::Linux do
         end
       end
 
-      describe 'inotify limit message' do
+      describe 'inotify max watches exceeded' do
         let(:directories) { [Pathname.pwd] }
         let(:adapter_options) { {} }
 
@@ -74,9 +74,8 @@ RSpec.describe Listen::Adapter::Linux do
           allow(config).to receive(:adapter_options).and_return(adapter_options)
         end
 
-        it 'should be shown before calling abort' do
-          expected_message = described_class.const_get('INOTIFY_LIMIT_MESSAGE')
-          expect { subject.start }.to raise_error SystemExit, expected_message
+        it 'raises exception' do
+          expect { subject.start }.to raise_exception(Listen::Error::INotifyMaxWatchesExceeded, /inotify max watches exceeded/i)
         end
       end
 
