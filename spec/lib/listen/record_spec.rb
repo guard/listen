@@ -3,7 +3,7 @@
 RSpec.describe Listen::Record do
   let(:dir) { instance_double(Pathname, to_s: '/dir') }
   let(:silencer_options) { { ignore!: [/\A\.ignored/] } }
-  let(:silencer) { Listen::Silencer.new(silencer_options) }
+  let(:silencer) { Listen::Silencer.new(**silencer_options) }
   let(:record) { Listen::Record.new(dir, silencer) }
 
   def dir_entries_for(hash)
