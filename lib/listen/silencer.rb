@@ -60,7 +60,7 @@ module Listen
     # TODO: deprecate these mutators; use attr_reader instead
     attr_accessor :only_patterns, :ignore_patterns
 
-    def initialize(options = {})
+    def initialize(**options)
       configure(options)
     end
 
