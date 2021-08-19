@@ -30,8 +30,7 @@ module Listen
         @worker.watch(directory.to_s, *options.events, &callback)
       rescue Errno::ENOSPC
         raise ::Listen::Error::INotifyMaxWatchesExceeded, <<~EOS
-          FATAL: Listen error: Unable to monitor directories for changes because iNotify max watches exceeded.
-          Visit #{README_URL} for info on how to fix this.
+          Unable to monitor directories for changes because iNotify max watches exceeded. See #{README_URL} .
         EOS
       end
 
