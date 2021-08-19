@@ -34,6 +34,9 @@ module Listen
       | \.swpx
       | ^4913
 
+      # Emacs backup/swap files
+      | (?:\.\#.+|\#.+\#)
+
       # Sed temporary files - but without actual words, like 'sedatives'
       | (?:^
          sed

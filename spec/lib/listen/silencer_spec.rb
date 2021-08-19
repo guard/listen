@@ -34,6 +34,9 @@ RSpec.describe Listen::Silencer do
       # Vim swap files
       ignored += %w[foo.swp foo.swx foo.swpx 4913]
 
+      # Emacs backup/swap files
+      ignored += %w[#hello.rb# .#hello.rb]
+
       # sed temp files
       ignored += %w[sedq7eVAR sed86w1kB]
 
