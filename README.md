@@ -122,7 +122,7 @@ listener.stop    # stop both listening to changes and processing them
 
 ### Ignore / ignore!
 
-`Listen` ignores some directories and extensions by default (See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer).
+`Listen` ignores some directories and extensions by default (See DEFAULT_IGNORED_FILES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer).
 You can add ignoring patterns with the `ignore` option/method or overwrite default with `ignore!` option/method.
 
 ``` ruby
@@ -157,7 +157,7 @@ All the following options can be set through the `Listen.to` after the directory
 
 ```ruby
 ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
-                                                # default: See DEFAULT_IGNORED_DIRECTORIES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
+                                                # default: See DEFAULT_IGNORED_FILES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
 
 ignore!: %r{/foo/bar}                           # Same as ignore options, but overwrite default ignored paths.
 

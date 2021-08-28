@@ -3,8 +3,8 @@
 module Listen
   class Silencer
     # The default list of directories that get ignored.
-    DEFAULT_IGNORED_DIRECTORIES = %r{^(?:
-      \.git
+    DEFAULT_IGNORED_FILES = %r{\A(?:
+    \.git
       | \.svn
       | \.hg
       | \.rbx
@@ -13,8 +13,12 @@ module Listen
       | vendor/bundle
       | log
       | tmp
-      |vendor/ruby
-    )(/|$)}x.freeze
+      | vendor/ruby
+
+      # emacs temp files
+      | \#.+\#
+      | \.\#.+
+      )(/|\z)}x.freeze
 
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS = %r{(?:
@@ -34,11 +38,8 @@ module Listen
       | \.swpx
       | ^4913
 
-      # Emacs backup/swap files
-      | (?:\.\#.+|\#.+\#)
-
       # Sed temporary files - but without actual words, like 'sedatives'
-      | (?:^
+      | (?:\A
          sed
 
          (?:
@@ -58,7 +59,7 @@ module Listen
       | \.DS_Store
       | \.tmp
       | ~
-    )$}x.freeze
+    )\z}x.freeze
 
     # TODO: deprecate these mutators; use attr_reader instead
     attr_accessor :only_patterns, :ignore_patterns
@@ -92,7 +93,7 @@ module Listen
     def _init_ignores(ignores, overrides)
       patterns = []
       unless overrides
-        patterns << DEFAULT_IGNORED_DIRECTORIES
+        patterns << DEFAULT_IGNORED_FILES
         patterns << DEFAULT_IGNORED_EXTENSIONS
       end
 
