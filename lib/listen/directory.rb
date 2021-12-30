@@ -36,7 +36,7 @@ module Listen
       end
 
       # TODO: this is not tested properly
-      previous = previous.reject { |entry, _| current.include? path + entry }
+      previous = previous.reject { |entry, _| current.include?(path + entry) }
 
       _async_changes(snapshot, Pathname.new(rel_path), previous, options)
     rescue Errno::ENOENT, Errno::EHOSTDOWN

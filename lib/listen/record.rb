@@ -35,7 +35,7 @@ module Listen
 
     def file_data(rel_path)
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
-      if [nil, '', '.'].include? dirname
+      if [nil, '', '.'].include?(dirname)
         @tree[basename] ||= {}
         @tree[basename].dup
       else
@@ -46,7 +46,7 @@ module Listen
     end
 
     def dir_entries(rel_path)
-      subtree = if ['', '.'].include? rel_path.to_s
+      subtree = if ['', '.'].include?(rel_path.to_s)
         @tree
       else
         @tree[rel_path.to_s] ||= _auto_hash
