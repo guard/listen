@@ -97,23 +97,23 @@ The callback receives **three** array parameters: `modified`, `added` and `remov
 Each of these three is always an array with 0 or more entries.
 Each array entry is an absolute path.
 
-### Pause / unpause / stop
+### Pause / start / stop
 
-Listeners can also be easily paused/unpaused:
+Listeners can also be easily paused and later un-paused with start:
 
 ``` ruby
 listener = Listen.to('dir/path/to/listen') { |modified, added, removed| puts 'handle changes here...' }
 
 listener.start
-listener.paused? # => false
+listener.paused?     # => false
 listener.processing? # => true
 
-listener.pause   # stops processing changes (but keeps on collecting them)
-listener.paused? # => true
+listener.pause       # stops processing changes (but keeps on collecting them)
+listener.paused?     # => true
 listener.processing? # => false
 
-listener.unpause # resumes processing changes ("start" would do the same)
-listener.stop    # stop both listening to changes and processing them
+listener.start       # resumes processing changes
+listener.stop        # stop both listening to changes and processing them
 ```
 
   Note: While paused, `listen` keeps on collecting changes in the background - to clear them, call `stop`.
