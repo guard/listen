@@ -46,16 +46,18 @@ module Listen
     end
 
     def dir_entries(rel_path)
-      subtree = if ['', '.'].include?(rel_path.to_s)
+      rel_path_s = rel_path.to_s
+      subtree = if ['', '.'].include?(rel_path_s)
         @tree
       else
-        @tree[rel_path.to_s] ||= _auto_hash
-        @tree[rel_path.to_s]
+        @tree[rel_path_s] ||= _auto_hash
       end
 
-      subtree.transform_values do |values|
-        # only get data for file entries
-        values.key?(:mtime) ? values : {}
+      subtree.each_with_object({}) do |(key, values), result|
+        # only return data for file entries
+        if values.respond_to?(:has_key?)
+          result[key] = values.has_key?(:mtime) ? values : {}
+        end
       end
     end
 

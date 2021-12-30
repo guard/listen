@@ -66,7 +66,7 @@ RSpec.describe Listen::Record do
     end
 
     context 'with subdir path' do
-      it 'sets path by spliting dirname and basename' do
+      it 'sets path by splitting dirname and basename' do
         record.update_file('path/file.rb', mtime: 1.1)
         expect(record_tree(record)['path']).to eq('file.rb' => { mtime: 1.1 })
       end
@@ -254,6 +254,14 @@ RSpec.describe Listen::Record do
         before do
           record.add_dir('path/subdir')
           record.update_file('path/subdir/file.rb', mtime: 1.1)
+        end
+        it { should be_empty }
+      end
+
+      context 'with path renamed to file' do
+        before do
+          record.add_dir('path/subdir')
+          record.update_file('path', mtime: 1.1)
         end
         it { should be_empty }
       end
