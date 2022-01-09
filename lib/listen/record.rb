@@ -19,7 +19,7 @@ module Listen
 
     def add_dir(rel_path)
       if !empty_dirname?(rel_path.to_s)
-        @tree[rel_path] ||= {}
+        @tree[rel_path.to_s]
       end
     end
 
@@ -36,10 +36,8 @@ module Listen
     def file_data(rel_path)
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
       if empty_dirname?(dirname)
-        @tree[basename] ||= {}
         @tree[basename].dup
       else
-        @tree[dirname] ||= {}
         @tree[dirname][basename] ||= {}
         @tree[dirname][basename].dup
       end
@@ -84,9 +82,8 @@ module Listen
 
     def _fast_update_file(dirname, basename, data)
       if empty_dirname?(dirname.to_s)
-        @tree[basename] = (@tree[basename] || {}).merge(data)
+        @tree[basename] = @tree[basename].merge(data)
       else
-        @tree[dirname] ||= {}
         @tree[dirname][basename] = (@tree[dirname][basename] || {}).merge(data)
       end
     end
