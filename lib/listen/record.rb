@@ -18,7 +18,7 @@ module Listen
     end
 
     def add_dir(rel_path)
-      if ![nil, '', '.'].include?(rel_path)
+      if !empty_dirname?(rel_path.to_s)
         @tree[rel_path] ||= {}
       end
     end
@@ -35,7 +35,7 @@ module Listen
 
     def file_data(rel_path)
       dirname, basename = Pathname(rel_path).split.map(&:to_s)
-      if [nil, '', '.'].include?(dirname)
+      if empty_dirname?(dirname)
         @tree[basename] ||= {}
         @tree[basename].dup
       else
@@ -47,7 +47,7 @@ module Listen
 
     def dir_entries(rel_path)
       rel_path_s = rel_path.to_s
-      subtree = if ['', '.'].include?(rel_path_s)
+      subtree = if empty_dirname?(rel_path_s)
         @tree
       else
         @tree[rel_path_s]
@@ -74,12 +74,16 @@ module Listen
 
     private
 
+    def empty_dirname?(dirname)
+      dirname == '.' || dirname == ''
+    end
+
     def reset_tree
       @tree = Hash.new { |h, k| h[k] = {} }
     end
 
     def _fast_update_file(dirname, basename, data)
-      if [nil, '', '.'].include?(dirname)
+      if empty_dirname?(dirname.to_s)
         @tree[basename] = (@tree[basename] || {}).merge(data)
       else
         @tree[dirname] ||= {}
@@ -90,7 +94,7 @@ module Listen
     def _fast_unset_path(dirname, basename)
       # this may need to be reworked to properly remove
       # entries from a tree, without adding non-existing dirs to the record
-      if [nil, '', '.'].include?(dirname)
+      if empty_dirname?(dirname.to_s)
         if @tree.key?(basename)
           @tree.delete(basename)
         end
