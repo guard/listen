@@ -12,7 +12,7 @@ module Listen
     attr_reader :root
 
     def initialize(directory, silencer)
-      @tree = _auto_hash
+      reset_tree
       @root = directory.to_s
       @silencer = silencer
     end
@@ -50,19 +50,19 @@ module Listen
       subtree = if ['', '.'].include?(rel_path_s)
         @tree
       else
-        @tree[rel_path_s] ||= _auto_hash
+        @tree[rel_path_s]
       end
 
       subtree.each_with_object({}) do |(key, values), result|
-        # only return data for file entries
-        if values.respond_to?(:has_key?)
+        # only return data for file entries inside the dir (which will each be sub-hashes)
+        if values.is_a?(Hash)
           result[key] = values.has_key?(:mtime) ? values : {}
         end
       end
     end
 
     def build
-      @tree = _auto_hash
+      reset_tree
       # TODO: test with a file name given
       # TODO: test other permissions
       # TODO: test with mixed encoding
@@ -74,8 +74,8 @@ module Listen
 
     private
 
-    def _auto_hash
-      Hash.new { |h, k| h[k] = {} }
+    def reset_tree
+      @tree = Hash.new { |h, k| h[k] = {} }
     end
 
     def _fast_update_file(dirname, basename, data)
