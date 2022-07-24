@@ -18,7 +18,7 @@ jobs:
           - 2.5
           - 2.6
           - 2.7
-          - "3.0" # need quotes for "3.0"
+          - "3.0" # quotes ensure this isn't misinterpreted as Integer 3: https://github.com/actions/runner/issues/849
           - 3.1
 
         experimental: [false]
