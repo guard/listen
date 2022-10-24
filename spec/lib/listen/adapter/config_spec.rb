@@ -17,6 +17,7 @@ RSpec.describe Listen::Adapter::Config do
   # Here's what may be  passed to initializer
   let(:path1) { fake_path('/real/path1', realpath: real_path1) }
   let(:path2) { fake_path('/real/path2', realpath: real_path2) }
+  let(:path3) { fake_path('/real/path3', realpath: real_path3) }
 
   let(:current_path) do
     fake_path('/real/current_path', realpath: real_current_path)
@@ -29,6 +30,7 @@ RSpec.describe Listen::Adapter::Config do
   # something useful)
   let(:real_path1) { fake_path('/real/path1') }
   let(:real_path2) { fake_path('/real/path2') }
+  let(:real_path3) { fake_path('/real/path3', directory?: false) }
   let(:real_current_path) { fake_path('/real/current_path') }
 
   before do
@@ -38,6 +40,7 @@ RSpec.describe Listen::Adapter::Config do
 
     allow(Pathname).to receive(:new).with('/real/path1').and_return(path1)
     allow(Pathname).to receive(:new).with('/real/path2').and_return(path2)
+    allow(Pathname).to receive(:new).with('/real/path3').and_return(path3)
 
     allow(Pathname).to receive(:new).with(path1).and_return(path1)
     allow(Pathname).to receive(:new).with(path2).and_return(path2)
@@ -88,6 +91,13 @@ RSpec.describe Listen::Adapter::Config do
       let(:directories) { }
       it 'returns the current path in array' do
         expect(subject.directories).to eq([real_current_path])
+      end
+    end
+
+    context 'with file path' do
+      let(:directories) { ['/real/path3'] }
+      it 'raises argument error requesting a directory' do
+        expect { subject }.to raise_error(ArgumentError, /must be a directory/)
       end
     end
   end

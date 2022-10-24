@@ -16,6 +16,12 @@ module Listen
           Pathname.new(directory.to_s).realpath
         end
 
+        @directories.each do |pathname|
+          unless pathname.directory?
+            fail ArgumentError, "must be a directory: #{pathname}"
+          end
+        end
+
         @silencer = silencer
         @queue = queue
         @adapter_options = adapter_options

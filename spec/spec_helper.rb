@@ -38,7 +38,7 @@ end
 
 module SpecHelpers
   def fake_path(str, options = {})
-    instance_double(Pathname, str, { to_s: str }.merge(options))
+    instance_double(Pathname, str, { to_s: str, directory?: true }.merge(options))
   end
 end
 
