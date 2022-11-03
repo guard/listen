@@ -76,7 +76,7 @@ RSpec.describe Directory do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir', recursive: false)
+            with(:dir, 'subdir', { recursive: false })
 
           described_class.scan(snapshot, '.', options)
         end
@@ -91,7 +91,7 @@ RSpec.describe Directory do
 
         it 'notices subdir does not exist' do
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir', recursive: false)
+            with(:dir, 'subdir', { recursive: false })
 
           described_class.scan(snapshot, '.', options)
         end
@@ -219,7 +219,7 @@ RSpec.describe Directory do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', { recursive: true })
 
           described_class.scan(snapshot, '.', options)
         end
@@ -240,10 +240,10 @@ RSpec.describe Directory do
           expect(snapshot).to receive(:invalidate).with(:file, 'file.rb', {})
 
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', { recursive: true })
 
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir2', recursive: true)
+            with(:dir, 'subdir2', { recursive: true })
 
           described_class.scan(snapshot, '.', options)
         end
@@ -274,7 +274,7 @@ RSpec.describe Directory do
 
         it 'snapshots changes for subdir' do
           expect(snapshot).to receive(:invalidate).
-            with(:dir, 'subdir', recursive: true)
+            with(:dir, 'subdir', { recursive: true })
 
           described_class.scan(snapshot, '.', options)
         end

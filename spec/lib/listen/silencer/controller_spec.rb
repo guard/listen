@@ -26,7 +26,7 @@ RSpec.describe Listen::Silencer::Controller do
       context 'when providing a single regexp as argument' do
         it 'sets the given :ignore rules as array' do
           subject
-          allow(silencer).to receive(:configure).with(ignore: [/foo/])
+          allow(silencer).to receive(:configure).with({ ignore: [/foo/] })
           subject.append_ignores(/foo/)
         end
       end
@@ -34,7 +34,7 @@ RSpec.describe Listen::Silencer::Controller do
       context 'when providing multiple arguments' do
         it 'sets the given :ignore rules as a flat array' do
           subject
-          allow(silencer).to receive(:configure).with(ignore: [/foo/, /bar/])
+          allow(silencer).to receive(:configure).with({ ignore: [/foo/, /bar/] })
           subject.append_ignores(/foo/, /bar/)
         end
       end
@@ -42,7 +42,7 @@ RSpec.describe Listen::Silencer::Controller do
       context 'when providing as array' do
         it 'sets the given :ignore rules' do
           subject
-          allow(silencer).to receive(:configure).with(ignore: [/foo/, /bar/])
+          allow(silencer).to receive(:configure).with({ ignore: [/foo/, /bar/] })
           subject.append_ignores([/foo/, /bar/])
         end
       end
@@ -50,18 +50,18 @@ RSpec.describe Listen::Silencer::Controller do
 
     context 'with previous :ignore rules' do
       subject do
-        described_class.new(silencer, ignore: [/foo/, /bar/])
+        described_class.new(silencer, { ignore: [/foo/, /bar/] })
       end
 
       before do
-        allow(silencer).to receive(:configure).with(ignore: [/foo/, /bar/])
+        allow(silencer).to receive(:configure).with({ ignore: [/foo/, /bar/] })
       end
 
       context 'when providing a nil' do
         # TODO: should this invocation maybe reset the rules?
         it 'reconfigures with existing :ignore rules' do
           subject
-          allow(silencer).to receive(:configure).with(ignore: [/foo/, /bar/])
+          allow(silencer).to receive(:configure).with({ ignore: [/foo/, /bar/] })
           subject.append_ignores(nil)
         end
       end
