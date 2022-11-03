@@ -245,12 +245,12 @@ RSpec.describe Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'adds up to existing ignore options' do
-        expect(silencer).to receive(:configure).once.with(ignore: [/bar/])
+        expect(silencer).to receive(:configure).once.with({ ignore: [/bar/] })
 
         subject
 
         expect(silencer).to receive(:configure).once.
-          with(ignore: [/bar/, /foo/])
+          with({ ignore: [/bar/, /foo/] })
 
         subject.ignore(/foo/)
       end
@@ -260,12 +260,12 @@ RSpec.describe Listener do
       let(:options) { { ignore: [/bar/] } }
 
       it 'adds up to existing ignore options' do
-        expect(silencer).to receive(:configure).once.with(ignore: [/bar/])
+        expect(silencer).to receive(:configure).once.with({ ignore: [/bar/] })
 
         subject
 
         expect(silencer).to receive(:configure).once.
-          with(ignore: [/bar/, /foo/])
+          with({ ignore: [/bar/, /foo/] })
 
         subject.ignore(/foo/)
       end
@@ -287,9 +287,9 @@ RSpec.describe Listener do
       let(:options) { { ignore!: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(silencer).to receive(:configure).once.with(ignore!: [/bar/])
+        expect(silencer).to receive(:configure).once.with({ ignore!: [/bar/] })
         subject
-        expect(silencer).to receive(:configure).once.with(ignore!: [/foo/])
+        expect(silencer).to receive(:configure).once.with({ ignore!: [/foo/] })
         subject.ignore!([/foo/])
       end
     end
@@ -298,9 +298,9 @@ RSpec.describe Listener do
       let(:options) { { ignore: /bar/ } }
 
       it 'deletes ignore options' do
-        expect(silencer).to receive(:configure).once.with(ignore: [/bar/])
+        expect(silencer).to receive(:configure).once.with({ ignore: [/bar/] })
         subject
-        expect(silencer).to receive(:configure).once.with(ignore!: [/foo/])
+        expect(silencer).to receive(:configure).once.with({ ignore!: [/foo/] })
         subject.ignore!([/foo/])
       end
     end
@@ -311,9 +311,9 @@ RSpec.describe Listener do
       let(:options) { { only: /bar/ } }
 
       it 'overwrites existing ignore options' do
-        expect(silencer).to receive(:configure).once.with(only: [/bar/])
+        expect(silencer).to receive(:configure).once.with({ only: [/bar/] })
         subject
-        expect(silencer).to receive(:configure).once.with(only: [/foo/])
+        expect(silencer).to receive(:configure).once.with({ only: [/foo/] })
         subject.only([/foo/])
       end
     end

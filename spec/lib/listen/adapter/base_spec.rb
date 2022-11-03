@@ -91,7 +91,7 @@ RSpec.describe Listen::Adapter::Base do
       it 'passes invalidates the snapshot based on the event' do
         subject.start
 
-        expect(snapshot).to receive(:invalidate).with(:file, 'bar', cookie: 3)
+        expect(snapshot).to receive(:invalidate).with(:file, 'bar', { cookie: 3 })
 
         event = { dir: '/foo/dir1', file: 'bar', type: :moved, cookie: 3 }
         subject.fake_event(event)

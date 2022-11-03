@@ -112,8 +112,10 @@ RSpec.describe Listen::Adapter::Linux do
             expect(snapshot).to receive(:invalidate).with(
               :file,
               'path/foo.txt',
-              cookie: 123,
-              change: change
+              {
+                cookie: 123,
+                change: change
+              }
             )
           end
         end
