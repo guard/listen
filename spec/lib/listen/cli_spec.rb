@@ -15,7 +15,7 @@ RSpec.describe Listen::CLI do
       let(:options) { %w[] }
       it 'is set to local directory' do
         expect(Listen::Forwarder).to receive(:new) do |options|
-          expect(options[:directory]).to eq('.')
+          expect(options[:directory]).to eq(['.'])
           forwarder
         end
         described_class.start(options)
@@ -108,7 +108,7 @@ RSpec.describe Listen::Forwarder do
   it 'passes relative option to Listen' do
     value = double('value')
     expect(Listen).to receive(:to).
-      with(nil, hash_including(relative: value)).
+      with(hash_including(relative: value)).
       and_return(listener)
 
     described_class.new(relative: value).start

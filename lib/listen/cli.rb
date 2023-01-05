@@ -18,9 +18,9 @@ module Listen
 
     class_option :directory,
                  type:    :array,
-                 default: '.',
+                 default: ['.'],
                  aliases: '-d',
-                 banner:  'The directory to listen to'
+                 banner:  'One or more directories to listen to'
 
     class_option :relative,
                  type:    :boolean,
@@ -55,7 +55,7 @@ module Listen
         end
       end
 
-      listener = Listen.to(directory, relative: relative, &callback)
+      listener = Listen.to(*directory, relative: relative, &callback)
 
       listener.start
 
