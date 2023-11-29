@@ -12,7 +12,6 @@ module Listen
       given_options.empty? or raise ArgumentError, "Unknown options: #{given_options.inspect}"
     end
 
-    # rubocop:disable Lint/MissingSuper
     def respond_to_missing?(name, *_)
       @options.has_key?(name)
     end
@@ -21,6 +20,5 @@ module Listen
       respond_to_missing?(name) or raise NameError, "Bad option: #{name.inspect} (valid:#{@options.keys.inspect})"
       @options[name]
     end
-    # rubocop:enable Lint/MissingSuper
   end
 end
