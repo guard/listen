@@ -60,7 +60,7 @@ module Listen
 
         cookie_params = event.cookie.zero? ? {} : { cookie: event.cookie }
 
-        # Note: don't pass options to force rescanning the directory, so we can
+        # NOTE: don't pass options to force rescanning the directory, so we can
         # detect moving/deleting a whole tree
         if _dir_event?(event)
           _queue_change(:dir, dir, rel_path, cookie_params)
