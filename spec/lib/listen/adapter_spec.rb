@@ -49,7 +49,7 @@ RSpec.describe Listen::Adapter do
 
       it 'warns polling fallback with default message' do
         msg = described_class::POLLING_FALLBACK_MESSAGE
-        expect(Listen.logger).to receive(:warn).with("[Listen warning]:\n  #{msg}")
+        expect(Listen.logger).to receive(:warn).with(msg)
         Listen::Adapter.select
       end
 
@@ -59,7 +59,7 @@ RSpec.describe Listen::Adapter do
       end
 
       it 'warns polling fallback with custom message if set' do
-        expected_msg = "[Listen warning]:\n  custom fallback message"
+        expected_msg = "custom fallback message"
         expect(Listen.logger).to receive(:warn).with(expected_msg)
         msg = 'custom fallback message'
         Listen::Adapter.select(polling_fallback_message: msg)
