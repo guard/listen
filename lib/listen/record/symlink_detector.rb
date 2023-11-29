@@ -33,7 +33,7 @@ module Listen
       private
 
       def _fail(symlinked, real_path)
-        warn(format(SYMLINK_LOOP_ERROR, symlinked, real_path))
+        Listen.logger.warn(format(SYMLINK_LOOP_ERROR, symlinked, real_path))
         raise ::Listen::Error::SymlinkLoop, 'Failed due to looped symlinks'
       end
     end
