@@ -4,7 +4,7 @@ module Listen
   module Adapter
     # @see https://github.com/nex3/rb-inotify
     class Linux < Base
-      OS_REGEXP = /linux/i.freeze
+      OS_REGEXP = /linux/i
 
       DEFAULTS = {
         events: [

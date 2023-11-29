@@ -18,7 +18,7 @@ module Listen
       # emacs temp files
       | \#.+\#
       | \.\#.+
-      )(/|\z)}x.freeze
+      )(/|\z)}x
 
     # The default list of files that get ignored.
     DEFAULT_IGNORED_EXTENSIONS = %r{(?:
@@ -59,7 +59,7 @@ module Listen
       | \.DS_Store
       | \.tmp
       | ~
-    )\z}x.freeze
+    )\z}x
 
     # TODO: deprecate these mutators; use attr_reader instead
     attr_accessor :only_patterns, :ignore_patterns

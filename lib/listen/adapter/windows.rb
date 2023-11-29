@@ -5,7 +5,7 @@ module Listen
     # Adapter implementation for Windows `wdm`.
     #
     class Windows < Base
-      OS_REGEXP = /mswin|mingw|cygwin/i.freeze
+      OS_REGEXP = /mswin|mingw|cygwin/i
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:

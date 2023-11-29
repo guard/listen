@@ -7,7 +7,7 @@
 module Listen
   module Adapter
     class BSD < Base
-      OS_REGEXP = /bsd|dragonfly/i.freeze
+      OS_REGEXP = /bsd|dragonfly/i
 
       DEFAULTS = {
         events: [
