@@ -9,7 +9,7 @@ module Listen
     class SymlinkDetector
       README_URL = 'https://github.com/guard/listen/blob/master/README.md'
 
-      SYMLINK_LOOP_ERROR = <<-EOS
+      SYMLINK_LOOP_ERROR = <<-EOS.freeze
         ** ERROR: directory is already being watched! **
 
         Directory: %s
