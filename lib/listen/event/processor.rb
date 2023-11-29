@@ -85,11 +85,13 @@ module Listen
 
       # blocks until event is popped
       # returns the event or `nil` when the event_queue is closed
+      # rubocop:disable Naming/MemoizedInstanceVariableName
       def _wait_until_events
         config.event_queue.pop.tap do |_event|
           @_remember_time_of_first_unprocessed_event ||= MonotonicTime.now
         end
       end
+      # rubocop:enable Naming/MemoizedInstanceVariableName
 
       def _flush_wakeup_reasons
         until @reasons.empty?
