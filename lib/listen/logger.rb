@@ -6,11 +6,25 @@ module Listen
   # Listen.logger will always be present.
   # If you don't want logging, set Listen.logger = ::Logger.new('/dev/null', level: ::Logger::UNKNOWN)
 
+  @adapter_warn_behavior = :warn
+
   class << self
     attr_writer :logger
+    attr_accessor :adapter_warn_behavior
 
     def logger
       @logger ||= default_logger
+    end
+
+    def adapter_warn(message)
+      case adapter_warn_behavior_callback(message)
+      when :log
+        logger.warn(message)
+      when :silent, nil, false
+        # do nothing
+      else # :warn
+        warn(message)
+      end
     end
 
     private
@@ -31,6 +45,21 @@ module Listen
         end
 
       ::Logger.new(STDERR, level: level)
+    end
+    
+    def adapter_warn_behavior_callback(message)
+      if adapter_warn_behavior.respond_to?(:call)
+        case behavior = adapter_warn_behavior.call(message)
+        when Symbol
+          behavior
+        when false, nil
+          :silent
+        else
+          :warn
+        end
+      else
+        adapter_warn_behavior
+      end
     end
   end
 end
