@@ -155,7 +155,7 @@ Note: `:only` regexp patterns are evaluated only against relative **file** paths
 
 All the following options can be set through the `Listen.to` after the directory path(s) params.
 
-```ruby
+``` ruby
 ignore: [%r{/foo/bar}, /\.pid$/, /\.coffee$/]   # Ignore a list of paths
                                                 # default: See DEFAULT_IGNORED_FILES and DEFAULT_IGNORED_EXTENSIONS in Listen::Silencer
 
@@ -187,7 +187,7 @@ This is the primary method of debugging.
 
 ### Custom Logger
 You can call `Listen.logger =` to set a custom `listen` logger for the process. For example:
-```
+``` ruby
 Listen.logger = Rails.logger
 ```
 
@@ -197,7 +197,7 @@ If no custom logger is set, a default `listen` logger which logs to to `STDERR` 
 The default logger defaults to the `error` logging level (severity).
 You can override the logging level by setting the environment variable `LISTEN_GEM_DEBUGGING=<level>`.
 For `<level>`, all standard `::Logger` levels are supported, with any mix of upper-/lower-case:
-```
+``` ruby
 export LISTEN_GEM_DEBUGGING=debug # or 2 [deprecated]
 export LISTEN_GEM_DEBUGGING=info  # or 1 or true or yes [deprecated]
 export LISTEN_GEM_DEBUGGING=warn
@@ -210,9 +210,36 @@ Note: The alternate values `1`, `2`, `true` and `yes` shown above are deprecated
 
 ### Disabling Logging
 If you want to disable `listen` logging, set
-```
+``` ruby
 Listen.logger = ::Logger.new('/dev/null')
 ```
+
+### Adapter Warnings
+If listen is having trouble with the underlying adapter, it will display warnings with `Kernel#warn` by default,
+which in turn writes to STDERR.
+Sometimes this is not desirable, for example in an environment where STDERR is ignored.
+For these reasons, the behavior can be configured using `Listen.adapter_warn_behavior =`:
+``` ruby
+Listen.adapter_warn_behavior = :warn   # default (true means the same)
+Listen.adapter_warn_behavior = :log    # send to logger.warn
+Listen.adapter_warn_behavior = :silent # suppress all adapter warnings (nil or false mean the same)
+```
+Also there are some cases where specific warnings are not helpful.
+For example, if you are using the polling adapter--and expect to--you can suppress the warning about it
+by providing a callable object like a lambda or proc that determines the behavior based on the `message`:
+``` ruby
+Listen.adapter_warn_behavior = ->(message) do
+  case message
+  when /Listen will be polling for changes/
+    :silent
+  when /directory is already being watched/
+    :log
+  else
+    :warn
+  end
+end
+```
+
 ## Listen Adapters
 
 The `Listen` gem has a set of adapters to notify it when there are changes.
