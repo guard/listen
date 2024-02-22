@@ -15,11 +15,11 @@ jobs:
           - macos
 
         ruby:
-          - 2.6
           - 2.7
           - "3.0" # quotes ensure this isn't misinterpreted as Integer 3: https://github.com/actions/runner/issues/849
           - 3.1
           - 3.2
+          - 3.3
 
         experimental: [false]
         env: [""]
