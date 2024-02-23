@@ -34,7 +34,7 @@ module Listen
         require 'find'
         true
       rescue LoadError
-        Kernel.warn BUNDLER_DECLARE_GEM
+        Listen.adapter_warn(BUNDLER_DECLARE_GEM)
         false
       end
 

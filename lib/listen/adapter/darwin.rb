@@ -30,7 +30,7 @@ module Listen
         require 'rb-fsevent'
         fsevent_version = Gem::Version.new(FSEvent::VERSION)
         return true if fsevent_version <= Gem::Version.new('0.9.4')
-        Kernel.warn INCOMPATIBLE_GEM_VERSION
+        Listen.adapter_warn(INCOMPATIBLE_GEM_VERSION)
         false
       end
 
