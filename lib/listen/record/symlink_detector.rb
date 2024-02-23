@@ -30,6 +30,12 @@ module Listen
         @real_dirs.add?(real_path) or _fail(entry.sys_path, real_path)
       end
 
+      # Leaving this stub here since some warning work-arounds were referring to it.
+      # Deprecated. Will be removed in Listen v4.0.
+      def warn(message)
+        Listen.adapter_warn(message)
+      end
+
       private
 
       def _fail(symlinked, real_path)

@@ -20,7 +20,7 @@ module Listen
         Listen.logger.debug format('wdm - load failed: %s:%s', $ERROR_INFO,
                                    $ERROR_POSITION * "\n")
 
-        Kernel.warn BUNDLER_DECLARE_GEM
+        Listen.adapter_warn(BUNDLER_DECLARE_GEM)
         false
       end
 

@@ -36,7 +36,7 @@ module Listen
 
       def _warn_polling_fallback(options)
         msg = options.fetch(:polling_fallback_message, POLLING_FALLBACK_MESSAGE)
-        Kernel.warn "[Listen warning]:\n  #{msg}" if msg
+        Listen.adapter_warn("[Listen warning]:\n  #{msg}") if msg
       end
     end
   end

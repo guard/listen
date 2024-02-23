@@ -35,7 +35,7 @@ RSpec.describe Adapter::Darwin do
       context 'with rb-fsevent > 0.9.4' do
         before { stub_const('FSEvent::VERSION', '0.9.6') }
         it 'shows a warning and should not be usable' do
-          expect(Kernel).to receive(:warn)
+          expect(Listen).to receive(:adapter_warn)
           expect(subject).to_not be_usable
         end
       end
