@@ -121,6 +121,40 @@ RSpec.describe 'logger.rb' do
       end
     end
 
+    context "when LISTEN_GEM_ADAPTER_WARN_BEHAVIOR is set to 'log'" do
+      around do |spec|
+        orig_debugging_env_variable = ENV.fetch('LISTEN_GEM_ADAPTER_WARN_BEHAVIOR', :not_set)
+
+        ENV['LISTEN_GEM_ADAPTER_WARN_BEHAVIOR'] = 'log'
+
+        spec.run
+
+        if orig_debugging_env_variable == :not_set
+          ENV.delete('LISTEN_GEM_ADAPTER_WARN_BEHAVIOR')
+        else
+          ENV['ENV_VARIABLE_NAME'] = orig_debugging_env_variable
+        end
+      end
+
+      [:silent, nil, false, :warn].each do |behavior|
+        it "respects the environment variable over #{behavior.inspect}" do
+          Listen.adapter_warn_behavior = behavior
+
+          expect(Listen.logger).to receive(:warn).with(message)
+
+          subject
+        end
+      end
+
+      it "respects the environment variable over a callable config" do
+        Listen.adapter_warn_behavior = ->(_message) { :warn }
+
+        expect(Listen.logger).to receive(:warn).with(message)
+
+        subject
+      end
+    end
+
     context 'when adapter_warn_behavior is set to a callable object like a proc' do
       before do
         Listen.adapter_warn_behavior = ->(message) do
