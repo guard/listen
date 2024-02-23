@@ -17,7 +17,7 @@ module Listen
     end
 
     def adapter_warn(message)
-      case adapter_warn_behavior_callback(message)
+      case ENV['LISTEN_GEM_ADAPTER_WARN_BEHAVIOR']&.to_sym || adapter_warn_behavior_callback(message)
       when :log
         logger.warn(message)
       when :silent, nil, false

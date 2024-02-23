@@ -239,6 +239,8 @@ Listen.adapter_warn_behavior = ->(message) do
   end
 end
 ```
+In cases where the `Listen` gem is embedded inside another service--such as `guard`--the above configuration
+can be set in the environment variable `LISTEN_GEM_ADAPTER_WARN_BEHAVIOR=warn|log|silent`.
 
 ## Listen Adapters
 
