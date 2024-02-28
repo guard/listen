@@ -34,6 +34,6 @@ group :development do
   gem 'netrc', require: false
   gem 'octokit', require: false
   gem 'pry-rescue'
-  gem 'rubocop', '0.91.0'
+  gem 'rubocop'
   gem 'yard', require: false
 end

@@ -200,6 +200,8 @@ Style/KeywordParametersOrder:
   Enabled: true
 Style/Lambda:
   Enabled: false
+Style/MixinUsage:
+  Enabled: false
 Style/ModuleFunction:
   Enabled: false
 Style/NegatedIf:

@@ -38,7 +38,7 @@ module Listen
       end
     end
 
-    # Note: including classes must call initialize_fsm from their initialize method.
+    # NOTE: including classes must call initialize_fsm from their initialize method.
     def initialize_fsm
       @fsm_initialized = true
       @state = self.class.start_state

@@ -73,7 +73,7 @@ module Listen
     private
 
     def empty_dirname?(dirname)
-      dirname == '.' || dirname == ''
+      ['.', ''].include?(dirname)
     end
 
     def reset_tree
