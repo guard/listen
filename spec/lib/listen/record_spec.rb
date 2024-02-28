@@ -14,7 +14,7 @@ RSpec.describe Listen::Record do
 
   def real_directory(hash)
     dir_entries_for(hash)
-    hash.each do |dir, _|
+    hash.each_key do |dir|
       realpath(dir)
     end
   end

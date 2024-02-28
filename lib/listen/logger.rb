@@ -46,7 +46,7 @@ module Listen
 
       ::Logger.new(STDERR, level: level)
     end
-    
+
     def adapter_warn_behavior_callback(message)
       if adapter_warn_behavior.respond_to?(:call)
         case behavior = adapter_warn_behavior.call(message)

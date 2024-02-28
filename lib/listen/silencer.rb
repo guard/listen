@@ -75,7 +75,7 @@ module Listen
     end
 
     def silenced?(relative_path, type)
-      path = relative_path.to_s   # in case it is a Pathname
+      path = relative_path.to_s # in case it is a Pathname
 
       _ignore?(path) || (only_patterns && type == :file && !_only?(path))
     end

@@ -197,7 +197,7 @@ RSpec.describe 'logger.rb' do
       end
 
       [false, nil].each do |behavior|
-        context 'when the message matches a #{behavior} pattern' do
+        context "when the message matches a #{behavior} pattern" do
           let(:message) { "USE #{behavior.inspect}" }
           it 'respects :silent' do
             expect(Listen).not_to receive(:warn).with(message)
