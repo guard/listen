@@ -5,8 +5,8 @@ jobs:
     name: Draft Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Draft Release
-        uses: toolmantim/release-drafter@v5.2.0
+        uses: toolmantim/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
