@@ -98,4 +98,10 @@ RSpec.describe Listen::Adapter::Base do
       end
     end
   end
+
+  describe '.forks?' do
+    it 'is false by default' do
+      expect(described_class.forks?).to be false
+    end
+  end
 end

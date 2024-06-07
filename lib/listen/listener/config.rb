@@ -11,6 +11,7 @@ module Listen
 
         # Backend selecting options
         force_polling: false,
+        prefer_fork: false,
         polling_fallback_message: nil
       }.freeze
 
@@ -33,7 +34,7 @@ module Listen
       end
 
       def adapter_select_options
-        valid_keys = %w[force_polling polling_fallback_message].map(&:to_sym)
+        valid_keys = %i[force_polling polling_fallback_message prefer_fork]
         Hash[@options.select { |key, _| valid_keys.include?(key) }]
       end
     end
