@@ -12,7 +12,6 @@ module Listen
         wait_for_delay,
         &block
       )
-
         @listener = listener
         @event_queue = event_queue
         @queue_optimizer = queue_optimizer
