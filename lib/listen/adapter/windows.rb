@@ -9,7 +9,7 @@ module Listen
 
       BUNDLER_DECLARE_GEM = <<-EOS.gsub(/^ {6}/, '')
         Please add the following to your Gemfile to avoid polling for changes:
-          gem 'wdm', '>= 0.1.0' if Gem.win_platform?
+          gem 'wdm', '>= 0.1.0'
       EOS
 
       def self.usable?

@@ -265,7 +265,7 @@ If you are on Windows, it's recommended to use the [`wdm`](https://github.com/Ma
 Please add the following to your Gemfile:
 
 ```ruby
-gem 'wdm', '>= 0.1.0', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'wdm', '>= 0.1.0'
 ```
 
 ### On \*BSD
@@ -275,11 +275,7 @@ If you are on \*BSD you can try to use the [`rb-kqueue`](https://github.com/mat8
 Please add the following to your Gemfile:
 
 ```ruby
-require 'rbconfig'
-if RbConfig::CONFIG['target_os'] =~ /bsd|dragonfly/i
-  gem 'rb-kqueue', '>= 0.2'
-end
-
+gem 'rb-kqueue', '>= 0.2'
 ```
 
 ### Getting the [polling fallback message](#options)?

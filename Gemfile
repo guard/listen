@@ -11,14 +11,8 @@ else
   gemspec development_group: :gem_build_tools
 end
 
-require 'rbconfig'
-
-case RbConfig::CONFIG['target_os']
-when /mswin|mingw|cygwin/i
-  gem 'wdm', '>= 0.1.0'
-when /bsd|dragonfly/i
-  gem 'rb-kqueue', '>= 0.2'
-end
+gem 'rb-kqueue', '>= 0.2'
+gem 'wdm', '>= 0.1.0'
 
 group :test do
   gem 'coveralls'
