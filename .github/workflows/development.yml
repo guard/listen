@@ -13,6 +13,7 @@ jobs:
         os:
           - ubuntu
           - macos
+          - windows
 
         ruby:
           - 2.7
