@@ -135,8 +135,6 @@ sleep
 
 Note: `:ignore` regexp patterns are evaluated against relative paths.
 
-Note: Ignoring paths does not improve performance, except when Polling ([#274](https://github.com/guard/listen/issues/274)).
-
 ### Only
 
 `Listen` watches all files (less the ignored ones) by default. If you want to only listen to a specific type of file (i.e., just `.rb` extension), you should use the `only` option/method.
