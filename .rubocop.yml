@@ -121,7 +121,7 @@ Naming/FileName:
   Exclude: []
 Naming/HeredocDelimiterNaming:
   Enabled: false
-Naming/PredicateName:
+Naming/PredicatePrefix:
   Enabled: true
   NamePrefix:
     - is_
