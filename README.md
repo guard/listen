@@ -427,7 +427,7 @@ When in doubt, `LISTEN_GEM_DEBUGGING=debug` can help discover the actual events 
 Pull requests are very welcome! Please try to follow these simple rules if applicable:
 
 * Please create a topic branch for every separate change you make.
-* Make sure your patches are well tested. All specs must pass on [Travis CI](https://travis-ci.org/guard/listen).
+* Make sure your patches are well tested. All specs must pass on [CI](https://github.com/guard/listen/actions?workflow=Development).
 * Update the [Yard](http://yardoc.org/) documentation.
 * Update the [README](https://github.com/guard/listen/blob/master/README.md).
 * Please **do not change** the version number.
