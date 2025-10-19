@@ -2,8 +2,6 @@
 
 # Code copied from https://github.com/celluloid/celluloid-fsm
 
-require 'thread'
-
 module Listen
   module FSM
     # Included hook to extend class methods

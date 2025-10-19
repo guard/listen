@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'thread'
 require 'listen/record/entry'
 require 'listen/record/symlink_detector'
 
