@@ -353,6 +353,9 @@ $ sudo sysctl -p
 ```
 You may also need to pay attention to the values of `max_queued_events` and `max_user_instances` if Listen keeps on complaining.
 
+While 524,288 is the maximum number of files that can be watched. Each file watch [takes up 1,080 bytes](https://stackoverflow.com/a/7091897/1156119) on a 64-bit system, so assuming that all 524,288 watches are consumed, that allocates around 540 MiB.
+If you're in an environment that is particularly memory-constrained, consider to specify a lower number.
+
 #### More info
 Man page for [inotify(7)](https://linux.die.net/man/7/inotify).
 Blog post: [limit of inotify](https://blog.sorah.jp/2012/01/24/inotify-limitation).
