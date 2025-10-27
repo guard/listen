@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'thread'
-
 require 'timeout'
 require 'listen/event/processor'
 require 'listen/thread'
