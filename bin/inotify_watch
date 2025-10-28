@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift "#{__dir__}/../lib"
+require "listen"
+
+$stdout.sync = true # make sure it works well with the pipe
+files = ARGV.to_a
+listener = Listen.to(*files, { prefer_fork: false }) do |modified, added, removed|
+  modified.each { |file| $stdout.write("M", file, "\0") }
+  added.each { |file| $stdout.write("A", file, "\0") }
+  removed.each { |file| $stdout.write("D", file, "\0") }
+end
+listener.start
+sleep

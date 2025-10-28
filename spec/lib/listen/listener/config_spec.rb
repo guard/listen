@@ -21,7 +21,11 @@ RSpec.describe Listen::Listener::Config do
       end
 
       it 'extract adapter selecting options' do
-        expected = { force_polling: true, polling_fallback_message: nil }
+        expected = {
+          force_polling: true,
+          polling_fallback_message: nil,
+          prefer_fork: false
+        }
         expect(subject.adapter_select_options).to eq(expected)
       end
     end
