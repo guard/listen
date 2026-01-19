@@ -123,6 +123,10 @@ module Listen
         def usable?
           const_get('OS_REGEXP') =~ RbConfig::CONFIG['target_os']
         end
+
+        def forks?
+          false
+        end
       end
     end
   end

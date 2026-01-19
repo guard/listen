@@ -4,12 +4,13 @@ require 'listen/adapter/base'
 require 'listen/adapter/bsd'
 require 'listen/adapter/darwin'
 require 'listen/adapter/linux'
+require 'listen/adapter/process_linux'
 require 'listen/adapter/polling'
 require 'listen/adapter/windows'
 
 module Listen
   module Adapter
-    OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows].freeze
+    OPTIMIZED_ADAPTERS = [Darwin, Linux, BSD, Windows, ProcessLinux].freeze
     POLLING_FALLBACK_MESSAGE = 'Listen will be polling for changes.'\
       'Learn more at https://github.com/guard/listen#listen-adapters.'
 
@@ -18,7 +19,8 @@ module Listen
         Listen.logger.debug 'Adapter: considering polling ...'
         return Polling if options[:force_polling]
         Listen.logger.debug 'Adapter: considering optimized backend...'
-        return _usable_adapter_class if _usable_adapter_class
+        adapter_class = _usable_adapter_class(options)
+        return adapter_class if adapter_class
         Listen.logger.debug 'Adapter: falling back to polling...'
         _warn_polling_fallback(options)
         Polling
@@ -30,8 +32,10 @@ module Listen
 
       private
 
-      def _usable_adapter_class
-        OPTIMIZED_ADAPTERS.find(&:usable?)
+      def _usable_adapter_class(options)
+        usable_adapters = OPTIMIZED_ADAPTERS.select(&:usable?)
+        preferred = usable_adapters.find(&:forks?) if options[:prefer_fork]
+        preferred || usable_adapters.first
       end
 
       def _warn_polling_fallback(options)
