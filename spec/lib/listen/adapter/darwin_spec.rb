@@ -27,6 +27,23 @@ RSpec.describe Adapter::Darwin do
       it { should be_usable }
     end
 
+    context 'on darwin30 (a macOS newer than this gem)' do
+      before do
+        allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin30')
+      end
+
+      it { should be_usable }
+    end
+
+    # ruby built with --with-os-version-style=none reports a bare 'darwin'.
+    context 'on a build with the version stripped from target_os' do
+      before do
+        allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin')
+      end
+
+      it { should be_usable }
+    end
+
     context 'on darwin10.0 (OS X Snow Leopard)' do
       before do
         allow(RbConfig::CONFIG).to receive(:[]).and_return('darwin10.0')

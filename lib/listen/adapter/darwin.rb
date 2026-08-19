@@ -7,7 +7,8 @@ module Listen
     # Adapter implementation for Mac OS X `FSEvents`.
     #
     class Darwin < Base
-      OS_REGEXP = /darwin(?<major_version>(1|2)\d+)/i
+      # Some ruby builds omit the version (--with-os-version-style=none).
+      OS_REGEXP = /\Adarwin(?<major_version>\d+)?/i
 
       # The default delay between checking for changes.
       DEFAULTS = { latency: 0.1 }.freeze
@@ -23,8 +24,11 @@ module Listen
       EOS
 
       def self.usable?
-        version = RbConfig::CONFIG['target_os'][OS_REGEXP, :major_version]
-        return false unless version
+        match = OS_REGEXP.match(RbConfig::CONFIG['target_os'])
+        return false unless match
+
+        version = match[:major_version]
+        return true if version.nil?
         return true if version.to_i >= 13 # darwin13 is OS X 10.9
 
         require 'rb-fsevent'
