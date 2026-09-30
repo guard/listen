@@ -58,9 +58,8 @@ RSpec.describe Adapter::Polling do
         expect(snapshot).to receive(:invalidate).
           with(:dir, '.', { recursive: true })
 
-        t = Thread.new { subject.start }
+        subject.start
         sleep 0.25
-        t.kill
       end
     end
 
