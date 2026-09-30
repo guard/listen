@@ -17,16 +17,21 @@ module Listen
       end
 
       def append_ignores(*regexps)
-        prev_ignores = Array(@prev_silencer_options[:ignore])
-        _reconfigure_silencer(ignore: [prev_ignores + regexps])
+        opts = @prev_silencer_options.dup
+        opts[:ignore] = [opts[:ignore], regexps]
+        _reconfigure_silencer(opts)
       end
 
       def replace_with_bang_ignores(regexps)
-        _reconfigure_silencer(ignore!: regexps)
+        opts = @prev_silencer_options.dup
+        opts.delete(:ignore)
+        opts[:ignore!] = regexps
+        _reconfigure_silencer(opts)
       end
 
       def replace_with_only(regexps)
-        _reconfigure_silencer(only: regexps)
+        opts = @prev_silencer_options.merge(only: regexps)
+        _reconfigure_silencer(opts)
       end
 
       private
