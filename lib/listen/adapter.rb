@@ -18,7 +18,8 @@ module Listen
         Listen.logger.debug 'Adapter: considering polling ...'
         return Polling if options[:force_polling]
         Listen.logger.debug 'Adapter: considering optimized backend...'
-        return _usable_adapter_class if _usable_adapter_class
+        adapter_class = _usable_adapter_class
+        return adapter_class if adapter_class
         Listen.logger.debug 'Adapter: falling back to polling...'
         _warn_polling_fallback(options)
         Polling
