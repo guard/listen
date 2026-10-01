@@ -38,14 +38,20 @@ RSpec.describe Listen::Adapter::Linux do
         let(:default_events) { [:recursive, :attrib, :create, :modify, :delete, :move, :close_write] }
         let(:fake_worker) { double(:fake_worker_for_watch_events) }
         let(:fake_notifier) { double(:fake_notifier, new: fake_worker) }
+        let(:fake_thread) { instance_double(Thread) }
+        let(:fake_thread_factory) { double(:fake_thread_factory, new: fake_thread) }
 
         before do
           stub_const('INotify::Notifier', fake_notifier)
+          stub_const('Listen::Thread', fake_thread_factory)
 
           allow(config).to receive(:directories).and_return(directories)
           allow(config).to receive(:adapter_options).and_return(adapter_options)
           allow(config).to receive(:silencer).and_return(silencer)
           allow(fake_worker).to receive(:close)
+
+          allow(fake_thread).to receive(:kill).and_return(fake_thread)
+          allow(fake_thread).to receive(:join)
         end
 
         after do
