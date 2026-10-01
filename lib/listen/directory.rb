@@ -5,6 +5,8 @@ require 'set'
 module Listen
   # TODO: refactor (turn it into a normal object, cache the stat, etc)
   class Directory
+    MAX_RESCAN_ATTEMPTS = 5
+
     # rubocop:disable Metrics/MethodLength
     def self.scan(snapshot, rel_path, options)
       record = snapshot.record
@@ -23,6 +25,8 @@ module Listen
                rel_path, options.inspect, previous.inspect, current.inspect)
       end
 
+      rescan_attempts = 0
+      full_path = nil
       begin
         current.each do |full_path|
           type = ::File.lstat(full_path.to_s).directory? ? :dir : :file
@@ -31,8 +35,16 @@ module Listen
         end
       rescue Errno::ENOENT
         # The directory changed meanwhile, so rescan it
-        current = Set.new(_children(path))
-        retry
+        rescan_attempts += 1
+        if rescan_attempts <= MAX_RESCAN_ATTEMPTS
+          current = Set.new(_children(path))
+          retry
+        end
+
+        current.delete(full_path)
+        Listen.logger.debug do
+          "scan remained unstable after #{MAX_RESCAN_ATTEMPTS} rescans: #{path}"
+        end
       end
 
       # TODO: this is not tested properly
@@ -48,7 +60,9 @@ module Listen
       _async_changes(snapshot, path, previous, options)
       _change(snapshot, :file, rel_path, options)
     rescue
-      Listen.logger.warn { format('scan DIED: %s:%s', $ERROR_INFO, $ERROR_POSITION * "\n") }
+      Listen.logger.warn do
+        "scan DIED: #{$ERROR_INFO}:#{$ERROR_POSITION * "\n"}"
+      end
       raise
     end
     # rubocop:enable Metrics/MethodLength

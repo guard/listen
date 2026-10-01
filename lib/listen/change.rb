@@ -55,9 +55,7 @@ module Listen
         options = cookie ? { cookie: cookie } : {}
         @config.queue(type, change, watched_dir, rel_path, options)
       elsif type == :dir
-        # NOTE: POSSIBLE RECURSION
-        # TODO: fix - use a queue instead
-        Directory.scan(self, rel_path, options)
+        _scan_directory(rel_path, options)
       elsif (change = File.change(record, rel_path)) && !options[:silence]
         @config.queue(:file, change, watched_dir, rel_path)
       end
@@ -65,5 +63,25 @@ module Listen
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/PerceivedComplexity
+
+    private
+
+    def _scan_directory(rel_path, options)
+      @directory_scan_queue ||= []
+      @directory_scan_queue << [rel_path, options]
+      return if @scanning_directories
+
+      _drain_directory_scan_queue
+    end
+
+    def _drain_directory_scan_queue
+      @scanning_directories = true
+      @directory_scan_queue.each do |path, options|
+        Directory.scan(self, path, options)
+      end
+    ensure
+      @directory_scan_queue.clear
+      @scanning_directories = false
+    end
   end
 end
